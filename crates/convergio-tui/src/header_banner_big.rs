@@ -1,9 +1,9 @@
-//! Big pixel-block CONVERGIO header — 6 rows, ANSI Shadow font,
-//! sourced from `convergio_brand::wordmark_big`.
+//! Big pixel-block CONVERGIO header — 4 rows, custom solid-block
+//! font, sourced from `convergio_brand::wordmark_big`.
 //!
-//! This is the "wide" tier of the dashboard header — the one that
-//! actually looks like the brand kit's `wordmark-pixel.png` when
-//! the operator runs `cvg dash` on a roomy terminal. Narrow shells
+//! This is the "wide" tier of the dashboard header. The font is
+//! intentionally chunky (`█▀▄` only, no thin line-art) to match
+//! the brand kit's `wordmark-pixel.png` density. Narrow shells
 //! fall back to the existing 2-row half-block banner; smaller still
 //! to a single styled line.
 
@@ -14,13 +14,15 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::Paragraph;
 use ratatui::Frame;
 
-/// Height the big banner reserves: 6 wordmark rows + 1 spacer/stats.
-pub const HEIGHT: u16 = 7;
+/// Height the big banner reserves: 4 wordmark rows + 1 spacer/stats.
+pub const HEIGHT: u16 = 5;
 
-/// Approximate width budget the big tier expects (wordmark + 2-col
-/// gutter + stats column). When the available width is below this
-/// the caller should fall back to the compact tiers.
-pub const MIN_WIDTH: u16 = wordmark_big::WIDTH + 2 + 22;
+/// Width budget the big tier expects: wordmark + 2-col gutter +
+/// 16-col stats column. When the available width is below this
+/// the caller falls back to the compact tiers. With the new
+/// 67-col wordmark, big tier kicks in at 85 cols — most modern
+/// terminals (≥ 100 cols) get it by default.
+pub const MIN_WIDTH: u16 = wordmark_big::WIDTH + 2 + 16;
 
 /// Render the big banner into `area`. Wordmark on the left,
 /// right-aligned stats column on the right (htop / k9s convention).
