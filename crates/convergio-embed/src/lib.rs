@@ -55,9 +55,15 @@ pub mod select;
 pub mod source;
 pub mod store;
 
+#[cfg(feature = "fastembed")]
+pub mod fastembed_impl;
+
 pub use embedder::{Embedder, EmbedderError};
 pub use error::{EmbedError, Result};
 pub use migrate::init;
 pub use select::{EmbedPolicy, EmbedTarget};
 pub use source::SourceText;
 pub use store::{EmbedStore, EmbeddingRow, Neighbor};
+
+#[cfg(feature = "fastembed")]
+pub use fastembed_impl::MultilingualE5Embedder;
