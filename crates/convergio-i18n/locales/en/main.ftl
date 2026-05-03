@@ -184,3 +184,11 @@ session-resume-pack-line = Context-pack for task { $task_id }: { $nodes } matche
 brand-about-tagline = Convergio — { $version }
 brand-about-source = Source: { $url }
 brand-about-help = Type `cvg --help` to get started.
+
+# ---------- CLI: coherence routes ----------
+coherence-routes-summary = Checked { $code } code routes against { $docs } documented routes; { $violations } drift item(s).
+coherence-routes-ok = Routes coherence: ok (no drift).
+coherence-routes-header = Routes coherence: { $count } drift item(s):
+coherence-routes-missing-in-docs = missing_in_docs: { $method } { $path } (in code at { $file }, not documented)
+coherence-routes-missing-in-code = missing_in_code: { $method } { $path } (documented in { $file }, not in code)
+coherence-routes-method-mismatch = method_mismatch: { $path } — code has [{ $code_methods }], docs have [{ $doc_methods }]
