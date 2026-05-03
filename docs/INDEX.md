@@ -63,7 +63,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0000-template.md` | adr | [] | proposed \| accepted \| deprecated \| superseded by [NNNN](NNNN-title.md) | 55 |
 | `docs/adr/0001-four-layer-architecture.md` | adr | [] | accepted | 77 |
 | `docs/adr/0002-audit-hash-chain.md` | adr | [] | accepted | 91 |
-| `docs/adr/0003-migration-coexistence.md` | adr | [] | accepted | 125 |
+| `docs/adr/0003-migration-coexistence.md` | adr | [] | accepted | 132 |
 | `docs/adr/0004-three-sacred-principles.md` | adr | [] | accepted | 104 |
 | `docs/adr/0005-internationalization-first.md` | adr | [] | accepted | 119 |
 | `docs/adr/0006-crdt-storage.md` | adr | [] | proposed | 209 |
@@ -98,7 +98,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0035-runner-registry-toml.md` | adr | [convergio-runner, convergio-executor, convergio-cli] | accepted | 100 |
 | `docs/adr/0036-opus-backed-planner.md` | adr | [convergio-planner, convergio-server] | accepted | 101 |
 | `docs/adr/0037-brand-kit-and-claim.md` | adr | [convergio-brand, convergio-cli, convergio-tui, convergio-server, convergio-i18n] | accepted | 91 |
-| `docs/adr/README.md` | adr | - | - | 58 |
+| `docs/adr/0038-fleet-retrieval-cross-repo-graph.md` | adr | [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api] | proposed | 848 |
+| `docs/adr/README.md` | adr | - | - | 59 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 236 |
@@ -108,6 +109,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
 | `docs/plans/README.md` | plan | - | - | 31 |
 | `docs/plans/convergio-local-public-readiness.md` | plan | - | Published v0.1.0 | 244 |
+| `docs/plans/fleet-retrieval-cross-repo-graph.md` | plan | - | Proposed v0.1.0 (F0 in flight) | 170 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
 | `docs/plans/v0.2-friction-log.md` | plan | - | - | 188 |
@@ -117,6 +119,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/reviews/PRD-001-pre-PR-review-v1.md` | - | - | - | 114 |
 | `docs/setup.md` | - | - | - | 102 |
 | `docs/spec/README.md` | spec | - | - | 10 |
+| `docs/spec/fleet-retrieval-cross-repo-graph.md` | spec | - | - | 697 |
+| `docs/spec/fleet-retrieval-golden-methodology.md` | spec | - | - | 264 |
 | `docs/spec/v3-durability-layer.md` | spec | - | - | 145 |
 | `docs/templates/adversarial-challenge.md` | - | - | - | 139 |
 | `docs/vision.md` | - | - | - | 426 |
