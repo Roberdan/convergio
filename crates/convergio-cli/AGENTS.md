@@ -19,7 +19,7 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-cli` stats:** 63 `*.rs` files / 49 public items / 10312 lines (under `src/`).
+**`convergio-cli` stats:** 63 `*.rs` files / 49 public items / 10306 lines (under `src/`).
 
 Files approaching the 300-line cap:
 - `src/main.rs` (296 lines)
