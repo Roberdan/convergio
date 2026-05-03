@@ -14,6 +14,14 @@ categories = ["database", "asynchronous"]
 [lints]
 workspace = true
 
+[features]
+default = []
+# Pull in `fastembed-rs` and the `MultilingualE5Embedder` impl. Off by
+# default so the lean crate (deterministic test embedder + storage)
+# stays cheap to build. Enable via `--features fastembed` when you
+# want the real ONNX model.
+fastembed = ["dep:fastembed"]
+
 [dependencies]
 convergio-db = { workspace = true }
 sqlx = { workspace = true }
@@ -22,6 +30,7 @@ hex = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
 chrono = { workspace = true }
+fastembed = { workspace = true, optional = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }

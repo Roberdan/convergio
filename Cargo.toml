@@ -92,6 +92,11 @@ walkdir = "2"
 ratatui = "0.29"
 crossterm = "0.28"
 
+# Tier-3 semantic embeddings (ADR-0038, F1-β)
+# Pulls in `ort` (ONNX Runtime) prebuilt binaries and `tokenizers`.
+# Heavy dep — kept behind the `fastembed` feature on convergio-embed.
+fastembed = "5"
+
 # Internal crates (workspace path deps)
 convergio-db = { path = "crates/convergio-db" }
 convergio-durability = { path = "crates/convergio-durability" }

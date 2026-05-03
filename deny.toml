@@ -23,12 +23,22 @@ confidence-threshold = 0.8
 allow = [
     "Apache-2.0",
     "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
     "BSD-3-Clause",
     "BSL-1.0",
     "CDLA-Permissive-2.0",
     "ISC",
     "LicenseRef-Convergio-Community-1.3",
     "MIT",
+    # MPL-2.0 is a weak copyleft (file-level): permissive for our
+    # link-and-redistribute use case. Pulled in transitively via
+    # webpki-roots / similar; compatible with Convergio Community
+    # License v1.3.
+    "MPL-2.0",
+    # NCSA / University of Illinois / NCSA Open Source License.
+    # OSI-approved permissive license; appears as part of compound
+    # licenses for LLVM-derived crates (e.g. tokenizers' onig dep).
+    "NCSA",
     "Unicode-3.0",
     "Unlicense",
     "Zlib",
@@ -45,7 +55,9 @@ highlight = "all"
 allow-workspace = true
 skip = [
     { crate = "getrandom@0.2.17", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
+    { crate = "getrandom@0.3.4", reason = "additional version pulled in by fastembed transitive (ADR-0038, F1-β)" },
     { crate = "hashbrown@0.15.5", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
+    { crate = "hashbrown@0.16.1", reason = "additional version pulled in by fastembed transitive (ADR-0038, F1-β)" },
     { crate = "redox_syscall@0.5.18", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "thiserror@1.0.69", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "thiserror-impl@1.0.69", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
@@ -55,6 +67,21 @@ skip = [
     { crate = "linux-raw-sys@0.4.15", reason = "transitive duplicate via ratatui/crossterm; ratchet when upstreams converge" },
     { crate = "rustix@0.38.44", reason = "transitive duplicate via ratatui/crossterm; ratchet when upstreams converge" },
     { crate = "unicode-width@0.1.14", reason = "transitive duplicate via ratatui; ratchet when upstreams converge" },
+    # Brought in transitively by fastembed 5.13 → tokenizers / hf-hub / ort
+    # / image / spm_precompiled (ADR-0038, F1-β). Each line is the older
+    # of the two versions that fastembed's dep graph pulls; ratchet when
+    # upstreams converge.
+    { crate = "base64@0.13.1", reason = "via fastembed/tokenizers/spm_precompiled" },
+    { crate = "compact_str@0.8.1", reason = "via fastembed/tokenizers" },
+    { crate = "core-foundation@0.9.4", reason = "via fastembed/ort/hf-hub macOS path" },
+    { crate = "darling@0.20.11", reason = "via fastembed/ort proc-macros" },
+    { crate = "darling_core@0.20.11", reason = "via fastembed/ort proc-macros" },
+    { crate = "darling_macro@0.20.11", reason = "via fastembed/ort proc-macros" },
+    { crate = "foldhash@0.1.5", reason = "via fastembed/hashbrown older path" },
+    { crate = "itertools@0.13.0", reason = "via fastembed/tokenizers" },
+    { crate = "nom@7.1.3", reason = "via fastembed/tokenizers" },
+    { crate = "pastey@0.1.1", reason = "via fastembed/ort macros" },
+    { crate = "r-efi@5.3.0", reason = "via fastembed/getrandom older path" },
 ]
 
 [sources]
