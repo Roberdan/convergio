@@ -51,4 +51,17 @@ pnpm-lock.yaml
 bun.lockb
 *.lock
 
+# Historical product memory: friction logs, fresh-eyes tests,
+# post-hoc triage, public-readiness records, snapshot specs. Read
+# on demand only — they are not needed for cold-start orientation.
+docs/plans/v0.1.x-friction-log.md
+docs/plans/v0.2-friction-log.md
+docs/plans/v0.2-fresh-eyes-test-result.md
+docs/plans/2026-05-01-triage-pass.md
+docs/plans/convergio-local-public-readiness.md
+docs/reviews/
+docs/spec/v3-durability-layer.md
+docs/spec/fleet-retrieval-cross-repo-graph.md
+docs/spec/fleet-retrieval-golden-methodology.md
+
 # Don't ignore: migrations/, snapshots/ (agents may need to read them)

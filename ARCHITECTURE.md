@@ -44,9 +44,13 @@ Layer 1-3 directly and ignore the reference Layer 4 crates.
 | `convergio-planner` | 4 | `Planner::solve` | no |
 | `convergio-thor` | 4 | `Thor::validate` -> `Verdict` (and on Pass, promotes `submitted` to `done` per ADR-0011) | no |
 | `convergio-executor` | 4 | `Executor::tick`, `spawn_loop` | no |
+| `convergio-graph` | 1 | Tier-3 code-graph (`cvg graph build / for-task / drift / cluster`, ADR-0014) | yes (`graph_*`) |
+| `convergio-embed` | 1 | embeddings store + pluggable embedder trait (ADR-0038, F1) | yes (`embeddings_*`) |
+| `convergio-runner` | 4 | vendor-CLI runners (shell / claude / copilot + custom TOML, ADR-0028, 0032, 0035) | no |
 | `convergio-api` | cross-cutting | typed agent action contract (`Action`, `SCHEMA_VERSION`) | no |
 | `convergio-mcp` | cross-cutting | stdio MCP bridge (`convergio.help`, `convergio.act`) | no |
 | `convergio-i18n` | cross-cutting | Fluent bundles (`en`, `it`) + coverage gate | no |
+| `convergio-brand` | cross-cutting | palette, claim, banner, boot animation (ADR-0037) | no |
 
 ## HTTP surface
 
@@ -76,12 +80,17 @@ All endpoints sit under `/v1`. Errors are:
 | GET | `/v1/health` | shell |
 | GET | `/v1/status` | shell |
 | POST · GET | `/v1/plans` | 1 |
-| GET | `/v1/plans/:id` | 1 |
+| GET · PATCH | `/v1/plans/:id` | 1 |
+| POST | `/v1/plans/:id/transition` (ADR-0026) | 1 |
+| GET | `/v1/plans/:id/triage` | 1 |
 | POST · GET | `/v1/plans/:plan_id/tasks` | 1 |
 | GET | `/v1/tasks/:id` | 1 |
 | POST | `/v1/tasks/:id/transition` | 1 |
+| POST | `/v1/tasks/:id/retry` | 1 |
+| POST | `/v1/tasks/:id/close-post-hoc` (ADR-0026) | 1 |
 | POST | `/v1/tasks/:id/heartbeat` | 1 |
 | POST · GET | `/v1/tasks/:id/evidence` | 1 |
+| DELETE | `/v1/evidence/:id` | 1 |
 | POST | `/v1/tasks/:id/context` | 1 |
 | GET | `/v1/audit/verify` | 1 |
 | GET | `/v1/audit/refusals/latest` | 1 |
@@ -103,14 +112,23 @@ All endpoints sit under `/v1`. Errors are:
 | POST | `/v1/capabilities/verify-signature` | 1 |
 | GET · DELETE | `/v1/capabilities/:name` | 1 |
 | POST | `/v1/capabilities/:name/disable` | 1 |
+| POST · GET | `/v1/graph/build` · `/v1/graph/stats` (ADR-0014) | 1 |
+| POST | `/v1/graph/refresh` | 1 |
+| GET | `/v1/graph/for-task/:id` | 1 |
+| GET | `/v1/graph/drift` | 1 |
+| GET | `/v1/graph/cluster/:crate_name` | 1 |
+| GET | `/v1/embed/stats` (ADR-0038, F1) | 1 |
 | POST · GET | `/v1/plans/:plan_id/messages` | 2 |
+| GET | `/v1/plans/:plan_id/messages/tail` | 2 |
+| GET | `/v1/plans/:plan_id/topics` | 2 |
 | POST | `/v1/messages/:id/ack` | 2 |
+| GET · POST | `/v1/system-messages` (ADR-0025) | 2 |
 | POST | `/v1/agents/spawn` | 3 |
-| POST | `/v1/agents/spawn-runner` | 3 |
+| POST | `/v1/agents/spawn-runner` (ADR-0028) | 3 |
 | GET | `/v1/agents/:id` | 3 |
 | POST | `/v1/agents/:id/heartbeat` | 3 |
 | POST | `/v1/solve` | 4 |
-| POST | `/v1/capabilities/planner/solve` | 4 |
+| POST | `/v1/capabilities/planner/solve` (ADR-0036) | 4 |
 | POST | `/v1/dispatch` | 4 |
 | POST | `/v1/plans/:id/validate` | 4 |
 
