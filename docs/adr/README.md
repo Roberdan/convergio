@@ -55,4 +55,5 @@ do not edit between the markers.
 | [0035](./0035-runner-registry-toml.md) | 0035. Runner registry — TOML-driven custom vendors | accepted |
 | [0036](./0036-opus-backed-planner.md) | 0036. Opus-backed planner replaces the line-split heuristic | accepted |
 | [0037](./0037-brand-kit-and-claim.md) | 0037. Brand kit, claim, and shared `convergio-brand` crate | accepted |
+| [0038](./0038-fleet-retrieval-cross-repo-graph.md) | 0038. Fleet retrieval & cross-repo graph (semantic + multi-language) | proposed |
 <!-- END AUTO -->
