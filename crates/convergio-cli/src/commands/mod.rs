@@ -26,6 +26,7 @@ pub mod graph;
 mod graph_render;
 pub mod health;
 pub mod mcp;
+pub mod monitor;
 pub mod plan;
 mod plan_triage;
 pub mod pr;
