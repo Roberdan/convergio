@@ -13,6 +13,7 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/v1/audit/verify", get(verify))
         .route("/v1/audit/refusals/latest", get(latest_refusal))
+        .route("/v1/audit/events", get(events))
 }
 
 #[derive(Deserialize)]
@@ -27,6 +28,22 @@ struct VerifyQuery {
 struct RefusalQuery {
     #[serde(default)]
     task_id: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct EventsQuery {
+    /// Cursor: only return entries with `seq > after_seq`. Defaults
+    /// to `0` so the first call returns the start of the log.
+    #[serde(default)]
+    after_seq: i64,
+    /// Page size, clamped server-side to `[1, 1000]`. Defaults to
+    /// 100 — comfortable for live tail UIs.
+    #[serde(default = "default_events_limit")]
+    limit: i64,
+}
+
+fn default_events_limit() -> i64 {
+    100
 }
 
 async fn verify(
@@ -47,4 +64,16 @@ async fn latest_refusal(
         .latest_refusal(q.task_id.as_deref())
         .await?;
     Ok(Json(entry))
+}
+
+async fn events(
+    State(state): State<AppState>,
+    Query(q): Query<EventsQuery>,
+) -> Result<Json<Vec<AuditEntry>>, ApiError> {
+    let entries = state
+        .durability
+        .audit()
+        .list_since(q.after_seq, q.limit)
+        .await?;
+    Ok(Json(entries))
 }
