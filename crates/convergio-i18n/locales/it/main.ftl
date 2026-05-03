@@ -67,6 +67,7 @@ capability-disabled = Capability disabilitata: { $name } { $version }
 setup-config-created = Configurazione creata: { $path }
 setup-config-exists = Configurazione già presente: { $path }
 setup-config-backed-up = Configurazione esistente salvata: { $path }
+setup-config-repo-path-added = Aggiunto repo_path mancante in: { $path }
 setup-complete = Setup completato: { $path }
 setup-next-start = Prossimo passo: avvia il daemon con `convergio start`
 setup-next-doctor = Poi: esegui `cvg doctor`

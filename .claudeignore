@@ -43,3 +43,22 @@ yarn.lock
 pnpm-lock.yaml
 bun.lockb
 *.lock
+
+# Historical product memory: friction logs, fresh-eyes test reports,
+# post-hoc triage records, public-readiness checklists. They are
+# committed history valuable on demand, but NOT needed to act on a
+# fresh task — Tier-1 retrieval lives in docs/INDEX.md, docs/AGENTS.md,
+# and docs/agent-resume-packet.md (CONSTITUTION § 16). Open these
+# explicitly when a task demands them.
+docs/plans/v0.1.x-friction-log.md
+docs/plans/v0.2-friction-log.md
+docs/plans/v0.2-fresh-eyes-test-result.md
+docs/plans/2026-05-01-triage-pass.md
+docs/plans/convergio-local-public-readiness.md
+docs/reviews/
+
+# Spec archive: snapshot design docs that are not updated. Drill into
+# them only when the relevant ADR points there.
+docs/spec/v3-durability-layer.md
+docs/spec/fleet-retrieval-cross-repo-graph.md
+docs/spec/fleet-retrieval-golden-methodology.md
