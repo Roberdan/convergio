@@ -122,6 +122,11 @@ enum Command {
         #[command(subcommand)]
         sub: commands::graph::GraphCommand,
     },
+    /// Tier-3 semantic embeddings (build, warm, for-task; ADR-0038).
+    Embed {
+        #[command(subcommand)]
+        sub: commands::embed::EmbedCommand,
+    },
     /// Workspace coordination diagnostics.
     Workspace {
         #[command(subcommand)]
@@ -250,6 +255,7 @@ async fn main() -> Result<()> {
         Command::Coherence { sub } => commands::coherence::run(cli.output, sub).await,
         Command::Docs { sub } => commands::docs::run(cli.output, sub).await,
         Command::Graph { sub } => commands::graph::run(&client, cli.output, sub).await,
+        Command::Embed { sub } => commands::embed::run(&client, cli.output, sub).await,
         Command::Workspace { sub } => {
             commands::workspace::run(&client, &bundle, cli.output, sub).await
         }

@@ -48,9 +48,12 @@
 
 mod codec;
 
+pub mod corpus;
 pub mod embedder;
 pub mod error;
+pub mod ingest;
 pub mod migrate;
+pub mod query;
 pub mod select;
 pub mod source;
 pub mod store;
@@ -58,9 +61,12 @@ pub mod store;
 #[cfg(feature = "fastembed")]
 pub mod fastembed_impl;
 
+pub use corpus::{collect_files, DEFAULT_MAX_LINES, SOURCE_EXTENSIONS};
 pub use embedder::{Embedder, EmbedderError};
 pub use error::{EmbedError, Result};
+pub use ingest::{ingest, ingest_one, IngestNode, IngestReport};
 pub use migrate::init;
+pub use query::semantic_search;
 pub use select::{EmbedPolicy, EmbedTarget};
 pub use source::SourceText;
 pub use store::{EmbedStore, EmbeddingRow, Neighbor};

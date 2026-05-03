@@ -3,7 +3,7 @@
 use axum::Router;
 use convergio_bus::Bus;
 use convergio_durability::Durability;
-use convergio_embed::EmbedStore;
+use convergio_embed::{EmbedStore, Embedder};
 use convergio_graph::Store as GraphStore;
 use convergio_lifecycle::Supervisor;
 use std::sync::Arc;
@@ -20,8 +20,14 @@ pub struct AppState {
     pub supervisor: Arc<Supervisor>,
     /// Tier-3 retrieval store (ADR-0014).
     pub graph: Arc<GraphStore>,
-    /// Tier-3 semantic embeddings store (ADR-0035, F1).
+    /// Tier-3 semantic embeddings store (ADR-0038, F1).
     pub embed: Arc<EmbedStore>,
+    /// Embedder used by the daemon for ingest + semantic queries.
+    /// The default at startup is `DeterministicTestEmbedder` (no
+    /// network); set `CONVERGIO_EMBED_MODEL=multilingual-e5-small`
+    /// (and build with `--features fastembed`) to swap in the real
+    /// ONNX model. ADR-0038 § F1-β.
+    pub embedder: Arc<dyn Embedder>,
 }
 
 /// Build the top-level router. Test harnesses call this directly with

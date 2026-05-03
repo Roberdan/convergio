@@ -30,6 +30,14 @@ pub enum EmbedError {
     /// Stored blob length is not a multiple of 4 (the size of `f32`).
     #[error("corrupt embedding blob: length {0} is not a multiple of 4")]
     CorruptBlob(usize),
+
+    /// The configured [`crate::Embedder`] refused this input. Carries
+    /// the underlying message so the caller can surface or skip.
+    /// Lifted out of [`crate::EmbedderError`] at the
+    /// `convergio-embed` boundary so [`crate::ingest::ingest`] can
+    /// distinguish recoverable embedder failures from store errors.
+    #[error("embedder failed: {0}")]
+    EmbedderFailed(String),
 }
 
 /// Convenience alias for the embed crate.

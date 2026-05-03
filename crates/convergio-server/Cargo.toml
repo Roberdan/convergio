@@ -12,6 +12,13 @@ readme = "README.md"
 [lints]
 workspace = true
 
+[features]
+default = []
+# Pass-through to `convergio-embed/fastembed` so a daemon built with
+# `cargo build -p convergio-server --features fastembed` can serve
+# real ONNX inference. ADR-0038 § F1-β.
+fastembed = ["convergio-embed/fastembed"]
+
 [[bin]]
 name = "convergio"
 path = "src/main.rs"
