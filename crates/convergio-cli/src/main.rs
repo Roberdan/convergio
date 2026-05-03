@@ -175,6 +175,14 @@ enum Command {
         #[arg(long)]
         animate: bool,
     },
+    /// Stream every state transition the daemon writes to its
+    /// audit log, brand-coloured (magenta = refusals, cyan = done).
+    /// Polls `/v1/audit/events` on a tick. Ctrl-C exits.
+    Monitor {
+        /// Poll interval in seconds (clamped to `[1, 60]`).
+        #[arg(long, env = "CONVERGIO_MONITOR_TICK_SECS", default_value_t = 1)]
+        tick_secs: u64,
+    },
     /// Run a guided local demo.
     Demo,
     /// Open the read-only TUI dashboard (cvg dash, ADR-0029).
@@ -255,6 +263,7 @@ async fn main() -> Result<()> {
             commands::validate::run(&client, &plan_id, wave).await
         }
         Command::About { animate } => commands::about::run(&bundle, animate),
+        Command::Monitor { tick_secs } => commands::monitor::run(&client, tick_secs).await,
         Command::Demo => commands::demo::run(&client).await,
         Command::Dash { tick_secs } => commands::dash::run(client.base(), tick_secs).await,
         Command::Update {

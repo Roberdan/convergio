@@ -87,6 +87,7 @@ fn init(bundle: &Bundle, force: bool) -> Result<()> {
                 &[("path", &config.display().to_string())]
             )
         );
+        backfill_repo_path(bundle, &config)?;
     } else {
         if config.exists() {
             let backup = home.join("config.toml.v2.bak");
@@ -171,6 +172,32 @@ fn write_snippet(path: &std::path::Path, content: &str, force: bool) -> Result<(
 fn convergio_home() -> Result<PathBuf> {
     let home = std::env::var("HOME").context("HOME is not set")?;
     Ok(PathBuf::from(home).join(".convergio"))
+}
+
+/// Patch a current-shape config that is missing the `repo_path`
+/// field. Idempotent: silent when the field is already present;
+/// silent when the workspace cannot be resolved (the operator can
+/// always re-run from inside the repo or set
+/// `CONVERGIO_REPO_DIR`).
+fn backfill_repo_path(bundle: &Bundle, config: &std::path::Path) -> Result<()> {
+    use super::setup_repo_path::{backfill, Outcome};
+    let resolve = || {
+        super::update_repo_root::resolve()
+            .ok()
+            .map(|p| p.display().to_string())
+    };
+    let outcome = backfill(config, resolve)
+        .with_context(|| format!("backfill repo_path in {}", config.display()))?;
+    if matches!(outcome, Outcome::Added) {
+        println!(
+            "{}",
+            bundle.t(
+                "setup-config-repo-path-added",
+                &[("path", &config.display().to_string())]
+            )
+        );
+    }
+    Ok(())
 }
 
 fn default_config() -> String {

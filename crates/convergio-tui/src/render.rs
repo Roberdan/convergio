@@ -17,7 +17,7 @@ use ratatui::Frame;
 /// Draw one frame.
 pub fn root(f: &mut Frame, state: &AppState) {
     let area = f.area();
-    let header_h = header_banner::header_height(area.width);
+    let header_h = header_banner::header_height(area.width, area.height);
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
