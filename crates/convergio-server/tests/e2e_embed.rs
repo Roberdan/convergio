@@ -41,6 +41,7 @@ async fn boot() -> (String, Arc<EmbedStore>, tempfile::TempDir) {
         supervisor: Arc::new(Supervisor::new(pool)),
         graph,
         embed: embed.clone(),
+        embedder: Arc::new(DeterministicTestEmbedder::new(384)),
     };
     let app = router(state);
 
@@ -110,4 +111,111 @@ async fn embed_stats_reflects_seeded_rows() {
         .expect("json");
     assert_eq!(scoped["count"], 3);
     assert_eq!(scoped["repo"], "convergio");
+}
+
+#[tokio::test]
+async fn embed_warm_returns_model_and_dim() {
+    let (base, _embed, _dir) = boot().await;
+    let client = reqwest::Client::new();
+    let body: Value = client
+        .post(format!("{base}/v1/embed/warm"))
+        .send()
+        .await
+        .expect("send")
+        .json()
+        .await
+        .expect("json");
+    assert_eq!(body["ok"], true);
+    assert_eq!(body["model"], "deterministic-test-d384");
+    assert_eq!(body["dim"], 384);
+}
+
+#[tokio::test]
+async fn embed_build_walks_directory_and_ingests() {
+    let (base, embed, _dir) = boot().await;
+    let corpus = tempdir().expect("corpus dir");
+    std::fs::create_dir_all(corpus.path().join("src")).expect("mk src");
+    std::fs::write(
+        corpus.path().join("src/lib.rs"),
+        "//! crate doc\npub fn answer() -> u8 { 42 }\n",
+    )
+    .expect("write rs");
+    std::fs::write(corpus.path().join("README.md"), "# convergio\n").expect("write md");
+
+    let client = reqwest::Client::new();
+    let body: Value = client
+        .post(format!("{base}/v1/embed/build"))
+        .json(&serde_json::json!({
+            "repo": "convergio",
+            "root": corpus.path().to_string_lossy(),
+        }))
+        .send()
+        .await
+        .expect("send")
+        .json()
+        .await
+        .expect("json");
+    assert_eq!(body["ok"], true);
+    assert_eq!(body["report"]["embedded"], 2);
+    // Re-running the same build is idempotent under source_hash.
+    let again: Value = client
+        .post(format!("{base}/v1/embed/build"))
+        .json(&serde_json::json!({
+            "repo": "convergio",
+            "root": corpus.path().to_string_lossy(),
+        }))
+        .send()
+        .await
+        .expect("send")
+        .json()
+        .await
+        .expect("json");
+    assert_eq!(again["report"]["embedded"], 0);
+    assert_eq!(again["report"]["skipped_unchanged"], 2);
+    // Store reflects the persisted rows.
+    assert_eq!(embed.count(Some("convergio")).await.expect("count"), 2);
+}
+
+#[tokio::test]
+async fn embed_for_task_finds_seeded_match() {
+    let (base, _embed, _dir) = boot().await;
+    let corpus = tempdir().expect("corpus dir");
+    std::fs::create_dir_all(corpus.path().join("src")).expect("mk src");
+    std::fs::write(corpus.path().join("src/auth.rs"), "fn login() {}\n").expect("write");
+    std::fs::write(corpus.path().join("src/payments.rs"), "fn checkout() {}\n").expect("write");
+
+    let client = reqwest::Client::new();
+    // Build first.
+    let _: Value = client
+        .post(format!("{base}/v1/embed/build"))
+        .json(&serde_json::json!({
+            "repo": "convergio",
+            "root": corpus.path().to_string_lossy(),
+        }))
+        .send()
+        .await
+        .expect("send")
+        .json()
+        .await
+        .expect("json");
+
+    // Querying with a seeded source string returns its node first
+    // with cosine ≈ 1 (deterministic embedder is hash-based, so the
+    // exact text yields the exact stored vector).
+    let body: Value = client
+        .post(format!("{base}/v1/embed/for-task"))
+        .json(&serde_json::json!({
+            "query": "fn login() {}",
+            "top_k": 5,
+        }))
+        .send()
+        .await
+        .expect("send")
+        .json()
+        .await
+        .expect("json");
+    assert_eq!(body["ok"], true);
+    let hits = body["hits"].as_array().expect("hits array");
+    assert_eq!(hits[0]["node_id"], "src/auth.rs");
+    assert_eq!(hits[0]["match_source"], "semantic");
 }

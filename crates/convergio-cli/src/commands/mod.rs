@@ -21,6 +21,7 @@ mod docs_generators;
 mod docs_generators_crate;
 mod docs_rewrite;
 pub mod doctor;
+pub mod embed;
 pub mod evidence;
 pub mod graph;
 mod graph_render;
