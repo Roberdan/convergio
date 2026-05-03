@@ -24,6 +24,7 @@
 pub mod client;
 pub mod client_gh;
 pub mod header_banner;
+mod header_banner_big;
 pub mod keymap;
 pub mod mode;
 pub mod plan_counts;
