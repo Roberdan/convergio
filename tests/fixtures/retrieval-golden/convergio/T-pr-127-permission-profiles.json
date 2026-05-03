@@ -1,0 +1,17 @@
+{
+  "task_id": "T-pr-127-permission-profiles",
+  "repo": "convergio",
+  "title": "permission profiles replace --dangerously-skip-permissions",
+  "task_body": "Replace the binary nuke flag with three least-privilege permission profiles (Standard, ReadOnly, Sandbox) for vendor-CLI runners. The runner crate accepts a profile parameter; the daemon resolves it at spawn time; the CLI exposes --profile.",
+  "expected_files": [
+    "crates/convergio-runner/src/profile.rs",
+    "crates/convergio-runner/src/lib.rs",
+    "crates/convergio-cli/src/commands/agent_spawn.rs",
+    "docs/adr/0033-runner-permission-profiles.md"
+  ],
+  "rationale": "Profile types live in the runner crate; CLI surfaces them on agent spawn; the ADR records the swap from --dangerously-skip-permissions.",
+  "curator": "auto-pr-derived",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-03",
+  "schema_version": 1
+}

@@ -1,0 +1,21 @@
+{
+  "task_id": "T-pr-140-ingest-warm",
+  "repo": "convergio",
+  "title": "wire embedder + ingest + warm/build/for-task in the daemon",
+  "task_body": "AppState carries the Embedder trait; main.rs configures it from CONVERGIO_EMBED_MODEL with FR-3.9 fallback. New routes POST /v1/embed/{warm,build,for-task} and matching cvg embed CLI subcommands. The corpus walker + ingest module live in the embed crate.",
+  "expected_files": [
+    "crates/convergio-embed/src/ingest.rs",
+    "crates/convergio-embed/src/query.rs",
+    "crates/convergio-embed/src/corpus.rs",
+    "crates/convergio-server/src/routes/embed.rs",
+    "crates/convergio-server/src/app.rs",
+    "crates/convergio-server/src/main.rs",
+    "crates/convergio-cli/src/commands/embed.rs",
+    "crates/convergio-cli/src/main.rs"
+  ],
+  "rationale": "Three new modules in convergio-embed; daemon wiring touches AppState + main + routes; CLI gains a new subcommand module + main.rs registration.",
+  "curator": "auto-pr-derived",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-03",
+  "schema_version": 1
+}

@@ -1,0 +1,19 @@
+{
+  "task_id": "T-pr-137-fastembed",
+  "repo": "convergio",
+  "title": "real model via fastembed-rs (multilingual-e5-small)",
+  "task_body": "Add the first real Embedder implementation backed by fastembed-rs. The model is multilingual-e5-small (384-dim, multilingual ONNX). Lazy-loaded under a Mutex because TextEmbedding requires &mut for inference. Behind a fastembed feature flag. Update deny.toml for the new transitive licenses and duplicate skips.",
+  "expected_files": [
+    "crates/convergio-embed/src/fastembed_impl.rs",
+    "crates/convergio-embed/Cargo.toml",
+    "crates/convergio-embed/src/lib.rs",
+    "Cargo.toml",
+    "deny.toml",
+    ".github/workflows/ci.yml"
+  ],
+  "rationale": "New module ships the real embedder; crate manifest gains the optional dep + feature; root Cargo.toml exposes fastembed in workspace.dependencies; deny.toml widens the license/dedup allowlists; ci.yml gains the clippy-with-feature step.",
+  "curator": "auto-pr-derived",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-03",
+  "schema_version": 1
+}

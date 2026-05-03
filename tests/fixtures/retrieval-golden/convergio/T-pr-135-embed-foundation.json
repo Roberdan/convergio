@@ -1,0 +1,22 @@
+{
+  "task_id": "T-pr-135-embed-foundation",
+  "repo": "convergio",
+  "title": "convergio-embed crate foundation (storage seam)",
+  "task_body": "Bootstrap the convergio-embed crate with the Embedder trait, deterministic test embedder, source-hash trigger, selective-embed policy, and brute-force cosine KNN backed by a SQLite table. Wire it into the daemon AppState with /v1/embed/stats. Migration range 700-799.",
+  "expected_files": [
+    "crates/convergio-embed/Cargo.toml",
+    "crates/convergio-embed/src/lib.rs",
+    "crates/convergio-embed/src/store.rs",
+    "crates/convergio-embed/src/embedder.rs",
+    "crates/convergio-embed/src/source.rs",
+    "crates/convergio-embed/src/select.rs",
+    "crates/convergio-embed/migrations/0700_embeddings.sql",
+    "crates/convergio-server/src/routes/embed.rs",
+    "crates/convergio-server/src/app.rs"
+  ],
+  "rationale": "New crate plus the Cargo manifest; trait + storage + selectors + source-hash live in their own modules; the migration owns the schema; the route + AppState wire it into the daemon.",
+  "curator": "auto-pr-derived",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-03",
+  "schema_version": 1
+}

@@ -1,0 +1,16 @@
+{
+  "task_id": "T-pr-136-setup-repo-path",
+  "repo": "convergio",
+  "title": "backfill repo_path into existing configs on cvg setup init",
+  "task_body": "When cvg setup init runs against an existing config, it must populate the repo_path field if missing instead of clobbering the file. Add a migration in the setup flow and a test that exercises the upgrade path.",
+  "expected_files": [
+    "crates/convergio-cli/src/commands/setup.rs",
+    "crates/convergio-cli/src/commands/setup_repo_path.rs",
+    "crates/convergio-cli/tests/cli_smoke.rs"
+  ],
+  "rationale": "Setup logic + the test that proves the backfill path.",
+  "curator": "auto-pr-derived",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-03",
+  "schema_version": 1
+}

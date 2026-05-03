@@ -1,0 +1,17 @@
+{
+  "task_id": "T-pr-141-doc-coherence-sweep",
+  "repo": "convergio",
+  "title": "ADR-0039 doc coherence sweep",
+  "task_body": "Sweep the ADR set, README, and AGENTS.md for stale references after the recent runner registry / opus planner / brand kit landings. Add ADR-0039 capturing the coherence pass and the policy of running cvg coherence check before any docs PR merges.",
+  "expected_files": [
+    "docs/adr/0039-doc-coherence-sweep.md",
+    "docs/adr/README.md",
+    "AGENTS.md",
+    "README.md"
+  ],
+  "rationale": "New ADR plus the index; AGENTS.md and README.md absorb the cleanup.",
+  "curator": "auto-pr-derived",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-03",
+  "schema_version": 1
+}
