@@ -170,3 +170,11 @@ session-resume-prs-header = Open PRs:
 session-resume-pr-line =   - #{ $number } { $title } ({ $branch })
 session-resume-pr-line-draft =   - #{ $number } [draft] { $title } ({ $branch })
 session-resume-pack-line = Context-pack for task { $task_id }: { $nodes } matched nodes, { $files } files, ~{ $est_tokens } tokens
+
+# ---------- brand (CLI: about) ----------
+# Brand marks (claim/subline/product name) are NOT translated — they
+# are trade dress and live in `convergio-brand`. These keys are the
+# *labels* surrounding the brand mark when the CLI explains itself.
+brand-about-tagline = Convergio — { $version }
+brand-about-source = Source: { $url }
+brand-about-help = Type `cvg --help` to get started.

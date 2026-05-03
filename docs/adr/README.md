@@ -54,4 +54,5 @@ do not edit between the markers.
 | [0034](./0034-per-task-runner-fields.md) | 0034. Per-task runner selection (kind / profile / budget) | accepted |
 | [0035](./0035-runner-registry-toml.md) | 0035. Runner registry — TOML-driven custom vendors | accepted |
 | [0036](./0036-opus-backed-planner.md) | 0036. Opus-backed planner replaces the line-split heuristic | accepted |
+| [0037](./0037-brand-kit-and-claim.md) | 0037. Brand kit, claim, and shared `convergio-brand` crate | accepted |
 <!-- END AUTO -->

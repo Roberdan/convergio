@@ -18,19 +18,21 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 349 |
+| `AGENTS.md` | agent-rules | - | - | 352 |
 | `ARCHITECTURE.md` | architecture | - | - | 248 |
-| `CHANGELOG.md` | release | - | - | 620 |
+| `CHANGELOG.md` | release | - | - | 646 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 158 |
-| `README.md` | entry | - | - | 373 |
+| `README.md` | entry | - | - | 383 |
 | `ROADMAP.md` | roadmap | - | - | 479 |
 | `SECURITY.md` | governance | - | - | 57 |
 | `STATUS.md` | - | - | - | 40 |
+| `assets/branding/README.md` | - | - | - | 57 |
 | `crates/AGENTS.md` | - | - | - | 30 |
 | `crates/convergio-api/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-api/README.md` | crate-readme | - | - | 7 |
+| `crates/convergio-brand/AGENTS.md` | crate-rules | - | - | 45 |
 | `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 27 |
 | `crates/convergio-bus/README.md` | crate-readme | - | - | 36 |
 | `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 36 |
@@ -95,7 +97,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0034-per-task-runner-fields.md` | adr | [convergio-durability, convergio-executor, convergio-runner, convergio-cli, convergio-planner, convergio-server] | accepted | 94 |
 | `docs/adr/0035-runner-registry-toml.md` | adr | [convergio-runner, convergio-executor, convergio-cli] | accepted | 100 |
 | `docs/adr/0036-opus-backed-planner.md` | adr | [convergio-planner, convergio-server] | accepted | 101 |
-| `docs/adr/README.md` | adr | - | - | 57 |
+| `docs/adr/0037-brand-kit-and-claim.md` | adr | [convergio-brand, convergio-cli, convergio-tui, convergio-server, convergio-i18n] | accepted | 91 |
+| `docs/adr/README.md` | adr | - | - | 58 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 236 |

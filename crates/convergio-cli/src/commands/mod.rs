@@ -1,5 +1,6 @@
 //! CLI subcommand modules — one file per top-level command.
 
+pub mod about;
 pub mod agent;
 mod agent_spawn;
 mod agent_spawn_wire;

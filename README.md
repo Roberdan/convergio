@@ -1,3 +1,10 @@
+<p align="center">
+  <img src="assets/branding/lockup-hex-wordmark.png" alt="Convergio" width="520">
+</p>
+
+<p align="center"><strong>Convergio — Make machines prove it.</strong><br>
+<em>The machine that builds machines — and proves they work.</em></p>
+
 # Convergio
 
 > **Convergio is a personal open-source project.** It is not a Microsoft
@@ -18,13 +25,16 @@
 [![Rust](https://img.shields.io/badge/rust-stable-orange)](https://www.rust-lang.org/)
 [![Zero Warnings](https://img.shields.io/badge/warnings-0-brightgreen)](#)
 
-> **The trustable autonomous executor for AI coding agents — a
+> **Make machines prove it.** *The machine that builds machines —
+> and proves they work.*
+>
+> The trustable autonomous executor for AI coding agents — a
 > local Rust daemon that turns plans into per-task vendor-CLI
 > spawns (Claude Code, Copilot CLI, Qwen, Codex, Gemini), routes
 > each task to the right model under a permission profile, and
 > refuses every `submitted` / `done` whose evidence does not
 > match the claim. Every refusal lands in a hash-chained audit
-> log you can verify from outside.**
+> log you can verify from outside.
 
 Convergio runs on your machine, sits between your agent runner and
 your codebase, and does three things:

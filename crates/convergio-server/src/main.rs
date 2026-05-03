@@ -5,6 +5,7 @@
 
 use chrono::Duration;
 use clap::{Parser, Subcommand};
+use convergio_brand::{boot, theme::Theme};
 use convergio_bus::Bus;
 use convergio_db::Pool;
 use convergio_durability::reaper::{self, ReaperConfig};
@@ -13,6 +14,7 @@ use convergio_executor::{spawn_loop as executor_spawn_loop, Executor, SpawnTempl
 use convergio_lifecycle::watcher::{self, WatcherConfig};
 use convergio_lifecycle::Supervisor;
 use convergio_server::{router, AppState};
+use std::io::{self, IsTerminal};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tracing_subscriber::{fmt, EnvFilter};
@@ -77,6 +79,8 @@ async fn start(
     let bind = bind.unwrap_or(SocketAddr::from(([127, 0, 0, 1], 8420)));
     ensure_local_bind(bind, allow_non_local_bind)?;
     write_pid_file()?;
+
+    play_boot_banner();
 
     tracing::info!(%db_url, %bind, "starting convergio daemon");
 
@@ -148,6 +152,17 @@ fn write_pid_file() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(&dir)?;
     std::fs::write(dir.join("daemon.pid"), std::process::id().to_string())?;
     Ok(())
+}
+
+fn play_boot_banner() {
+    let stdout = io::stdout();
+    if !stdout.is_terminal() {
+        return;
+    }
+    let theme = Theme::resolve(true);
+    let mut handle = stdout.lock();
+    let mut sleeper = boot::RealSleeper;
+    let _ = boot::play(&mut handle, &mut sleeper, theme);
 }
 
 fn parse_env_i64(key: &str, default: i64) -> i64 {

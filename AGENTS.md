@@ -87,7 +87,8 @@ convergio/
 │   ├── convergio-planner/        ← Layer 4 — solve
 │   ├── convergio-thor/           ← Layer 4 — validator
 │   ├── convergio-executor/       ← Layer 4 — task dispatcher
-│   └── convergio-tui/            ← cvg dash — TUI dashboard (ADR-0029)
+│   ├── convergio-tui/            ← cvg dash — TUI dashboard (ADR-0029)
+│   └── convergio-brand/          ← brand kit (palette, claim, banner, boot — ADR-0037)
 ├── docs/
 │   ├── adr/                ← architecture decision records (MADR)
 │   ├── spec/               ← specs and design docs
@@ -99,6 +100,7 @@ ADR-0015 — do not edit between the markers):**
 
 <!-- BEGIN AUTO:workspace_members -->
 - `convergio-api` — Shared agent-facing action contract for Convergio integrations
+- `convergio-brand` — Brand kit for Convergio: palette, claim, banner, boot animation — shared by CLI, TUI, daemon
 - `convergio-bus` — Layer 2 of Convergio: persistent agent message bus (topic + direct + ack), scoped per plan
 - `convergio-cli` — cvg — pure HTTP client for the Convergio daemon
 - `convergio-db` — SQLite database pool for the local Convergio runtime
@@ -188,12 +190,13 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 542 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 575 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
 
 <!-- BEGIN AUTO:cvg_subcommands -->
+- `cvg about`
 - `cvg agent`
 - `cvg audit`
 - `cvg bus`
