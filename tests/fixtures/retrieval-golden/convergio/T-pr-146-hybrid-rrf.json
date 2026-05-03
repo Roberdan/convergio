@@ -1,0 +1,18 @@
+{
+  "task_id": "T-pr-146-hybrid-rrf",
+  "repo": "convergio",
+  "title": "hybrid retrieval (RRF) + cvg graph for-task --semantic",
+  "task_body": "Fuse substring and semantic ranked lists via Reciprocal Rank Fusion. Each fused hit carries match_source provenance (structural / semantic / both) and score_components. Extend /v1/graph/for-task/:id with ?semantic=1 and the cvg graph for-task --semantic flag.",
+  "expected_files": [
+    "crates/convergio-embed/src/hybrid.rs",
+    "crates/convergio-embed/src/lib.rs",
+    "crates/convergio-server/src/routes/graph.rs",
+    "crates/convergio-cli/src/commands/graph.rs",
+    "crates/convergio-server/tests/e2e_graph.rs"
+  ],
+  "rationale": "New module owns RRF + types; lib.rs re-exports; the graph route gains the optional fusion; CLI gains the flag; the cross-layer e2e exercises the full path.",
+  "curator": "auto-pr-derived",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-03",
+  "schema_version": 1
+}

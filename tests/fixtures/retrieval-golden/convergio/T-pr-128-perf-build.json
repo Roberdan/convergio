@@ -1,0 +1,17 @@
+{
+  "task_id": "T-pr-128-perf-build",
+  "repo": "convergio",
+  "title": "speed up dev build scripts",
+  "task_body": "The local dev loop spends most of its time compiling. Cache cargo artefacts more aggressively in the helper scripts, and add an `if-needed` shortcut to cvg update so a no-op rebuild becomes a no-op invocation.",
+  "expected_files": [
+    "scripts/build.sh",
+    "scripts/dev-loop.sh",
+    "crates/convergio-cli/src/commands/update.rs",
+    "crates/convergio-cli/src/commands/update_run.rs"
+  ],
+  "rationale": "Build scripts under scripts/ + cvg update sources cover the change.",
+  "curator": "auto-pr-derived",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-03",
+  "schema_version": 1
+}

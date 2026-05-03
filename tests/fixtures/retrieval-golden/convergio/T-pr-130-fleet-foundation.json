@@ -1,0 +1,18 @@
+{
+  "task_id": "T-pr-130-fleet-foundation",
+  "repo": "convergio",
+  "title": "seed fleet retrieval foundation (adr-0035)",
+  "task_body": "Move PRD and ADR for fleet retrieval into the repo. Reserve migration ranges for the new crates (embed, fleet, parse-multi). Write the durable plan and the golden-set methodology spec. F0 is documentation only — no code yet.",
+  "expected_files": [
+    "docs/spec/fleet-retrieval-cross-repo-graph.md",
+    "docs/spec/fleet-retrieval-golden-methodology.md",
+    "docs/plans/fleet-retrieval-cross-repo-graph.md",
+    "docs/adr/0003-migration-coexistence.md",
+    "docs/adr/README.md"
+  ],
+  "rationale": "PRD + methodology + plan are the new spec surfaces; ADR-0003 records the reserved migration ranges; ADR README index gains the new entry.",
+  "curator": "auto-pr-derived",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-03",
+  "schema_version": 1
+}
