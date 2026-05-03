@@ -20,7 +20,13 @@ use super::OutputMode;
 use anyhow::Result;
 use convergio_i18n::Bundle;
 
-use crate::commands::update_run::{run_update, UpdateOptions, UpdateOutcome};
+use super::update_release_notes::{extract_changelog_slice, fetch_latest_release_body};
+use super::update_repo_root;
+use super::update_run::{run_update, UpdateOptions, UpdateOutcome};
+
+/// GitHub repo we look up release notes for. Hardcoded because
+/// Convergio is single-vendor by design.
+const RELEASE_REPO: &str = "Roberdan/convergio";
 
 /// Render mode chosen by the global `--output` flag.
 fn render_outcome(bundle: &Bundle, outcome: &UpdateOutcome, output: OutputMode) -> Result<()> {
@@ -83,11 +89,53 @@ pub async fn run(
     output: OutputMode,
     if_needed: bool,
     skip_restart: bool,
+    changelog: bool,
 ) -> Result<()> {
     let opts = UpdateOptions {
         if_needed,
         skip_restart,
     };
     let outcome = run_update(client, bundle, output, opts).await?;
-    render_outcome(bundle, &outcome, output)
+    render_outcome(bundle, &outcome, output)?;
+    if !outcome.skipped_no_update_needed && matches!(output, OutputMode::Human) {
+        print_release_notes(bundle, &outcome, changelog);
+    }
+    Ok(())
+}
+
+/// Best-effort release-notes printer. Always silent on failure —
+/// this is informational, never load-bearing.
+fn print_release_notes(bundle: &Bundle, outcome: &UpdateOutcome, changelog: bool) {
+    match fetch_latest_release_body(RELEASE_REPO) {
+        Some(body) => {
+            println!();
+            println!("{}", bundle.t("update-release-notes-header", &[]));
+            println!("{body}");
+        }
+        None => {
+            println!("{}", bundle.t("update-release-notes-unavailable", &[]));
+        }
+    }
+    if changelog {
+        match read_changelog_slice(&outcome.prior_version, &outcome.new_version) {
+            Ok(slice) if !slice.trim().is_empty() => {
+                println!();
+                println!("{}", bundle.t("update-changelog-header", &[]));
+                println!("{slice}");
+            }
+            Ok(_) => {
+                println!("{}", bundle.t("update-changelog-empty", &[]));
+            }
+            Err(_) => {
+                println!("{}", bundle.t("update-changelog-not-found", &[]));
+            }
+        }
+    }
+}
+
+fn read_changelog_slice(from: &str, to: &str) -> Result<String> {
+    let root = update_repo_root::resolve()?;
+    let path = root.join("CHANGELOG.md");
+    let text = std::fs::read_to_string(&path)?;
+    Ok(extract_changelog_slice(&text, from, to))
 }

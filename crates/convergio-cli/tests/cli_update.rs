@@ -16,7 +16,8 @@ fn update_help_lists_flags() {
         .assert()
         .success()
         .stdout(predicate::str::contains("--if-needed"))
-        .stdout(predicate::str::contains("--skip-restart"));
+        .stdout(predicate::str::contains("--skip-restart"))
+        .stdout(predicate::str::contains("--changelog"));
 }
 
 #[test]

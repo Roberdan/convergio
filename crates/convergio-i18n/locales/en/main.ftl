@@ -27,6 +27,11 @@ update-no-update-needed = No update needed: daemon already at { $version }
 update-summary-ok = cvg update done: { $prior } -> { $new } (restarted: { $restarted })
 update-step-failed = step '{ $step }' failed with code { $code }
 update-sync-copy-warning = Warning: could not copy { $src } to { $dst }: { $reason }
+update-release-notes-header = Latest release notes:
+update-release-notes-unavailable = Release notes unavailable (gh CLI missing or offline).
+update-changelog-header = CHANGELOG between prior and new version:
+update-changelog-empty = No CHANGELOG entries between prior and new version.
+update-changelog-not-found = CHANGELOG.md not found; skipping --changelog output.
 
 # ---------- CLI: status ----------
 status-header = Convergio status
