@@ -114,6 +114,18 @@ jobs:
         # Locally: run `cvg docs regenerate` and commit.
         run: cargo run -q -p convergio-cli -- docs regenerate --check
 
+      - name: route-table coherence (advisory)
+        # T1.18 / Tier-2 retrieval. Diffs actual axum routes under
+        # `crates/convergio-server/src/routes/` against the
+        # `### Endpoints` table in ARCHITECTURE.md and the HTTP
+        # routes bullet list in AGENTS.md. Soft-warn only while the
+        # doc surface re-converges with code (PR #138 just synced
+        # ARCHITECTURE; ambiguous multi-path table rows still
+        # surface as method_mismatch noise — see PR description).
+        run: |
+          cargo run -q -p convergio-cli -- coherence routes --output plain || \
+            echo "::warning::cvg coherence routes found drift (advisory)"
+
       - name: legibility audit
         # CONSTITUTION § 16. Combines static caps + index density +
         # audit chain integrity into a 0-100 score. Advisory only:

@@ -256,7 +256,7 @@ async fn main() -> Result<()> {
         Command::Capability { sub } => {
             commands::capability::run(&client, &bundle, cli.output, sub).await
         }
-        Command::Coherence { sub } => commands::coherence::run(cli.output, sub).await,
+        Command::Coherence { sub } => commands::coherence::run(&bundle, cli.output, sub).await,
         Command::Docs { sub } => commands::docs::run(cli.output, sub).await,
         Command::Graph { sub } => commands::graph::run(&client, cli.output, sub).await,
         Command::Embed { sub } => commands::embed::run(&client, cli.output, sub).await,

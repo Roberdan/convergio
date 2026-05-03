@@ -13,9 +13,11 @@
 
 use super::coherence_body::{scan_body, walk_markdown, BodyViolation};
 use super::coherence_parse::{load_adrs, parse_index, parse_workspace_members};
+use super::coherence_routes;
 use super::OutputMode;
 use anyhow::Result;
 use clap::Subcommand;
+use convergio_i18n::Bundle;
 use serde::Serialize;
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
@@ -29,12 +31,19 @@ pub enum CoherenceCommand {
         #[arg(long, default_value = ".")]
         root: PathBuf,
     },
+    /// Diff actual axum routes against `ARCHITECTURE.md` / `AGENTS.md`.
+    Routes {
+        /// Repo root (defaults to cwd).
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+    },
 }
 
 /// Entry point.
-pub async fn run(output: OutputMode, cmd: CoherenceCommand) -> Result<()> {
+pub async fn run(bundle: &Bundle, output: OutputMode, cmd: CoherenceCommand) -> Result<()> {
     match cmd {
         CoherenceCommand::Check { root } => check(output, &root).await,
+        CoherenceCommand::Routes { root } => coherence_routes::run(bundle, output, &root).await,
     }
 }
 
