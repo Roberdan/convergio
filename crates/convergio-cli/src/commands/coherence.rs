@@ -11,6 +11,7 @@
 //! Local-only: the daemon is not consulted. T1.17 / Tier-2 retrieval
 //! plus W4b body drift detector.
 
+use super::coherence_adrs;
 use super::coherence_body::{scan_body, walk_markdown, BodyViolation};
 use super::coherence_parse::{load_adrs, parse_index, parse_workspace_members};
 use super::coherence_routes;
@@ -37,6 +38,19 @@ pub enum CoherenceCommand {
         #[arg(long, default_value = ".")]
         root: PathBuf,
     },
+    /// Cross-check ADR `status:` against implementation reality.
+    /// Emits `accepted_no_evidence`, `proposed_likely_shipped`, and
+    /// `broken_supersession` findings.
+    Adrs {
+        /// Repo root (defaults to cwd).
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        /// Exit non-zero on `accepted_no_evidence` /
+        /// `broken_supersession` findings (never on
+        /// `proposed_likely_shipped`).
+        #[arg(long)]
+        strict: bool,
+    },
 }
 
 /// Entry point.
@@ -44,6 +58,9 @@ pub async fn run(bundle: &Bundle, output: OutputMode, cmd: CoherenceCommand) -> 
     match cmd {
         CoherenceCommand::Check { root } => check(output, &root).await,
         CoherenceCommand::Routes { root } => coherence_routes::run(bundle, output, &root).await,
+        CoherenceCommand::Adrs { root, strict } => {
+            coherence_adrs::run(output, bundle, &root, strict)
+        }
     }
 }
 

@@ -192,3 +192,11 @@ coherence-routes-header = Coerenza route: { $count } divergenza/e:
 coherence-routes-missing-in-docs = missing_in_docs: { $method } { $path } (nel codice in { $file }, non documentata)
 coherence-routes-missing-in-code = missing_in_code: { $method } { $path } (documentata in { $file }, assente nel codice)
 coherence-routes-method-mismatch = method_mismatch: { $path } — codice ha [{ $code_methods }], docs hanno [{ $doc_methods }]
+
+# ---------- CLI: coherence adrs ----------
+coherence-adrs-summary = Verificate { $checked } ADR, { $findings } rilievo/i.
+coherence-adrs-empty = Coerenza ADR: ok (nessuna deriva di stato rilevata).
+coherence-adrs-table-header = ADR    Dichiarato                       Rilievo                      Evidenza
+coherence-adrs-finding-accepted-no-evidence = accettata, nessuna evidenza
+coherence-adrs-finding-proposed-likely-shipped = proposta, probabilmente rilasciata
+coherence-adrs-finding-broken-supersession = supersessione rotta

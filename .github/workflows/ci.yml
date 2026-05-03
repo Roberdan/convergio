@@ -103,6 +103,17 @@ jobs:
           cargo run -q -p convergio-cli -- coherence check || \
             echo "::warning::cvg coherence check found drift (advisory)"
 
+      - name: ADR status vs implementation (strict)
+        # Sub-verifier from `cvg coherence adrs`. Strict on the
+        # unambiguous bugs only:
+        #   - broken_supersession (status: superseded by NNNN where
+        #     ADR-NNNN does not exist)
+        #   - accepted_no_evidence (ADR marked accepted but no
+        #     touches_crates source mentions it)
+        # Never strict on `proposed_likely_shipped` — that finding is
+        # advisory because it relies on heuristic keyword matches.
+        run: cargo run -q -p convergio-cli -- coherence adrs --strict --output plain
+
       - name: docs AUTO blocks are current
         # ADR-0015. Hard-fails if any `<!-- BEGIN AUTO:... -->` block
         # in committed markdown disagrees with the registry's

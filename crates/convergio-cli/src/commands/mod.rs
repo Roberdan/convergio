@@ -9,6 +9,10 @@ pub mod bus;
 pub mod capability;
 mod capability_types;
 pub mod coherence;
+mod coherence_adrs;
+mod coherence_adrs_scan;
+#[cfg(test)]
+mod coherence_adrs_tests;
 mod coherence_body;
 mod coherence_body_scan;
 mod coherence_parse;
