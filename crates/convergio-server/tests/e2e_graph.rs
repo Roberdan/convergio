@@ -25,12 +25,15 @@ async fn boot() -> (String, TempDir) {
     init(&pool).await.unwrap();
     convergio_bus::init(&pool).await.unwrap();
     convergio_lifecycle::init(&pool).await.unwrap();
+    convergio_embed::init(&pool).await.unwrap();
+    let graph = Arc::new(convergio_graph::Store::new(pool.clone()));
+    graph.migrate().await.unwrap();
 
     let state = AppState {
         durability: Arc::new(Durability::new(pool.clone())),
         bus: Arc::new(Bus::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool.clone())),
-        graph: Arc::new(convergio_graph::Store::new(pool.clone())),
+        graph,
         embed: Arc::new(convergio_embed::EmbedStore::new(pool.clone())),
         embedder: Arc::new(convergio_embed::embedder::testing::DeterministicTestEmbedder::new(8)),
     };
@@ -181,6 +184,53 @@ async fn graph_for_task_uses_real_durability_task() {
     assert_eq!(
         pack["structured_metadata"]["validation_profile"],
         json!("graph")
+    );
+
+    // Without ?semantic, the response carries no `hybrid` block —
+    // F1-α / F1-γ contract preserved.
+    assert!(pack.get("hybrid").is_none());
+
+    // Seed a couple of embed rows so RRF has both inputs to fuse,
+    // then re-query with ?semantic=1 and verify the hybrid section.
+    let _: Value = client
+        .post(format!("{base}/v1/embed/build"))
+        .json(&json!({
+            "repo": "convergio",
+            "root": workspace.path().to_string_lossy(),
+        }))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    let hybrid_pack: Value = client
+        .get(format!(
+            "{base}/v1/graph/for-task/{task_id}?node_limit=10&crate=graph-e2e-fixture&semantic=1&semantic_top_k=5"
+        ))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    let hybrid = &hybrid_pack["hybrid"];
+    assert_eq!(hybrid["fusion"], "rrf");
+    assert_eq!(hybrid["k"], 60.0);
+    assert!(hybrid["hits"].as_array().is_some_and(|h| !h.is_empty()));
+    let sources: Vec<&str> = hybrid["hits"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|h| h["match_source"].as_str())
+        .collect();
+    assert!(
+        sources
+            .iter()
+            .any(|s| matches!(*s, "structural" | "semantic" | "both")),
+        "hits must carry match_source provenance: {sources:?}"
     );
 }
 
