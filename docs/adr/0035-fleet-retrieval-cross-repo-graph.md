@@ -7,7 +7,7 @@ related_adrs: [0003, 0004, 0014, 0015, 0029, 0030, 0034]
 touches_crates: [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api]
 introduces_crates: [convergio-fleet, convergio-parse-multi, convergio-embed]
 last_validated: 2026-05-03
-implemented_in: []
+implemented_in: [convergio-embed]
 authors: [Roberto D'Angelo]
 ---
 

@@ -503,6 +503,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "convergio-embed"
+version = "0.3.9"
+dependencies = [
+ "chrono",
+ "convergio-db",
+ "hex",
+ "sha2",
+ "sqlx",
+ "tempfile",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "convergio-executor"
 version = "0.3.9"
 dependencies = [
@@ -625,6 +640,7 @@ dependencies = [
  "convergio-bus",
  "convergio-db",
  "convergio-durability",
+ "convergio-embed",
  "convergio-executor",
  "convergio-graph",
  "convergio-lifecycle",

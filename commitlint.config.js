@@ -24,6 +24,7 @@ module.exports = {
         'mcp',
         'runner',
         'tui',
+        'embed',
         // meta scopes
         'docs',
         'ci',

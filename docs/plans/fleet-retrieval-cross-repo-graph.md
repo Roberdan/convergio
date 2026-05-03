@@ -1,6 +1,6 @@
 ---
 type: Plan
-status: Proposed v0.1.0 (F0 in flight)
+status: F1-α in flight (storage + selective + source hash + embedder trait + brute-force KNN)
 owner: Convergio
 updated: 2026-05-03
 source_of_truth: repo
@@ -73,11 +73,11 @@ Recall@10 lift over substring baseline is the single decision metric.
 
 | ID | Subject | Blocked by | Acceptance | Validation |
 |----|---------|-----------|-----------|-----------|
-| F1-1 | Bootstrap `crates/convergio-embed/` (lib + AGENTS.md + CLAUDE.md symlink + lib.rs `//!`) | F0-2, D-1, D-2 | `cargo check -p convergio-embed` clean; crate has `///` docs on every `pub`; ≤300 LOC/file | `cargo check -p convergio-embed && wc -l crates/convergio-embed/src/*.rs \| awk '$1>300 {exit 1}'` |
-| F1-2 | Migration `0700_embeddings.sql` (schema in ADR-0035 § 5.2.3) | F1-1 | applies on fresh `~/.convergio/v3/state.db`; idempotent | `cargo run -p convergio-server -- start` then `sqlite3 ~/.convergio/v3/state.db '.schema graph_node_embeddings'` |
-| F1-3 | `fastembed-rs` integration with BGE-M3-small (or model from D-1) loaded lazily on first query | F1-1 | model downloads to `~/.convergio/v3/models/`; query returns float32[384] (or vector dim from D-1); fallback path on download failure | unit test `embed_text_returns_correct_dim` |
-| F1-4 | `sqlite-vec` extension load behind `embed` feature flag | F1-1, F1-2 | `vec0` virtual table created when feature on; daemon boots fine when feature off | feature-gated test `vec_index_create_and_query` |
-| F1-5 | Selective embedding pipeline (crates, modules, documented items, ADRs, docs) | F1-3 | embeds only the categories listed in ADR-0035 § 5.4; `source_hash` re-embed trigger | unit test `selective_embedding_skips_undocumented_private` + `re_embed_on_hash_change` |
+| F1-1 | Bootstrap `crates/convergio-embed/` (lib + AGENTS.md + CLAUDE.md symlink + lib.rs `//!`) | F0-2, D-1, D-2 | `cargo check -p convergio-embed` clean; crate has `///` docs on every `pub`; ≤300 LOC/file | **landed** (PR `feat/fleet-f1-embed-foundation`): `cargo check -p convergio-embed` clean; ≤300 LOC enforced (store split into `store.rs` + `codec.rs`); cross-layer `/v1/embed/stats` route + e2e wired |
+| F1-2 | Migration `0700_embeddings.sql` (schema in ADR-0035 § 5.2.3) | F1-1 | applies on fresh `~/.convergio/v3/state.db`; idempotent | **landed**: F1-α ships only the storage table; `sqlite-vec` virtual table deferred to F1-β |
+| F1-3 | `fastembed-rs` integration with BGE-M3-small (or model from D-1) loaded lazily on first query | F1-1 | model downloads to `~/.convergio/v3/models/`; query returns float32[384] (or vector dim from D-1); fallback path on download failure | **partial — trait shipped, model deferred**: `Embedder` trait + `DeterministicTestEmbedder` (NOT a model) shipped in F1-α; real `fastembed-rs`/BGE-M3 lands in F1-β |
+| F1-4 | `sqlite-vec` extension load behind `embed` feature flag | F1-1, F1-2 | `vec0` virtual table created when feature on; daemon boots fine when feature off | **deferred to F1-β**: pure-Rust brute-force KNN ships in F1-α with stable signature so the swap is local |
+| F1-5 | Selective embedding pipeline (crates, modules, documented items, ADRs, docs) | F1-3 | embeds only the categories listed in ADR-0035 § 5.4; `source_hash` re-embed trigger | **landed**: `EmbedPolicy`/`EmbedTarget` + `SourceText`/`needs_reembed` shipped with unit + e2e coverage |
 | F1-6 | Hybrid retrieval ranking (RRF default, linear with `--alpha` opt-in) | F1-3, F1-4 | `for-task` returns nodes with `match_source ∈ {structural, semantic, both}` and `score_components` | unit test `rrf_fusion_preserves_provenance` |
 | F1-7 | `cvg graph for-task --semantic` and `--gap-check` flags | F1-6 | flags wired through CLI → HTTP → server route; default off; behaves identically to current command when off (D6 back-compat) | E2E test `for_task_semantic_off_matches_legacy_output` |
 | F1-8 | Golden set: 30 historical Convergio tasks with hand-curated expected files | F0-5 | `tests/fixtures/retrieval-golden/` has 30 task fixtures, schema validated against `docs/spec/fleet-retrieval-golden-methodology.md` | `cargo test -p convergio-embed golden_set_loads` |

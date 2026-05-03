@@ -29,6 +29,7 @@ async fn boot() -> (String, tempfile::TempDir) {
         bus: Arc::new(Bus::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool.clone())),
         graph: Arc::new(convergio_graph::Store::new(pool.clone())),
+        embed: Arc::new(convergio_embed::EmbedStore::new(pool.clone())),
     };
     let app = router(state);
 
