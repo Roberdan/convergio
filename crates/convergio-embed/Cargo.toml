@@ -1,0 +1,37 @@
+[package]
+name = "convergio-embed"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Embeddings storage and pluggable embedder trait for Convergio Tier-3 retrieval (ADR-0038, F1)."
+readme = "AGENTS.md"
+keywords = ["embeddings", "retrieval", "agents"]
+categories = ["database", "asynchronous"]
+
+[lints]
+workspace = true
+
+[features]
+default = []
+# Pull in `fastembed-rs` and the `MultilingualE5Embedder` impl. Off by
+# default so the lean crate (deterministic test embedder + storage)
+# stays cheap to build. Enable via `--features fastembed` when you
+# want the real ONNX model.
+fastembed = ["dep:fastembed"]
+
+[dependencies]
+convergio-db = { workspace = true }
+sqlx = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+chrono = { workspace = true }
+fastembed = { workspace = true, optional = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+tokio = { workspace = true }

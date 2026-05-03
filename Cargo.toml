@@ -16,6 +16,7 @@ members = [
     "crates/convergio-tui",
     "crates/convergio-runner",
     "crates/convergio-brand",
+    "crates/convergio-embed",
 ]
 resolver = "2"
 
@@ -91,6 +92,11 @@ walkdir = "2"
 ratatui = "0.29"
 crossterm = "0.28"
 
+# Tier-3 semantic embeddings (ADR-0038, F1-β)
+# Pulls in `ort` (ONNX Runtime) prebuilt binaries and `tokenizers`.
+# Heavy dep — kept behind the `fastembed` feature on convergio-embed.
+fastembed = "5"
+
 # Internal crates (workspace path deps)
 convergio-db = { path = "crates/convergio-db" }
 convergio-durability = { path = "crates/convergio-durability" }
@@ -106,6 +112,7 @@ convergio-graph = { path = "crates/convergio-graph" }
 convergio-tui = { path = "crates/convergio-tui" }
 convergio-runner = { path = "crates/convergio-runner" }
 convergio-brand = { path = "crates/convergio-brand" }
+convergio-embed = { path = "crates/convergio-embed" }
 
 [workspace.lints.rust]
 missing_docs = "warn"
