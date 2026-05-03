@@ -284,22 +284,55 @@ The daemon's MCP bridge ships as `convergio-mcp`. It exposes the
 constrained `convergio.help` and `convergio.act` tools over stdio and
 forwards actions to the local HTTP API.
 
-For now the most useful HTTP routes (drive directly via `curl` or
-`cvg`):
+For the full HTTP surface, drive `cvg` (typed) or `curl` (raw):
 
-- Plans: `POST /v1/plans`, `GET /v1/plans/:id`, `GET /v1/plans`
-- Tasks: `POST /v1/plans/:plan_id/tasks`, `POST /v1/tasks/:id/transition`
-- Evidence: `POST /v1/tasks/:id/evidence`
+- Plans: `POST /v1/plans`, `GET /v1/plans`, `GET /v1/plans/:id`,
+  `PATCH /v1/plans/:id` (rename), `POST /v1/plans/:id/transition`,
+  `GET /v1/plans/:id/triage`, `POST /v1/plans/:id/validate`
+- Tasks: `POST /v1/plans/:plan_id/tasks`, `GET /v1/tasks/:id`,
+  `POST /v1/tasks/:id/transition`, `POST /v1/tasks/:id/retry`,
+  `POST /v1/tasks/:id/close-post-hoc` (ADR-0026),
+  `POST /v1/tasks/:id/heartbeat`, `POST /v1/tasks/:id/context`
+- Evidence: `POST /v1/tasks/:id/evidence`,
+  `GET /v1/tasks/:id/evidence`, `DELETE /v1/evidence/:id`
 - Audit: `GET /v1/audit/verify`
-- Bus: `POST /v1/plans/:plan_id/messages`, `GET ...?topic=&cursor=`,
-  `POST /v1/messages/:id/ack`
-- Agents: `POST /v1/agents/spawn`, `POST /v1/agents/:id/heartbeat`
+- Bus (plan-scoped): `POST /v1/plans/:plan_id/messages`,
+  `GET /v1/plans/:plan_id/messages?topic=&cursor=&exclude_sender=`
+  (ADR-0024), `GET /v1/plans/:plan_id/messages/tail`,
+  `GET /v1/plans/:plan_id/topics`, `POST /v1/messages/:id/ack`
+- Bus (system, ADR-0025): `GET /v1/system-messages`,
+  `POST /v1/system-messages`
+- Agent runners (ADR-0028, 0032): `POST /v1/agents/spawn`,
+  `POST /v1/agents/spawn-runner`, `GET /v1/agents/:id`,
+  `POST /v1/agents/:id/heartbeat`
+- Agent registry (ADR-0009): `GET /v1/agent-registry/agents`,
+  `POST /v1/agent-registry/agents`,
+  `GET /v1/agent-registry/agents/:id`,
+  `POST /v1/agent-registry/agents/:id/heartbeat`,
+  `POST /v1/agent-registry/agents/:id/retire`
+- Workspace coordination (ADR-0007):
+  `GET|POST /v1/workspace/leases`,
+  `POST /v1/workspace/leases/:id/release`,
+  `POST /v1/workspace/patches`,
+  `POST /v1/workspace/patches/:id/enqueue`,
+  `POST /v1/workspace/merge/next`,
+  `GET /v1/workspace/merge-queue`,
+  `GET /v1/workspace/conflicts`
+- CRDT (ADR-0006): `GET /v1/crdt/conflicts`,
+  `POST /v1/crdt/import`
+- Capabilities (ADR-0008): `GET /v1/capabilities`,
+  `GET /v1/capabilities/:name`, `DELETE /v1/capabilities/:name`,
+  `POST /v1/capabilities/install-file`,
+  `POST /v1/capabilities/verify-signature`,
+  `POST /v1/capabilities/:name/disable`
 - Layer 4: `POST /v1/solve`, `POST /v1/dispatch`,
-  `POST /v1/plans/:id/validate`
+  `POST /v1/capabilities/planner/solve` (ADR-0036)
 - Status / cold-start: `GET /v1/status`, `GET /v1/health`
 - Graph (Tier-3, ADR-0014): `POST /v1/graph/build`,
-  `GET /v1/graph/stats`, `GET /v1/graph/for-task/:id`,
-  `POST /v1/graph/refresh`
+  `GET /v1/graph/stats`, `POST /v1/graph/refresh`,
+  `GET /v1/graph/for-task/:id`, `GET /v1/graph/drift`,
+  `GET /v1/graph/cluster/:crate_name`
+- Embeddings (ADR-0038, F1 in flight): `GET /v1/embed/stats`
 
 Useful CLI verbs an agent will reach for early:
 
