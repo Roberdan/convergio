@@ -41,6 +41,7 @@ mod session_pre_stop;
 mod session_pre_stop_run;
 mod session_render;
 pub mod setup;
+mod setup_repo_path;
 pub mod solve;
 pub mod status;
 mod status_render;
