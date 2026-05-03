@@ -205,6 +205,10 @@ enum Command {
         /// Rebuild and sync binaries but do not restart the daemon.
         #[arg(long)]
         skip_restart: bool,
+        /// After install, print the CHANGELOG slice between prior and
+        /// new versions.
+        #[arg(long)]
+        changelog: bool,
     },
     /// Inspect (and optionally publish to) the plan-scoped agent
     /// message bus.
@@ -252,7 +256,7 @@ async fn main() -> Result<()> {
         Command::Capability { sub } => {
             commands::capability::run(&client, &bundle, cli.output, sub).await
         }
-        Command::Coherence { sub } => commands::coherence::run(cli.output, sub).await,
+        Command::Coherence { sub } => commands::coherence::run(&bundle, cli.output, sub).await,
         Command::Docs { sub } => commands::docs::run(cli.output, sub).await,
         Command::Graph { sub } => commands::graph::run(&client, cli.output, sub).await,
         Command::Embed { sub } => commands::embed::run(&client, cli.output, sub).await,
@@ -275,7 +279,18 @@ async fn main() -> Result<()> {
         Command::Update {
             if_needed,
             skip_restart,
-        } => commands::update::run(&client, &bundle, cli.output, if_needed, skip_restart).await,
+            changelog,
+        } => {
+            commands::update::run(
+                &client,
+                &bundle,
+                cli.output,
+                if_needed,
+                skip_restart,
+                changelog,
+            )
+            .await
+        }
         Command::Bus { sub } => commands::bus::run(&client, cli.output, sub).await,
     }
 }
