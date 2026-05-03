@@ -1,0 +1,62 @@
+name: wiki-sync
+
+# Mirror a curated subset of repo docs into the project wiki
+# (https://github.com/Roberdan/convergio/wiki). The wiki repo is part
+# of the same GitHub project, so the default GITHUB_TOKEN is enough to
+# push.
+#
+# See scripts/sync-wiki.sh for the page mapping.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'README.md'
+      - 'ARCHITECTURE.md'
+      - 'CONSTITUTION.md'
+      - 'ROADMAP.md'
+      - 'docs/**.md'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wiki-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+
+      - name: Clone wiki repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.wiki.git" wiki
+
+      - name: Mirror curated pages
+        env:
+          SOURCE_DIR: ${{ github.workspace }}
+          WIKI_DIR: ${{ github.workspace }}/wiki
+        run: bash scripts/sync-wiki.sh
+
+      - name: Commit + push wiki changes
+        working-directory: wiki
+        run: |
+          git config user.name  "convergio-wiki-sync[bot]"
+          git config user.email "convergio-wiki-sync@users.noreply.github.com"
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "wiki-sync: no changes to commit"
+            exit 0
+          fi
+          git add -A
+          git commit -m "docs(wiki): sync from main @ ${GITHUB_SHA}"
+          git push origin HEAD
+        env:
+          GITHUB_SHA: ${{ github.sha }}

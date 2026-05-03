@@ -27,6 +27,11 @@ update-no-update-needed = Nessun aggiornamento necessario: daemon già a { $vers
 update-summary-ok = cvg update completato: { $prior } -> { $new } (riavviato: { $restarted })
 update-step-failed = passo '{ $step }' fallito con codice { $code }
 update-sync-copy-warning = Attenzione: impossibile copiare { $src } in { $dst }: { $reason }
+update-release-notes-header = Note di rilascio più recenti:
+update-release-notes-unavailable = Note di rilascio non disponibili (gh CLI mancante od offline).
+update-changelog-header = CHANGELOG tra versione precedente e nuova:
+update-changelog-empty = Nessuna voce di CHANGELOG tra la versione precedente e la nuova.
+update-changelog-not-found = CHANGELOG.md non trovato; output --changelog saltato.
 
 # ---------- CLI: status ----------
 status-header = Stato Convergio

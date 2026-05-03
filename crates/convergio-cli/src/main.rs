@@ -205,6 +205,10 @@ enum Command {
         /// Rebuild and sync binaries but do not restart the daemon.
         #[arg(long)]
         skip_restart: bool,
+        /// After install, print the CHANGELOG slice between prior and
+        /// new versions.
+        #[arg(long)]
+        changelog: bool,
     },
     /// Inspect (and optionally publish to) the plan-scoped agent
     /// message bus.
@@ -275,7 +279,18 @@ async fn main() -> Result<()> {
         Command::Update {
             if_needed,
             skip_restart,
-        } => commands::update::run(&client, &bundle, cli.output, if_needed, skip_restart).await,
+            changelog,
+        } => {
+            commands::update::run(
+                &client,
+                &bundle,
+                cli.output,
+                if_needed,
+                skip_restart,
+                changelog,
+            )
+            .await
+        }
         Command::Bus { sub } => commands::bus::run(&client, cli.output, sub).await,
     }
 }
