@@ -696,6 +696,7 @@ dependencies = [
  "convergio-db",
  "fastembed",
  "hex",
+ "serde",
  "sha2",
  "sqlx",
  "tempfile",

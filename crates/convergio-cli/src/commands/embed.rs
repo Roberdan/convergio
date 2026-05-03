@@ -117,22 +117,16 @@ async fn for_task(client: &Client, output: OutputMode, query: String, top_k: usi
     print_value(output, &body)
 }
 
-fn print_value(output: OutputMode, body: &Value) -> Result<()> {
-    match output {
-        OutputMode::Json => println!("{}", serde_json::to_string_pretty(body)?),
-        _ => println!("{}", serde_json::to_string_pretty(body)?),
-    }
+fn print_value(_output: OutputMode, body: &Value) -> Result<()> {
+    println!("{}", serde_json::to_string_pretty(body)?);
     Ok(())
 }
 
 fn urlencode(s: &str) -> String {
     s.chars()
-        .map(|c| {
-            if c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.' | '~') {
-                c.to_string()
-            } else {
-                format!("%{:02X}", c as u32)
-            }
+        .map(|c| match c {
+            c if c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.' | '~') => c.to_string(),
+            _ => format!("%{:02X}", c as u32),
         })
         .collect()
 }

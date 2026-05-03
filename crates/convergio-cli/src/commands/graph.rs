@@ -51,6 +51,15 @@ pub enum GraphCommand {
         /// Named validation profile for the specialized agent.
         #[arg(long)]
         validation_profile: Option<String>,
+        /// Fuse substring + semantic retrieval via RRF (ADR-0038
+        /// § 5.5). Adds a `hybrid` block to the response with hits
+        /// ranked across both retrievers and per-source provenance.
+        #[arg(long)]
+        semantic: bool,
+        /// Top-K semantic neighbors fed into the RRF fusion.
+        /// Capped server-side at 100. Ignored without `--semantic`.
+        #[arg(long, default_value_t = 25)]
+        semantic_top_k: usize,
     },
     /// Compare ADR claims (touches_crates) against the actual git
     /// diff. Reports drift (touched but not declared) and ghosts
@@ -96,6 +105,8 @@ pub async fn run(client: &Client, output: OutputMode, cmd: GraphCommand) -> Resu
             adr_required,
             docs_required,
             validation_profile,
+            semantic,
+            semantic_top_k,
         } => {
             let hints = ForTaskHints {
                 crate_name,
@@ -104,7 +115,17 @@ pub async fn run(client: &Client, output: OutputMode, cmd: GraphCommand) -> Resu
                 docs_required,
                 validation_profile,
             };
-            for_task(client, output, &task_id, node_limit, token_budget, hints).await
+            for_task(
+                client,
+                output,
+                &task_id,
+                node_limit,
+                token_budget,
+                hints,
+                semantic,
+                semantic_top_k,
+            )
+            .await
         }
         GraphCommand::Drift {
             since,
@@ -177,6 +198,7 @@ async fn stats(client: &Client, output: OutputMode) -> Result<()> {
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn for_task(
     client: &Client,
     output: OutputMode,
@@ -184,6 +206,8 @@ async fn for_task(
     node_limit: Option<usize>,
     token_budget: Option<u64>,
     hints: ForTaskHints,
+    semantic: bool,
+    semantic_top_k: usize,
 ) -> Result<()> {
     let mut path = format!("/v1/graph/for-task/{task_id}?");
     if let Some(n) = node_limit {
@@ -191,6 +215,10 @@ async fn for_task(
     }
     if let Some(t) = token_budget {
         path.push_str(&format!("token_budget={t}&"));
+    }
+    if semantic {
+        path.push_str("semantic=1&");
+        path.push_str(&format!("semantic_top_k={semantic_top_k}&"));
     }
     append_query_param(&mut path, "crate", hints.crate_name.as_deref());
     append_query_param(&mut path, "related_crates", hints.related_crates.as_deref());
