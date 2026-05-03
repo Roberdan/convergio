@@ -18,7 +18,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 352 |
+| `AGENTS.md` | agent-rules | - | - | 353 |
 | `ARCHITECTURE.md` | architecture | - | - | 248 |
 | `CHANGELOG.md` | release | - | - | 646 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -40,6 +40,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-db/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-db/README.md` | crate-readme | - | - | 26 |
 | `crates/convergio-durability/AGENTS.md` | crate-rules | - | - | 83 |
+| `crates/convergio-embed/AGENTS.md` | crate-rules | - | - | 63 |
 | `crates/convergio-executor/AGENTS.md` | crate-rules | - | - | 26 |
 | `crates/convergio-executor/README.md` | crate-readme | - | - | 7 |
 | `crates/convergio-graph/AGENTS.md` | crate-rules | - | - | 57 |
@@ -109,7 +110,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
 | `docs/plans/README.md` | plan | - | - | 31 |
 | `docs/plans/convergio-local-public-readiness.md` | plan | - | Published v0.1.0 | 244 |
-| `docs/plans/fleet-retrieval-cross-repo-graph.md` | plan | - | Proposed v0.1.0 (F0 in flight) | 170 |
+| `docs/plans/fleet-retrieval-cross-repo-graph.md` | plan | - | F1-α in flight (storage + selective + source hash + embedder trait + brute-force KNN) | 170 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
 | `docs/plans/v0.2-friction-log.md` | plan | - | - | 188 |

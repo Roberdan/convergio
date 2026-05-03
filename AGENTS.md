@@ -105,6 +105,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-cli` — cvg — pure HTTP client for the Convergio daemon
 - `convergio-db` — SQLite database pool for the local Convergio runtime
 - `convergio-durability` — Layer 1 of Convergio: plans, tasks, evidence, hash-chained audit log, gate pipeline
+- `convergio-embed` — Embeddings storage and pluggable embedder trait for Convergio Tier-3 retrieval (ADR-0038, F1)
 - `convergio-executor` — Layer 4 (reference) of Convergio: dispatcher loop that picks ready tasks and spawns agents
 - `convergio-graph` — Tier-3 code-graph layer for Convergio (ADR-0014)
 - `convergio-i18n` — Internationalization (P5) — Fluent-backed message bundles for every user-facing string in Convergio
@@ -190,7 +191,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 575 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 602 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:

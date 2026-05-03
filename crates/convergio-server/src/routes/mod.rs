@@ -7,6 +7,7 @@ pub mod capabilities;
 pub mod context;
 pub mod crdt;
 pub mod dispatch;
+pub mod embed;
 pub mod evidence;
 pub mod graph;
 pub mod health;

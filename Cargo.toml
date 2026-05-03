@@ -16,6 +16,7 @@ members = [
     "crates/convergio-tui",
     "crates/convergio-runner",
     "crates/convergio-brand",
+    "crates/convergio-embed",
 ]
 resolver = "2"
 
@@ -106,6 +107,7 @@ convergio-graph = { path = "crates/convergio-graph" }
 convergio-tui = { path = "crates/convergio-tui" }
 convergio-runner = { path = "crates/convergio-runner" }
 convergio-brand = { path = "crates/convergio-brand" }
+convergio-embed = { path = "crates/convergio-embed" }
 
 [workspace.lints.rust]
 missing_docs = "warn"
