@@ -168,123 +168,79 @@ Convergio needs three separate concepts:
 
 Do not overload one field for all three.
 
-## Observed in the wild — first cross-agent peer-review (2026-05-01)
+## Cross-agent peer-review through observability
 
-The principle "agents coordinate through Convergio, not through chat"
-stopped being theory on 2026-05-01.
+A peer-review between two Claude Code sessions happened on 2026-05-01
+without a single direct message: session B read the live plan and
+audit chain, recognised gaps in session A's discipline, and filed
+them as numbered findings in `docs/plans/*-friction-log.md`. Session
+A reconciled the numbering and merged both batches.
 
-Setting:
-
-- Two Claude Code sessions running on the same machine, in two
-  different terminal tabs.
-- Same Convergio daemon (`127.0.0.1:8420`).
-- Same project (`project=convergio-local`).
-- Disjoint territories: session A working on
-  `convergio-graph` / `-cli` / `-server` / `-durability`;
-  session B working on `docs/vision` / `docs/spec/long-tail*` and a
-  new Wave 0b adapter.
-- Different `agent_id`: `claude-code-roberdan` and
-  `claude-code-roberdan-wave0b-s004`.
-- Two separate worktrees; neither could read the other's filesystem
-  scratch state.
-
-What happened — entirely emergent, no human prompt to coordinate:
-
-1. Session A shipped 14 PRs across the day. Every transition,
-   evidence attachment, and plan creation appended an audit row.
-2. Session B opened `cvg session resume` mid-day, saw the live
-   plan state, and — on its own initiative — read recent audit
-   events to understand what had happened.
-3. Session B noticed six gaps in session A's process discipline
-   (PRs merged but tasks not transitioned; `.claude/worktrees/` not
-   gitignored; friction log entries hinted in commit messages but
-   not written; no retry attempt after the F34 fix; bus messages
-   left unconsumed; six plans without a reconciliation step).
-4. Session B wrote those six gaps as new v0.2 plan tasks named
-   `F35`-`F40`, **applying the same friction-log convention** A
-   used (severity, status, "fixed by" column shape).
-5. Session A's end-of-day audit found B's six tasks. Recognized
-   them as legitimate friction-log entries. Renumbered its own
-   shipped fixes from `F35`-`F39` to `F41`-`F45` to avoid collision,
-   then committed both batches (theirs + mine) into
-   `docs/plans/v0.2-friction-log.md` in PR #52.
-6. Both sides exchanged acknowledgement on the bus
-   (`coordination/agents` topic, plan v0.2, seq 4-8).
-
-What this proves:
+The lesson is small and load-bearing:
 
 - The audit chain is sufficient observability for one agent to
   review another's work without a chat channel.
 - Markdown conventions (frontmatter, F-numbered findings) are a
   contract that survives across agents because every agent reads
-  the same `AGENTS.md` + `docs/plans/*-friction-log.md`.
-- The bus is useful but not load-bearing: B did its review
-  without B and A ever exchanging a message; A only sent the
-  acknowledgement *after* the review had already happened.
-- Convention beats coordination protocol. We did not need an RFC
-  on "how to peer-review through Convergio". The peer-review
-  emerged from observability + shared writing convention.
+  the same `AGENTS.md` and friction logs.
+- Convention beats coordination protocol. The bus carries the ack;
+  the review itself is observability.
 
-What this does NOT prove (yet):
+Open gaps the dogfood made visible (still applicable):
 
-- Push notifications. The poll-only bus means a session that does
-  not call `cvg messages poll` never sees the handshake. F39
-  documents this gap. Real fix needs SSE or websocket.
-- Automatic assignment. Both sessions knew their territories
-  because the *human* told them. Convergio has no skill-aware
-  scheduler today.
-- File-level conflict prevention. Workspace leases exist as an
-  API surface but neither agent took a lease on any source file.
-  We were lucky the territories were disjoint.
-
-The audit-chain entry for "first cross-agent peer-review" is
-preserved in the v0.2 friction log cumulative-count footer.
+- **Push notifications.** The bus is poll-only; a session that
+  doesn't poll misses the handshake. SSE/websocket is future work.
+- **Skill-aware assignment.** Both sessions knew their territories
+  because a human said so. No scheduler exists.
+- **File-level conflict prevention.** Workspace leases exist as an
+  API surface but neither agent claimed one. Disjoint territories
+  were luck, not enforcement.
 
 ## What works today
 
-Implemented today:
+Implemented:
 
-- one local daemon;
-- one SQLite state file;
+- one local daemon, SQLite-only;
 - MCP bridge with `convergio.help` and `convergio.act`;
-- plan/task/evidence lifecycle;
-- task claim and heartbeat;
-- gate refusals;
-- durable refusal explanation;
+- plan/task/evidence lifecycle (with `task.closed_post_hoc` for triage);
+- task claim, heartbeat, retry;
+- gate refusals + durable `explain_last_refusal`;
 - hash-chained audit;
-- local service management;
-- host setup snippets;
-- durable agent registry;
-- task context packet generator;
-- plan-scoped bus actions through `convergio.act`;
-- CRDT storage/import/conflict foundation;
-- workspace resources, leases, patch proposals, conflicts, and merge queue;
-- local capability registry and signature verification;
-- constrained local shell runner through `spawn_runner`.
-- installed planner capability action through `planner.solve`.
-
-Partially available today:
-
-- process lifecycle/supervision exists, but real Claude/Copilot/Cursor
-  runner adapters are not productized.
+- durable agent registry (spawn, heartbeat, retire, watcher reaper);
+- task context packets;
+- plan-scoped bus + `system.*` topic family (ADR-0025) with `exclude_sender` filter (ADR-0024);
+- CRDT actor/op store and conflict listing;
+- workspace resources, leases, patch proposals, merge queue, conflicts;
+- local capability registry with Ed25519 signature verification (signed
+  install-file only — no remote registry yet);
+- vendor-CLI runners: shell, claude, copilot — plus TOML-driven custom
+  vendors (ADR-0028, 0032, 0035) with permission profiles (ADR-0033)
+  and per-task runner fields (ADR-0034);
+- executor loop wired in the daemon (ADR-0027);
+- planner capability action `planner.solve` (Opus-backed, ADR-0036);
+- TUI dashboard `cvg dash` (ADR-0029);
+- Tier-3 code-graph retrieval `cvg graph` (ADR-0014).
 
 Not implemented yet:
 
-- skill-aware scheduling;
-- local signed capability install/rollback;
-- downloaded capability runners;
-- product runner adapters beyond the local shell proof.
+- skill-aware scheduling and automatic assignment;
+- remote (downloadable) capability registry;
+- push notifications on the bus (SSE/websocket);
+- cross-repo embedding fleet (ADR-0038, F1 in flight).
 
 ## What must be built next
 
 To make this feel like "open one Convergio plan and let it run a swarm",
 the next core pieces are:
 
-1. **Product runner adapters** — Convergio can spawn known Claude/Copilot
-   or editor runners when the user wants orchestration instead of manual
-   swarm sessions.
-2. **Remote capability registry** — capabilities can be downloaded
-   locally only after signature verification.
+1. **Skill-aware scheduling** — match `next_task` to an agent's
+   declared capabilities so an orchestrator no longer hand-routes work.
+2. **Push notifications on the bus** — SSE or websocket so a session
+   sees `agent:<id>` direct messages without polling.
+3. **Remote capability registry** — capabilities downloaded locally
+   only after signature verification (ADR-0008).
+4. **Cross-repo retrieval fleet** — embedding-based context retrieval
+   across multiple repos (ADR-0038).
 
 ## Anti-chaos rules
 
