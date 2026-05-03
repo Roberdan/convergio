@@ -38,6 +38,12 @@ jobs:
       - name: clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
 
+      - name: clippy (convergio-embed --features fastembed)
+        # ADR-0038 F1-β: opt-in real-model code path. Default workspace
+        # build does not pull `fastembed-rs` (heavy ONNX dep); this
+        # step ensures the feature still compiles + lints clean.
+        run: cargo clippy -p convergio-embed --features fastembed --all-targets -- -D warnings
+
       - name: test (nextest)
         # Faster than `cargo test`. Runs unit, integration, and e2e
         # tests; doc tests are not in scope for nextest, so they

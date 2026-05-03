@@ -41,7 +41,7 @@ do not edit between the markers.
 | [0021](./0021-okr-on-plans.md) | 0021. Plans are Objectives + Key Results — strategic programming for the municipality | proposed |
 | [0022](./0022-adversarial-review-service.md) | 0022. Adversarial review as a municipal ombudsman service | proposed |
 | [0023](./0023-observability-tier.md) | 0023. Observability tier — telemetry, structured logging, request correlation | proposed |
-| [0024](./0024-bus-poll-exclude-sender.md) | 0024. Bus poll filter: exclude_sender | proposed |
+| [0024](./0024-bus-poll-exclude-sender.md) | 0024. Bus poll filter: exclude_sender | accepted |
 | [0025](./0025-system-session-events-topic.md) | 0025. The agent message bus accepts a `system.*` topic family with `plan_id IS NULL` | accepted |
 | [0026](./0026-plan-wave-milestone-vocabulary.md) | 0026. Plan / wave / milestone — one vocabulary, one source of truth | accepted |
 | [0027](./0027-executor-loop-wired-in-daemon.md) | 0027. Wire the Layer 4 executor loop in the daemon | accepted |
@@ -55,4 +55,5 @@ do not edit between the markers.
 | [0035](./0035-runner-registry-toml.md) | 0035. Runner registry — TOML-driven custom vendors | accepted |
 | [0036](./0036-opus-backed-planner.md) | 0036. Opus-backed planner replaces the line-split heuristic | accepted |
 | [0037](./0037-brand-kit-and-claim.md) | 0037. Brand kit, claim, and shared `convergio-brand` crate | accepted |
+| [0038](./0038-fleet-retrieval-cross-repo-graph.md) | 0038. Fleet retrieval & cross-repo graph (semantic + multi-language) | proposed |
 <!-- END AUTO -->

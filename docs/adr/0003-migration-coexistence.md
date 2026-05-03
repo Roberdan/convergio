@@ -73,10 +73,17 @@ Chosen option: **3**.
 | `convergio-bus` | 101 — 200 | `0101_bus_init.sql` |
 | `convergio-lifecycle` | 201 — 300 | `0201_lifecycle_init.sql` |
 | (future Layer 4 crate) | 301 — 400 | TBD |
-| (future extensions) | 401+ | TBD |
+| (future general extensions) | 401 — 599 | TBD |
+| `convergio-graph` | 600 — 699 | `0600_graph_nodes_edges.sql` (ADR-0014) |
+| `convergio-embed` *(proposed, ADR-0038 F1)* | 700 — 799 | `0700_embeddings.sql` |
+| `convergio-fleet` *(proposed, ADR-0038 F2/F3)* | 800 — 899 | `0800_fleet.sql`, `0801_fleet_plans.sql` |
+| `convergio-parse-multi` *(proposed, ADR-0038 F2)* | 900 — 999 | reserved (parser is mostly stateless; range held for future fixture/cache tables) |
 
 A migration's `version` is the integer prefix on the filename (sqlx
-convention). New crates must pick the next free hundred.
+convention). New crates must pick the next free hundred. Ranges marked
+*proposed* are reserved by an open ADR and become active only when the
+corresponding crate lands; until then the slot is held to prevent
+collisions with other in-flight work.
 
 ### Implementation
 

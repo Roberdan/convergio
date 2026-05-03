@@ -3,6 +3,7 @@
 use axum::Router;
 use convergio_bus::Bus;
 use convergio_durability::Durability;
+use convergio_embed::EmbedStore;
 use convergio_graph::Store as GraphStore;
 use convergio_lifecycle::Supervisor;
 use std::sync::Arc;
@@ -19,6 +20,8 @@ pub struct AppState {
     pub supervisor: Arc<Supervisor>,
     /// Tier-3 retrieval store (ADR-0014).
     pub graph: Arc<GraphStore>,
+    /// Tier-3 semantic embeddings store (ADR-0035, F1).
+    pub embed: Arc<EmbedStore>,
 }
 
 /// Build the top-level router. Test harnesses call this directly with
@@ -43,6 +46,7 @@ pub fn router(state: AppState) -> Router {
         .merge(crate::routes::dispatch::router())
         .merge(crate::routes::workspace::router())
         .merge(crate::routes::graph::router())
+        .merge(crate::routes::embed::router())
         .layer(TraceLayer::new_for_http())
         .with_state(state)
 }

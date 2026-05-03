@@ -40,6 +40,7 @@ async fn capability_registry_lists_seeded_capabilities() {
         bus: Arc::new(Bus::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool.clone())),
         graph: Arc::new(convergio_graph::Store::new(pool.clone())),
+        embed: Arc::new(convergio_embed::EmbedStore::new(pool.clone())),
     };
     let listener = TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], 0)))
         .await

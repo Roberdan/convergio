@@ -1,16 +1,16 @@
 ---
 id: 0024
-status: proposed
+status: accepted
 date: 2026-05-01
 topics: [bus, layer-2, ergonomics]
 related_adrs: [0001, 0023]
 touches_crates: [convergio-bus, convergio-server, convergio-cli]
-last_validated: 2026-05-01
+last_validated: 2026-05-03
 ---
 
 # 0024. Bus poll filter: exclude_sender
 
-- Status: proposed
+- Status: accepted (shipped — `Bus::poll_filtered`, F53, PR #71)
 - Date: 2026-05-01
 - Deciders: Roberdan
 - Tags: bus, ergonomics

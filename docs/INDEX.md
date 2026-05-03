@@ -18,8 +18,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 353 |
-| `ARCHITECTURE.md` | architecture | - | - | 248 |
+| `AGENTS.md` | agent-rules | - | - | 386 |
+| `ARCHITECTURE.md` | architecture | - | - | 266 |
 | `CHANGELOG.md` | release | - | - | 646 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
@@ -40,6 +40,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-db/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-db/README.md` | crate-readme | - | - | 26 |
 | `crates/convergio-durability/AGENTS.md` | crate-rules | - | - | 83 |
+| `crates/convergio-embed/AGENTS.md` | crate-rules | - | - | 63 |
 | `crates/convergio-executor/AGENTS.md` | crate-rules | - | - | 26 |
 | `crates/convergio-executor/README.md` | crate-readme | - | - | 7 |
 | `crates/convergio-graph/AGENTS.md` | crate-rules | - | - | 57 |
@@ -58,12 +59,12 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 22 |
 | `crates/convergio-tui/AGENTS.md` | crate-rules | - | - | 104 |
 | `crates/convergio-tui/README.md` | crate-readme | - | - | 98 |
-| `docs/AGENTS.md` | - | - | - | 25 |
+| `docs/AGENTS.md` | - | - | - | 63 |
 | `docs/INDEX.md` | - | - | - | - |
 | `docs/adr/0000-template.md` | adr | [] | proposed \| accepted \| deprecated \| superseded by [NNNN](NNNN-title.md) | 55 |
 | `docs/adr/0001-four-layer-architecture.md` | adr | [] | accepted | 77 |
 | `docs/adr/0002-audit-hash-chain.md` | adr | [] | accepted | 91 |
-| `docs/adr/0003-migration-coexistence.md` | adr | [] | accepted | 125 |
+| `docs/adr/0003-migration-coexistence.md` | adr | [] | accepted | 132 |
 | `docs/adr/0004-three-sacred-principles.md` | adr | [] | accepted | 104 |
 | `docs/adr/0005-internationalization-first.md` | adr | [] | accepted | 119 |
 | `docs/adr/0006-crdt-storage.md` | adr | [] | proposed | 209 |
@@ -84,7 +85,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0021-okr-on-plans.md` | adr | [convergio-durability, convergio-cli, convergio-thor] | proposed | 311 |
 | `docs/adr/0022-adversarial-review-service.md` | adr | [convergio-mcp, convergio-cli, convergio-durability] | proposed | 258 |
 | `docs/adr/0023-observability-tier.md` | adr | [convergio-server, convergio-durability, convergio-cli, convergio-bus] | proposed | 222 |
-| `docs/adr/0024-bus-poll-exclude-sender.md` | adr | [convergio-bus, convergio-server, convergio-cli] | proposed | 133 |
+| `docs/adr/0024-bus-poll-exclude-sender.md` | adr | [convergio-bus, convergio-server, convergio-cli] | accepted | 133 |
 | `docs/adr/0025-system-session-events-topic.md` | adr | [convergio-bus, convergio-server, convergio-mcp, convergio-api] | accepted | 285 |
 | `docs/adr/0026-plan-wave-milestone-vocabulary.md` | adr | [convergio-durability, convergio-server, convergio-cli] | accepted | 206 |
 | `docs/adr/0027-executor-loop-wired-in-daemon.md` | adr | [convergio-server, convergio-executor] | accepted | 127 |
@@ -98,16 +99,18 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0035-runner-registry-toml.md` | adr | [convergio-runner, convergio-executor, convergio-cli] | accepted | 100 |
 | `docs/adr/0036-opus-backed-planner.md` | adr | [convergio-planner, convergio-server] | accepted | 101 |
 | `docs/adr/0037-brand-kit-and-claim.md` | adr | [convergio-brand, convergio-cli, convergio-tui, convergio-server, convergio-i18n] | accepted | 91 |
+| `docs/adr/0038-fleet-retrieval-cross-repo-graph.md` | adr | [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api] | proposed | 848 |
 | `docs/adr/README.md` | adr | - | - | 59 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
-| `docs/agent-resume-packet.md` | - | - | - | 236 |
+| `docs/agent-resume-packet.md` | - | - | - | 185 |
 | `docs/agents/README.md` | agent-docs | - | - | 66 |
-| `docs/multi-agent-operating-model.md` | - | - | - | 322 |
+| `docs/multi-agent-operating-model.md` | - | - | - | 278 |
 | `docs/plans/2026-05-01-triage-pass.md` | plan | - | - | 75 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
 | `docs/plans/README.md` | plan | - | - | 31 |
 | `docs/plans/convergio-local-public-readiness.md` | plan | - | Published v0.1.0 | 244 |
+| `docs/plans/fleet-retrieval-cross-repo-graph.md` | plan | - | F1-α in flight (storage + selective + source hash + embedder trait + brute-force KNN) | 170 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
 | `docs/plans/v0.2-friction-log.md` | plan | - | - | 188 |
@@ -117,6 +120,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/reviews/PRD-001-pre-PR-review-v1.md` | - | - | - | 114 |
 | `docs/setup.md` | - | - | - | 102 |
 | `docs/spec/README.md` | spec | - | - | 10 |
+| `docs/spec/fleet-retrieval-cross-repo-graph.md` | spec | - | - | 697 |
+| `docs/spec/fleet-retrieval-golden-methodology.md` | spec | - | - | 264 |
 | `docs/spec/v3-durability-layer.md` | spec | - | - | 145 |
 | `docs/templates/adversarial-challenge.md` | - | - | - | 139 |
 | `docs/vision.md` | - | - | - | 426 |

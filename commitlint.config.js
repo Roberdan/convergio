@@ -25,6 +25,7 @@ module.exports = {
         'runner',
         'tui',
         'brand',
+        'embed',
         // meta scopes
         'docs',
         'ci',
