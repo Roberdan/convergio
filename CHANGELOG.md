@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [Unreleased]
+
+### Added
+- **brand:** new `convergio-brand` crate — single source of truth
+  for palette (`#FF00B4` magenta, `#00C8FF` cyan), claim
+  (*Make machines prove it.*), subline, wordmark, and the boot
+  animation (ADR-0037).
+- **cli:** `cvg about` — print the brand lockup, claim, version
+  and source URL. Plays the boot animation on a TTY; static when
+  piped or when `NO_COLOR` / `CONVERGIO_THEME=mono` is set.
+- **server:** `convergio start` now plays the brand boot banner
+  before binding the port (TTY-only, respects `NO_COLOR`).
+- **i18n:** `brand-about-tagline`, `brand-about-source`, and
+  `brand-about-help` keys in `en` and `it` bundles.
+- **assets:** `assets/branding/` — logo, hex mark, wordmark variants,
+  CLI mockup, and the original Bash + Rust demo scripts.
+
+### Changed
+- **tui:** wordmark gradient now sources its endpoints from
+  `convergio_brand::{MAGENTA, CYAN}` so `cvg dash` matches the
+  CLI splash byte-for-byte. Semantic status colours unchanged
+  (CONSTITUTION P3).
+- **docs:** README opens with the new claim and lockup; AGENTS.md
+  workspace member list includes `convergio-brand`; new
+  ADR-0037 documents the brand decision.
+
 ## [0.3.9](https://github.com/Roberdan/convergio/compare/convergio-v0.3.8...convergio-v0.3.9) (2026-05-03)
 
 

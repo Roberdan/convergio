@@ -53,6 +53,9 @@ async fn make_titled_task(
                 title: title.into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

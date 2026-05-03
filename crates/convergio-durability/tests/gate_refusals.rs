@@ -32,6 +32,9 @@ async fn facade_persists_gate_refusal_for_explanation() {
                 title: "needs evidence".into(),
                 description: None,
                 evidence_required: vec!["test".into()],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

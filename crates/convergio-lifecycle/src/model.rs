@@ -86,4 +86,14 @@ pub struct SpawnSpec {
     /// Task id this process is holding, if any.
     #[serde(default)]
     pub task_id: Option<String>,
+    /// Working directory the child should run in. `None` ⇒ inherit
+    /// the daemon's cwd (legacy behaviour).
+    #[serde(default)]
+    pub cwd: Option<std::path::PathBuf>,
+    /// Optional payload piped on the child's stdin and then closed.
+    /// Used by vendor-CLI runners (claude, copilot, qwen) that read
+    /// the prompt from stdin in non-interactive mode. `None` ⇒
+    /// `Stdio::null()` (legacy behaviour, no input).
+    #[serde(default)]
+    pub stdin_payload: Option<String>,
 }

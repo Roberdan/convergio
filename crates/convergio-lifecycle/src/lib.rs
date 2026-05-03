@@ -30,6 +30,8 @@
 //!     env: vec![],
 //!     plan_id: None,
 //!     task_id: None,
+//!     cwd: None,
+//!     stdin_payload: None,
 //! }).await?;
 //! sup.heartbeat(&process.id).await?;
 //! # Ok(()) }

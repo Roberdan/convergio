@@ -124,6 +124,9 @@ mod tests {
             started_at: None,
             ended_at: None,
             duration_ms: None,
+            runner_kind: None,
+            profile: None,
+            max_budget_usd: None,
         }
     }
 

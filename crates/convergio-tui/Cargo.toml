@@ -13,6 +13,7 @@ readme = "README.md"
 workspace = true
 
 [dependencies]
+convergio-brand = { workspace = true }
 ratatui = { workspace = true }
 crossterm = { workspace = true }
 reqwest = { workspace = true }

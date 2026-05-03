@@ -30,6 +30,9 @@ fn task() -> Task {
         started_at: None,
         ended_at: None,
         duration_ms: None,
+        runner_kind: None,
+        profile: None,
+        max_budget_usd: None,
     }
 }
 
@@ -133,12 +136,12 @@ fn copilot_sandbox_uses_allow_all() {
 fn for_kind_dispatches_to_the_right_vendor() {
     let task = task();
     let ctx = ctx_with(&task, PermissionProfile::Standard);
-    let claude = for_kind(&RunnerKind::claude_sonnet());
+    let claude = for_kind(&RunnerKind::claude_sonnet()).unwrap();
     assert_eq!(
         claude.prepare(&ctx).unwrap().program,
         OsString::from("claude")
     );
-    let copilot = for_kind(&RunnerKind::copilot_gpt());
+    let copilot = for_kind(&RunnerKind::copilot_gpt()).unwrap();
     assert_eq!(
         copilot.prepare(&ctx).unwrap().program,
         OsString::from("copilot")

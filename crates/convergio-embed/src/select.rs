@@ -1,6 +1,6 @@
 //! Selective-embedding policy.
 //!
-//! ADR-0035 § 5.4: we do **not** embed every parsed node. The policy
+//! ADR-0038 § 5.4: we do **not** embed every parsed node. The policy
 //! lives here, separate from storage and inference, so it can be
 //! reviewed and tuned in isolation.
 
@@ -28,7 +28,7 @@ pub enum EmbedTarget {
     Doc,
 }
 
-/// Default selective-embedding policy: ADR-0035 § 5.4 verbatim.
+/// Default selective-embedding policy: ADR-0038 § 5.4 verbatim.
 ///
 /// Embed crates, modules, documented items, ADRs, prose docs.
 /// Skip undocumented private items.

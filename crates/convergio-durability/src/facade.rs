@@ -139,13 +139,17 @@ impl Durability {
             started_at: None,
             ended_at: None,
             duration_ms: None,
+            runner_kind: input.runner_kind,
+            profile: input.profile,
+            max_budget_usd: input.max_budget_usd,
         };
 
         let mut tx = self.pool.inner().begin().await?;
         sqlx::query(
             "INSERT INTO tasks (id, plan_id, wave, sequence, title, description, status, \
-             agent_id, evidence_required, last_heartbeat_at, created_at, updated_at) \
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+             agent_id, evidence_required, last_heartbeat_at, created_at, updated_at, \
+             runner_kind, profile, max_budget_usd) \
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&task.id)
         .bind(&task.plan_id)
@@ -159,6 +163,9 @@ impl Durability {
         .bind(Option::<String>::None)
         .bind(task.created_at.to_rfc3339())
         .bind(task.updated_at.to_rfc3339())
+        .bind(&task.runner_kind)
+        .bind(&task.profile)
+        .bind(task.max_budget_usd)
         .execute(&mut *tx)
         .await?;
         append_tx(

@@ -49,6 +49,9 @@ async fn unresolved_task_crdt_conflict_blocks_submit() {
                 wave: 0,
                 sequence: 0,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

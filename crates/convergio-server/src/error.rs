@@ -63,6 +63,18 @@ impl From<convergio_planner::PlannerError> for ApiError {
                     id: "empty".into(),
                 })
             }
+            convergio_planner::PlannerError::OpusSpawn(msg) => Self::BadRequest {
+                code: "planner_opus_spawn",
+                message: msg,
+            },
+            convergio_planner::PlannerError::OpusExited { status, stderr } => Self::BadRequest {
+                code: "planner_opus_exited",
+                message: format!("opus exited with status {status}: {stderr}"),
+            },
+            convergio_planner::PlannerError::OpusOutputInvalid(msg) => Self::BadRequest {
+                code: "planner_opus_output_invalid",
+                message: msg,
+            },
         }
     }
 }

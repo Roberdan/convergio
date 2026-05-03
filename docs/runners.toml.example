@@ -1,0 +1,61 @@
+# Convergio runner registry — copy to ~/.convergio/runners.toml.
+#
+# Each [vendors.<name>] block declares a vendor that the executor can
+# dispatch tasks to. The two built-in vendors (claude, copilot) do
+# NOT need to appear here — they keep their hardcoded runners and
+# the registry is consulted only for custom vendors.
+#
+# See ADR-0035 for the full schema; the highlights:
+#
+#   cli              binary name on $PATH
+#   prompt_via       "stdin" (preferred) or "argv"
+#   prompt_argv_flag flag prefixing the prompt when prompt_via = "argv"
+#   model_flag       flag selecting the model (default --model)
+#   extra_args       always-on args appended after model
+#   models           optional allowlist; empty = any model accepted
+#   profiles.<tag>   per-permission-profile flag set
+#                    (tags: standard, read_only, sandbox; ADR-0033)
+
+# Qwen CLI — Alibaba's open-weights coder
+[vendors.qwen]
+cli           = "qwen"
+prompt_via    = "stdin"
+model_flag    = "--model"
+extra_args    = ["--no-stream"]
+models        = ["qwen-coder", "qwen-max", "qwen3-coder"]
+
+[vendors.qwen.profiles.standard]
+args = ["--read-only=false"]
+
+[vendors.qwen.profiles.read_only]
+args = ["--read-only=true"]
+
+[vendors.qwen.profiles.sandbox]
+args = ["--allow-all"]
+
+# OpenAI Codex CLI (sketch — flags subject to upstream changes).
+[vendors.codex]
+cli              = "codex"
+prompt_via       = "argv"
+prompt_argv_flag = "--prompt"
+model_flag       = "--model"
+models           = ["gpt-5.2", "gpt-5.2-mini"]
+
+[vendors.codex.profiles.standard]
+args = ["--auto-approve=read"]
+
+[vendors.codex.profiles.sandbox]
+args = ["--auto-approve=all"]
+
+# Google Gemini CLI.
+[vendors.gemini]
+cli        = "gemini"
+prompt_via = "stdin"
+model_flag = "--model"
+models     = ["gemini-2.5-pro", "gemini-2.5-flash"]
+
+[vendors.gemini.profiles.standard]
+args = ["--yolo=false"]
+
+[vendors.gemini.profiles.sandbox]
+args = ["--yolo"]

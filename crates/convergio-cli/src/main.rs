@@ -167,6 +167,14 @@ enum Command {
         #[arg(long)]
         wave: Option<i64>,
     },
+    /// Print the Convergio brand lockup, claim, and version.
+    /// Plays the boot animation on a TTY; static when piped or
+    /// when `NO_COLOR` / `CONVERGIO_THEME=mono` is set.
+    About {
+        /// Force the boot animation even if the theme would skip it.
+        #[arg(long)]
+        animate: bool,
+    },
     /// Run a guided local demo.
     Demo,
     /// Open the read-only TUI dashboard (cvg dash, ADR-0029).
@@ -246,6 +254,7 @@ async fn main() -> Result<()> {
         Command::Validate { plan_id, wave } => {
             commands::validate::run(&client, &plan_id, wave).await
         }
+        Command::About { animate } => commands::about::run(&bundle, animate),
         Command::Demo => commands::demo::run(&client).await,
         Command::Dash { tick_secs } => commands::dash::run(client.base(), tick_secs).await,
         Command::Update {

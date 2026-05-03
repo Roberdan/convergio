@@ -9,6 +9,8 @@ use crate::error::{Result, RunnerError};
 use crate::kind::{Family, RunnerKind};
 use crate::profile::PermissionProfile;
 use crate::prompt::{self, PromptInputs};
+use crate::registry::RunnerRegistry;
+use crate::runner_config::ConfigRunner;
 use convergio_durability::Task;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
@@ -47,16 +49,40 @@ pub trait Runner {
     fn prepare(&self, ctx: &SpawnContext<'_>) -> Result<PreparedCommand>;
 }
 
-/// Pick a concrete runner for `kind`.
-pub fn for_kind(kind: &RunnerKind) -> Box<dyn Runner> {
-    match kind.family {
-        Family::Claude => Box::new(ClaudeRunner {
-            model: kind.model.clone(),
-        }),
-        Family::Copilot => Box::new(CopilotRunner {
-            model: kind.model.clone(),
-        }),
+/// Pick a concrete runner for `kind`. Built-in vendors only.
+///
+/// Custom vendors require a registry — call
+/// [`for_kind_with_registry`] instead. Kept as the simple entry
+/// point for tests and tools that never load the operator's
+/// `runners.toml`.
+pub fn for_kind(kind: &RunnerKind) -> Result<Box<dyn Runner>> {
+    for_kind_with_registry(kind, &RunnerRegistry::empty())
+}
+
+/// Pick a concrete runner for `kind`, consulting `registry` for
+/// vendors that aren't built-in. ADR-0035.
+pub fn for_kind_with_registry(
+    kind: &RunnerKind,
+    registry: &RunnerRegistry,
+) -> Result<Box<dyn Runner>> {
+    if let Some(family) = kind.family() {
+        return Ok(match family {
+            Family::Claude => Box::new(ClaudeRunner {
+                model: kind.model.clone(),
+            }),
+            Family::Copilot => Box::new(CopilotRunner {
+                model: kind.model.clone(),
+            }),
+        });
     }
+    let spec = registry
+        .get(&kind.vendor)
+        .ok_or_else(|| RunnerError::UnknownVendor {
+            vendor: kind.vendor.clone(),
+        })?
+        .clone();
+    let cfg = ConfigRunner::try_new(&kind.vendor, spec, &kind.model)?;
+    Ok(Box::new(cfg))
 }
 
 /// Wraps `claude -p ... --model X --output-format json`.
@@ -210,7 +236,17 @@ mod tests {
     fn for_kind_returns_a_dyn_runner_for_each_family() {
         // Compilation-level coverage: the dispatch surface
         // resolves both vendors without panicking.
-        let _ = for_kind(&RunnerKind::claude_sonnet());
-        let _ = for_kind(&RunnerKind::copilot_gpt());
+        for_kind(&RunnerKind::claude_sonnet()).unwrap();
+        for_kind(&RunnerKind::copilot_gpt()).unwrap();
+    }
+
+    #[test]
+    fn for_kind_rejects_unknown_vendor_without_registry() {
+        let kind: RunnerKind = "qwen:qwen3-coder".parse().unwrap();
+        let err = match for_kind(&kind) {
+            Ok(_) => panic!("expected UnknownVendor error"),
+            Err(e) => e,
+        };
+        assert!(matches!(err, RunnerError::UnknownVendor { .. }));
     }
 }

@@ -136,7 +136,7 @@ impl EmbedStore {
 
     /// True when no embedding exists for `(repo, node_id, model)`,
     /// or when the stored `source_hash` differs from the supplied
-    /// one. This is the canonical re-embed trigger (ADR-0035 § 5.4).
+    /// one. This is the canonical re-embed trigger (ADR-0038 § 5.4).
     pub async fn needs_reembed(
         &self,
         repo: &str,

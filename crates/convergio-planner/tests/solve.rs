@@ -2,7 +2,7 @@
 
 use convergio_db::Pool;
 use convergio_durability::{init, Durability};
-use convergio_planner::{Planner, PlannerError};
+use convergio_planner::{Planner, PlannerError, PlannerMode};
 use tempfile::tempdir;
 
 async fn fresh() -> (Planner, Durability, tempfile::TempDir) {
@@ -11,7 +11,8 @@ async fn fresh() -> (Planner, Durability, tempfile::TempDir) {
     let pool = Pool::connect(&url).await.unwrap();
     init(&pool).await.unwrap();
     let dur = Durability::new(pool);
-    (Planner::new(dur.clone()), dur, dir)
+    let planner = Planner::new(dur.clone()).with_mode(PlannerMode::Heuristic);
+    (planner, dur, dir)
 }
 
 #[tokio::test]

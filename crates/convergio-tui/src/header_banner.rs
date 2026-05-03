@@ -10,10 +10,10 @@
 //! 3. **Compact** (`width < 40`): one line with a styled wordmark
 //!    plus the stats — keeps `cvg dash` usable on narrow shells.
 //!
-//! The wordmark uses cyan→magenta `Color::Rgb` gradient. Terminals
-//! without true-colour fall back to ratatui's nearest 256-colour
-//! mapping (CONSTITUTION P3: information conveyed by colour is also
-//! conveyed by glyph/label).
+//! The wordmark uses the brand magenta→cyan gradient
+//! (`convergio_brand::palette`). Terminals without true-colour fall
+//! back to ratatui's nearest 256-colour mapping (CONSTITUTION P3:
+//! information conveyed by colour is also conveyed by glyph/label).
 
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::style::{Color, Modifier, Style};
@@ -168,24 +168,18 @@ fn line_with_gradient(row: &str, total_cols: usize) -> Line<'static> {
     Line::from(spans)
 }
 
-/// Linear interpolation from cyan `(80, 200, 255)` at column 0 to
-/// magenta `(220, 100, 220)` at the rightmost column. Slightly
-/// muted endpoints — closer to the soft pastel gradient that reads
-/// well on most terminal backgrounds.
+/// Linear interpolation between brand magenta (`#FF00B4`, leftmost
+/// column) and brand cyan (`#00C8FF`, rightmost column). Sourced
+/// from `convergio_brand::palette` so the wordmark matches the CLI
+/// splash byte-for-byte.
 pub fn gradient_at(col: usize, total: usize) -> (u8, u8, u8) {
     let t = if total <= 1 {
         0.0
     } else {
         col as f32 / (total - 1) as f32
     };
-    let r = lerp(80.0, 220.0, t) as u8;
-    let g = lerp(200.0, 100.0, t) as u8;
-    let b = lerp(255.0, 220.0, t) as u8;
-    (r, g, b)
-}
-
-fn lerp(a: f32, b: f32, t: f32) -> f32 {
-    a + (b - a) * t.clamp(0.0, 1.0)
+    let rgb = convergio_brand::Rgb::lerp(convergio_brand::MAGENTA, convergio_brand::CYAN, t);
+    (rgb.r, rgb.g, rgb.b)
 }
 
 #[cfg(test)]
@@ -223,9 +217,11 @@ mod tests {
     }
 
     #[test]
-    fn gradient_endpoints_match_design_constants() {
-        assert_eq!(gradient_at(0, 50), (80, 200, 255));
-        assert_eq!(gradient_at(49, 50), (220, 100, 220));
+    fn gradient_endpoints_match_brand_palette() {
+        // Column 0 is brand magenta, last column is brand cyan
+        // (convergio_brand::MAGENTA / CYAN).
+        assert_eq!(gradient_at(0, 50), (255, 0, 180));
+        assert_eq!(gradient_at(49, 50), (0, 200, 255));
     }
 
     #[test]

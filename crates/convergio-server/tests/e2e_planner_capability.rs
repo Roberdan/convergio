@@ -90,6 +90,10 @@ fn append<W: Write>(tar: &mut Builder<W>, path: &str, bytes: &[u8]) {
 
 #[tokio::test]
 async fn installed_planner_capability_can_solve_a_plan() {
+    // Force the line-split planner — ADR-0036 default would
+    // shell out to `claude -p --model opus` on the operator's
+    // machine and burn tokens on every test run.
+    std::env::set_var("CONVERGIO_PLANNER_MODE", "heuristic");
     let (base, _server_dir) = boot().await;
     let home = tempdir().unwrap();
     std::env::set_var("HOME", home.path());

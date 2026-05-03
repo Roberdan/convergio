@@ -5,7 +5,7 @@ use convergio_db::Pool;
 use convergio_durability::{init, Durability, TaskStatus};
 use convergio_executor::{spawn_loop, Executor, ExecutorError, SpawnTemplate};
 use convergio_lifecycle::{LifecycleError, Supervisor};
-use convergio_planner::Planner;
+use convergio_planner::{Planner, PlannerMode};
 use std::sync::Arc;
 use std::time::Duration;
 use tempfile::tempdir;
@@ -29,7 +29,7 @@ async fn fresh() -> (Executor, Durability, tempfile::TempDir) {
 #[tokio::test]
 async fn tick_dispatches_pending_tasks_in_first_wave() {
     let (exec, dur, _dir) = fresh().await;
-    let planner = Planner::new(dur.clone());
+    let planner = Planner::new(dur.clone()).with_mode(PlannerMode::Heuristic);
     let plan_id = planner.solve("a\nb\nc").await.unwrap();
 
     let dispatched = exec.tick().await.unwrap();
@@ -60,6 +60,9 @@ async fn tick_skips_later_waves_until_earlier_done() {
                 title: "wave1".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -73,6 +76,9 @@ async fn tick_skips_later_waves_until_earlier_done() {
                 title: "wave2".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -109,6 +115,9 @@ async fn tick_dispatches_later_wave_after_earlier_failed() {
                 title: "wave1".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -122,6 +131,9 @@ async fn tick_dispatches_later_wave_after_earlier_failed() {
                 title: "wave2".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -142,7 +154,7 @@ async fn tick_dispatches_later_wave_after_earlier_failed() {
 #[tokio::test]
 async fn tick_does_not_steal_already_claimed_task() {
     let (exec, dur, _dir) = fresh().await;
-    let planner = Planner::new(dur.clone());
+    let planner = Planner::new(dur.clone()).with_mode(PlannerMode::Heuristic);
     let plan_id = planner.solve("claimed").await.unwrap();
     let task = dur.tasks().list_by_plan(&plan_id).await.unwrap().remove(0);
     dur.transition_task(&task.id, TaskStatus::InProgress, Some("manual-agent"))
@@ -159,7 +171,7 @@ async fn tick_does_not_steal_already_claimed_task() {
 #[tokio::test]
 async fn tick_is_idempotent_on_already_dispatched_tasks() {
     let (exec, dur, _dir) = fresh().await;
-    let planner = Planner::new(dur.clone());
+    let planner = Planner::new(dur.clone()).with_mode(PlannerMode::Heuristic);
     planner.solve("only one").await.unwrap();
 
     let n1 = exec.tick().await.unwrap();
@@ -176,7 +188,7 @@ async fn tick_leaves_task_pending_when_spawn_fails() {
         kind: "missing".into(),
     })
     .await;
-    let planner = Planner::new(dur.clone());
+    let planner = Planner::new(dur.clone()).with_mode(PlannerMode::Heuristic);
     let plan_id = planner.solve("spawn-failure").await.unwrap();
     let task = dur.tasks().list_by_plan(&plan_id).await.unwrap().remove(0);
 
@@ -194,7 +206,7 @@ async fn tick_leaves_task_pending_when_spawn_fails() {
 #[tokio::test]
 async fn dispatch_writes_audit_chain_that_verifies() {
     let (exec, dur, _dir) = fresh().await;
-    let planner = Planner::new(dur.clone());
+    let planner = Planner::new(dur.clone()).with_mode(PlannerMode::Heuristic);
     planner.solve("x\ny").await.unwrap();
     exec.tick().await.unwrap();
 
@@ -207,7 +219,7 @@ async fn dispatch_writes_audit_chain_that_verifies() {
 #[tokio::test]
 async fn spawn_loop_abort_stops_before_first_tick() {
     let (exec, dur, _dir) = fresh().await;
-    let planner = Planner::new(dur.clone());
+    let planner = Planner::new(dur.clone()).with_mode(PlannerMode::Heuristic);
     let plan_id = planner.solve("abort-task").await.unwrap();
 
     let handle = spawn_loop(Arc::new(exec), ChronoDuration::seconds(60));
@@ -226,7 +238,7 @@ async fn spawn_loop_dispatches_pending_tasks_in_background() {
     // in_progress within one tick of the loop, with no manual
     // `Executor::tick()` or `POST /v1/dispatch` call.
     let (exec, dur, _dir) = fresh().await;
-    let planner = Planner::new(dur.clone());
+    let planner = Planner::new(dur.clone()).with_mode(PlannerMode::Heuristic);
     let plan_id = planner.solve("loop-task").await.unwrap();
 
     let handle = spawn_loop(Arc::new(exec), ChronoDuration::milliseconds(50));

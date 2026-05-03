@@ -36,6 +36,9 @@ async fn task_with_diff(dur: &Durability, diff: &str) -> convergio_durability::T
                 title: "t".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

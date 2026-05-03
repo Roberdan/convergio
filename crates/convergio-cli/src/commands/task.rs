@@ -27,6 +27,19 @@ pub enum TaskCommand {
         /// Required evidence kinds (comma-separated, e.g. `code,test`).
         #[arg(long, value_delimiter = ',')]
         evidence_required: Vec<String>,
+        /// Optional runner kind (ADR-0034) in the wire format
+        /// `<vendor>:<model>` — e.g. `claude:sonnet`,
+        /// `claude:opus`, `copilot:gpt-5.2`, `qwen:qwen3-coder`.
+        /// Omit to let the executor use the daemon default.
+        #[arg(long)]
+        runner: Option<String>,
+        /// Optional permission profile (`standard` / `read_only` /
+        /// `sandbox`). Omit to use the daemon default.
+        #[arg(long)]
+        profile: Option<String>,
+        /// Optional session budget cap in USD (Claude only).
+        #[arg(long)]
+        max_budget_usd: Option<f32>,
     },
     /// List tasks of a plan.
     List {
@@ -116,6 +129,9 @@ pub async fn run(client: &Client, output: OutputMode, cmd: TaskCommand) -> Resul
             wave,
             sequence,
             evidence_required,
+            runner,
+            profile,
+            max_budget_usd,
         } => {
             let body = json!({
                 "title": title,
@@ -123,6 +139,9 @@ pub async fn run(client: &Client, output: OutputMode, cmd: TaskCommand) -> Resul
                 "wave": wave,
                 "sequence": sequence,
                 "evidence_required": evidence_required,
+                "runner_kind": runner,
+                "profile": profile,
+                "max_budget_usd": max_budget_usd,
             });
             let task: Value = client
                 .post(&format!("/v1/plans/{plan_id}/tasks"), &body)

@@ -41,6 +41,9 @@ async fn context_packet_collects_task_state_messages_agents_and_agent_docs() {
                 wave: 1,
                 sequence: 1,
                 evidence_required: vec!["code".into()],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

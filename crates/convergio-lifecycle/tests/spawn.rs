@@ -25,6 +25,8 @@ async fn spawn_records_running_process_with_pid() {
             env: vec![],
             plan_id: Some("plan-1".into()),
             task_id: None,
+            cwd: None,
+            stdin_payload: None,
         })
         .await
         .unwrap();
@@ -50,6 +52,8 @@ async fn spawn_failure_returns_error() {
             env: vec![],
             plan_id: None,
             task_id: None,
+            cwd: None,
+            stdin_payload: None,
         })
         .await
         .unwrap_err();
@@ -76,6 +80,8 @@ async fn spawn_timeout_returns_error_before_recording_process() {
                 env: vec![],
                 plan_id: None,
                 task_id: None,
+                cwd: None,
+                stdin_payload: None,
             },
             Duration::ZERO,
         )
@@ -100,6 +106,8 @@ async fn heartbeat_touches_row() {
             env: vec![],
             plan_id: None,
             task_id: None,
+            cwd: None,
+            stdin_payload: None,
         })
         .await
         .unwrap();
@@ -124,6 +132,8 @@ async fn mark_exited_records_exit_code() {
             env: vec![],
             plan_id: None,
             task_id: None,
+            cwd: None,
+            stdin_payload: None,
         })
         .await
         .unwrap();

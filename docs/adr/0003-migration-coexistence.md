@@ -75,9 +75,9 @@ Chosen option: **3**.
 | (future Layer 4 crate) | 301 — 400 | TBD |
 | (future general extensions) | 401 — 599 | TBD |
 | `convergio-graph` | 600 — 699 | `0600_graph_nodes_edges.sql` (ADR-0014) |
-| `convergio-embed` *(proposed, ADR-0035 F1)* | 700 — 799 | `0700_embeddings.sql` |
-| `convergio-fleet` *(proposed, ADR-0035 F2/F3)* | 800 — 899 | `0800_fleet.sql`, `0801_fleet_plans.sql` |
-| `convergio-parse-multi` *(proposed, ADR-0035 F2)* | 900 — 999 | reserved (parser is mostly stateless; range held for future fixture/cache tables) |
+| `convergio-embed` *(proposed, ADR-0038 F1)* | 700 — 799 | `0700_embeddings.sql` |
+| `convergio-fleet` *(proposed, ADR-0038 F2/F3)* | 800 — 899 | `0800_fleet.sql`, `0801_fleet_plans.sql` |
+| `convergio-parse-multi` *(proposed, ADR-0038 F2)* | 900 — 999 | reserved (parser is mostly stateless; range held for future fixture/cache tables) |
 
 A migration's `version` is the integer prefix on the filename (sqlx
 convention). New crates must pick the next free hundred. Ranges marked

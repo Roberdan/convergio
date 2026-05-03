@@ -69,6 +69,9 @@ async fn task_with_evidence(
                 title: "t".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

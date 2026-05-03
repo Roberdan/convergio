@@ -115,6 +115,8 @@ async fn spawn_runner(
             env,
             plan_id: request.plan_id,
             task_id: request.task_id.clone(),
+            cwd: None,
+            stdin_payload: None,
         })
         .await?;
     let task = match request.task_id {

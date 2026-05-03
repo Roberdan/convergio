@@ -46,8 +46,10 @@
 
 #![forbid(unsafe_code)]
 
+mod defaults;
 mod error;
 mod executor;
 
+pub use defaults::{RunnerDefaults, SpawnTemplate};
 pub use error::{ExecutorError, Result};
-pub use executor::{spawn_loop, Executor, ExecutorHandle, SpawnTemplate};
+pub use executor::{spawn_loop, Executor, ExecutorHandle};

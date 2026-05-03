@@ -1,0 +1,17 @@
+[package]
+name = "convergio-brand"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Brand kit for Convergio: palette, claim, banner, boot animation — shared by CLI, TUI, daemon."
+
+[lints]
+workspace = true
+
+[dependencies]
+
+[dev-dependencies]

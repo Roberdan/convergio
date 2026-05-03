@@ -30,5 +30,9 @@ fn map_exec(e: convergio_executor::ExecutorError) -> ApiError {
     match e {
         convergio_executor::ExecutorError::Durability(d) => ApiError::Durability(d),
         convergio_executor::ExecutorError::Lifecycle(l) => ApiError::Lifecycle(l),
+        convergio_executor::ExecutorError::Runner(r) => ApiError::BadRequest {
+            code: "runner_error",
+            message: r.to_string(),
+        },
     }
 }

@@ -41,10 +41,17 @@ mod error;
 mod kind;
 mod profile;
 pub mod prompt;
+pub mod registry;
 mod runner;
+mod runner_config;
 
 pub use command::PreparedCommand;
 pub use error::{Result, RunnerError};
 pub use kind::{Family, RunnerKind};
 pub use profile::PermissionProfile;
-pub use runner::{assert_cli_on_path, for_kind, ClaudeRunner, CopilotRunner, Runner, SpawnContext};
+pub use registry::{ProfileSpec, PromptVia, RunnerRegistry, RunnerSpec};
+pub use runner::{
+    assert_cli_on_path, for_kind, for_kind_with_registry, ClaudeRunner, CopilotRunner, Runner,
+    SpawnContext,
+};
+pub use runner_config::ConfigRunner;

@@ -165,6 +165,21 @@ pub struct Task {
     /// milliseconds. `None` until ended.
     #[serde(default)]
     pub duration_ms: Option<i64>,
+    /// Per-task runner kind (ADR-0034) in the wire format
+    /// `<vendor>:<model>` — e.g. `claude:sonnet`, `claude:opus`,
+    /// `copilot:gpt-5.2`, `qwen:qwen3-coder`. `None` ⇒ executor
+    /// uses the daemon default (`CONVERGIO_RUNNER_DEFAULT`).
+    #[serde(default)]
+    pub runner_kind: Option<String>,
+    /// Per-task permission profile (ADR-0033). One of `standard`,
+    /// `read_only`, `sandbox`. `None` ⇒ daemon default.
+    #[serde(default)]
+    pub profile: Option<String>,
+    /// Per-task session budget cap (USD), forwarded as
+    /// `claude --max-budget-usd` when the runner is Claude. `None`
+    /// ⇒ no cap.
+    #[serde(default)]
+    pub max_budget_usd: Option<f32>,
 }
 
 /// Recently completed task with plan context for dashboards.
@@ -200,6 +215,15 @@ pub struct NewTask {
     /// Required evidence kinds.
     #[serde(default)]
     pub evidence_required: Vec<String>,
+    /// Optional runner kind override (ADR-0034). `None` ⇒ daemon default.
+    #[serde(default)]
+    pub runner_kind: Option<String>,
+    /// Optional permission profile override. `None` ⇒ daemon default.
+    #[serde(default)]
+    pub profile: Option<String>,
+    /// Optional session budget cap (USD).
+    #[serde(default)]
+    pub max_budget_usd: Option<f32>,
 }
 
 fn default_one() -> i64 {

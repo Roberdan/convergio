@@ -1,4 +1,4 @@
-//! HTTP end-to-end test for `convergio-embed` (ADR-0035 F1-α).
+//! HTTP end-to-end test for `convergio-embed` (ADR-0038 F1-α).
 //!
 //! Boots the full daemon router with a tempdir SQLite, seeds the
 //! [`EmbedStore`] directly, then hits `/v1/embed/stats` over HTTP and

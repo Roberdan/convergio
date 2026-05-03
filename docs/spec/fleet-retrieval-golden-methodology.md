@@ -2,7 +2,7 @@
 
 - **Status**: Proposed v1.0
 - **Date**: 2026-05-03
-- **Companion ADR**: [ADR-0035](../adr/0035-fleet-retrieval-cross-repo-graph.md) § 7.2
+- **Companion ADR**: [ADR-0038](../adr/0038-fleet-retrieval-cross-repo-graph.md) § 7.2
 - **Companion plan**: [`docs/plans/fleet-retrieval-cross-repo-graph.md`](../plans/fleet-retrieval-cross-repo-graph.md)
 - **Audience**: Convergio core, future contributors writing retrieval
   benchmarks, anyone reviewing F1 / F2 / F3 go/no-go evidence
@@ -11,7 +11,7 @@
 
 ## 1. Why this document exists
 
-ADR-0035 introduces a probabilistic component (semantic embeddings)
+ADR-0038 introduces a probabilistic component (semantic embeddings)
 behind a feature flag. CONSTITUTION § P1 (zero tolerance for tech
 debt) requires that probabilistic features ship with a deterministic
 quality gate, otherwise we risk shipping noise.
@@ -22,7 +22,7 @@ built, how it is consumed by tests and benches, how regressions are
 detected, and how cost is contained in CI.
 
 It is referenced by F1-8 / F1-9 / F1-10 in the durable plan and by
-ADR-0035 § 7.2.
+ADR-0038 § 7.2.
 
 ---
 
@@ -164,7 +164,7 @@ Two assertions:
 - **Floor** ≥ 0.85 (absolute hybrid recall@10) — the hybrid must be
   good in absolute terms, not just better than a weak baseline
 
-Both assertions come from ADR-0035 § 6 F1 go/no-go criteria.
+Both assertions come from ADR-0038 § 6 F1 go/no-go criteria.
 
 ---
 

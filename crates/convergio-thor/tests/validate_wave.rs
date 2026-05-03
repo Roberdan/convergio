@@ -35,6 +35,9 @@ async fn add_task_in_wave(
                 title: title.into(),
                 description: None,
                 evidence_required,
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

@@ -40,6 +40,9 @@ async fn submitted_plan(dur: &Durability) -> (String, String) {
                 title: "t".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

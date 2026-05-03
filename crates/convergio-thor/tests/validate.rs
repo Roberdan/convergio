@@ -33,6 +33,9 @@ async fn plan_with_one_task(dur: &Durability, evidence_required: Vec<String>) ->
                 title: "t".into(),
                 description: None,
                 evidence_required,
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

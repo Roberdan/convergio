@@ -1,6 +1,6 @@
 //! `GET /v1/embed/stats` — embedding store inventory probe.
 //!
-//! ADR-0035 § 5.7: minimal F1-α surface. Returns the count of stored
+//! ADR-0038 § 5.7: minimal F1-α surface. Returns the count of stored
 //! embeddings, optionally filtered by `?repo=<name>`. The richer
 //! `/v1/embed/build`, `/v1/embed/for-task`, and similar routes land
 //! in F1-β alongside the real model.

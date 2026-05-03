@@ -17,7 +17,9 @@ workspace = true
 [dependencies]
 convergio-db = { workspace = true }
 convergio-durability = { workspace = true }
+convergio-graph = { workspace = true }
 convergio-lifecycle = { workspace = true }
+convergio-runner = { workspace = true }
 tokio = { workspace = true }
 sqlx = { workspace = true }
 serde = { workspace = true }

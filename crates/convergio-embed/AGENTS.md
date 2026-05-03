@@ -2,7 +2,7 @@
 
 For repo-wide rules see [../../AGENTS.md](../../AGENTS.md). For the
 decision behind this crate see
-[../../docs/adr/0035-fleet-retrieval-cross-repo-graph.md](../../docs/adr/0035-fleet-retrieval-cross-repo-graph.md).
+[../../docs/adr/0038-fleet-retrieval-cross-repo-graph.md](../../docs/adr/0038-fleet-retrieval-cross-repo-graph.md).
 For methodology behind the recall gate see
 [../../docs/spec/fleet-retrieval-golden-methodology.md](../../docs/spec/fleet-retrieval-golden-methodology.md).
 

@@ -1,7 +1,7 @@
 //! # convergio-embed
 //!
 //! Embeddings storage and pluggable embedder trait for Convergio's
-//! Tier-3 retrieval (ADR-0035, F1).
+//! Tier-3 retrieval (ADR-0038, F1).
 //!
 //! This crate is the **storage and policy** seam. It does not bundle
 //! a model — F1-α ships only [`embedder::testing::DeterministicTestEmbedder`];

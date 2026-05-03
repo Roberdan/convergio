@@ -49,6 +49,9 @@ async fn plan_status_gate_refuses_when_plan_completed() {
                 title: "t".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -94,6 +97,9 @@ async fn plan_status_gate_passes_for_active_plan() {
                 title: "t".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -125,6 +131,9 @@ async fn evidence_gate_refuses_when_kind_missing() {
                 title: "t".into(),
                 description: None,
                 evidence_required: vec!["test_pass".into(), "pr_url".into()],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -167,6 +176,9 @@ async fn evidence_gate_passes_when_all_kinds_present() {
                 title: "t".into(),
                 description: None,
                 evidence_required: vec!["test_pass".into()],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -204,6 +216,9 @@ async fn evidence_gate_no_op_for_in_progress_target() {
                 title: "t".into(),
                 description: None,
                 evidence_required: vec!["test_pass".into()],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

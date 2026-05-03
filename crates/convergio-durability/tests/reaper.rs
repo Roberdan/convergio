@@ -99,6 +99,9 @@ async fn reaps_tasks_with_stale_heartbeat() {
                 title: "stuck task".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -160,6 +163,9 @@ async fn does_not_reap_fresh_tasks() {
                 title: "fresh task".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -205,6 +211,9 @@ async fn reaps_tasks_that_never_heartbeat() {
                 title: "claimed then died".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

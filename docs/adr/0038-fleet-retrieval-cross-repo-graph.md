@@ -1,5 +1,5 @@
 ---
-id: 0035
+id: 0038
 status: proposed
 date: 2026-05-03
 topics: [layer-1, retrieval, graph, context, fleet, multi-repo, semantic, embeddings]
@@ -7,11 +7,11 @@ related_adrs: [0003, 0004, 0014, 0015, 0029, 0030, 0034]
 touches_crates: [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api]
 introduces_crates: [convergio-fleet, convergio-parse-multi, convergio-embed]
 last_validated: 2026-05-03
-implemented_in: [convergio-embed]
+implemented_in: []
 authors: [Roberto D'Angelo]
 ---
 
-# 0035. Fleet retrieval & cross-repo graph (semantic + multi-language)
+# 0038. Fleet retrieval & cross-repo graph (semantic + multi-language)
 
 - Status: **proposed** (RFC, awaiting validation via F1 prototype)
 - Date: 2026-05-03
@@ -594,7 +594,7 @@ substring-only.
 - Migration `0700_embeddings.sql`
 - Updated `cvg graph for-task` with `--semantic` and `--gap-check`
   flags
-- One new ADR (0035) documenting the recall measurement methodology
+- One new ADR (0038) documenting the recall measurement methodology
 
 ### F2 — Multi-repo opening (4-6 weeks, gated by F1)
 
@@ -845,4 +845,4 @@ These do not block F1. They block F2 design lock.
 
 ---
 
-*End of ADR-0035*
+*End of ADR-0038*

@@ -47,6 +47,9 @@ async fn refuses_when_earlier_wave_open() {
                 title: "w1".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -60,6 +63,9 @@ async fn refuses_when_earlier_wave_open() {
                 title: "w2".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -102,6 +108,9 @@ async fn treats_failed_as_terminal() {
                 title: "w1-failed".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -124,6 +133,9 @@ async fn treats_failed_as_terminal() {
                 title: "w2".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -155,6 +167,9 @@ async fn passes_for_first_wave() {
                 title: "w1".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

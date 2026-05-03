@@ -51,5 +51,9 @@ do not edit between the markers.
 | [0031](./0031-materialised-timing-cache.md) | 0031. Materialised timing cache + plan↔PR link table | accepted |
 | [0032](./0032-vendor-cli-runners.md) | 0032. Vendor-CLI runners (no raw API calls) | accepted |
 | [0033](./0033-runner-permission-profiles.md) | 0033. Vendor-CLI runners use least-privilege permission profiles | accepted |
-| [0035](./0035-fleet-retrieval-cross-repo-graph.md) | 0035. Fleet retrieval & cross-repo graph (semantic + multi-language) | proposed |
+| [0034](./0034-per-task-runner-fields.md) | 0034. Per-task runner selection (kind / profile / budget) | accepted |
+| [0035](./0035-runner-registry-toml.md) | 0035. Runner registry — TOML-driven custom vendors | accepted |
+| [0036](./0036-opus-backed-planner.md) | 0036. Opus-backed planner replaces the line-split heuristic | accepted |
+| [0037](./0037-brand-kit-and-claim.md) | 0037. Brand kit, claim, and shared `convergio-brand` crate | accepted |
+| [0038](./0038-fleet-retrieval-cross-repo-graph.md) | 0038. Fleet retrieval & cross-repo graph (semantic + multi-language) | proposed |
 <!-- END AUTO -->

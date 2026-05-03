@@ -1,4 +1,4 @@
--- ADR-0035 § 5.2.3 — graph_node_embeddings table.
+-- ADR-0038 § 5.2.3 — graph_node_embeddings table.
 -- Migration range 700-799 reserved by ADR-0003 for convergio-embed.
 -- F1-α scope: storage table only. The sqlite-vec virtual table
 -- (graph_vec_index) lands in F1-β alongside the extension load

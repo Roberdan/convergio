@@ -3,7 +3,7 @@
 - **Status**: Draft v1.0
 - **Date**: 2026-05-03
 - **Author**: Roberto D'Angelo (with Claude)
-- **Companion ADR**: ADR-0035 (`docs/adr/0035-fleet-retrieval-cross-repo-graph.md`)
+- **Companion ADR**: ADR-0038 (`docs/adr/0038-fleet-retrieval-cross-repo-graph.md`)
 - **Target release**: Convergio v3.x (F1) → v3.y (F2) → v4.0 (F3)
 - **Audience**: Convergio core team, downstream-machine maintainers, Roberto (product owner)
 
@@ -573,7 +573,7 @@ IT and EN parity day one (per CONSTITUTION P5).
 
 ## 11. Risks & Open Questions
 
-(Mirror of ADR-0035 § 9 + § 12 — see ADR for full table.)
+(Mirror of ADR-0038 § 9 + § 12 — see ADR for full table.)
 
 **Top risks**:
 - R1: Embedding model produces poor similarities for code → mitigated
@@ -654,7 +654,7 @@ This PRD is **ready for review** when:
 - F1 budget (2-3 weeks) is allocated
 
 Approval sequence:
-1. Roberto reviews and approves this PRD + ADR-0035 — *blocks F1*
+1. Roberto reviews and approves this PRD + ADR-0038 — *blocks F1*
 2. F1 ships → recall data is published
 3. Go/no-go meeting on F2 — *if no-go: PRD is closed, embeddings
    feature flag stays off forever*

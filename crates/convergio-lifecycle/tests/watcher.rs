@@ -26,6 +26,8 @@ async fn watcher_flips_dead_pid_to_exited() {
             env: vec![],
             plan_id: None,
             task_id: None,
+            cwd: None,
+            stdin_payload: None,
         })
         .await
         .unwrap();

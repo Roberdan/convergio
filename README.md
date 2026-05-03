@@ -1,3 +1,10 @@
+<p align="center">
+  <img src="assets/branding/lockup-hex-wordmark.png" alt="Convergio" width="520">
+</p>
+
+<p align="center"><strong>Convergio — Make machines prove it.</strong><br>
+<em>The machine that builds machines — and proves they work.</em></p>
+
 # Convergio
 
 > **Convergio is a personal open-source project.** It is not a Microsoft
@@ -18,36 +25,73 @@
 [![Rust](https://img.shields.io/badge/rust-stable-orange)](https://www.rust-lang.org/)
 [![Zero Warnings](https://img.shields.io/badge/warnings-0-brightgreen)](#)
 
-> **The shovel for the long-tail of vertical AI accelerators —
-> a local daemon that refuses agent work whose evidence does not
-> match the claim of done, and writes every refusal to a
-> hash-chained audit log.**
+> **Make machines prove it.** *The machine that builds machines —
+> and proves they work.*
+>
+> The trustable autonomous executor for AI coding agents — a
+> local Rust daemon that turns plans into per-task vendor-CLI
+> spawns (Claude Code, Copilot CLI, Qwen, Codex, Gemini), routes
+> each task to the right model under a permission profile, and
+> refuses every `submitted` / `done` whose evidence does not
+> match the claim. Every refusal lands in a hash-chained audit
+> log you can verify from outside.
 
 Convergio runs on your machine, sits between your agent runner and
-your codebase, and applies server-side gates to every `submitted` /
-`done` transition. When the evidence the agent attaches contains
-debt markers, scaffolding tells, non-clean build signals, or
-credential leaks, Convergio returns 409 and records the refusal in
-an audit chain you can verify from outside.
+your codebase, and does three things:
 
-It is not an agent framework and it is not a cloud service. Bring
-your own agent runner (Claude Code, a Python loop, a shell script).
-Convergio gives that runner a durable local source of truth, a gate
-pipeline, and a mergeable coordination layer so multiple agents can
-work in parallel without silently corrupting state, Git, or the
-filesystem.
-
-Convergio also offers *optional* capability bundles that an
-operator may install for convenience — for example, a
-thinking-stack capability that wraps community planning skills
-(see [ADR-0019](./docs/adr/0019-thinking-stack-gstack-vendored.md)).
-These are opt-in conveniences for the operator, not a substitute
-for the user's own runner; the "bring your own runner" position
-above is unchanged.
+1. **Executes** plans by dispatching tasks to vendor CLIs via the
+   `convergio-runner` crate (no raw API calls, no API keys —
+   ADR-0032). Each task carries its own `runner_kind`
+   (`claude:opus`, `copilot:gpt-5.2`, `qwen:qwen3-coder`, …),
+   `profile` (`standard`, `read_only`, `sandbox` — ADR-0033),
+   and optional `max_budget_usd` (ADR-0034). Custom vendors are
+   declared in `~/.convergio/runners.toml` — no recompile needed
+   (ADR-0035).
+2. **Plans** missions with `claude:opus` running in
+   `--permission-mode plan` (ADR-0036). The planner picks
+   `runner_kind` and `profile` per task to optimize PR
+   cardinality, cost vs quality, safety and wave parallelism.
+3. **Refuses** unsafe `submitted` / `done` transitions through
+   server-side gates: debt markers, scaffolding tells, non-clean
+   build signals, credential leaks. Every refusal is appended to
+   a hash-chained audit log.
 
 The honest mechanism, in one line: Convergio cannot make an agent
-truthful, but it raises the cost of lying and makes every refusal
+truthful, but it raises the cost of lying, routes the work to the
+right model under the right leash, and makes every refusal
 non-falsifiable.
+
+## What Convergio is — and is not
+
+| Convergio is… | Convergio is not… |
+|---|---|
+| The **execution layer** — plan → dispatch → audit → gate. | The strategic / planning layer. |
+| The **leash** that decides which task runs on which model. | A model. Convergio never calls a raw API; it spawns the operator's own vendor CLI. |
+| **Local-first**, single-user, SQLite-only. | A SaaS. There is no Convergio cloud. |
+| **Vendor-agnostic** — claude, copilot, qwen, codex, gemini. | Tied to a single vendor. |
+| **Composable** — drives any framework that emits a plan. | An agent framework. |
+
+### How Convergio composes with gstack and gbrain
+
+Convergio is the *machine that builds machines, safely*. A
+typical full stack looks like:
+
+| Layer | Tool | What it owns |
+|---|---|---|
+| **Strategic** | [`gstack`](https://github.com/garrytan/gstack) — *the preferred partner* | `/autoplan`, `/office-hours`, `/plan-eng-review`, design + eng review. |
+| **Memory** | gbrain (PGLite + Supabase, opt-in) | Long-term context, lessons, vault. |
+| **Execution** | **Convergio** | Per-task runner routing, audit, gates, lifecycle, MCP / HTTP / CLI surface. |
+
+You can drive Convergio with gstack's `/autoplan` (recommended),
+with another planner, or by writing the plan yourself — it works
+with anything that produces a mission. **gstack is the preferred
+partner**: same author philosophy, same engineering-fundamentals
+framing, complementary scopes. Convergio works without it; the
+two are designed to compose.
+
+See [ADR-0019](./docs/adr/0019-thinking-stack-gstack-vendored.md)
+for the courtesy-notice obligations and the optional
+thinking-stack capability bundle.
 
 **Where Convergio sits in the engineering-fundamentals landscape:**
 the [ISE Engineering Fundamentals Playbook](https://microsoft.github.io/code-with-engineering-playbook/ISE/)
@@ -297,12 +341,19 @@ Current scope:
 - task context packets and plan-scoped bus actions for MCP agents
 - CRDT actor/op schema, deterministic import/merge and conflict surfacing
 - workspace leases, patch proposals and merge queue arbitration
-- process spawn/heartbeat/watcher and local shell runner proof
+- process spawn/heartbeat/watcher
+- vendor-CLI runners — `claude`, `copilot` built-in (ADR-0028,
+  ADR-0032); `qwen`, `codex`, `gemini` and others via
+  `~/.convergio/runners.toml` registry, no recompile (ADR-0035)
+- per-task `runner_kind` / `profile` / `max_budget_usd` (ADR-0034)
+- least-privilege permission profiles `standard` / `read_only` /
+  `sandbox` (ADR-0033)
+- opus-backed planner (`claude:opus` in `--permission-mode plan`)
+  with deterministic line-split fallback (ADR-0036)
 - local capability registry, Ed25519 package signature verification, and
   signed local `install-file`/remove
 - `planner.solve` as the first installed capability-gated action
-- deterministic reference planner, executor tick, Thor validator and
-  guided demo
+- executor tick, Thor validator, guided demo
 - English/Italian CLI messages for the localized surfaces
 
 Out of scope for this MVP:

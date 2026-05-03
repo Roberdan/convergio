@@ -79,7 +79,17 @@ impl Supervisor {
         for (k, v) in &spec.env {
             cmd.env(k, v);
         }
-        cmd.stdin(Stdio::null());
+        if let Some(cwd) = &spec.cwd {
+            cmd.current_dir(cwd);
+        }
+        // Pipe stdin only when the caller actually has a payload to
+        // write — vendor-CLI runners (claude, copilot, qwen) read the
+        // prompt from stdin. Otherwise keep the legacy null stdin.
+        if spec.stdin_payload.is_some() {
+            cmd.stdin(Stdio::piped());
+        } else {
+            cmd.stdin(Stdio::null());
+        }
         cmd.stdout(Stdio::null());
         cmd.stderr(Stdio::null());
 
@@ -98,6 +108,15 @@ impl Supervisor {
             self.kill_unrecorded_child(&mut child).await;
             self.record_spawn_failed(&id).await;
             return Err(spawn_timeout(&spec.command, timeout));
+        }
+
+        // Vendor-CLI runners read the prompt off stdin, then close.
+        if let Some(payload) = spec.stdin_payload.as_deref() {
+            if let Some(mut stdin) = child.stdin.take() {
+                use tokio::io::AsyncWriteExt;
+                let _ = stdin.write_all(payload.as_bytes()).await;
+                drop(stdin);
+            }
         }
 
         let pid = child.id().map(|p| p as i64);

@@ -70,6 +70,9 @@ async fn task_timing_cache_tracks_in_progress_then_done() {
                 title: "timed".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await
@@ -199,6 +202,9 @@ async fn close_post_hoc_writes_timing_cache() {
                 title: "phx".into(),
                 description: None,
                 evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
             },
         )
         .await

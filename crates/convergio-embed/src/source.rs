@@ -1,7 +1,7 @@
 //! Build the canonical embeddable text for a node and compute its
 //! source hash.
 //!
-//! ADR-0035 § 5.4: the re-embed trigger is `source_hash` change, not
+//! ADR-0038 § 5.4: the re-embed trigger is `source_hash` change, not
 //! mtime. The hash is SHA-256 over the trimmed embeddable text.
 
 use sha2::{Digest, Sha256};
@@ -22,7 +22,7 @@ impl SourceText {
     ///
     /// Leading and trailing whitespace are trimmed before hashing
     /// because formatter touches must not invalidate cached
-    /// embeddings (ADR-0035 § 5.4).
+    /// embeddings (ADR-0038 § 5.4).
     pub fn new(raw: impl AsRef<str>) -> Self {
         let trimmed = raw.as_ref().trim().to_owned();
         let mut hasher = Sha256::new();

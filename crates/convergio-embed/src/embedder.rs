@@ -22,7 +22,7 @@ pub enum EmbedderError {
 /// Pluggable text → vector embedder.
 ///
 /// Implementations must be **deterministic** for the same input on
-/// the same hardware family. See ADR-0035 § 7.2 and
+/// the same hardware family. See ADR-0038 § 7.2 and
 /// `docs/spec/fleet-retrieval-golden-methodology.md` § 6 for the
 /// determinism rules CI relies on.
 pub trait Embedder: Send + Sync {

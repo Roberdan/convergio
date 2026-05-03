@@ -20,6 +20,10 @@ use tempfile::tempdir;
 use tokio::net::TcpListener;
 
 async fn boot() -> (String, Pool, tempfile::TempDir) {
+    // Force the deterministic line-split planner so the E2E does
+    // not invoke the operator's local `claude -p --model opus`
+    // (ADR-0036) — that would charge real tokens on each run.
+    std::env::set_var("CONVERGIO_PLANNER_MODE", "heuristic");
     let dir = tempdir().unwrap();
     let db_path = dir.path().join("state.db");
     let url = format!("sqlite://{}", db_path.display());

@@ -12,6 +12,11 @@ pub enum ExecutorError {
     /// Layer 3 failure.
     #[error(transparent)]
     Lifecycle(#[from] convergio_lifecycle::LifecycleError),
+
+    /// Runner-crate failure during argv assembly (e.g. invalid
+    /// `runner_kind` or missing vendor CLI).
+    #[error(transparent)]
+    Runner(#[from] convergio_runner::RunnerError),
 }
 
 /// Convenience alias.

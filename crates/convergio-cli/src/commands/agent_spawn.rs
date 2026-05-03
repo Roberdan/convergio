@@ -6,12 +6,13 @@
 //! it inline. The vendor CLI inherits the operator's existing auth;
 //! Convergio never sees the API key (ADR-0032).
 
+use super::agent_spawn_wire::TaskWire;
 use super::{Client, OutputMode};
 use anyhow::{anyhow, Context as _, Result};
-use chrono::{DateTime, Utc};
-use convergio_durability::{Task, TaskStatus};
-use convergio_runner::{for_kind, PermissionProfile, RunnerKind, SpawnContext};
-use serde::Deserialize;
+use convergio_durability::Task;
+use convergio_runner::{
+    for_kind_with_registry, PermissionProfile, RunnerKind, RunnerRegistry, SpawnContext,
+};
 use serde_json::Value;
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
@@ -79,7 +80,10 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
         max_budget_usd,
         profile,
     };
-    let prepared = for_kind(&kind).prepare(&ctx)?;
+    let registry = RunnerRegistry::load_default().context("load runner registry")?;
+    let prepared = for_kind_with_registry(&kind, &registry)
+        .and_then(|r| r.prepare(&ctx))
+        .map_err(anyhow::Error::msg)?;
 
     if dry_run {
         emit_dry_run(output, &prepared, &kind, &agent)?;
@@ -99,7 +103,7 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
     let mut child = cmd.spawn().with_context(|| {
         format!(
             "failed to spawn vendor CLI `{}` — is it installed and on PATH?",
-            kind.family.cli()
+            kind.vendor
         )
     })?;
     if let Some(mut stdin) = child.stdin.take() {
@@ -193,7 +197,7 @@ fn emit_dry_run(
 /// Build a default agent id like `claude-sonnet-t1234abc`.
 fn default_agent_id(kind: &RunnerKind, task_id: &str) -> String {
     let slug = task_id.get(..7).unwrap_or(task_id);
-    format!("{}-{}-{}", kind.family.tag(), kind.model, slug)
+    format!("{}-{}-{}", kind.vendor, kind.model, slug)
 }
 
 async fn fetch_task(client: &Client, id: &str) -> Result<Task> {
@@ -218,64 +222,6 @@ async fn fetch_graph_context(client: &Client, task_id: &str) -> Option<String> {
         .and_then(Value::as_str)
         .map(|s| s.to_string())
         .or_else(|| serde_json::to_string_pretty(&raw).ok())
-}
-
-/// Wire shape returned by `GET /v1/tasks/:id`. Mirrors
-/// [`convergio_durability::Task`] but accepts string statuses
-/// (the daemon serialises the enum as snake_case).
-#[derive(Deserialize)]
-struct TaskWire {
-    id: String,
-    plan_id: String,
-    wave: i64,
-    sequence: i64,
-    title: String,
-    description: Option<String>,
-    status: String,
-    agent_id: Option<String>,
-    #[serde(default)]
-    evidence_required: Vec<String>,
-    last_heartbeat_at: Option<String>,
-    created_at: String,
-    updated_at: String,
-    #[serde(default)]
-    started_at: Option<String>,
-    #[serde(default)]
-    ended_at: Option<String>,
-    #[serde(default)]
-    duration_ms: Option<i64>,
-}
-
-impl TaskWire {
-    fn into_task(self) -> Task {
-        Task {
-            id: self.id,
-            plan_id: self.plan_id,
-            wave: self.wave,
-            sequence: self.sequence,
-            title: self.title,
-            description: self.description,
-            status: TaskStatus::parse(&self.status).unwrap_or(TaskStatus::Pending),
-            agent_id: self.agent_id,
-            evidence_required: self.evidence_required,
-            last_heartbeat_at: parse_ts_opt(self.last_heartbeat_at.as_deref()),
-            created_at: parse_ts(&self.created_at).unwrap_or_else(Utc::now),
-            updated_at: parse_ts(&self.updated_at).unwrap_or_else(Utc::now),
-            started_at: parse_ts_opt(self.started_at.as_deref()),
-            ended_at: parse_ts_opt(self.ended_at.as_deref()),
-            duration_ms: self.duration_ms,
-        }
-    }
-}
-
-fn parse_ts(s: &str) -> Option<DateTime<Utc>> {
-    DateTime::parse_from_rfc3339(s)
-        .ok()
-        .map(|t| t.with_timezone(&Utc))
-}
-
-fn parse_ts_opt(s: Option<&str>) -> Option<DateTime<Utc>> {
-    s.and_then(parse_ts)
 }
 
 #[cfg(test)]
