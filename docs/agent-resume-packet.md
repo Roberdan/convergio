@@ -29,13 +29,17 @@ Your durable agent identity in `agent_registry` is
 cvg task transition <task_id> in-progress --agent-id claude-code-roberdan
 ```
 
-If the registry has lost the row (fresh DB), re-register via the
-typed action (do **not** call HTTP directly):
+If you are running inside Claude Code, the project-level
+`SessionStart` hook in `.claude/settings.json` runs
+`cvg session register-and-poll` automatically before the first
+prompt — your agent shows up in `agent_registry` without you
+typing anything. If you are outside Claude Code (or `cargo` is not
+on PATH and you have not installed the precompiled binary), run it
+once at session start:
 
 ```bash
-cvg agent register --id claude-code-roberdan --kind claude \
-  --name "Claude Code (Roberdan local)" --host macOS \
-  --capability code,test,doc,rust,bash,markdown
+cvg session register-and-poll --agent-id claude-code-roberdan \
+  --kind claude
 ```
 
 ## 2. Cold-start reads (in order)
@@ -95,6 +99,30 @@ cvg workspace lease release <lease_id>
 
 For solo sessions this is overhead you may skip. The lease pattern
 exists for the multi-agent future and the merge-arbiter (ADR-0007).
+
+## 4b. Spawning a subagent
+
+Claude Code subagents (launched via the parent's `Task` tool) skip
+the `SessionStart` hook, so the top-level `/cvg-attach` registration
+does not cover them. Wrap every code-mutating subagent brief with
+the canonical register / heartbeat / retire block. The
+[`/cvg-spawn` skill](../.claude/skills/cvg-spawn/SKILL.md) renders
+this block; for one-off / scripted use, paste the wrapper inline:
+
+```bash
+SUBAGENT_ID="subagent-$(echo "${task_desc}" | tr ' ' '-' | head -c 24)-$(openssl rand -hex 4)"
+curl -fsS -X POST http://127.0.0.1:8420/v1/agent-registry/agents \
+  -H 'Content-Type: application/json' \
+  -d "{\"id\":\"${SUBAGENT_ID}\",\"kind\":\"subagent\",\"name\":\"<one-line>\",\"host\":\"macOS\",\"capabilities\":[...]}"
+curl -fsS -X POST http://127.0.0.1:8420/v1/agent-registry/agents/${SUBAGENT_ID}/heartbeat -H 'Content-Type: application/json' -d '{"status":"working"}'
+# ... do work; re-run the heartbeat line every ~5 min ...
+curl -fsS -X POST http://127.0.0.1:8420/v1/agent-registry/agents/${SUBAGENT_ID}/retire -H 'Content-Type: application/json' -d '{}'
+```
+
+`kind=subagent` is the documented marker for these helpers (see
+`docs/multi-agent-operating-model.md` § Subagent lifecycle). It lets
+the dashboard render them with reduced visual weight and lets
+`cvg coherence agents` skip them when looking for PR authors.
 
 ## 5. Required local pipeline before any push
 

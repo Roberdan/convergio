@@ -24,7 +24,7 @@
 //! errors — every failure path collapses to `Pass`. A safety net is
 //! not allowed to be a brick wall.
 
-use crate::commands::session_pre_stop::{Check, CheckContext, CheckOutcome};
+use crate::pre_stop::{Check, CheckContext, CheckOutcome};
 use std::collections::BTreeSet;
 use std::process::Command;
 

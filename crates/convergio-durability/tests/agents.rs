@@ -94,6 +94,22 @@ async fn register_accepts_canonical_kinds() {
     }
 }
 
+// `subagent` is the documented kind for Claude Code subagents
+// spawned via the parent's Task tool (see /cvg-spawn skill and
+// docs/multi-agent-operating-model.md § Subagent lifecycle).
+// Validation must accept it as a first-class kind.
+#[tokio::test]
+async fn register_accepts_subagent_kind() {
+    let (dur, _dir) = fresh().await;
+    let mut a = new_agent("subagent-demo-deadbeef");
+    a.kind = "subagent".into();
+    let agent = dur
+        .register_agent(a)
+        .await
+        .expect("kind 'subagent' must be accepted");
+    assert_eq!(agent.kind, "subagent");
+}
+
 #[tokio::test]
 async fn register_accepts_extended_kinds_for_future_hosts() {
     let (dur, _dir) = fresh().await;

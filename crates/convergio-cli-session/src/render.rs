@@ -1,27 +1,27 @@
 //! Renderers for `cvg session resume` (human / json / plain).
 //!
-//! Split out of [`super::session`] to honour the 300-line per-file
+//! Split out of [`crate::session`] to honour the 300-line per-file
 //! cap (CONSTITUTION § 13).
 
-use super::session::{Plan, PrSummary, Task, TaskCounts};
-use super::OutputMode;
+use crate::session::{Plan, PrSummary, Task, TaskCounts};
+use crate::OutputMode;
 use anyhow::Result;
 use convergio_i18n::Bundle;
 use serde_json::Value;
 
 /// Aggregated cold-start payload — borrowed view, never owned.
-pub(super) struct Brief<'a> {
-    pub(super) health: &'a Value,
-    pub(super) audit: &'a Value,
-    pub(super) plan: &'a Plan,
-    pub(super) counts: &'a TaskCounts,
-    pub(super) next: &'a [Task],
-    pub(super) prs: Option<&'a [PrSummary]>,
+pub(crate) struct Brief<'a> {
+    pub(crate) health: &'a Value,
+    pub(crate) audit: &'a Value,
+    pub(crate) plan: &'a Plan,
+    pub(crate) counts: &'a TaskCounts,
+    pub(crate) next: &'a [Task],
+    pub(crate) prs: Option<&'a [PrSummary]>,
     /// Optional graph context-pack when `--task-id` was given.
-    pub(super) pack: Option<&'a Value>,
+    pub(crate) pack: Option<&'a Value>,
 }
 
-pub(super) fn render(bundle: &Bundle, output: OutputMode, brief: &Brief<'_>) -> Result<()> {
+pub(crate) fn render(bundle: &Bundle, output: OutputMode, brief: &Brief<'_>) -> Result<()> {
     match output {
         OutputMode::Json => render_json(brief),
         OutputMode::Plain => {

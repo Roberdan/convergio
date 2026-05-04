@@ -61,6 +61,7 @@ mod facade;
 mod facade_admin;
 mod facade_plan_transitions;
 mod facade_retry;
+mod facade_telemetry;
 mod facade_transitions;
 mod migrate;
 mod workspace_facade;
@@ -72,6 +73,7 @@ pub use capability_signature::{
 pub use crdt_facade::CrdtImportResult;
 pub use error::{DurabilityError, Result};
 pub use facade::Durability;
+pub use facade_telemetry::TelemetryCounters;
 pub use migrate::init;
 pub use model::{
     Evidence, NewPlan, NewTask, Plan, PlanStatus, RecentCompletedTask, Task, TaskStatus,
