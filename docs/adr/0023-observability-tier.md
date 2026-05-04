@@ -4,7 +4,7 @@ status: proposed
 date: 2026-05-01
 topics: [observability, telemetry, logging, ops]
 related_adrs: [0002, 0014, 0015]
-touches_crates: [convergio-server, convergio-durability, convergio-cli, convergio-bus]
+touches_crates: [convergio-server, convergio-durability, convergio-cli, convergio-cli-pr, convergio-bus]
 last_validated: 2026-05-01
 ---
 
