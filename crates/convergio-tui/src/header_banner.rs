@@ -43,19 +43,14 @@ pub const BANNER_HEIGHT: u16 = 3;
 pub const COMPACT_HEIGHT: u16 = 1;
 
 /// Returns the height the header should reserve for the given
-/// terminal `width` and `total_height`. Picks the big pixel banner
-/// when both axes are roomy enough, otherwise the existing compact
-/// tiers.
-pub fn header_height(width: u16, total_height: u16) -> u16 {
-    // Big tier needs MIN_WIDTH (≥ 85 cols with the 4-row solid font)
-    // and at least HEIGHT + a sensible body budget (8 body rows + 1
-    // footer = 9). With a 5-row banner the floor is 14 — fits a
-    // standard 80×24 once we cross the width gate.
-    if width >= crate::header_banner_big::MIN_WIDTH
-        && total_height >= crate::header_banner_big::HEIGHT + 9
-    {
-        crate::header_banner_big::HEIGHT
-    } else if width >= STACKED_MIN_WIDTH {
+/// terminal `width`. Two tiers only: the 2-row half-block banner
+/// when the wordmark fits, the 1-line compact otherwise.
+/// `_total_height` is accepted for API stability with callers that
+/// already pass it but no longer drives the choice — the previous
+/// 4-row "big" pixel tier was retired (PR #148) after operator
+/// feedback that it dominated the dashboard.
+pub fn header_height(width: u16, _total_height: u16) -> u16 {
+    if width >= STACKED_MIN_WIDTH {
         BANNER_HEIGHT
     } else {
         COMPACT_HEIGHT
@@ -66,11 +61,7 @@ pub fn header_height(width: u16, total_height: u16) -> u16 {
 /// column (e.g. `["plans:32", "tasks:99", ...]`); in compact and
 /// stacked modes the lines are joined with spacers.
 pub fn render(f: &mut Frame, area: Rect, stats: &[String]) {
-    if area.width >= crate::header_banner_big::MIN_WIDTH
-        && area.height >= crate::header_banner_big::HEIGHT
-    {
-        crate::header_banner_big::render(f, area, stats, crate::header_banner_big::phase_now());
-    } else if area.width >= SIDE_BY_SIDE_MIN_WIDTH && area.height >= BANNER_HEIGHT {
+    if area.width >= SIDE_BY_SIDE_MIN_WIDTH && area.height >= BANNER_HEIGHT {
         render_side_by_side(f, area, stats);
     } else if area.width >= STACKED_MIN_WIDTH && area.height >= BANNER_HEIGHT {
         render_stacked(f, area, stats);
@@ -213,28 +204,17 @@ mod tests {
     }
 
     #[test]
-    fn header_height_picks_banner_when_wide_but_short() {
-        // Wide but short — total_height under the big-tier floor —
-        // falls back to the 2-row half-block.
-        let big_floor = crate::header_banner_big::HEIGHT + 9;
-        assert_eq!(header_height(120, big_floor - 1), BANNER_HEIGHT);
-        assert_eq!(header_height(STACKED_MIN_WIDTH, 12), BANNER_HEIGHT);
+    fn header_height_picks_banner_when_wide() {
+        // total_height is accepted but ignored after the big tier
+        // was retired in PR #148 — pass a representative value.
+        assert_eq!(header_height(120, 24), BANNER_HEIGHT);
+        assert_eq!(header_height(STACKED_MIN_WIDTH, 24), BANNER_HEIGHT);
     }
 
     #[test]
     fn header_height_falls_back_to_compact_when_narrow() {
-        assert_eq!(header_height(20, 12), COMPACT_HEIGHT);
-        assert_eq!(header_height(STACKED_MIN_WIDTH - 1, 12), COMPACT_HEIGHT);
-    }
-
-    #[test]
-    fn header_height_picks_big_tier_when_wide_and_tall() {
-        let big_w = crate::header_banner_big::MIN_WIDTH;
-        let big_h = crate::header_banner_big::HEIGHT;
-        // Roomy terminal: pick the big banner tier.
-        assert_eq!(header_height(big_w, big_h + 9), big_h);
-        // Just under the height floor — fall back to the 2-row tier.
-        assert_eq!(header_height(big_w, big_h + 8), BANNER_HEIGHT);
+        assert_eq!(header_height(20, 24), COMPACT_HEIGHT);
+        assert_eq!(header_height(STACKED_MIN_WIDTH - 1, 24), COMPACT_HEIGHT);
     }
 
     #[test]
