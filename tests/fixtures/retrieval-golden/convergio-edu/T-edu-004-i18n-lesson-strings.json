@@ -1,0 +1,17 @@
+{
+  "task_id": "T-edu-004-i18n-lesson-strings",
+  "repo": "convergio-edu",
+  "title": "internationalise lesson UI strings (en + it)",
+  "task_body": "All user-facing strings in the lesson view are hardcoded in English. Move them into Fluent bundles for en and it, route every visible string through the i18n helper, and add a coverage test that fails when new strings bypass the bundle.",
+  "expected_files": [
+    "convergio-edu/src/i18n/en.ftl",
+    "convergio-edu/src/i18n/it.ftl",
+    "convergio-edu/src/i18n/index.ts",
+    "convergio-edu/src/ui/lesson_view.tsx",
+    "convergio-edu/tests/unit/i18n_coverage.test.ts"
+  ],
+  "rationale": "en/it bundles hold the translated keys; index.ts resolves locale; lesson_view.tsx uses the helper; coverage test enforces completeness.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}

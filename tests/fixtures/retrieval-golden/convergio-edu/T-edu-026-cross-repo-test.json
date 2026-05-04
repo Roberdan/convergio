@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-026-cross-repo-test",
+  "repo": "convergio-edu",
+  "title": "integration test spanning convergio-edu and convergio daemon",
+  "task_body": "There is no end-to-end test that boots both the edu backend and the convergio daemon in-process and drives a full lesson session: create plan, start task, heartbeat, complete. Add this test in convergio-edu and make it a CI required check that runs against a real daemon started from the convergio build artefact.",
+  "expected_files": [
+    "convergio-edu/tests/integration/e2e_lesson_session.test.ts",
+    "convergio-edu/tests/helpers/daemon.ts",
+    "convergio/crates/convergio-server/tests/e2e_plans.rs",
+    "convergio/crates/convergio-server/src/main.rs"
+  ],
+  "rationale": "e2e_lesson_session.test.ts drives the full flow; daemon.ts starts/stops the convergio process; e2e_plans.rs is the existing server-side test to align with; main.rs exposes the in-process boot function.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}

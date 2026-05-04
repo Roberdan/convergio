@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-029-recall-bench-extension",
+  "repo": "convergio-edu",
+  "title": "extend convergio recall bench to include convergio-edu fixtures",
+  "task_body": "The convergio recall bench only evaluates single-repo (convergio) fixtures. Extend it to load fixtures from all subdirectories of tests/fixtures/retrieval-golden/, detect cross-repo fixtures, and report recall@10 separately for cross-repo vs single-repo subsets. Add the new fleet-scope bench as an ignored test in convergio-embed.",
+  "expected_files": [
+    "convergio/crates/convergio-embed/tests/recall_bench_fleet.rs",
+    "convergio/crates/convergio-fleet/src/recall.rs",
+    "convergio/tests/fixtures/retrieval-golden/convergio-edu/T-edu-029-recall-bench-extension.json",
+    "convergio/crates/convergio-fleet/src/lib.rs"
+  ],
+  "rationale": "recall_bench_fleet.rs is the new bench; recall.rs provides the cross-repo detection types; the fixture file is the recall target itself; lib.rs exports the new module.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}

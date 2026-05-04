@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-009-accessibility",
+  "repo": "convergio-edu",
+  "title": "WCAG 2.1 AA compliance for lesson view and dashboard",
+  "task_body": "Screen-reader testing revealed missing ARIA labels, insufficient colour contrast, and keyboard traps in the lesson view and dashboard. Fix all WCAG 2.1 AA violations: add aria-label attributes, update the CSS colour palette to meet 4.5:1 ratio, and ensure tab order is logical.",
+  "expected_files": [
+    "convergio-edu/src/ui/lesson_view.tsx",
+    "convergio-edu/src/ui/dashboard.tsx",
+    "convergio-edu/src/styles/theme.css",
+    "convergio-edu/tests/unit/accessibility.test.tsx"
+  ],
+  "rationale": "lesson_view.tsx and dashboard.tsx gain ARIA attributes; theme.css updates contrast; accessibility test uses axe-core to assert zero violations.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}

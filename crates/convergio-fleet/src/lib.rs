@@ -6,6 +6,7 @@
 //! - [`config`]  — `fleet.toml` schema (ADR-0038 § 5.6)
 //! - [`store`]   — `fleet_repos`, `fleet_plans`, `fleet_plan_repos` DB layer
 //! - [`similar`] — cross-repo similarity edge store (ADR-0038, F2-7)
+//! - [`recall`]  — fleet-scope recall benchmark helpers (ADR-0038 § 6, F2-12)
 //! - [`migrate`] — migration runner (range 800-899, ADR-0003)
 //!
 //! ## Architecture
@@ -15,6 +16,7 @@
 //! | [`config`]  | Typed `fleet.toml` structs — deserialize/serialize only |
 //! | [`store`]   | [`FleetStore`] — CRUD over `fleet_repos` and fleet plans |
 //! | [`similar`] | Cross-repo similarity edges on [`FleetStore`] |
+//! | [`recall`]  | [`FleetFixture`], [`FleetRecallReport`], recall@K helpers |
 //! | [`migrate`] | Run pending migrations (idempotent) |
 //!
 //! ## Quickstart
@@ -51,6 +53,7 @@ pub mod duplicates;
 pub mod error;
 pub mod migrate;
 pub mod patterns;
+pub mod recall;
 pub mod similar;
 pub mod store;
 
@@ -60,5 +63,9 @@ pub use duplicates::{find_duplicates, DuplicatePair};
 pub use error::{FleetError, Result};
 pub use migrate::init;
 pub use patterns::{find_patterns, ClusterMember, PatternCluster};
+pub use recall::{
+    distinct_repo_prefixes, recall_at_k, repo_prefix, strip_repo_prefix, FleetFixture,
+    FleetRecallReport,
+};
 pub use similar::{SimilarEdge, DUPLICATES_THRESHOLD, SIMILAR_TO_THRESHOLD};
 pub use store::{FleetRepo, FleetStore};

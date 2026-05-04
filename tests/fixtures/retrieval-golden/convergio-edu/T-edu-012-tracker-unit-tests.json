@@ -1,0 +1,17 @@
+{
+  "task_id": "T-edu-012-tracker-unit-tests",
+  "repo": "convergio-edu",
+  "title": "increase unit test coverage for lesson tracker to 80%",
+  "task_body": "The lesson tracker modules have no unit tests. Add unit tests for lesson_plan.ts, progress.ts, and heartbeat.ts covering the main state transitions, edge cases (empty plan, expired session), and error paths. Target 80% branch coverage.",
+  "expected_files": [
+    "convergio-edu/tests/unit/lesson_plan.test.ts",
+    "convergio-edu/tests/unit/progress.test.ts",
+    "convergio-edu/tests/unit/heartbeat.test.ts",
+    "convergio-edu/src/tracker/lesson_plan.ts",
+    "convergio-edu/src/tracker/progress.ts"
+  ],
+  "rationale": "Three new test files cover each tracker module; lesson_plan.ts and progress.ts may need small refactors to be testable in isolation.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}
