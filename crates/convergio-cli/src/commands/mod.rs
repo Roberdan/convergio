@@ -3,6 +3,7 @@
 pub mod about;
 pub mod agent;
 mod agent_spawn;
+mod agent_spawn_heartbeat;
 mod agent_spawn_wire;
 pub mod audit;
 pub mod bus;
@@ -71,6 +72,7 @@ pub enum OutputMode {
 }
 
 /// Tiny HTTP helper shared by subcommands.
+#[derive(Clone)]
 pub struct Client {
     base: String,
     inner: reqwest::Client,
