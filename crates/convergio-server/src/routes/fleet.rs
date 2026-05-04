@@ -1,4 +1,4 @@
-//! Fleet routes (ADR-0038, F2-6/F2-7/F2-8/F2-9).
+//! Fleet routes (ADR-0038, F2-6/F2-7/F2-8/F2-9/F2-10).
 //!
 //! Routes:
 //! - `POST   /v1/fleet/repos`        — add a repo
@@ -6,6 +6,7 @@
 //! - `PATCH  /v1/fleet/repos/:name`  — enable / disable
 //! - `POST   /v1/fleet/build`        — parse + embed (idempotent)
 //! - `GET    /v1/fleet/patterns`     — cross-repo cluster detection
+//! - `GET    /v1/fleet/duplicates`   — near-exact cross-repo duplicate pairs
 
 use crate::app::AppState;
 use crate::error::ApiError;
@@ -25,6 +26,10 @@ pub fn router() -> Router<AppState> {
         .route("/v1/fleet/repos/:name", patch(update))
         .route("/v1/fleet/build", post(build))
         .route("/v1/fleet/patterns", axum::routing::get(patterns))
+        .route(
+            "/v1/fleet/duplicates",
+            axum::routing::get(super::fleet_duplicates::duplicates),
+        )
 }
 
 #[derive(Debug, Deserialize)]
