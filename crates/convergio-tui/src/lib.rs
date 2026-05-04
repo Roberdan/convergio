@@ -21,6 +21,7 @@
 //! Quit with `q`, refresh with `r`, change pane with `Tab`, scroll with
 //! `j` / `k`.
 
+pub mod bus_stream;
 pub mod client;
 pub mod client_gh;
 pub mod header_banner;
@@ -110,7 +111,10 @@ async fn event_loop(
     github_slug: Option<String>,
 ) -> Result<()> {
     let client = Client::new(daemon_url.to_string()).with_github_slug(github_slug);
-    let mut state = AppState::default();
+    let mut state = AppState {
+        bus_stream: Some(crate::bus_stream::spawn(daemon_url.to_string())),
+        ..AppState::default()
+    };
     let keymap = KeyMap;
     state.refresh(&client).await;
 
@@ -119,6 +123,7 @@ async fn event_loop(
     interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
 
     loop {
+        state.merge_live_bus_pub();
         term.draw(|f| render::root(f, &state))
             .context("render frame")?;
 
@@ -137,7 +142,13 @@ async fn event_loop(
                         Action::RowUp => state.row_up(),
                         Action::Drill => {
                             if matches!(state.mode, AppMode::Overview) {
-                                state.apply_scope_from_focus();
+                                if matches!(state.focus, crate::state::Pane::Bus) {
+                                    if let Some(target) = state.drill_target() {
+                                        state.enter_detail(&client, target).await;
+                                    }
+                                } else {
+                                    state.apply_scope_from_focus();
+                                }
                             }
                         }
                         Action::Back => match state.mode {

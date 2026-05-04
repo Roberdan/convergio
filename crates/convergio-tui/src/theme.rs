@@ -114,6 +114,35 @@ pub fn status_pill(status: &str) -> (Span<'static>, Style) {
     (Span::styled(glyph, style), style)
 }
 
+/// Style for a Bus topic family (`coordination/*` green, `agent:*`
+/// blue, `system.*` gray, `plan:*` yellow, anything else default).
+/// Topic family classification lives in
+/// [`crate::bus_stream::sse_parser::TopicFamily`].
+pub fn topic_family_style(family: crate::bus_stream::sse_parser::TopicFamily) -> Style {
+    use crate::bus_stream::sse_parser::TopicFamily;
+    match family {
+        TopicFamily::Coordination => Style::default().fg(SUCCESS),
+        TopicFamily::Agent => Style::default().fg(INFO),
+        TopicFamily::System => Style::default().fg(MUTED),
+        TopicFamily::Plan => Style::default().fg(WARNING),
+        TopicFamily::Other => Style::default().fg(TEXT),
+    }
+}
+
+/// Glyph prefix that mirrors [`topic_family_style`] for users who
+/// cannot rely on colour (CONSTITUTION P3): each family gets a
+/// distinctive ASCII-friendly tag in addition to the colour.
+pub fn topic_family_glyph(family: crate::bus_stream::sse_parser::TopicFamily) -> &'static str {
+    use crate::bus_stream::sse_parser::TopicFamily;
+    match family {
+        TopicFamily::Coordination => "◇",
+        TopicFamily::Agent => "▣",
+        TopicFamily::System => "▦",
+        TopicFamily::Plan => "▷",
+        TopicFamily::Other => "·",
+    }
+}
+
 /// Convenience: build a status pill `Line`-friendly pair (glyph
 /// span, label span) with a single space separator. Use when you
 /// want both the glyph and the label coloured the same way.

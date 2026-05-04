@@ -35,6 +35,10 @@ pub fn render(f: &mut Frame, area: Rect, state: &AppState, target: &DetailTarget
             format!(" PR #{number} · {} ", short(title, 60)),
             pr_lines(state, *number, title),
         ),
+        DetailTarget::BusMessage { id, seq, topic } => (
+            format!(" Bus #{seq} · {} ", short(topic, 60)),
+            bus_message_lines(state, id),
+        ),
     };
     let block = pane_block(&title, true);
     f.render_widget(Paragraph::new(lines).block(block), area);
@@ -122,6 +126,30 @@ fn pr_lines(state: &AppState, number: i64, title: &str) -> Vec<Line<'static>> {
         out.extend(pr_meta(pr));
     } else {
         out.push(dim_line("  (PR no longer in the open list)"));
+    }
+    out
+}
+
+fn bus_message_lines(state: &AppState, id: &str) -> Vec<Line<'static>> {
+    let Some(msg) = state.messages.iter().find(|m| m.id == id) else {
+        return vec![dim_line("  (message rolled out of the buffer)")];
+    };
+    let pretty =
+        serde_json::to_string_pretty(&msg.payload).unwrap_or_else(|_| msg.payload.to_string());
+    let mut out = vec![
+        kv("seq", &msg.seq.to_string()),
+        kv("topic", &msg.topic),
+        kv("sender", msg.sender.as_deref().unwrap_or("system")),
+        kv("plan", msg.plan_id.as_deref().unwrap_or("-")),
+        kv("created_at", &msg.created_at),
+        Line::raw(""),
+        section_heading("Payload"),
+    ];
+    for line in pretty.lines() {
+        out.push(Line::from(Span::styled(
+            format!("  {}", line),
+            theme::text(),
+        )));
     }
     out
 }

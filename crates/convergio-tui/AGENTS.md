@@ -13,11 +13,12 @@ bridge, or another agent-facing surface.
 ## Invariants
 
 - **Read-only on the daemon.** The TUI may issue `GET` against the
-  HTTP API and shell out to `gh pr list`. It must never `POST`,
-  `PUT`, or `DELETE`. State-changing commands belong in `cvg`
-  subcommands, not in the dashboard. (Future: a vim-mode interactive
-  evolution may add `:validate <plan>` / `:claim <task>`; that lives
-  in a follow-up ADR.)
+  HTTP API (including the `text/event-stream` Bus tail at
+  `/v1/plans/:plan_id/messages/stream`) and shell out to `gh pr
+  list`. It must never `POST`, `PUT`, or `DELETE`. State-changing
+  commands belong in `cvg` subcommands, not in the dashboard.
+  (Future: a vim-mode interactive evolution may add `:validate
+  <plan>` / `:claim <task>`; that lives in a follow-up ADR.)
 - **No business logic.** Everything rendered must be a 1:1 view of
   what the daemon returns. No client-side merging, no derived
   validation, no summary statistics that the daemon does not already
@@ -34,10 +35,12 @@ bridge, or another agent-facing surface.
   rendering helpers, state, keymap, and tick loop are split by
   concern. The crate is designed to grow horizontally (one file
   per pane) rather than vertically (one mega-file).
-- **No background loops, no spawned threads.** A single
-  `tokio::time::interval` drives the refresh inside `run`. The TUI
-  exits cleanly when `q` is pressed or the parent terminal is
-  resized to a width below the layout's minimum.
+- **One supervisor task only.** A single `tokio::time::interval`
+  drives the dashboard refresh inside `run`; the Bus pane adds one
+  long-lived supervisor task ([`bus_stream::spawn`]) that owns the
+  SSE connection and the live buffer. Both exit cleanly when the
+  TUI exits (the supervisor aborts when its watch sender is
+  dropped).
 - **i18n where it costs nothing (CONSTITUTION P5).** Localised
   strings flow through `convergio-i18n` if a translation key already
   exists for the same concept (e.g. status names). Pure layout
@@ -59,7 +62,8 @@ bridge, or another agent-facing surface.
 | `src/panes/tasks.rs` | Tasks pane: task history with status, timing, and agent owner. |
 | `src/panes/agents.rs` | Agents pane: id, kind, status (idle/working/terminated), last heartbeat. |
 | `src/panes/prs.rs` | PRs pane: number, title, branch, CI conclusion. |
-| `src/panes/bus.rs` | Bus pane: recent plan-scoped agent messages. |
+| `src/panes/bus.rs` | Bus pane: live plan-scoped agent message tail (SSE + polling fallback). |
+| `src/bus_stream.rs` + `src/bus_stream/sse_parser.rs` | Bus-pane supervisor: subscribes to `/v1/plans/:plan_id/messages/stream`, falls back to polling, owns the bounded buffer the pane reads. |
 
 ## Tests
 
@@ -97,9 +101,12 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-tui` stats:** 20 `*.rs` files / 86 public items / 3645 lines (under `src/`).
+**`convergio-tui` stats:** 22 `*.rs` files / 104 public items / 4371 lines (under `src/`).
 
 Files approaching the 300-line cap:
+- `src/state.rs` (296 lines)
 - `src/scope.rs` (294 lines)
+- `src/bus_stream.rs` (279 lines)
 - `src/header_banner.rs` (273 lines)
+- `src/panes/detail.rs` (254 lines)
 <!-- END AUTO -->

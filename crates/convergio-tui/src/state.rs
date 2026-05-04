@@ -4,6 +4,7 @@
 //! focus + scroll position for each pane. Refreshes are issued by
 //! [`AppState::refresh`] which delegates to [`crate::client::Client`].
 
+use crate::bus_stream::{BusStreamHandle, Transport as BusTransport};
 use crate::client::{
     AgentProcess, BusMessage, Client, Plan, PrSummary, RegistryAgent, TaskSummary,
 };
@@ -126,6 +127,15 @@ pub struct AppState {
     /// the detail panel shows every task (not only the active subset
     /// that the overview pane carries).
     pub detail_tasks: Vec<TaskSummary>,
+    /// Live SSE handle for the Bus pane (P1.3, ADR-0029 addendum).
+    /// `None` means the supervisor was never started — useful for
+    /// renderer tests that drive `messages` directly.
+    #[doc(hidden)]
+    pub bus_stream: Option<BusStreamHandle>,
+    /// Plan id the Bus pane subscription currently follows. Tracked
+    /// so we only call `set_plan` when the selection actually
+    /// changes between ticks.
+    pub bus_following: Option<String>,
 }
 
 /// Cursors for the four panes, addressable by [`Pane`].
@@ -182,6 +192,63 @@ impl AppState {
                 self.connection = Connection::Disconnected;
             }
         }
+        self.update_bus_subscription();
+        self.merge_live_bus();
+    }
+
+    /// Re-point the Bus pane SSE subscription at the currently-scoped
+    /// plan, falling back to the first plan if no scope is set. No-op
+    /// when the live handle was never installed.
+    pub fn update_bus_subscription(&mut self) {
+        let Some(handle) = &self.bus_stream else {
+            return;
+        };
+        let target = self
+            .scoped_plan_id()
+            .map(|s| s.to_string())
+            .or_else(|| self.plans.first().map(|p| p.id.clone()));
+        if target != self.bus_following {
+            handle.set_plan(target.clone());
+            self.bus_following = target;
+        }
+    }
+
+    /// Public re-export of [`AppState::merge_live_bus`] for callers
+    /// that want to refresh the Bus pane between full snapshots.
+    pub fn merge_live_bus_pub(&mut self) {
+        self.merge_live_bus();
+    }
+
+    /// Fold the live SSE buffer into [`AppState::messages`] so
+    /// scope-filtered helpers still work without changes. Live
+    /// rows replace any stale poll snapshot for the same `seq`.
+    fn merge_live_bus(&mut self) {
+        let Some(handle) = &self.bus_stream else {
+            return;
+        };
+        let live = handle.snapshot();
+        if live.is_empty() {
+            return;
+        }
+        // Newest-first incoming; merge by seq dedup, drop oldest.
+        let mut merged: Vec<BusMessage> = live;
+        let known: std::collections::HashSet<i64> = merged.iter().map(|m| m.seq).collect();
+        for m in self.messages.drain(..) {
+            if !known.contains(&m.seq) {
+                merged.push(m);
+            }
+        }
+        merged.sort_by_key(|m| std::cmp::Reverse(m.seq));
+        merged.truncate(crate::bus_stream::BUFFER_CAP);
+        self.messages = merged;
+    }
+
+    /// Active transport for the Bus pane footer hint.
+    pub fn bus_transport(&self) -> BusTransport {
+        self.bus_stream
+            .as_ref()
+            .map(|h| h.transport())
+            .unwrap_or(BusTransport::Idle)
     }
 }
 
