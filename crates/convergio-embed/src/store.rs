@@ -216,6 +216,33 @@ impl EmbedStore {
         Ok(hits)
     }
 
+    /// Return all stored embeddings for a given model as
+    /// `(repo, node_id, vec)` triples.
+    ///
+    /// Used by the fleet similarity rebuild (ADR-0038, F2-7) to build
+    /// cross-repo edges in a single pass without re-querying per node.
+    pub async fn all_for_model(&self, model: &str) -> Result<Vec<(String, String, Vec<f32>)>> {
+        let rows = sqlx::query(
+            "SELECT repo, node_id, dim, vec \
+             FROM graph_node_embeddings WHERE model = ?",
+        )
+        .bind(model)
+        .fetch_all(self.pool.inner())
+        .await?;
+
+        let mut out = Vec::with_capacity(rows.len());
+        for row in rows {
+            let dim_i: i64 = row.get("dim");
+            let dim = dim_i as usize;
+            let blob: Vec<u8> = row.get("vec");
+            let vec = blob_to_floats(&blob, dim)?;
+            let repo: String = row.get("repo");
+            let node_id: String = row.get("node_id");
+            out.push((repo, node_id, vec));
+        }
+        Ok(out)
+    }
+
     /// Total number of stored embeddings, optionally filtered by
     /// repo. Cheap — used by the `/v1/embed/stats` route.
     pub async fn count(&self, repo: Option<&str>) -> Result<u64> {
