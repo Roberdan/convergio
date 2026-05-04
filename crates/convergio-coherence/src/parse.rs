@@ -1,4 +1,4 @@
-//! ADR / index / workspace parsers for [`super::coherence`].
+//! ADR / index / workspace parsers for [`crate::coherence`].
 //!
 //! Split out to honour the 300-line per-file cap.
 

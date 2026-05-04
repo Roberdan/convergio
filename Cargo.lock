@@ -639,6 +639,7 @@ dependencies = [
  "chrono",
  "clap",
  "convergio-brand",
+ "convergio-coherence",
  "convergio-durability",
  "convergio-i18n",
  "convergio-runner",
@@ -652,6 +653,20 @@ dependencies = [
  "toml",
  "tracing",
  "tracing-subscriber",
+ "walkdir",
+]
+
+[[package]]
+name = "convergio-coherence"
+version = "0.3.9"
+dependencies = [
+ "anyhow",
+ "clap",
+ "convergio-i18n",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "toml",
  "walkdir",
 ]
 

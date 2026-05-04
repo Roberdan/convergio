@@ -1,4 +1,4 @@
-//! Line-level scanners for [`super::coherence_body`].
+//! Line-level scanners for [`crate::body`].
 //!
 //! Pure helpers (no I/O) that turn a markdown line into a list of
 //! candidate identifiers / paths. Split out to honour the 300-line cap.

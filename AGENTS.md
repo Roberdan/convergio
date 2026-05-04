@@ -103,6 +103,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-brand` — Brand kit for Convergio: palette, claim, banner, boot animation — shared by CLI, TUI, daemon
 - `convergio-bus` — Layer 2 of Convergio: persistent agent message bus (topic + direct + ack), scoped per plan
 - `convergio-cli` — cvg — pure HTTP client for the Convergio daemon
+- `convergio-coherence` — Documentation/code coherence verifiers for Convergio (`cvg coherence` suite)
 - `convergio-db` — SQLite database pool for the local Convergio runtime
 - `convergio-durability` — Layer 1 of Convergio: plans, tasks, evidence, hash-chained audit log, gate pipeline
 - `convergio-embed` — Embeddings storage and pluggable embedder trait for Convergio Tier-3 retrieval (ADR-0038, F1)

@@ -18,14 +18,14 @@
 //! retrieval — companion to `cvg coherence check`.
 //!
 //! All user-facing strings flow through [`convergio_i18n::Bundle`] (P5).
-//! Parsing helpers live in [`super::coherence_routes_parse`]; diffing
-//! lives in [`super::coherence_routes_diff`] (300-line cap).
+//! Parsing helpers live in [`crate::routes_parse`]; diffing
+//! lives in [`crate::routes_diff`] (300-line cap).
 
-use super::coherence_routes_diff::{diff, split_methods_from_detail};
-use super::coherence_routes_parse::{
+use crate::routes_diff::{diff, split_methods_from_detail};
+use crate::routes_parse::{
     parse_agents_routes, parse_arch_endpoints, parse_code_routes, RouteEntry, Violation,
 };
-use super::OutputMode;
+use crate::OutputMode;
 use anyhow::Result;
 use convergio_i18n::Bundle;
 use serde::Serialize;

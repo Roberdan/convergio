@@ -1,4 +1,4 @@
-//! Body-text drift detector for [`super::coherence`].
+//! Body-text drift detector for [`crate::coherence`].
 //!
 //! Walks every `*.md` under the repo root and looks for two kinds
 //! of unresolved references inside live (non-fenced) text:
@@ -8,9 +8,9 @@
 //! - File paths under `crates|docs|scripts|examples/` — must exist
 //!   on disk.
 //!
-//! Line-level scanning lives in [`super::coherence_body_scan`].
+//! Line-level scanning lives in [`crate::body_scan`].
 
-use super::coherence_body_scan::{find_crate_idents, find_repo_paths, live_lines};
+use crate::body_scan::{find_crate_idents, find_repo_paths, live_lines};
 use anyhow::{Context, Result};
 use std::collections::BTreeSet;
 use std::path::Path;
