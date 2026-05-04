@@ -8,7 +8,7 @@ use crate::error::ApiError;
 use axum::extract::{Path as AxumPath, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use convergio_embed::{rrf_fuse, semantic_search, DEFAULT_RRF_K};
+use convergio_embed::{linear_blend_fuse, rrf_fuse, semantic_search, DEFAULT_RRF_K};
 use convergio_graph::{
     BuildReport, ClusterReport, ContextPack, DriftReport, StructuredContextMetadata,
     DEFAULT_NODE_LIMIT, DEFAULT_TOKEN_BUDGET,
@@ -104,6 +104,13 @@ struct ForTaskQuery {
     /// Capped at 100 server-side.
     #[serde(default)]
     semantic_top_k: Option<usize>,
+    /// Structural weight for linear-blend fusion (`0.0`–`1.0`).
+    /// When set, overrides RRF with a rank-normalised linear blend:
+    /// `score = alpha × structural + (1 − alpha) × semantic`.
+    /// `1.0` = pure structural; `0.0` = pure semantic.
+    /// Ignored unless `semantic=1`.
+    #[serde(default)]
+    alpha: Option<f64>,
 }
 
 fn parse_truthy(s: &str) -> bool {
@@ -152,7 +159,7 @@ async fn for_task(
         .map_err(|e| ApiError::Internal(format!("serialise pack: {e}")))?;
 
     if q.semantic.as_deref().is_some_and(parse_truthy) {
-        let hybrid = build_hybrid_section(&state, &pack, &text, q.semantic_top_k).await?;
+        let hybrid = build_hybrid_section(&state, &pack, &text, q.semantic_top_k, q.alpha).await?;
         if let Value::Object(ref mut map) = body {
             map.insert("hybrid".to_string(), hybrid);
         }
@@ -165,6 +172,7 @@ async fn build_hybrid_section(
     pack: &ContextPack,
     query_text: &str,
     semantic_top_k: Option<usize>,
+    alpha: Option<f64>,
 ) -> Result<Value, ApiError> {
     let top_k = semantic_top_k.unwrap_or(25).clamp(1, 100);
     // Structural ranks come from matched_files, ordered by node_count
@@ -179,15 +187,28 @@ async fn build_hybrid_section(
         .iter()
         .map(|n| n.node_id.as_str())
         .collect();
-    let hits = rrf_fuse(&structural_ids, &semantic_ids, DEFAULT_RRF_K);
-    Ok(json!({
-        "fusion": "rrf",
-        "k": DEFAULT_RRF_K,
-        "model": state.embedder.model_id(),
-        "structural_count": pack.files.len(),
-        "semantic_count": semantic_neighbors.len(),
-        "hits": hits,
-    }))
+    if let Some(a) = alpha {
+        let a = a.clamp(0.0, 1.0);
+        let hits = linear_blend_fuse(&structural_ids, &semantic_ids, a);
+        Ok(json!({
+            "fusion": "linear_blend",
+            "alpha": a,
+            "model": state.embedder.model_id(),
+            "structural_count": pack.files.len(),
+            "semantic_count": semantic_neighbors.len(),
+            "hits": hits,
+        }))
+    } else {
+        let hits = rrf_fuse(&structural_ids, &semantic_ids, DEFAULT_RRF_K);
+        Ok(json!({
+            "fusion": "rrf",
+            "k": DEFAULT_RRF_K,
+            "model": state.embedder.model_id(),
+            "structural_count": pack.files.len(),
+            "semantic_count": semantic_neighbors.len(),
+            "hits": hits,
+        }))
+    }
 }
 
 fn split_query_list(value: Option<String>) -> Vec<String> {

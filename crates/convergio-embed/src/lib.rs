@@ -65,7 +65,10 @@ pub mod fastembed_impl;
 pub use corpus::{collect_files, DEFAULT_MAX_LINES, SOURCE_EXTENSIONS};
 pub use embedder::{Embedder, EmbedderError};
 pub use error::{EmbedError, Result};
-pub use hybrid::{rrf_fuse, MatchSource, RetrievalHit, ScoreComponents, DEFAULT_RRF_K};
+pub use hybrid::{
+    linear_blend_fuse, rrf_fuse, MatchSource, RetrievalHit, ScoreComponents, DEFAULT_LINEAR_ALPHA,
+    DEFAULT_RRF_K,
+};
 pub use ingest::{ingest, ingest_one, IngestNode, IngestReport};
 pub use migrate::init;
 pub use query::semantic_search;
