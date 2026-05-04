@@ -692,10 +692,18 @@ name = "convergio-coherence"
 version = "0.3.10"
 dependencies = [
  "anyhow",
+ "axum",
  "chrono",
  "clap",
+ "convergio-bus",
+ "convergio-db",
+ "convergio-durability",
+ "convergio-embed",
  "convergio-fleet",
+ "convergio-graph",
  "convergio-i18n",
+ "convergio-lifecycle",
+ "convergio-server",
  "reqwest",
  "serde",
  "serde_json",
@@ -703,6 +711,7 @@ dependencies = [
  "tokio",
  "toml",
  "tracing",
+ "uuid",
  "walkdir",
 ]
 

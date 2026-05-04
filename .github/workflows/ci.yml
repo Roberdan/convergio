@@ -141,6 +141,45 @@ jobs:
         # and emits no findings.
         run: cargo run -p convergio-cli -- coherence agents --since 7d --output plain || true
 
+      - name: cvg coherence handshake (E2E loop smoke test)
+        # F1 / 5th verifier. Boots a temporary daemon (tempdir DB so
+        # migrations run cleanly), runs two synthetic agents through
+        # register → publish → poll → ack, asserts the round-trip
+        # closes within 10s. Catches regressions in any of those
+        # four seams.
+        run: |
+          export CONVERGIO_DB="sqlite:///tmp/convergio-handshake-ci.db?mode=rwc"
+          rm -f /tmp/convergio-handshake-ci.db /tmp/convergio-handshake-ci.db-wal /tmp/convergio-handshake-ci.db-shm
+          # Build server + cli binaries first so the cargo run below
+          # only takes the time to start, not to compile (CI cargo
+          # run can take 20-30s on cold cache, racing the probe loop).
+          cargo build -q -p convergio-server -p convergio-cli
+          cargo run -q -p convergio-server -- start --bind 127.0.0.1:18421 &
+          DAEMON_PID=$!
+          trap 'kill $DAEMON_PID 2>/dev/null || true; rm -f /tmp/convergio-handshake-ci.db*' EXIT
+          # Probe up to 120s (240 × 0.5s) — health + actual mutating
+          # route. /v1/health alone returns OK before migrations
+          # finish, so probe POST /v1/plans too. Fail loud if the
+          # daemon never becomes ready, instead of silently running
+          # the verifier against an uninitialised target.
+          ready=0
+          for _ in $(seq 1 240); do
+            if curl -fsS http://127.0.0.1:18421/v1/health >/dev/null 2>&1 \
+              && curl -fsS -X POST http://127.0.0.1:18421/v1/plans \
+                -H 'content-type: application/json' \
+                -d '{"title":"ci-probe","description":null,"project":"coherence"}' >/dev/null 2>&1; then
+              ready=1
+              break
+            fi
+            sleep 0.5
+          done
+          if [ "$ready" != "1" ]; then
+            echo "::error::daemon never became ready after 120s; aborting handshake"
+            exit 1
+          fi
+          cargo run -q -p convergio-cli -- coherence handshake \
+            --daemon http://127.0.0.1:18421 --timeout-seconds 10
+
       - name: legibility audit
         # CONSTITUTION § 16. Combines static caps + index density +
         # audit chain integrity into a 0-100 score. Advisory only:

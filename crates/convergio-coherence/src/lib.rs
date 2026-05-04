@@ -34,6 +34,12 @@ mod body_scan;
 pub mod close_post_hoc;
 mod close_post_hoc_scan;
 pub mod fleet;
+pub mod handshake;
+mod handshake_http;
+mod handshake_render;
+mod handshake_run;
+#[cfg(test)]
+mod handshake_tests;
 mod parse;
 mod routes;
 mod routes_diff;

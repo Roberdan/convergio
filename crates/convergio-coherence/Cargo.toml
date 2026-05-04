@@ -23,10 +23,20 @@ clap = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+tokio = { workspace = true }
 toml = { workspace = true }
 tracing = { workspace = true }
+uuid = { workspace = true }
 walkdir = { workspace = true }
 
 [dev-dependencies]
+axum = { workspace = true }
+convergio-bus = { workspace = true }
+convergio-db = { workspace = true }
+convergio-durability = { workspace = true }
+convergio-embed = { workspace = true }
+convergio-fleet = { workspace = true }
+convergio-graph = { workspace = true }
+convergio-lifecycle = { workspace = true }
+convergio-server = { workspace = true }
 tempfile = { workspace = true }
-tokio = { workspace = true }

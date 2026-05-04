@@ -16,6 +16,7 @@ use crate::agents;
 use crate::body::{scan_body, walk_markdown, BodyViolation};
 use crate::close_post_hoc;
 use crate::fleet;
+use crate::handshake;
 use crate::parse::{load_adrs, parse_index, parse_workspace_members};
 use crate::routes;
 use crate::OutputMode;
@@ -103,6 +104,17 @@ pub enum CoherenceCommand {
         #[arg(long, default_value = "http://127.0.0.1:8420")]
         daemon: String,
     },
+    /// 2-session E2E smoke test: register A+B + heartbeat, A→ping,
+    /// B→pong, A receives pong, both ack, both retire. Exits non-zero
+    /// if any seam fails or times out (F1 in db812b00 plan).
+    Handshake {
+        /// Daemon base URL.
+        #[arg(long, default_value = "http://127.0.0.1:8420")]
+        daemon: String,
+        /// Per-phase timeout in seconds. Default 5.
+        #[arg(long, default_value_t = 5)]
+        timeout_seconds: u64,
+    },
 }
 
 /// Entry point.
@@ -126,6 +138,10 @@ pub async fn run(bundle: &Bundle, output: OutputMode, cmd: CoherenceCommand) -> 
         CoherenceCommand::Fleet { config, strict } => {
             fleet::run(bundle, output, config, strict).await
         }
+        CoherenceCommand::Handshake {
+            daemon,
+            timeout_seconds,
+        } => handshake::run(bundle, output, &daemon, timeout_seconds).await,
     }
 }
 
