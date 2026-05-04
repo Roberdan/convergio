@@ -694,6 +694,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "clap",
+ "convergio-fleet",
  "convergio-i18n",
  "reqwest",
  "serde",

@@ -33,6 +33,7 @@ mod body;
 mod body_scan;
 pub mod close_post_hoc;
 mod close_post_hoc_scan;
+pub mod fleet;
 mod parse;
 mod routes;
 mod routes_diff;

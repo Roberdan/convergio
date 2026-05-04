@@ -15,6 +15,7 @@ use crate::adrs;
 use crate::agents;
 use crate::body::{scan_body, walk_markdown, BodyViolation};
 use crate::close_post_hoc;
+use crate::fleet;
 use crate::parse::{load_adrs, parse_index, parse_workspace_members};
 use crate::routes;
 use crate::OutputMode;
@@ -71,6 +72,19 @@ pub enum CoherenceCommand {
         #[arg(long, default_value = "http://127.0.0.1:8420")]
         daemon: String,
     },
+    /// Cross-repo schema check on `~/.convergio/v3/fleet.toml`.
+    /// Reports missing paths, missing retrieval-golden fixtures,
+    /// dangling `derives_from`, and multiple `engine` roots
+    /// (P1-7 / issue #177).
+    Fleet {
+        /// Path to fleet.toml. Defaults to
+        /// `~/.convergio/v3/fleet.toml`.
+        #[arg(long)]
+        config: Option<PathBuf>,
+        /// Exit non-zero on any finding (advisory by default).
+        #[arg(long, default_value_t = false)]
+        strict: bool,
+    },
     /// Surface bypass-the-gate volume: list every
     /// `task.closed_post_hoc` audit row in the window, grouped by
     /// agent + plan, with reasons. Subsumes retrospective finding H5
@@ -109,6 +123,9 @@ pub async fn run(bundle: &Bundle, output: OutputMode, cmd: CoherenceCommand) -> 
             threshold,
             daemon,
         } => close_post_hoc::run(bundle, output, &daemon, &since, strict, threshold).await,
+        CoherenceCommand::Fleet { config, strict } => {
+            fleet::run(bundle, output, config, strict).await
+        }
     }
 }
 
