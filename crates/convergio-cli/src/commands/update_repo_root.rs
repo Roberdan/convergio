@@ -1,21 +1,7 @@
-//! Workspace-root discovery for `cvg update`.
-//!
-//! Three-level cascade so an operator can run `cvg update` from
-//! anywhere on the system, not only from inside the cloned repo:
-//!
-//! 1. `CONVERGIO_REPO_DIR` env var — explicit override, wins always.
-//! 2. `repo_path` field in `~/.convergio/config.toml` — persistent
-//!    operator preference, written by `cvg setup` after the first
-//!    run inside the repo.
-//! 3. Walk up from the current working directory looking for the
-//!    workspace `Cargo.toml`. Original behaviour, kept as the last
-//!    fallback so the command still works on a fresh clone before
-//!    `cvg setup` has had a chance to run.
-//!
-//! Every candidate is validated: it must be a directory containing a
-//! `Cargo.toml` whose contents include `[workspace]`. A configured
-//! path that no longer points at a workspace falls through to the
-//! next level — better than aborting.
+//! Workspace-root discovery for `cvg update`. Three-level cascade:
+//! `CONVERGIO_REPO_DIR` env, `repo_path` in `~/.convergio/config.toml`,
+//! walk-up from cwd. Each candidate validated as a `[workspace]`
+//! Cargo.toml dir; invalid candidates fall through (don't abort).
 
 use anyhow::{Context, Result};
 use std::path::{Path, PathBuf};
@@ -82,22 +68,20 @@ fn parse_repo_path(text: &str) -> Option<PathBuf> {
 }
 
 fn expand_home(s: &str) -> String {
+    let Some(home) = std::env::var_os("HOME") else {
+        return s.to_owned();
+    };
+    let mut out = PathBuf::from(home);
     if let Some(rest) = s.strip_prefix("$HOME") {
-        if let Some(home) = std::env::var_os("HOME") {
-            let mut out = PathBuf::from(home);
-            let trimmed = rest.trim_start_matches('/');
-            if !trimmed.is_empty() {
-                out.push(trimmed);
-            }
-            return out.to_string_lossy().into_owned();
+        let trimmed = rest.trim_start_matches('/');
+        if !trimmed.is_empty() {
+            out.push(trimmed);
         }
+        return out.to_string_lossy().into_owned();
     }
     if let Some(rest) = s.strip_prefix("~/") {
-        if let Some(home) = std::env::var_os("HOME") {
-            let mut out = PathBuf::from(home);
-            out.push(rest);
-            return out.to_string_lossy().into_owned();
-        }
+        out.push(rest);
+        return out.to_string_lossy().into_owned();
     }
     s.to_owned()
 }
@@ -255,38 +239,30 @@ mod tests {
     }
 
     #[test]
-    fn parse_github_slug_https_with_dot_git() {
-        assert_eq!(
-            parse_github_slug("https://github.com/Roberdan/convergio.git"),
-            Some("Roberdan/convergio".into())
-        );
-    }
-
-    #[test]
-    fn parse_github_slug_https_no_git_suffix() {
-        assert_eq!(
-            parse_github_slug("https://github.com/Roberdan/convergio"),
-            Some("Roberdan/convergio".into())
-        );
-    }
-
-    #[test]
-    fn parse_github_slug_ssh() {
-        assert_eq!(
-            parse_github_slug("git@github.com:Roberdan/convergio.git"),
-            Some("Roberdan/convergio".into())
-        );
-    }
-
-    #[test]
-    fn parse_github_slug_rejects_non_github() {
-        assert_eq!(parse_github_slug("https://gitlab.com/foo/bar.git"), None);
-        assert_eq!(parse_github_slug(""), None);
-        assert_eq!(parse_github_slug("not-a-url"), None);
-    }
-
-    #[test]
-    fn parse_github_slug_rejects_partial_path() {
-        assert_eq!(parse_github_slug("https://github.com/just-owner"), None);
+    fn parse_github_slug_table() {
+        for (url, want) in [
+            (
+                "https://github.com/Roberdan/convergio.git",
+                Some("Roberdan/convergio"),
+            ),
+            (
+                "https://github.com/Roberdan/convergio",
+                Some("Roberdan/convergio"),
+            ),
+            (
+                "git@github.com:Roberdan/convergio.git",
+                Some("Roberdan/convergio"),
+            ),
+            (
+                "ssh://git@github.com/Roberdan/convergio",
+                Some("Roberdan/convergio"),
+            ),
+            ("https://gitlab.com/foo/bar.git", None),
+            ("", None),
+            ("not-a-url", None),
+            ("https://github.com/just-owner", None),
+        ] {
+            assert_eq!(parse_github_slug(url), want.map(String::from), "url={url}");
+        }
     }
 }

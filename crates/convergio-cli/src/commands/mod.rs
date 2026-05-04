@@ -20,6 +20,7 @@ pub mod coherence;
 pub mod crdt;
 pub mod dash;
 pub mod demo;
+pub mod discover;
 pub mod dispatch;
 pub mod docs;
 mod docs_generators;

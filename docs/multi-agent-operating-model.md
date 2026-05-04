@@ -134,6 +134,28 @@ The loop is:
 16. If refused, read `explain_last_refusal`, fix, add new evidence, retry.
 17. Only report done after Convergio accepts.
 
+## Discovering peers
+
+To answer "who can I talk to right now?" without composing curl + jq,
+run `cvg discover`. It prints a one-shot snapshot of:
+
+- **Active peers** — registry rows whose heartbeat fell inside the
+  `--since` window (default `30m`) and whose status is not
+  `terminated`/`retired`.
+- **Recent bus activity** — top 5 topics by message count across the
+  most recent plans, with the plan they belong to and a relative
+  `last_at`.
+- **Your plans** — every plan where the caller's `agent_id` is on at
+  least one task, plus how many of those tasks are still open.
+
+Identity resolution mirrors `cvg status --mine`: `--agent-id` flag →
+`CONVERGIO_AGENT_ID` env → `claude-code-${USER}`. Use
+`--output json` for scripts. Recommended sequence on session start
+is `cvg session register-and-poll` → `cvg session resume` →
+`cvg discover` so the agent has both its own brief and the swarm's
+shape before claiming work — this is the F2 mitigation for the
+"territory by luck" anti-pattern.
+
 ## Does the database act as context?
 
 Yes, but not as a giant chat transcript.
