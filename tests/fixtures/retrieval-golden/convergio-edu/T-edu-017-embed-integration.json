@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-017-embed-integration",
+  "repo": "convergio-edu",
+  "title": "integrate convergio-embed semantic search for lesson retrieval",
+  "task_body": "The lesson search backend currently uses naive keyword matching. Wire it to convergio-embed's semantic_search so that student queries are embedded and ranked by cosine similarity. Update the EmbedPolicy to include lesson content nodes, add convergio-edu as a fleet repo, and confirm the recall bench includes edu fixtures.",
+  "expected_files": [
+    "convergio-edu/src/backend/search_handler.rs",
+    "convergio/crates/convergio-embed/src/select.rs",
+    "convergio/crates/convergio-fleet/src/config.rs",
+    "convergio/tests/fixtures/retrieval-golden/convergio-edu/T-edu-017-embed-integration.json"
+  ],
+  "rationale": "search_handler.rs calls the embed API; select.rs expands EmbedPolicy for edu nodes; config.rs adds convergio-edu as a fleet entry; the fixture itself is the evidence.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}

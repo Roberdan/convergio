@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-023-schema-migration",
+  "repo": "convergio-edu",
+  "title": "schema migration to add lesson metadata to convergio tasks",
+  "task_body": "Lesson tasks need to store edu-specific metadata (lesson_id, student_id, exercise_type) alongside the convergio task. Add a JSONB context field to the task via a new convergio migration, update the edu backend to write and read this field, and update the API type definitions in both repos.",
+  "expected_files": [
+    "convergio-edu/src/backend/lesson_task.rs",
+    "convergio-edu/src/api/tasks.ts",
+    "convergio/crates/convergio-durability/migrations/0020_task_context.sql",
+    "convergio/crates/convergio-api/src/lib.rs"
+  ],
+  "rationale": "lesson_task.rs reads the new field; tasks.ts types the context object; the SQL migration adds the column; api/lib.rs exposes the updated TaskContext type.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}

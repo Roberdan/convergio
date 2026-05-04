@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-015-lesson-export",
+  "repo": "convergio-edu",
+  "title": "export lesson plan as PDF",
+  "task_body": "Instructors need to share lesson plans offline. Add an Export as PDF button to the lesson plan view that generates a server-side PDF using a headless renderer and streams it to the browser as an attachment. Include the plan title, task list, and completion status.",
+  "expected_files": [
+    "convergio-edu/src/backend/pdf_export.rs",
+    "convergio-edu/src/ui/lesson_plan_form.tsx",
+    "convergio-edu/src/api/export.ts",
+    "convergio-edu/tests/integration/pdf_export.test.ts"
+  ],
+  "rationale": "pdf_export.rs renders the plan to PDF bytes; lesson_plan_form.tsx adds the export button; export.ts wraps the download fetch; integration test verifies Content-Type header.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}

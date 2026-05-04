@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-005-grader-retry",
+  "repo": "convergio-edu",
+  "title": "add exponential back-off retry to the grader service",
+  "task_body": "The Rust grader panics on transient downstream failures instead of retrying. Add an exponential back-off retry with jitter (max 3 attempts, base delay 200 ms). Surface the final error as a structured GraderError and test the retry sequence with a mock that fails twice then succeeds.",
+  "expected_files": [
+    "convergio-edu/src/backend/grader.rs",
+    "convergio-edu/src/backend/retry.rs",
+    "convergio-edu/src/backend/error.rs",
+    "convergio-edu/tests/unit/grader_retry.test.rs"
+  ],
+  "rationale": "retry.rs is the new module; grader.rs calls it; error.rs gains GraderError; test validates the retry sequence.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}

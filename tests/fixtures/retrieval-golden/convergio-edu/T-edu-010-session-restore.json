@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-010-session-restore",
+  "repo": "convergio-edu",
+  "title": "restore in-progress lesson sessions after page reload",
+  "task_body": "Students lose exercise progress when they reload the page because the session state lives only in memory. Persist the session state to localStorage on every state change and restore it on mount. Add a confirmation dialog when a stale session is found.",
+  "expected_files": [
+    "convergio-edu/src/tracker/progress.ts",
+    "convergio-edu/src/hooks/useSession.ts",
+    "convergio-edu/src/ui/lesson_view.tsx",
+    "convergio-edu/tests/unit/session_restore.test.ts"
+  ],
+  "rationale": "progress.ts persists/restores state; useSession.ts is the React hook; lesson_view.tsx uses the hook; test mocks localStorage and asserts restore flow.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}
