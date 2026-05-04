@@ -1,0 +1,12 @@
+{
+  "name": "plan-fsm-ts",
+  "version": "0.1.0",
+  "description": "Plan FSM fixture — TypeScript reference implementation (F2-11)",
+  "main": "src/plan_fsm.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

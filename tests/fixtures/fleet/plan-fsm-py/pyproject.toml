@@ -1,0 +1,5 @@
+[project]
+name = "plan-fsm-py"
+version = "0.1.0"
+description = "Plan FSM fixture — Python reference implementation (F2-11)"
+requires-python = ">=3.10"

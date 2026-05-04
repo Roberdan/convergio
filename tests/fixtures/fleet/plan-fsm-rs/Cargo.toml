@@ -1,0 +1,5 @@
+[package]
+name = "plan-fsm-rs"
+version = "0.1.0"
+edition = "2021"
+description = "Plan FSM fixture — Rust reference implementation (F2-11)"
