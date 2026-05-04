@@ -214,6 +214,7 @@ The full top-level CLI surface is also auto-regenerated:
 - `cvg doctor`
 - `cvg embed`
 - `cvg evidence`
+- `cvg fleet`
 - `cvg graph`
 - `cvg health`
 - `cvg mcp`
