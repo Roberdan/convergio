@@ -46,5 +46,7 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-parse-multi` stats:** 5 `*.rs` files — bootstrap phase F2-1.
+**`convergio-parse-multi` stats:** 6 `*.rs` files / 14 public items / 323 lines (under `src/`).
+
+No files within 50 lines of the 300-line cap.
 <!-- END AUTO -->

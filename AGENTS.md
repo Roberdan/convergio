@@ -112,6 +112,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-i18n` — Internationalization (P5) — Fluent-backed message bundles for every user-facing string in Convergio
 - `convergio-lifecycle` — Layer 3 of Convergio: spawn, supervise, heartbeat and reap long-running agent processes
 - `convergio-mcp` — MCP bridge for local Convergio daemon
+- `convergio-parse-multi` — Multi-language AST parsing layer for Convergio fleet retrieval (ADR-0038, F2)
 - `convergio-planner` — Layer 4 (reference) of Convergio: turns a natural-language mission into a structured plan
 - `convergio-runner` — Vendor-CLI runners for Convergio agents (Claude Code + GitHub Copilot CLI)
 - `convergio-server` — Local HTTP daemon for Convergio
@@ -192,7 +193,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 652 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 659 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
