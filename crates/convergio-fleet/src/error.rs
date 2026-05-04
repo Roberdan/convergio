@@ -32,6 +32,10 @@ pub enum FleetError {
     /// A repo with this name was not found.
     #[error("repo '{0}' not found in the fleet")]
     RepoNotFound(String),
+
+    /// Error propagated from the embeddings layer.
+    #[error("embed error: {0}")]
+    Embed(#[from] convergio_embed::EmbedError),
 }
 
 /// Convenience alias.

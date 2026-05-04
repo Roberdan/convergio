@@ -1,4 +1,4 @@
-//! `/v1/fleet/repos` and `/v1/fleet/build` — fleet management (ADR-0038, F2-6/F2-7).
+//! `/v1/fleet/repos` and `/v1/fleet/build` — fleet management (ADR-0038, F2-6/F2-7/F2-8).
 //!
 //! Routes:
 //! - `POST   /v1/fleet/repos`        — add a repo to the fleet
@@ -12,7 +12,7 @@ use axum::extract::{Path, State};
 use axum::routing::{patch, post};
 use axum::{Json, Router};
 use convergio_embed::{collect_files, ingest, DEFAULT_MAX_LINES};
-use convergio_fleet::{FleetRepo, RepoEntry, RepoRole, SIMILAR_TO_THRESHOLD};
+use convergio_fleet::{run_similarity_batch, FleetRepo, RepoEntry, RepoRole};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::PathBuf;
@@ -202,10 +202,13 @@ async fn build(
         tracing::info!(repo = %repo.name, embedded = report.embedded, "fleet build: repo done");
     }
 
-    let edge_count = if body.refresh_similarity {
-        rebuild_similarity(&state).await?
+    let batch_report = if body.refresh_similarity {
+        let model = state.embedder.model_id();
+        run_similarity_batch(&state.embed, &state.fleet, model)
+            .await
+            .map_err(|e| ApiError::Internal(format!("similarity batch failed: {e}")))?
     } else {
-        0
+        convergio_fleet::BatchReport::default()
     };
 
     Ok(Json(json!({
@@ -219,58 +222,12 @@ async fn build(
             "skipped_unchanged": skipped,
             "failed": failed,
         },
-        "similar_edges_written": edge_count,
+        "similarity": {
+            "pairs_checked": batch_report.pairs_checked,
+            "similar_to": batch_report.similar_to,
+            "duplicates": batch_report.duplicates,
+        },
     })))
-}
-
-/// Rebuild cross-repo cosine similarity edges in one pass.
-async fn rebuild_similarity(state: &AppState) -> Result<usize, ApiError> {
-    state
-        .fleet
-        .clear_similar_edges()
-        .await
-        .map_err(ApiError::Fleet)?;
-
-    let model = state.embedder.model_id();
-    let rows = state
-        .embed
-        .all_for_model(model)
-        .await
-        .map_err(|e| ApiError::Internal(format!("all_for_model failed: {e}")))?;
-
-    let mut written = 0usize;
-    for (i, (repo_a, node_a, vec_a)) in rows.iter().enumerate() {
-        for (repo_b, node_b, vec_b) in &rows[i + 1..] {
-            if repo_a == repo_b {
-                continue;
-            }
-            let score = cosine_sim(vec_a, vec_b);
-            if score >= SIMILAR_TO_THRESHOLD {
-                state
-                    .fleet
-                    .upsert_similar_edge(repo_a, node_a, repo_b, node_b, score)
-                    .await
-                    .map_err(ApiError::Fleet)?;
-                written += 1;
-            }
-        }
-    }
-    Ok(written)
-}
-
-/// Dot-product cosine similarity for normalised-enough vectors.
-fn cosine_sim(a: &[f32], b: &[f32]) -> f32 {
-    if a.len() != b.len() || a.is_empty() {
-        return 0.0;
-    }
-    let dot: f32 = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum();
-    let na: f32 = a.iter().map(|x| x * x).sum::<f32>().sqrt();
-    let nb: f32 = b.iter().map(|x| x * x).sum::<f32>().sqrt();
-    if na == 0.0 || nb == 0.0 {
-        0.0
-    } else {
-        dot / (na * nb)
-    }
 }
 
 /// File extensions to embed for a given primary language.

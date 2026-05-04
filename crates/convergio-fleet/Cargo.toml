@@ -16,6 +16,7 @@ workspace = true
 
 [dependencies]
 convergio-db = { workspace = true }
+convergio-embed = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
@@ -25,5 +26,6 @@ toml = { workspace = true }
 uuid = { workspace = true }
 
 [dev-dependencies]
+convergio-graph = { workspace = true }
 tempfile = { workspace = true }
 tokio = { workspace = true }

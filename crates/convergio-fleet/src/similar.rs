@@ -1,4 +1,4 @@
-//! Cross-repo similarity edge store (ADR-0038, F2-7).
+//! Cross-repo similarity edge store (ADR-0038, F2-7/F2-8).
 //!
 //! Methods are added to [`FleetStore`] to persist and query the
 //! `fleet_similar_edges` table that is populated by the fleet build.
@@ -25,6 +25,8 @@ pub struct SimilarEdge {
     pub node_id_b: String,
     /// Cosine similarity score in `[0.0, 1.0]`.
     pub score: f32,
+    /// Integer weight: `round(score × 1000)`.
+    pub weight: u32,
     /// Edge kind: `"similar_to"` or `"duplicates"`.
     pub kind: String,
     /// ISO-8601 timestamp of when this edge was computed.
@@ -32,7 +34,44 @@ pub struct SimilarEdge {
 }
 
 impl FleetStore {
-    /// Insert or replace a cross-repo similarity edge.
+    /// Insert or replace a cross-repo similarity edge, with explicit kind.
+    ///
+    /// `kind` must be `"similar_to"` or `"duplicates"` — the DB CHECK
+    /// constraint enforces this.  `weight` is stored as
+    /// `round(score × 1000)`.
+    pub async fn upsert_similar_edge_classified(
+        &self,
+        repo_a: &str,
+        node_id_a: &str,
+        repo_b: &str,
+        node_id_b: &str,
+        score: f32,
+        kind: &str,
+    ) -> Result<()> {
+        let weight = (score * 1000.0).round() as i64;
+        sqlx::query(
+            "INSERT OR REPLACE INTO fleet_similar_edges \
+             (repo_a, node_id_a, repo_b, node_id_b, score, kind, weight) \
+             VALUES (?, ?, ?, ?, ?, ?, ?)",
+        )
+        .bind(repo_a)
+        .bind(node_id_a)
+        .bind(repo_b)
+        .bind(node_id_b)
+        .bind(score)
+        .bind(kind)
+        .bind(weight)
+        .execute(self.pool().inner())
+        .await?;
+        Ok(())
+    }
+
+    /// Insert or replace a cross-repo similarity edge, classifying by threshold.
+    ///
+    /// Scores ≥ [`DUPLICATES_THRESHOLD`] → `"duplicates"`;
+    /// scores ≥ [`SIMILAR_TO_THRESHOLD`] → `"similar_to"`.
+    /// For structural-shape-aware classification use
+    /// [`Self::upsert_similar_edge_classified`] directly.
     pub async fn upsert_similar_edge(
         &self,
         repo_a: &str,
@@ -46,20 +85,8 @@ impl FleetStore {
         } else {
             "similar_to"
         };
-        sqlx::query(
-            "INSERT OR REPLACE INTO fleet_similar_edges \
-             (repo_a, node_id_a, repo_b, node_id_b, score, kind) \
-             VALUES (?, ?, ?, ?, ?, ?)",
-        )
-        .bind(repo_a)
-        .bind(node_id_a)
-        .bind(repo_b)
-        .bind(node_id_b)
-        .bind(score)
-        .bind(kind)
-        .execute(self.pool().inner())
-        .await?;
-        Ok(())
+        self.upsert_similar_edge_classified(repo_a, node_id_a, repo_b, node_id_b, score, kind)
+            .await
     }
 
     /// Remove all similarity edges (called before a full rebuild).
@@ -91,7 +118,7 @@ impl FleetStore {
     /// List all similarity edges, ordered by descending score.
     pub async fn list_similar_edges(&self, limit: usize) -> Result<Vec<SimilarEdge>> {
         let rows = sqlx::query(
-            "SELECT repo_a, node_id_a, repo_b, node_id_b, score, kind, built_at \
+            "SELECT repo_a, node_id_a, repo_b, node_id_b, score, weight, kind, built_at \
              FROM fleet_similar_edges \
              ORDER BY score DESC \
              LIMIT ?",
@@ -108,6 +135,7 @@ impl FleetStore {
                 repo_b: r.get("repo_b"),
                 node_id_b: r.get("node_id_b"),
                 score: r.get::<f64, _>("score") as f32,
+                weight: r.get::<i64, _>("weight") as u32,
                 kind: r.get("kind"),
                 built_at: r.get("built_at"),
             })
@@ -175,6 +203,7 @@ mod tests {
         assert_eq!(edges.len(), 1);
         assert!(edges[0].score >= 0.95, "score should be updated to 0.96");
         assert_eq!(edges[0].kind, "duplicates");
+        assert_eq!(edges[0].weight, 960);
     }
 
     #[tokio::test]
@@ -186,5 +215,28 @@ mod tests {
             .unwrap();
         store.clear_similar_edges().await.unwrap();
         assert_eq!(store.count_similar_edges(None).await.unwrap(), 0);
+    }
+
+    #[tokio::test]
+    async fn weight_computed_correctly() {
+        let (store, _tmp) = test_store().await;
+        store
+            .upsert_similar_edge("x", "n1", "y", "n2", 0.875)
+            .await
+            .unwrap();
+        let edges = store.list_similar_edges(1).await.unwrap();
+        assert_eq!(edges[0].weight, 875);
+    }
+
+    #[tokio::test]
+    async fn classified_upsert_respects_explicit_kind() {
+        let (store, _tmp) = test_store().await;
+        // Score would normally give "duplicates" (≥0.95), but we force "similar_to".
+        store
+            .upsert_similar_edge_classified("x", "n1", "y", "n2", 0.97, "similar_to")
+            .await
+            .unwrap();
+        let edges = store.list_similar_edges(1).await.unwrap();
+        assert_eq!(edges[0].kind, "similar_to");
     }
 }
