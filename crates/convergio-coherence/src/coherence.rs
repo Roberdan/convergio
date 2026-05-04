@@ -14,6 +14,7 @@
 use crate::adrs;
 use crate::agents;
 use crate::body::{scan_body, walk_markdown, BodyViolation};
+use crate::close_post_hoc;
 use crate::parse::{load_adrs, parse_index, parse_workspace_members};
 use crate::routes;
 use crate::OutputMode;
@@ -70,6 +71,24 @@ pub enum CoherenceCommand {
         #[arg(long, default_value = "http://127.0.0.1:8420")]
         daemon: String,
     },
+    /// Surface bypass-the-gate volume: list every
+    /// `task.closed_post_hoc` audit row in the window, grouped by
+    /// agent + plan, with reasons. Subsumes retrospective finding H5
+    /// (P0-4 of the 2026-05-04 fix plan).
+    ClosePostHoc {
+        /// Window. `Nd` (days) or `Nh` (hours). Default 7d.
+        #[arg(long, default_value = "7d")]
+        since: String,
+        /// Exit non-zero when count > `--threshold`.
+        #[arg(long, default_value_t = false)]
+        strict: bool,
+        /// Strict-mode threshold. Default 0 (any close-post-hoc fails).
+        #[arg(long, default_value_t = 0)]
+        threshold: usize,
+        /// Daemon base URL.
+        #[arg(long, default_value = "http://127.0.0.1:8420")]
+        daemon: String,
+    },
 }
 
 /// Entry point.
@@ -84,6 +103,12 @@ pub async fn run(bundle: &Bundle, output: OutputMode, cmd: CoherenceCommand) -> 
             strict,
             daemon,
         } => agents::run(bundle, output, &root, &since, strict, &daemon).await,
+        CoherenceCommand::ClosePostHoc {
+            since,
+            strict,
+            threshold,
+            daemon,
+        } => close_post_hoc::run(bundle, output, &daemon, &since, strict, threshold).await,
     }
 }
 
