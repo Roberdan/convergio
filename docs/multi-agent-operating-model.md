@@ -305,13 +305,16 @@ Implemented:
 - executor loop wired in the daemon (ADR-0027);
 - planner capability action `planner.solve` (Opus-backed, ADR-0036);
 - TUI dashboard `cvg dash` (ADR-0029);
-- Tier-3 code-graph retrieval `cvg graph` (ADR-0014).
+- Tier-3 code-graph retrieval `cvg graph` (ADR-0014);
+- real-time SSE on `/v1/audit/stream` and
+  `/v1/plans/:id/messages/stream` (P1.1) — agents and dashboards
+  receive events as they happen instead of poll-only access.
 
 Not implemented yet:
 
 - skill-aware scheduling and automatic assignment;
 - remote (downloadable) capability registry;
-- push notifications on the bus (SSE/websocket);
+- websocket push (the SSE channel above is what shipped);
 - cross-repo embedding fleet (ADR-0038, F1 in flight).
 
 ## What must be built next

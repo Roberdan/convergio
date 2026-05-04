@@ -195,7 +195,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 871 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 877 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
@@ -303,11 +303,17 @@ For the full HTTP surface, drive `cvg` (typed) or `curl` (raw):
   `POST /v1/tasks/:id/heartbeat`, `POST /v1/tasks/:id/context`
 - Evidence: `POST /v1/tasks/:id/evidence`,
   `GET /v1/tasks/:id/evidence`, `DELETE /v1/evidence/:id`
-- Audit: `GET /v1/audit/verify`
+- Audit: `GET /v1/audit/verify`,
+  `GET /v1/audit/refusals/latest`, `GET /v1/audit/events`,
+  `GET /v1/audit/stream?since=&kinds=` (SSE, P1.1)
 - Bus (plan-scoped): `POST /v1/plans/:plan_id/messages`,
   `GET /v1/plans/:plan_id/messages?topic=&cursor=&exclude_sender=`
   (ADR-0024), `GET /v1/plans/:plan_id/messages/tail`,
+  `GET /v1/plans/:plan_id/messages/stream?topic=&since=` (SSE, P1.1),
   `GET /v1/plans/:plan_id/topics`, `POST /v1/messages/:id/ack`
+- SSE format: `event: audit` or `event: bus`, `data: <json>`,
+  blank-line frame separator, `: keepalive` heartbeat every 15s.
+  Reconnect with `since=<last-seq>` to resume.
 - Bus (system, ADR-0025): `GET /v1/system-messages`,
   `POST /v1/system-messages`
 - Agent runners (ADR-0028, 0032): `POST /v1/agents/spawn`,
