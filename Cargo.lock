@@ -811,6 +811,7 @@ dependencies = [
 name = "convergio-parse-multi"
 version = "0.3.9"
 dependencies = [
+ "convergio-graph",
  "thiserror 1.0.69",
  "tracing",
  "tree-sitter",
