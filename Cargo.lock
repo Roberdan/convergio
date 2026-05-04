@@ -639,6 +639,7 @@ dependencies = [
  "chrono",
  "clap",
  "convergio-brand",
+ "convergio-cli-pr",
  "convergio-cli-session",
  "convergio-coherence",
  "convergio-durability",
@@ -656,6 +657,19 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "walkdir",
+]
+
+[[package]]
+name = "convergio-cli-pr"
+version = "0.3.10"
+dependencies = [
+ "anyhow",
+ "clap",
+ "convergio-i18n",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]
@@ -951,6 +965,7 @@ dependencies = [
  "chrono",
  "convergio-brand",
  "crossterm",
+ "futures",
  "ratatui",
  "reqwest",
  "serde",

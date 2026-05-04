@@ -14,6 +14,7 @@ module.exports = {
         'lifecycle',
         'server',
         'cli',
+        'cli-pr',
         'cli-session',
         'session',
         'planner',

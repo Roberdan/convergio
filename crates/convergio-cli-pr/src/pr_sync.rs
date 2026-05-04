@@ -24,6 +24,9 @@ use serde_json::{json, Value};
 use std::collections::BTreeSet;
 use std::process::Command;
 
+/// Walk merged GitHub PRs, find tasks declared via `Tracks:` lines
+/// in the body, and transition any `pending` ones in the named plan
+/// to `submitted`.
 pub async fn run(
     client: &Client,
     plan_id: String,

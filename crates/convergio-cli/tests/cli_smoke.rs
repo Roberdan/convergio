@@ -11,84 +11,49 @@ fn cvg() -> Command {
 
 #[test]
 fn help_lists_known_subcommands() {
-    cvg()
-        .arg("--help")
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("health"))
-        .stdout(predicate::str::contains("status"))
-        .stdout(predicate::str::contains("setup"))
-        .stdout(predicate::str::contains("doctor"))
-        .stdout(predicate::str::contains("plan"))
-        .stdout(predicate::str::contains("task"))
-        .stdout(predicate::str::contains("evidence"))
-        .stdout(predicate::str::contains("crdt"))
-        .stdout(predicate::str::contains("workspace"))
-        .stdout(predicate::str::contains("mcp"))
-        .stdout(predicate::str::contains("service"))
-        .stdout(predicate::str::contains("demo"))
-        .stdout(predicate::str::contains("audit"));
+    let mut a = cvg().arg("--help").assert().success();
+    for name in [
+        "health",
+        "status",
+        "setup",
+        "doctor",
+        "plan",
+        "task",
+        "evidence",
+        "crdt",
+        "workspace",
+        "mcp",
+        "service",
+        "demo",
+        "audit",
+    ] {
+        a = a.stdout(predicate::str::contains(name));
+    }
 }
 
 #[test]
-fn setup_help_lists_init() {
-    cvg()
-        .args(["setup", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("init"))
-        .stdout(predicate::str::contains("agent"));
-}
-
-#[test]
-fn doctor_help_lists_json() {
-    cvg()
-        .args(["doctor", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("--json"));
-}
-
-// status help tests moved to `cli_smoke_status.rs` to keep this
-// file under the 300-line cap (CONSTITUTION § 13).
-
-#[test]
-fn version_reports_cargo_pkg_version() {
-    let expected = env!("CARGO_PKG_VERSION");
-    cvg()
-        .arg("--version")
-        .assert()
-        .success()
-        .stdout(predicate::str::contains(expected));
-}
-
-#[test]
-fn global_output_json_works_for_health() {
-    cvg()
-        .args(["--url", "http://127.0.0.1:1", "--output", "json", "health"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("Could not reach daemon"));
-}
-
-#[test]
-fn doctor_accepts_global_plain_output() {
-    cvg()
-        .args(["--url", "http://127.0.0.1:1", "--output", "plain", "doctor"])
-        .assert()
-        .failure()
-        .stdout(predicate::str::contains("fail"));
-}
-
-#[test]
-fn plan_help_lists_subcommands() {
-    cvg()
-        .args(["plan", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("create"))
-        .stdout(predicate::str::contains("list"))
-        .stdout(predicate::str::contains("get"));
+fn subcommand_help_table() {
+    // (subcommand, snippets that must appear in --help).
+    for (sub, snippets) in [
+        ("setup", &["init", "agent"][..]),
+        ("doctor", &["--json"][..]),
+        ("plan", &["create", "list", "get"][..]),
+        ("audit", &["verify"][..]),
+        ("crdt", &["conflicts"][..]),
+        ("workspace", &["leases"][..]),
+        ("mcp", &["tail"][..]),
+        ("service", &["install", "start", "status", "uninstall"][..]),
+        (
+            "task",
+            &["create", "list", "get", "transition", "heartbeat"][..],
+        ),
+        ("evidence", &["add", "list"][..]),
+    ] {
+        let mut a = cvg().args([sub, "--help"]).assert().success();
+        for s in snippets {
+            a = a.stdout(predicate::str::contains(*s));
+        }
+    }
 }
 
 #[test]
@@ -101,48 +66,61 @@ fn plan_create_help_lists_project() {
 }
 
 #[test]
+fn version_reports_cargo_pkg_version() {
+    cvg()
+        .arg("--version")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(env!("CARGO_PKG_VERSION")));
+}
+
+#[test]
+fn unreachable_daemon_table() {
+    let url = ["--url", "http://127.0.0.1:1"];
+    cvg()
+        .args(url)
+        .args(["--output", "json", "health"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Could not reach daemon"));
+    cvg()
+        .args(url)
+        .args(["--output", "plain", "doctor"])
+        .assert()
+        .failure()
+        .stdout(predicate::str::contains("fail"));
+    cvg()
+        .args(["--lang", "en"])
+        .args(url)
+        .arg("health")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Could not reach daemon"));
+    cvg()
+        .args(url)
+        .args(["doctor", "--json"])
+        .assert()
+        .failure()
+        .stdout(predicate::str::contains("\"ok\": false"))
+        .stdout(predicate::str::contains("\"name\": \"daemon\""));
+}
+
+#[test]
 fn plan_create_accepts_global_output_modes() {
-    let url = "http://127.0.0.1:1";
     for mode in ["human", "json", "plain"] {
-        let args = ["--url", url, "--output", mode, "plan", "create", "x"];
-        cvg().args(args).assert().failure();
+        cvg()
+            .args([
+                "--url",
+                "http://127.0.0.1:1",
+                "--output",
+                mode,
+                "plan",
+                "create",
+                "x",
+            ])
+            .assert()
+            .failure();
     }
-}
-
-#[test]
-fn audit_help_lists_verify() {
-    cvg()
-        .args(["audit", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("verify"));
-}
-
-#[test]
-fn crdt_help_lists_conflicts() {
-    cvg()
-        .args(["crdt", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("conflicts"));
-}
-
-#[test]
-fn workspace_help_lists_leases() {
-    cvg()
-        .args(["workspace", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("leases"));
-}
-
-#[test]
-fn mcp_help_lists_tail() {
-    cvg()
-        .args(["mcp", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("tail"));
 }
 
 #[test]
@@ -157,73 +135,12 @@ fn mcp_tail_without_log_is_clear() {
 }
 
 #[test]
-fn service_help_lists_subcommands() {
-    cvg()
-        .args(["service", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("install"))
-        .stdout(predicate::str::contains("start"))
-        .stdout(predicate::str::contains("status"))
-        .stdout(predicate::str::contains("uninstall"));
-}
-
-#[test]
-fn task_help_lists_subcommands() {
-    cvg()
-        .args(["task", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("create"))
-        .stdout(predicate::str::contains("list"))
-        .stdout(predicate::str::contains("get"))
-        .stdout(predicate::str::contains("transition"))
-        .stdout(predicate::str::contains("heartbeat"));
-}
-
-// task create coverage lives in `crates/convergio-cli/tests/cli_task_create.rs`.
-
-// ADR-0011 CLI regressions live in
-// `crates/convergio-cli/tests/cli_thor_only_done.rs`.
-
-#[test]
-fn evidence_help_lists_subcommands() {
-    cvg()
-        .args(["evidence", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("add"))
-        .stdout(predicate::str::contains("list"));
-}
-
-#[test]
 fn unknown_subcommand_fails_with_error() {
     cvg()
         .arg("nope")
         .assert()
         .failure()
         .stderr(predicate::str::contains("unrecognized").or(predicate::str::contains("invalid")));
-}
-
-#[test]
-fn health_against_unreachable_url_fails_clearly_in_english() {
-    // Bind to a port nothing is listening on. Force English so the
-    // localized message is predictable regardless of CI's LANG.
-    cvg()
-        .args(["--lang", "en", "--url", "http://127.0.0.1:1", "health"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("Could not reach daemon"));
-}
-
-#[test]
-fn doctor_json_reports_unreachable_daemon() {
-    cvg()
-        .args(["--url", "http://127.0.0.1:1", "doctor", "--json"])
-        .assert()
-        .failure()
-        .stdout(predicate::str::contains("\"ok\": false"))
-        .stdout(predicate::str::contains("\"name\": \"daemon\""));
 }
 
 #[test]
@@ -245,7 +162,7 @@ fn doctor_json_with_stale_pid_keeps_stderr_clean() {
 }
 
 #[test]
-fn setup_creates_config_under_home() {
+fn setup_creates_config_and_adapters() {
     let home = tempfile::tempdir().expect("temp home");
     cvg()
         .env("HOME", home.path())
@@ -255,11 +172,7 @@ fn setup_creates_config_under_home() {
         .stdout(predicate::str::contains("Setup complete"));
     assert!(home.path().join(".convergio/config.toml").is_file());
     assert!(home.path().join(".convergio/adapters").is_dir());
-}
 
-#[test]
-fn setup_agent_creates_snippets_under_home() {
-    let home = tempfile::tempdir().expect("temp home");
     cvg()
         .env("HOME", home.path())
         .args(["setup", "agent", "claude"])
@@ -273,20 +186,16 @@ fn setup_agent_creates_snippets_under_home() {
 }
 
 #[test]
-fn health_against_unreachable_url_localizes_to_italian() {
-    cvg()
-        .args(["--lang", "it", "--url", "http://127.0.0.1:1", "health"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("Impossibile raggiungere"));
-}
-
-#[test]
-fn lang_flag_is_global_under_subcommands() {
-    // `--lang` must work positioned after the subcommand too.
-    cvg()
-        .args(["health", "--lang", "it", "--url", "http://127.0.0.1:1"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("Impossibile raggiungere"));
+fn lang_flag_localizes_and_is_global_after_subcommand() {
+    let url = "http://127.0.0.1:1";
+    for args in [
+        vec!["--lang", "it", "--url", url, "health"],
+        vec!["health", "--lang", "it", "--url", url],
+    ] {
+        cvg()
+            .args(args)
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains("Impossibile raggiungere"));
+    }
 }

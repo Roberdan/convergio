@@ -49,6 +49,7 @@ Live state first — every value below is a daemon query, never stale:
 ```bash
 cvg session resume                # daemon, audit, active plan, next tasks, open PRs
 cvg session resume --output json  # same brief, machine-readable
+cvg discover                      # active peers + top-5 bus topics + your plans (F2)
 cvg pr stack                      # merge order + conflict matrix (uses gh)
 git log --oneline main -10        # what landed recently
 ```
