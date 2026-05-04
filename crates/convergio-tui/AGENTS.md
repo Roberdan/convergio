@@ -97,9 +97,9 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-tui` stats:** 17 `*.rs` files / 75 public items / 2750 lines (under `src/`).
+**`convergio-tui` stats:** 20 `*.rs` files / 86 public items / 3645 lines (under `src/`).
 
 Files approaching the 300-line cap:
-- `src/state.rs` (300 lines)
+- `src/scope.rs` (294 lines)
 - `src/header_banner.rs` (273 lines)
 <!-- END AUTO -->
