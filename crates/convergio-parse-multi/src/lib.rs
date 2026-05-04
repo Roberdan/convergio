@@ -12,6 +12,7 @@
 //! |---|---|---|
 //! | [`parse`] | `Vec<ParsedNode>` | Lightweight node list (no graph types) |
 //! | [`ts::parse_ts`] | `(Vec<Node>, Vec<Edge>)` | Fleet graph builder (ADR-0038 §5.3) |
+//! | [`py::parse_py`] | `(Vec<Node>, Vec<Edge>)` | Fleet graph builder (ADR-0038 §5.3) |
 //!
 //! ## Supported languages
 //!
@@ -31,10 +32,12 @@ pub mod lang;
 pub mod migrate;
 pub mod node;
 pub mod parse;
+pub mod py;
 pub mod ts;
 
 pub use error::{ParseError, Result};
 pub use lang::Lang;
 pub use node::{NodeKind, ParsedNode};
 pub use parse::parse;
+pub use py::parse_py;
 pub use ts::parse_ts;
