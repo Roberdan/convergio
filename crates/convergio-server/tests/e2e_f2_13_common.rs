@@ -88,6 +88,7 @@ pub async fn boot_with_embedder(
         graph,
         embed: embed.clone(),
         embedder,
+        audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let app = router(state);
 

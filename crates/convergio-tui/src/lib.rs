@@ -123,7 +123,9 @@ async fn event_loop(
     interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
 
     loop {
-        state.merge_live_bus_pub();
+        if matches!(state.focus, crate::state::Pane::Bus) {
+            state.merge_live_bus_pub();
+        }
         term.draw(|f| render::root(f, &state))
             .context("render frame")?;
 

@@ -34,6 +34,7 @@ async fn boot() -> (String, AppState, tempfile::TempDir) {
         embed: Arc::new(convergio_embed::EmbedStore::new(pool.clone())),
         embedder: Arc::new(convergio_embed::embedder::testing::DeterministicTestEmbedder::new(8)),
         fleet: Arc::new(convergio_fleet::FleetStore::new(pool.clone())),
+        audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let app = router(state.clone());
     let listener = TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], 0)))
@@ -232,5 +233,60 @@ async fn close_post_hoc_writes_timing_cache() {
         after.duration_ms.unwrap_or(0) >= 30,
         "post-hoc close must compute duration_ms: {:?}",
         after.duration_ms
+    );
+}
+
+#[tokio::test]
+async fn audit_verify_cache_is_populated_and_invalidated_on_append() {
+    let (base, state, _dir) = boot().await;
+    let client = reqwest::Client::new();
+
+    client
+        .post(format!("{base}/v1/plans"))
+        .json(&json!({ "title": "cache-seed" }))
+        .send()
+        .await
+        .unwrap();
+
+    // First call: cache miss — full chain verify runs.
+    let r1: serde_json::Value = client
+        .get(format!("{base}/v1/audit/verify"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(r1["ok"], true);
+
+    let cached_seq = {
+        let g = state.audit_verify_cache.lock().unwrap();
+        g.as_ref()
+            .expect("cache must be populated after first verify")
+            .0
+    };
+
+    // New append → tail advances → next call must be a cache miss.
+    client
+        .post(format!("{base}/v1/plans"))
+        .json(&json!({ "title": "cache-bust" }))
+        .send()
+        .await
+        .unwrap();
+
+    let r3: serde_json::Value = client
+        .get(format!("{base}/v1/audit/verify"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(r3["ok"], true);
+
+    let new_seq = state.audit_verify_cache.lock().unwrap().as_ref().unwrap().0;
+    assert!(
+        new_seq > cached_seq,
+        "cache seq must advance after new append"
     );
 }

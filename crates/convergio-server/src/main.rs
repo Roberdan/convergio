@@ -127,6 +127,7 @@ async fn start(
         embed: embed.clone(),
         embedder: embedder.clone(),
         fleet: fleet.clone(),
+        audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let app = router(state);
 
