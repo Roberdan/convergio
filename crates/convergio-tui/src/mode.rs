@@ -62,3 +62,39 @@ pub enum DetailTarget {
         title: String,
     },
 }
+
+/// Cross-pane drill-down scope.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub enum Scope {
+    /// Nothing selected: every pane shows its whole dataset.
+    #[default]
+    All,
+    /// Filter dashboard data to one plan.
+    Plan {
+        /// Plan id.
+        id: String,
+        /// Plan title.
+        title: String,
+    },
+    /// Filter dashboard data to one task.
+    Task {
+        /// Task id.
+        id: String,
+        /// Owning plan id.
+        plan_id: String,
+        /// Task title.
+        title: String,
+    },
+    /// Filter dashboard data to one supervised agent process.
+    Agent {
+        /// Process or agent id.
+        id: String,
+    },
+    /// Filter dashboard data to one PR.
+    Pr {
+        /// PR number.
+        number: i64,
+        /// PR title.
+        title: String,
+    },
+}

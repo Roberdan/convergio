@@ -1,8 +1,8 @@
 //! # convergio-tui — terminal dashboard for `cvg dash`
 //!
-//! Read-only 4-pane console (Plans, Active Tasks, Agents, PRs) that
+//! Read-only multi-pane console (Plans, Tasks, Agents, PRs, Bus) that
 //! refreshes on a tick. Talks to the local Convergio daemon over HTTP
-//! and shells out to `gh pr list` for the open-PRs pane.
+//! and shells out to `gh pr list` for the PRs pane.
 //!
 //! Consumed only by the `cvg` binary (`convergio-cli`). Never imported
 //! by the daemon, MCP bridge, or any other agent-facing surface.
@@ -26,18 +26,21 @@ pub mod client_gh;
 pub mod header_banner;
 pub mod keymap;
 pub mod mode;
+pub mod navigation;
 pub mod plan_counts;
 pub mod render;
 pub mod scope;
 pub mod state;
 pub mod theme;
 pub mod tick;
+pub mod types;
 
 pub mod panes {
     //! Per-pane renderers. Each module is independent and only depends
     //! on [`crate::state`] for input.
 
     pub mod agents;
+    pub mod bus;
     pub mod detail;
     pub mod plans;
     pub mod prs;
@@ -134,14 +137,16 @@ async fn event_loop(
                         Action::RowUp => state.row_up(),
                         Action::Drill => {
                             if matches!(state.mode, AppMode::Overview) {
-                                if let Some(target) = state.drill_target() {
-                                    state.enter_detail(&client, target).await;
-                                }
+                                state.apply_scope_from_focus();
                             }
                         }
                         Action::Back => match state.mode {
                             AppMode::Detail(_) => state.back_to_overview(),
-                            AppMode::Overview => break,
+                            AppMode::Overview => {
+                                if !state.clear_scope() {
+                                    break;
+                                }
+                            }
                         },
                         Action::Noop => {}
                     }

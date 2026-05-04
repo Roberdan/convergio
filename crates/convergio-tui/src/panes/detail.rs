@@ -209,6 +209,9 @@ mod tests {
             title: "go".into(),
             status: "done".into(),
             agent_id: None,
+            created_at: "2026-05-02T20:11:00Z".into(),
+            updated_at: "2026-05-02T20:11:00Z".into(),
+            ..TaskSummary::default()
         };
         let line = task_line(&t);
         let text: String = line

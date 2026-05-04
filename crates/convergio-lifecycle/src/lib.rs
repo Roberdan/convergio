@@ -43,6 +43,7 @@ mod error;
 mod migrate;
 mod model;
 mod supervisor;
+mod supervisor_list;
 pub mod watcher;
 
 pub use error::{LifecycleError, Result};

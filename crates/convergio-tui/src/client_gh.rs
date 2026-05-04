@@ -13,16 +13,17 @@ use std::process::Command;
 /// query is scoped to that `owner/repo` (`gh pr list -R <slug>`) so
 /// the dashboard works from any cwd. When `None`, gh inherits cwd —
 /// original behaviour, kept for shells run inside a repo with no
-/// workspace `Cargo.toml`. Returns an empty vec on any error so the
-/// dashboard renders the rest of the snapshot.
-pub fn fetch_open_prs(slug: Option<&str>) -> Result<Vec<PrSummary>> {
+/// workspace `Cargo.toml`.
+pub fn fetch_prs(slug: Option<&str>) -> Result<Vec<PrSummary>> {
     let mut args: Vec<String> = vec![
         "pr".into(),
         "list".into(),
         "--state".into(),
-        "open".into(),
+        "all".into(),
+        "--limit".into(),
+        "100".into(),
         "--json".into(),
-        "number,title,headRefName,statusCheckRollup".into(),
+        "number,title,headRefName,state,statusCheckRollup,additions,deletions,changedFiles,createdAt,updatedAt,closedAt,mergedAt,body".into(),
     ];
     if let Some(s) = slug {
         args.push("-R".into());
@@ -37,15 +38,52 @@ pub fn fetch_open_prs(slug: Option<&str>) -> Result<Vec<PrSummary>> {
     let mut prs = Vec::with_capacity(raw.len());
     for v in raw {
         let ci = ci_rollup(&v);
+        let body = v.get("body").and_then(|b| b.as_str()).unwrap_or("");
         let pr: PrSummary = serde_json::from_value(serde_json::json!({
             "number": v.get("number").cloned().unwrap_or(serde_json::json!(0)),
             "title": v.get("title").cloned().unwrap_or_default(),
             "headRefName": v.get("headRefName").cloned().unwrap_or_default(),
+            "state": v.get("state").cloned().unwrap_or_default(),
             "ci": ci,
+            "additions": v.get("additions").cloned().unwrap_or(serde_json::json!(0)),
+            "deletions": v.get("deletions").cloned().unwrap_or(serde_json::json!(0)),
+            "changed_files": v.get("changedFiles").cloned().unwrap_or(serde_json::json!(0)),
+            "created_at": v.get("createdAt").cloned().unwrap_or_default(),
+            "updated_at": v.get("updatedAt").cloned().unwrap_or_default(),
+            "closed_at": v.get("closedAt").cloned().unwrap_or_default(),
+            "merged_at": v.get("mergedAt").cloned().unwrap_or_default(),
+            "tracked_task_ids": parse_tracks_lines(body),
         }))?;
         prs.push(pr);
     }
     Ok(prs)
+}
+
+fn parse_tracks_lines(body: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    for raw in body.lines() {
+        let Some(rest) = raw.trim().strip_prefix("Tracks:") else {
+            continue;
+        };
+        for token in rest.split(|c: char| c == ',' || c.is_whitespace()) {
+            let t = token.trim();
+            if is_valid_uuid(t) {
+                out.push(t.to_string());
+            }
+        }
+    }
+    out
+}
+
+fn is_valid_uuid(s: &str) -> bool {
+    s.len() == 36
+        && s.chars().enumerate().all(|(i, c)| {
+            if matches!(i, 8 | 13 | 18 | 23) {
+                c == '-'
+            } else {
+                c.is_ascii_hexdigit()
+            }
+        })
 }
 
 /// Roll a PR's `statusCheckRollup` into one of `success`, `failure`,
@@ -124,5 +162,12 @@ mod tests {
         assert_eq!(ci_rollup(&v), "");
         let v = serde_json::json!({"statusCheckRollup": []});
         assert_eq!(ci_rollup(&v), "");
+    }
+
+    #[test]
+    fn parse_tracks_lines_extracts_declared_task_ids() {
+        let id = "7e33309f-1457-4c8e-9eae-dba599a4a452";
+        assert_eq!(parse_tracks_lines(&format!("Tracks: {id}\n")), vec![id]);
+        assert!(parse_tracks_lines("Some text Tracks: not-inline").is_empty());
     }
 }

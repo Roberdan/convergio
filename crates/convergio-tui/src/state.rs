@@ -1,37 +1,42 @@
 //! Aggregate state for the dashboard.
 //!
-//! [`AppState`] owns the four datasets the panes render plus the
+//! [`AppState`] owns the datasets the panes render plus the
 //! focus + scroll position for each pane. Refreshes are issued by
 //! [`AppState::refresh`] which delegates to [`crate::client::Client`].
 
-use crate::client::{Client, Plan, PrSummary, RegistryAgent, TaskSummary};
-pub use crate::mode::{AppMode, DetailTarget};
+use crate::client::{
+    AgentProcess, BusMessage, Client, Plan, PrSummary, RegistryAgent, TaskSummary,
+};
+pub use crate::mode::{AppMode, DetailTarget, Scope};
 
-/// The four panes rendered by the dashboard, in tab order.
+/// The panes rendered by the dashboard, in tab order.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum Pane {
     /// Plans (top-left). Default focus on startup.
     #[default]
     Plans,
-    /// Active tasks across plans (top-right).
+    /// Tasks across plans (top-right).
     Tasks,
     /// Registered agents (bottom-left).
     Agents,
-    /// Open pull requests (bottom-right).
+    /// Open and closed pull requests.
     Prs,
+    /// Agent bus messages.
+    Bus,
 }
 
 impl Pane {
     /// All panes in display order.
-    pub const ALL: [Pane; 4] = [Pane::Plans, Pane::Tasks, Pane::Agents, Pane::Prs];
+    pub const ALL: [Pane; 5] = [Pane::Plans, Pane::Tasks, Pane::Agents, Pane::Prs, Pane::Bus];
 
     /// Short label rendered as the pane title.
     pub fn label(&self) -> &'static str {
         match self {
             Pane::Plans => "Plans",
-            Pane::Tasks => "Active tasks",
+            Pane::Tasks => "Tasks",
             Pane::Agents => "Agents",
             Pane::Prs => "PRs",
+            Pane::Bus => "Bus",
         }
     }
 }
@@ -89,12 +94,16 @@ pub enum Connection {
 pub struct AppState {
     /// Plans returned by the daemon.
     pub plans: Vec<Plan>,
-    /// Active tasks across plans (status `in_progress` or `submitted`).
+    /// Tasks across loaded plans.
     pub tasks: Vec<TaskSummary>,
     /// Registered agents.
     pub agents: Vec<RegistryAgent>,
-    /// Open pull requests via `gh pr list`.
+    /// Layer-3 supervised agent processes.
+    pub agent_processes: Vec<AgentProcess>,
+    /// Open and closed pull requests via `gh pr list`.
     pub prs: Vec<PrSummary>,
+    /// Recent plan-scoped bus messages.
+    pub messages: Vec<BusMessage>,
     /// Audit chain ok/not.
     pub audit_ok: Option<bool>,
     /// Daemon version reported by `GET /v1/health`. `None` until the
@@ -110,6 +119,8 @@ pub struct AppState {
     pub cursor: PaneCursors,
     /// Active UI mode (Overview vs drill-down).
     pub mode: AppMode,
+    /// Cross-pane drill-down filter. Defaults to [`Scope::All`].
+    pub scope: Scope,
     /// Cached task list for the plan currently being drilled into.
     /// Populated by [`AppState::enter_detail`] for `Plan` targets so
     /// the detail panel shows every task (not only the active subset
@@ -128,6 +139,8 @@ pub struct PaneCursors {
     pub agents: Cursor,
     /// Cursor for the PRs pane.
     pub prs: Cursor,
+    /// Cursor for the bus pane.
+    pub bus: Cursor,
 }
 
 /// Compile-time version of the `cvg` binary embedding this dashboard.
@@ -157,7 +170,9 @@ impl AppState {
                 self.plans = s.plans;
                 self.tasks = s.tasks;
                 self.agents = s.agents;
+                self.agent_processes = s.agent_processes;
                 self.prs = s.prs;
+                self.messages = s.messages;
                 self.audit_ok = s.audit_ok;
                 self.daemon_version = s.daemon_version;
                 self.connection = Connection::Connected;
@@ -168,93 +183,6 @@ impl AppState {
             }
         }
     }
-
-    /// Move focus to the next pane in tab order.
-    pub fn focus_next(&mut self) {
-        let idx = Pane::ALL.iter().position(|p| *p == self.focus).unwrap_or(0);
-        self.focus = Pane::ALL[(idx + 1) % Pane::ALL.len()];
-    }
-
-    /// Move focus to the previous pane.
-    pub fn focus_prev(&mut self) {
-        let idx = Pane::ALL.iter().position(|p| *p == self.focus).unwrap_or(0);
-        self.focus = Pane::ALL[(idx + Pane::ALL.len() - 1) % Pane::ALL.len()];
-    }
-
-    /// Cursor down within the focused pane.
-    pub fn row_down(&mut self) {
-        let (cursor, len) = self.focused_cursor_and_len_mut();
-        cursor.down(len, 8);
-    }
-
-    /// Cursor up within the focused pane.
-    pub fn row_up(&mut self) {
-        let (cursor, _) = self.focused_cursor_and_len_mut();
-        cursor.up();
-    }
-
-    /// Build the [`DetailTarget`] for the row currently selected in
-    /// the focused pane, if any. Returns `None` when the pane is empty
-    /// or the cursor points past the end (refresh race).
-    pub fn drill_target(&self) -> Option<DetailTarget> {
-        match self.focus {
-            Pane::Plans => self
-                .plans
-                .get(self.cursor.plans.selected)
-                .map(|p| DetailTarget::Plan {
-                    id: p.id.clone(),
-                    title: p.title.clone(),
-                }),
-            Pane::Tasks => self
-                .tasks
-                .get(self.cursor.tasks.selected)
-                .map(|t| DetailTarget::Task {
-                    id: t.id.clone(),
-                    plan_id: t.plan_id.clone(),
-                    title: t.title.clone(),
-                }),
-            Pane::Agents => self
-                .agents
-                .get(self.cursor.agents.selected)
-                .map(|a| DetailTarget::Agent { id: a.id.clone() }),
-            Pane::Prs => self
-                .prs
-                .get(self.cursor.prs.selected)
-                .map(|p| DetailTarget::Pr {
-                    number: p.number,
-                    title: p.title.clone(),
-                }),
-        }
-    }
-
-    /// Enter detail mode against a target.
-    ///
-    /// For [`DetailTarget::Plan`], this also fetches the full task list
-    /// for the plan into [`AppState::detail_tasks`]. The fetch is the
-    /// one place the overview's "active-only" filter is widened.
-    pub async fn enter_detail(&mut self, client: &Client, target: DetailTarget) {
-        if let DetailTarget::Plan { id, .. } = &target {
-            self.detail_tasks = client.fetch_plan_tasks(id).await.unwrap_or_default();
-        } else {
-            self.detail_tasks.clear();
-        }
-        self.mode = AppMode::Detail(target);
-    }
-
-    /// Leave detail mode and return to the 4-pane overview.
-    pub fn back_to_overview(&mut self) {
-        self.mode = AppMode::Overview;
-        self.detail_tasks.clear();
-    }
-
-    fn focused_cursor_and_len_mut(&mut self) -> (&mut Cursor, usize) {
-        match self.focus {
-            Pane::Plans => (&mut self.cursor.plans, self.plans.len()),
-            Pane::Tasks => (&mut self.cursor.tasks, self.tasks.len()),
-            Pane::Agents => (&mut self.cursor.agents, self.agents.len()),
-            Pane::Prs => (&mut self.cursor.prs, self.prs.len()),
-        }
-    }
 }
 
 #[cfg(test)]
@@ -263,7 +191,7 @@ mod tests {
 
     #[test]
     fn pane_all_covers_four_panes() {
-        assert_eq!(Pane::ALL.len(), 4);
+        assert_eq!(Pane::ALL.len(), 5);
     }
 
     #[test]
@@ -274,9 +202,10 @@ mod tests {
         s.focus_next();
         s.focus_next();
         s.focus_next();
-        assert_eq!(s.focus, Pane::Plans, "wraps after 4 hops");
+        s.focus_next();
+        assert_eq!(s.focus, Pane::Plans, "wraps after 5 hops");
         s.focus_prev();
-        assert_eq!(s.focus, Pane::Prs);
+        assert_eq!(s.focus, Pane::Bus);
     }
 
     #[test]
