@@ -3,45 +3,11 @@
 //! `/v1/agent-registry/agents/:id/details`, and
 //! `/v1/agent-registry/agents/retire-stale`.
 
-use convergio_bus::Bus;
-use convergio_db::Pool;
-use convergio_durability::init;
-use convergio_lifecycle::Supervisor;
-use convergio_server::{router, AppState};
-use serde_json::{json, Value};
-use std::net::SocketAddr;
-use std::sync::Arc;
-use tempfile::tempdir;
-use tokio::net::TcpListener;
+mod common;
 
-async fn boot() -> (String, tempfile::TempDir, Pool) {
-    let dir = tempdir().unwrap();
-    let db_path = dir.path().join("state.db");
-    let pool = Pool::connect(&format!("sqlite://{}", db_path.display()))
-        .await
-        .unwrap();
-    init(&pool).await.unwrap();
-    convergio_bus::init(&pool).await.unwrap();
-    convergio_lifecycle::init(&pool).await.unwrap();
-    let state = AppState {
-        durability: Arc::new(convergio_durability::Durability::new(pool.clone())),
-        bus: Arc::new(Bus::new(pool.clone())),
-        supervisor: Arc::new(Supervisor::new(pool.clone())),
-        graph: Arc::new(convergio_graph::Store::new(pool.clone())),
-        embed: Arc::new(convergio_embed::EmbedStore::new(pool.clone())),
-        embedder: Arc::new(convergio_embed::embedder::testing::DeterministicTestEmbedder::new(8)),
-        fleet: Arc::new(convergio_fleet::FleetStore::new(pool.clone())),
-        audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
-    };
-    let listener = TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], 0)))
-        .await
-        .unwrap();
-    let addr = listener.local_addr().unwrap();
-    tokio::spawn(async move {
-        axum::serve(listener, router(state)).await.unwrap();
-    });
-    (format!("http://{addr}"), dir, pool)
-}
+use common::boot;
+use convergio_db::Pool;
+use serde_json::{json, Value};
 
 async fn register(client: &reqwest::Client, base: &str, id: &str, kind: &str) {
     client
@@ -64,7 +30,7 @@ async fn set_heartbeat_age(pool: &Pool, agent_id: &str, age_secs: i64) {
 
 #[tokio::test]
 async fn summaries_resolves_current_task_title() {
-    let (base, _dir, _pool) = boot().await;
+    let (base, _pool, _dir) = boot().await;
     let client = reqwest::Client::new();
 
     let plan: Value = client
@@ -120,7 +86,7 @@ async fn summaries_resolves_current_task_title() {
 
 #[tokio::test]
 async fn details_includes_all_sections_even_when_empty() {
-    let (base, _dir, _pool) = boot().await;
+    let (base, _pool, _dir) = boot().await;
     let client = reqwest::Client::new();
     register(&client, &base, "agent-bare", "shell").await;
 
@@ -147,7 +113,7 @@ async fn details_includes_all_sections_even_when_empty() {
 
 #[tokio::test]
 async fn retire_stale_dry_run_then_apply() {
-    let (base, _dir, pool) = boot().await;
+    let (base, pool, _dir) = boot().await;
     let client = reqwest::Client::new();
     register(&client, &base, "agent-fresh", "shell").await;
     register(&client, &base, "agent-stale-1", "shell").await;

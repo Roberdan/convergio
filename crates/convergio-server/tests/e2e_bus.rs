@@ -1,45 +1,14 @@
 //! HTTP end-to-end test for Layer 2 (`convergio-bus`).
 
-use convergio_bus::Bus;
+mod common;
+
+use common::boot as common_boot;
 use convergio_db::Pool;
-use convergio_durability::{init, Durability};
-use convergio_lifecycle::Supervisor;
-use convergio_server::{router, AppState};
 use serde_json::{json, Value};
-use std::net::SocketAddr;
-use std::sync::Arc;
-use tempfile::tempdir;
-use tokio::net::TcpListener;
 
 async fn boot() -> (String, tempfile::TempDir) {
-    let dir = tempdir().unwrap();
-    let db_path = dir.path().join("state.db");
-    let url = format!("sqlite://{}", db_path.display());
-    let pool = Pool::connect(&url).await.unwrap();
-    init(&pool).await.unwrap();
-    convergio_bus::init(&pool).await.unwrap();
-    convergio_lifecycle::init(&pool).await.unwrap();
-
-    let state = AppState {
-        durability: Arc::new(Durability::new(pool.clone())),
-        bus: Arc::new(Bus::new(pool.clone())),
-        supervisor: Arc::new(Supervisor::new(pool.clone())),
-        graph: Arc::new(convergio_graph::Store::new(pool.clone())),
-        embed: Arc::new(convergio_embed::EmbedStore::new(pool.clone())),
-        embedder: Arc::new(convergio_embed::embedder::testing::DeterministicTestEmbedder::new(8)),
-        fleet: Arc::new(convergio_fleet::FleetStore::new(pool.clone())),
-        audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
-    };
-    let app = router(state);
-
-    let listener = TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], 0)))
-        .await
-        .unwrap();
-    let addr = listener.local_addr().unwrap();
-    tokio::spawn(async move {
-        axum::serve(listener, app).await.unwrap();
-    });
-    (format!("http://{addr}"), dir)
+    let (base, _pool, dir) = common_boot().await;
+    (base, dir)
 }
 
 #[tokio::test]
