@@ -68,6 +68,15 @@ impl Client {
 
     /// One-shot fetch of every dataset. Sub-fetches fail soft —
     /// partial data is more useful than blanking the dashboard.
+    ///
+    /// Per-plan fetches (`tasks` + `messages/tail`) run in parallel
+    /// via `futures::future::join_all`; without this fan-out the
+    /// loop is N+1 and dashes with 40+ plans block for hundreds of
+    /// ms per refresh on loopback. Global fetches (registry,
+    /// processes, audit, health) run concurrently with the
+    /// per-plan fan-out via `tokio::join!`. The PRs `gh pr list`
+    /// shell-out is sequential because it blocks anyway and runs
+    /// after the parallel batch returns.
     pub async fn snapshot(&self) -> Result<Snapshot> {
         let mut plans: Vec<Plan> = self
             .get_json("/v1/plans")
@@ -75,54 +84,29 @@ impl Client {
             .unwrap_or_else(|_| Vec::new());
         sort_plans_by_status(&mut plans);
 
+        let plan_ids: Vec<String> = plans.iter().map(|p| p.id.clone()).collect();
+        let plan_fetches = futures::future::join_all(
+            plan_ids
+                .iter()
+                .map(|id| self.fetch_plan_overview(id.clone())),
+        );
+
+        let global_fetches = self.fetch_globals();
+
+        let (plan_results, (agents, agent_processes, audit_ok, daemon_version)) =
+            tokio::join!(plan_fetches, global_fetches);
+
         let mut tasks: Vec<TaskSummary> = Vec::new();
         let mut messages: Vec<BusMessage> = Vec::new();
-        for p in &plans {
-            if let Ok(mut ts) = self
-                .get_json::<Vec<TaskSummary>>(&format!("/v1/plans/{}/tasks", p.id))
-                .await
-            {
-                for t in &mut ts {
-                    t.plan_id = p.id.clone();
-                }
-                tasks.extend(ts);
+        for (plan_id, mut plan_tasks, mut plan_messages) in plan_results {
+            for t in &mut plan_tasks {
+                t.plan_id = plan_id.clone();
             }
-            if let Ok(mut ms) = self
-                .get_json::<Vec<BusMessage>>(&format!("/v1/plans/{}/messages/tail?limit=100", p.id))
-                .await
-            {
-                messages.append(&mut ms);
-            }
+            tasks.append(&mut plan_tasks);
+            messages.append(&mut plan_messages);
         }
         messages.sort_by_key(|m| std::cmp::Reverse(m.seq));
         messages.truncate(200);
-
-        let agents: Vec<RegistryAgent> = self
-            .get_json("/v1/agent-registry/agents")
-            .await
-            .unwrap_or_else(|_| Vec::new());
-
-        let agent_processes: Vec<AgentProcess> = self
-            .get_json("/v1/agents?limit=200")
-            .await
-            .unwrap_or_default();
-
-        let audit_ok = self
-            .get_json::<serde_json::Value>("/v1/audit/verify")
-            .await
-            .ok()
-            .and_then(|v| v.get("ok").and_then(|b| b.as_bool()));
-
-        let daemon_version = self
-            .get_json::<serde_json::Value>("/v1/health")
-            .await
-            .ok()
-            .and_then(|v| {
-                v.get("running_version")
-                    .or_else(|| v.get("version"))
-                    .and_then(|x| x.as_str())
-                    .map(|s| s.to_string())
-            });
 
         let prs = if self.enable_gh {
             fetch_prs(self.github_slug.as_deref()).unwrap_or_default()
@@ -140,6 +124,51 @@ impl Client {
             audit_ok,
             daemon_version,
         })
+    }
+
+    async fn fetch_plan_overview(
+        &self,
+        plan_id: String,
+    ) -> (String, Vec<TaskSummary>, Vec<BusMessage>) {
+        let tasks_path = format!("/v1/plans/{plan_id}/tasks");
+        let messages_path = format!("/v1/plans/{plan_id}/messages/tail?limit=100");
+        let (tasks, messages) = tokio::join!(
+            self.get_json::<Vec<TaskSummary>>(&tasks_path),
+            self.get_json::<Vec<BusMessage>>(&messages_path),
+        );
+        (
+            plan_id,
+            tasks.unwrap_or_default(),
+            messages.unwrap_or_default(),
+        )
+    }
+
+    async fn fetch_globals(
+        &self,
+    ) -> (
+        Vec<RegistryAgent>,
+        Vec<AgentProcess>,
+        Option<bool>,
+        Option<String>,
+    ) {
+        let (agents, processes, audit, health) = tokio::join!(
+            self.get_json::<Vec<RegistryAgent>>("/v1/agent-registry/agents"),
+            self.get_json::<Vec<AgentProcess>>("/v1/agents?limit=200"),
+            self.get_json::<serde_json::Value>("/v1/audit/verify"),
+            self.get_json::<serde_json::Value>("/v1/health"),
+        );
+        let agents = agents.unwrap_or_default();
+        let processes = processes.unwrap_or_default();
+        let audit_ok = audit
+            .ok()
+            .and_then(|v| v.get("ok").and_then(|b| b.as_bool()));
+        let daemon_version = health.ok().and_then(|v| {
+            v.get("running_version")
+                .or_else(|| v.get("version"))
+                .and_then(|x| x.as_str())
+                .map(|s| s.to_string())
+        });
+        (agents, processes, audit_ok, daemon_version)
     }
 
     /// Fetch *all* tasks for a plan (not the overview's active-only

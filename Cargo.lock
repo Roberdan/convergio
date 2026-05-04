@@ -965,6 +965,7 @@ dependencies = [
  "chrono",
  "convergio-brand",
  "crossterm",
+ "futures",
  "ratatui",
  "reqwest",
  "serde",
