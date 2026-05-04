@@ -275,3 +275,12 @@ bus-tail-disconnect = bus stream disconnected, reconnecting...
 bus-tail-streaming-unavailable-fallback-polling = WARN: daemon does not advertise streaming; falling back to 1s polling.
 bus-tail-empty = No messages.
 bus-list-summary = Plan { $plan } — { $count } message(s)
+
+# ---------- CLI: discover (F2) ----------
+discover-header = Convergio peer discovery (as of { $at })
+discover-active-peers = ACTIVE PEERS (heartbeat in last { $since }, status != terminated/retired):
+discover-recent-bus = RECENT BUS ACTIVITY (top 5 topics, last 1 hour):
+discover-your-plans = YOUR PLANS (where your agent_id appears, latest first):
+discover-empty-peers = (no active peers in window)
+discover-empty-bus = (no recent bus activity)
+discover-empty-plans = (no plans assigned to you)

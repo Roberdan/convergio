@@ -1,11 +1,6 @@
-//! `cvg` — Convergio command-line interface.
-//!
-//! Pure HTTP client for the Convergio daemon. Does **not** import any
-//! server crate — the daemon is the source of truth.
-//!
-//! All user-facing strings flow through [`convergio_i18n::Bundle`].
-//! Locale resolution: `--lang` flag → `CONVERGIO_LANG` env →
-//! `LANG`/`LC_ALL` env → fallback `en` (P5).
+//! `cvg` — Convergio command-line interface (pure HTTP client). All
+//! user-facing strings flow through [`convergio_i18n::Bundle`]; locale
+//! resolution: `--lang` → `CONVERGIO_LANG` → `LANG`/`LC_ALL` → `en` (P5).
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
@@ -60,15 +55,13 @@ enum Command {
         /// Filter to a single project (e.g. `--project convergio-local`).
         #[arg(long)]
         project: Option<String>,
-        /// Include `cvg demo` and live-test artefact plans
-        /// (hidden by default to keep the human view legible).
+        /// Include `cvg demo` and live-test artefact plans (hidden by default).
         #[arg(long)]
         all: bool,
         /// Show a per-wave breakdown under each plan.
         #[arg(long)]
         show_waves: bool,
-        /// Filter `next` tasks to those owned by the caller.
-        /// Identity comes from `CONVERGIO_AGENT_ID` (stop-gap until F46/F47).
+        /// Filter `next` tasks to caller (id from `CONVERGIO_AGENT_ID` env).
         #[arg(long)]
         mine: bool,
     },
@@ -164,28 +157,21 @@ enum Command {
     },
     /// Run one executor tick (dispatches pending tasks).
     Dispatch,
-    /// Run Thor on a plan. Without `--wave` verdict is plan-strict
-    /// (every task must be submitted/done). With `--wave N` only
-    /// wave N is evaluated — enables progressive promotion (T3.06).
+    /// Run Thor on a plan; with `--wave N` evaluates only wave N (T3.06).
     Validate {
         /// Plan id.
         plan_id: String,
-        /// Optional wave number (T3.06). When set, validation
-        /// considers only tasks in this wave.
+        /// Optional wave number — when set, only tasks in this wave (T3.06).
         #[arg(long)]
         wave: Option<i64>,
     },
     /// Print the Convergio brand lockup, claim, and version.
-    /// Plays the boot animation on a TTY; static when piped or
-    /// when `NO_COLOR` / `CONVERGIO_THEME=mono` is set.
     About {
         /// Force the boot animation even if the theme would skip it.
         #[arg(long)]
         animate: bool,
     },
-    /// Stream every state transition the daemon writes to its
-    /// audit log, brand-coloured (magenta = refusals, cyan = done).
-    /// Polls `/v1/audit/events` on a tick. Ctrl-C exits.
+    /// Stream daemon audit events brand-coloured (Ctrl-C exits).
     Monitor {
         /// Poll interval in seconds (clamped to `[1, 60]`).
         #[arg(long, env = "CONVERGIO_MONITOR_TICK_SECS", default_value_t = 1)]
@@ -194,7 +180,6 @@ enum Command {
     /// Run a guided local demo.
     Demo,
     /// Open the read-only TUI dashboard (cvg dash, ADR-0029).
-    /// 4-pane htop-style: plans, active tasks, agents, PRs.
     Dash {
         /// Refresh interval in seconds (clamped to [1, 300]).
         #[arg(long, env = "CONVERGIO_DASH_TICK_SECS", default_value_t = 5)]
@@ -208,16 +193,23 @@ enum Command {
         /// Rebuild and sync binaries but do not restart the daemon.
         #[arg(long)]
         skip_restart: bool,
-        /// After install, print the CHANGELOG slice between prior and
-        /// new versions.
+        /// After install, print the CHANGELOG slice for the new version.
         #[arg(long)]
         changelog: bool,
     },
-    /// Inspect (and optionally publish to) the plan-scoped agent
-    /// message bus.
+    /// Inspect (and optionally publish to) the plan-scoped agent message bus.
     Bus {
         #[command(subcommand)]
         sub: commands::bus::BusCommand,
+    },
+    /// One-shot peer + bus + plan snapshot for a fresh agent session.
+    Discover {
+        /// Lookback window for active peers / bus topics. Default `30m`.
+        #[arg(long, default_value = "30m")]
+        since: String,
+        /// Caller agent id (else `CONVERGIO_AGENT_ID` env, else `claude-code-${USER}`).
+        #[arg(long, env = "CONVERGIO_AGENT_ID")]
+        agent_id: Option<String>,
     },
 }
 
@@ -296,5 +288,9 @@ async fn main() -> Result<()> {
             .await
         }
         Command::Bus { sub } => commands::bus::run(&client, &bundle, cli.output, sub).await,
+        Command::Discover { since, agent_id } => {
+            let args = commands::discover::DiscoverArgs { since, agent_id };
+            commands::discover::run(&client, &bundle, cli.output, args).await
+        }
     }
 }

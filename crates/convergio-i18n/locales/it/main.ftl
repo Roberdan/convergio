@@ -275,3 +275,12 @@ bus-tail-disconnect = stream del bus disconnesso, riconnessione in corso...
 bus-tail-streaming-unavailable-fallback-polling = ATTENZIONE: il daemon non espone lo streaming; passo al polling ogni 1s.
 bus-tail-empty = Nessun messaggio.
 bus-list-summary = Piano { $plan } — { $count } messaggio/i
+
+# ---------- CLI: discover (F2) ----------
+discover-header = Convergio scoperta peer (al { $at })
+discover-active-peers = PEER ATTIVI (heartbeat negli ultimi { $since }, stato != terminato/scaduto):
+discover-recent-bus = ATTIVITÀ BUS RECENTE (top 5 topic, ultima ora):
+discover-your-plans = I TUOI PIANI (dove appare il tuo agent_id, più recenti prima):
+discover-empty-peers = (nessun peer attivo nella finestra)
+discover-empty-bus = (nessuna attività recente sul bus)
+discover-empty-plans = (nessun piano assegnato)

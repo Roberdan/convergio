@@ -196,7 +196,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 912 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 897 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
@@ -214,6 +214,7 @@ The full top-level CLI surface is also auto-regenerated:
 - `cvg crdt`
 - `cvg dash`
 - `cvg demo`
+- `cvg discover`
 - `cvg dispatch`
 - `cvg docs`
 - `cvg doctor`
@@ -363,6 +364,9 @@ Useful CLI verbs an agent will reach for early:
 - `cvg graph build` then `cvg graph for-task <task_id>` — Tier-3
   context-pack scoped to a task (ADR-0014).
 - `cvg pr stack` — local PR queue dashboard with conflict matrix.
+- `cvg discover` — one-shot peer + bus + plan snapshot (active peers,
+  top-5 bus topics, plans where the caller has tasks). Recommended
+  after `cvg session resume` to spot territory overlap before claiming.
 
 ## Pull requests
 
