@@ -46,8 +46,8 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-parse-multi` stats:** 8 `*.rs` files / 20 public items / 788 lines (under `src/`).
+**`convergio-parse-multi` stats:** 8 `*.rs` files / 20 public items / 816 lines (under `src/`).
 
 Files approaching the 300-line cap:
-- `src/py.rs` (273 lines)
+- `src/py.rs` (291 lines)
 <!-- END AUTO -->
