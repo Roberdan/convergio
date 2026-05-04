@@ -269,6 +269,18 @@ coherence-agents-finding-no-heartbeat = no_heartbeat_in_window
 coherence-agents-finding-no-coordination = no_coordination
 coherence-agents-finding-clean = clean
 
+# ---------- CLI: coherence handshake (F1) ----------
+coherence-handshake-summary = cvg coherence handshake — daemon: { $daemon } (timeout { $timeout }ms)
+coherence-handshake-phase-1 = register A+B
+coherence-handshake-phase-2 = A → ping
+coherence-handshake-phase-3 = B receives + pongs
+coherence-handshake-phase-4 = A receives pong
+coherence-handshake-phase-5 = acks
+coherence-handshake-phase-6 = retire
+coherence-handshake-success = handshake complete in { $elapsed }ms (timeout was { $timeout }ms)
+coherence-handshake-fail = handshake failed after { $elapsed }ms (timeout was { $timeout }ms)
+coherence-handshake-timeout = handshake timed out after { $elapsed }ms (deadline { $timeout }ms)
+
 # ---------- CLI: bus tail / list (P1.2) ----------
 bus-tail-following = Following bus on plan { $plan } (Ctrl-C to exit)
 bus-tail-disconnect = bus stream disconnected, reconnecting...

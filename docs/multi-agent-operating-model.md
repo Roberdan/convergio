@@ -311,6 +311,30 @@ Open gaps the dogfood made visible (still applicable):
   API surface but neither agent claimed one. Disjoint territories
   were luck, not enforcement.
 
+## Verifying the loop
+
+The full multi-agent leash (register → heartbeat → publish → poll →
+ack) is exercised by `cvg coherence handshake`. The verifier:
+
+1. creates a synthetic plan,
+2. registers two synthetic agents (`handshake-A-XXXX`, `handshake-B-XXXX`),
+3. publishes a `ping` from A on `coordination/handshake`,
+4. polls from B until B sees the ping; B replies with a `pong` carrying
+   the same nonce and `replying_to`,
+5. polls from A until A sees the pong; A validates the nonce,
+6. acks both messages and retires both agents.
+
+```bash
+cvg coherence handshake --daemon http://127.0.0.1:8420 --timeout-seconds 5
+```
+
+Exits 0 on success, non-zero on any phase failure with the broken
+phase named (`B never saw A's ping`, etc.). Run as a CI smoke test
+against any deployment that should host the leash; treat any
+regression as a multi-agent outage. See
+`crates/convergio-coherence/src/handshake.rs` and
+`crates/convergio-coherence/tests/e2e_handshake.rs`.
+
 ## What works today
 
 Implemented:

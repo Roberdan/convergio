@@ -42,7 +42,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 40 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 31 |
 | `crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
-| `crates/convergio-coherence/AGENTS.md` | crate-rules | - | - | 49 |
+| `crates/convergio-coherence/AGENTS.md` | crate-rules | - | - | 67 |
 | `crates/convergio-coherence/README.md` | crate-readme | - | - | 23 |
 | `crates/convergio-db/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-db/README.md` | crate-readme | - | - | 26 |
@@ -120,7 +120,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 252 |
 | `docs/agents/README.md` | agent-docs | - | - | 101 |
-| `docs/multi-agent-operating-model.md` | - | - | - | 396 |
+| `docs/multi-agent-operating-model.md` | - | - | - | 420 |
 | `docs/plans/2026-05-01-triage-pass.md` | plan | - | - | 75 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
 | `docs/plans/README.md` | plan | - | - | 31 |

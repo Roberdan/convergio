@@ -5,9 +5,10 @@ For repo-wide rules see [../../AGENTS.md](../../AGENTS.md).
 ## Responsibility
 
 Documentation/code coherence verifiers for Convergio — the `cvg
-coherence` suite. Pure local checks; no daemon dependency.
+coherence` suite. Most verifiers are pure local checks; `handshake`
+is the one exception (it exercises the live daemon HTTP surface).
 
-Two verifiers ship today:
+Five verifiers ship today:
 
 - `coherence::CoherenceCommand::Check` — ADR frontmatter against the
   ADR index (`docs/adr/README.md`) and `workspace.members`; markdown
@@ -16,14 +17,25 @@ Two verifiers ship today:
 - `coherence::CoherenceCommand::Routes` — diff actual axum routes
   under `crates/convergio-server/src/routes/` against documented
   routes in `ARCHITECTURE.md` and `AGENTS.md`.
+- `coherence::CoherenceCommand::Adrs` — cross-check ADR `status:`
+  frontmatter against implementation reality.
+- `coherence::CoherenceCommand::Agents` — flag merged PRs whose author
+  skipped the multi-agent protocol (no `agent_registry` entry,
+  no heartbeat in window, no coordination messages).
+- `coherence::CoherenceCommand::Handshake` — 2-session E2E smoke test
+  of the multi-agent loop (register → publish → poll → ack). Unlike
+  the other verifiers this one **does** require a running daemon at
+  `--daemon` (default `http://127.0.0.1:8420`).
 
 Public entry points: [`run`] and [`CoherenceCommand`].
 
 ## Boundaries
 
-- No HTTP. No SQLite. No process spawning.
-- Walks the repo with `walkdir`; reads `Cargo.toml` with `toml`; does
-  not write any files.
+- No SQLite. No process spawning.
+- Local verifiers (Check, Routes, Adrs, Agents): walk the repo with
+  `walkdir`, read `Cargo.toml` with `toml`, never write files.
+- `Handshake` is the lone HTTP-using verifier — pure `reqwest` client
+  against the daemon, no in-process state.
 - Verifiers must be agent-callable from any CLI/skill, not just
   `cvg`. The CLI hosts only a thin shim
   (`crates/convergio-cli/src/commands/coherence.rs`).
@@ -38,7 +50,13 @@ Public entry points: [`run`] and [`CoherenceCommand`].
 - Any new `convergio-*` allowlist entry in [`body`] must cite the
   ADR or release artefact that justifies it.
 - Tests are colocated in `#[cfg(test)] mod tests { ... }` blocks per
-  module — no shared fixtures across files.
+  module — no shared fixtures across files. Where the unit tests
+  alone push the host module past the 300-line cap, split them into
+  a sibling `*_tests.rs` module (e.g. `handshake_tests.rs`,
+  `adrs_tests.rs`).
+- The handshake verifier has its own E2E test under
+  `crates/convergio-coherence/tests/e2e_handshake.rs` that boots
+  the server in-process and runs the full round-trip.
 
 ## ADRs
 
