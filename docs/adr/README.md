@@ -57,4 +57,5 @@ do not edit between the markers.
 | [0037](./0037-brand-kit-and-claim.md) | 0037. Brand kit, claim, and shared `convergio-brand` crate | accepted |
 | [0038](./0038-fleet-retrieval-cross-repo-graph.md) | 0038. Fleet retrieval & cross-repo graph (semantic + multi-language) | proposed |
 | [0039](./0039-doc-coherence-sweep.md) | 0039. Doc-coherence sweep as a recurring three-layer plan | proposed |
+| [0040](./0040-split-coherence-into-its-own-crate.md) | 0040. Split the coherence verifiers into their own crate | accepted |
 <!-- END AUTO -->

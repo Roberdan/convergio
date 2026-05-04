@@ -1,9 +1,9 @@
-//! Diff for [`super::coherence_routes`].
+//! Diff for [`crate::routes`].
 //!
 //! Builds three drift buckets — `missing_in_docs`, `missing_in_code`,
 //! `method_mismatch` — from a code route set and a docs route set.
 
-use super::coherence_routes_parse::{RouteEntry, Violation};
+use crate::routes_parse::{RouteEntry, Violation};
 use std::collections::{BTreeMap, BTreeSet};
 
 fn pairs(entries: &[RouteEntry]) -> BTreeSet<(String, String)> {

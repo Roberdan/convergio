@@ -1,7 +1,7 @@
-//! Route parsers for [`super::coherence_routes`].
+//! Route parsers for [`crate::routes`].
 //!
 //! Split out to honour the 300-line per-file cap. Diff logic lives
-//! in [`super::coherence_routes_diff`].
+//! in [`crate::routes_diff`].
 
 use anyhow::{Context, Result};
 use serde::Serialize;

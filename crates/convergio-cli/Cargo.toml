@@ -18,6 +18,7 @@ path = "src/main.rs"
 
 [dependencies]
 convergio-brand = { workspace = true }
+convergio-coherence = { workspace = true }
 convergio-durability = { workspace = true }
 convergio-i18n = { workspace = true }
 convergio-runner = { workspace = true }

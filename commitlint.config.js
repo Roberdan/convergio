@@ -26,6 +26,7 @@ module.exports = {
         'tui',
         'brand',
         'embed',
+        'coherence',
         // meta scopes
         'docs',
         'ci',
