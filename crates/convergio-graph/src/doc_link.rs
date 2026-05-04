@@ -13,7 +13,7 @@ use std::path::Path;
 /// Parse one ADR or markdown file. Returns the doc node + edges
 /// (claims to crates listed in `touches_crates`, mentions to other
 /// ADRs listed in `related_adrs`).
-pub fn parse_doc(rel_path: &str, abs_path: &Path) -> Result<(Node, Vec<Edge>)> {
+pub fn parse_doc(repo: &str, rel_path: &str, abs_path: &Path) -> Result<(Node, Vec<Edge>)> {
     let body = std::fs::read_to_string(abs_path)?;
     let fm = parse_frontmatter(&body);
 
@@ -26,20 +26,21 @@ pub fn parse_doc(rel_path: &str, abs_path: &Path) -> Result<(Node, Vec<Edge>)> {
         .id
         .clone()
         .unwrap_or_else(|| filename_without_ext(rel_path));
-    let id = Node::compute_id(kind, DOCS_CRATE, Some(rel_path), &name, None);
+    let id = Node::compute_id(kind, repo, DOCS_CRATE, Some(rel_path), &name, None);
     let node = Node {
         id: id.clone(),
         kind,
         name,
         file_path: Some(rel_path.to_string()),
         crate_name: DOCS_CRATE.to_string(),
+        repo: repo.to_string(),
         item_kind: None,
         span: None,
     };
 
     let mut edges: Vec<Edge> = Vec::new();
     for crate_name in &fm.touches_crates {
-        let dst = Node::compute_id(NodeKind::Crate, crate_name, None, crate_name, None);
+        let dst = Node::compute_id(NodeKind::Crate, repo, crate_name, None, crate_name, None);
         edges.push(Edge {
             src: id.clone(),
             dst,
@@ -50,7 +51,7 @@ pub fn parse_doc(rel_path: &str, abs_path: &Path) -> Result<(Node, Vec<Edge>)> {
     for other_adr in &fm.related_adrs {
         // ADR ids in frontmatter look like "0001"; the matching node
         // name is also "0001" so the id resolves identically.
-        let dst = Node::compute_id(NodeKind::Adr, DOCS_CRATE, None, other_adr, None);
+        let dst = Node::compute_id(NodeKind::Adr, repo, DOCS_CRATE, None, other_adr, None);
         edges.push(Edge {
             src: id.clone(),
             dst,
@@ -180,7 +181,7 @@ mod tests {
         let f = write_tmp(
             "---\nid: 0014\ntouches_crates: [convergio-graph, convergio-cli]\nrelated_adrs: [0001, 0002]\n---\n# body",
         );
-        let (node, edges) = parse_doc("docs/adr/0014-foo.md", f.path()).unwrap();
+        let (node, edges) = parse_doc("convergio", "docs/adr/0014-foo.md", f.path()).unwrap();
         assert_eq!(node.kind, NodeKind::Adr);
         assert_eq!(node.name, "0014");
         let claims: Vec<&Edge> = edges
@@ -200,7 +201,7 @@ mod tests {
         let f = write_tmp(
             "---\nid: 0099\ntouches_crates:\n  - foo\n  - bar\nrelated_adrs:\n  - 0001\n---\n",
         );
-        let (_node, edges) = parse_doc("docs/adr/0099-x.md", f.path()).unwrap();
+        let (_node, edges) = parse_doc("convergio", "docs/adr/0099-x.md", f.path()).unwrap();
         let claims = edges.iter().filter(|e| e.kind == EdgeKind::Claims).count();
         assert_eq!(claims, 2);
     }
@@ -208,7 +209,7 @@ mod tests {
     #[test]
     fn handles_no_frontmatter() {
         let f = write_tmp("# Just a doc\nNo frontmatter here.\n");
-        let (node, edges) = parse_doc("docs/foo.md", f.path()).unwrap();
+        let (node, edges) = parse_doc("convergio", "docs/foo.md", f.path()).unwrap();
         assert_eq!(node.kind, NodeKind::Doc);
         assert!(edges.is_empty());
     }

@@ -22,6 +22,7 @@ fn node(id: &str, kind: NodeKind, name: &str, crate_name: &str, file_path: Optio
         name: name.into(),
         file_path: file_path.map(str::to_string),
         crate_name: crate_name.into(),
+        repo: "test-repo".into(),
         item_kind: None,
         span: None,
     }

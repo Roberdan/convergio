@@ -12,11 +12,13 @@ use walkdir::WalkDir;
 /// Run a full or incremental build pass against a workspace.
 ///
 /// `manifest_dir` is the root containing the workspace `Cargo.toml`.
+/// The repo name is derived from the manifest directory's basename.
 /// `force` skips the mtime check and re-parses every file.
 pub async fn build(manifest_dir: &Path, store: &Store, force: bool) -> Result<BuildReport> {
     store.migrate().await?;
 
-    let snap = snapshot(manifest_dir)?;
+    let repo = repo_name(manifest_dir);
+    let snap = snapshot(manifest_dir, &repo)?;
     for n in &snap.nodes {
         store.upsert_node(n).await?;
     }
@@ -50,11 +52,11 @@ pub async fn build(manifest_dir: &Path, store: &Store, force: bool) -> Result<Bu
                 continue;
             }
             let module_path = module_path_from_file(&c.src_root, path);
-            let (nodes, edges) = parse_file(&c.name, &module_path, path, &rel)?;
+            let (nodes, edges) = parse_file(&repo, &c.name, &module_path, path, &rel)?;
             let mtime = current_mtime(path)?;
             // Bridge module → crate so `cvg graph for-task` can walk
             // from a file back to its crate node.
-            let crate_id_node = c_node_for_id(&snap.crates, &c.name);
+            let crate_id_node = c_node_for_id(&snap.crates, &c.name, &repo);
             let edges_with_bridge = bridge_module_to_crate(&nodes, crate_id_node, edges);
             store
                 .upsert_file(&rel, mtime, &nodes, &edges_with_bridge)
@@ -68,7 +70,7 @@ pub async fn build(manifest_dir: &Path, store: &Store, force: bool) -> Result<Bu
     // is non-fatal — the code-side graph is still valuable.
     let docs_dir = manifest_dir.join("docs");
     if docs_dir.exists() {
-        scan_docs(manifest_dir, &docs_dir, store, &mut report).await?;
+        scan_docs(manifest_dir, &docs_dir, &repo, store, &mut report).await?;
     }
 
     report.nodes = store.count_nodes().await?;
@@ -79,6 +81,7 @@ pub async fn build(manifest_dir: &Path, store: &Store, force: bool) -> Result<Bu
 async fn scan_docs(
     manifest_dir: &Path,
     docs_dir: &Path,
+    repo: &str,
     store: &Store,
     report: &mut BuildReport,
 ) -> Result<()> {
@@ -105,7 +108,7 @@ async fn scan_docs(
         }
         let rel = relativise(manifest_dir, path);
         let mtime = current_mtime(path)?;
-        let (node, edges) = parse_doc(&rel, path)?;
+        let (node, edges) = parse_doc(repo, &rel, path)?;
         bundles.push(DocBundle {
             rel,
             mtime,
@@ -173,10 +176,17 @@ fn module_path_from_file(src_root: &Path, file: &Path) -> String {
     parts.join("::")
 }
 
-fn c_node_for_id(crates: &[CrateInfo], name: &str) -> String {
+fn c_node_for_id(crates: &[CrateInfo], name: &str, repo: &str) -> String {
     use crate::model::{Node, NodeKind};
     let _ = crates;
-    Node::compute_id(NodeKind::Crate, name, None, name, None)
+    Node::compute_id(NodeKind::Crate, repo, name, None, name, None)
+}
+
+fn repo_name(manifest_dir: &Path) -> String {
+    manifest_dir
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "unknown".to_string())
 }
 
 fn bridge_module_to_crate(nodes: &[Node], crate_id: String, mut edges: Vec<Edge>) -> Vec<Edge> {

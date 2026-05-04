@@ -79,6 +79,7 @@ pub fn parse_py(repo_name: &str, file_path: &str, source: &[u8]) -> Result<(Vec<
     let module_id = Node::compute_id(
         NodeKind::Module,
         repo_name,
+        repo_name,
         Some(file_path),
         file_path,
         None,
@@ -89,6 +90,7 @@ pub fn parse_py(repo_name: &str, file_path: &str, source: &[u8]) -> Result<(Vec<
         name: file_path.to_owned(),
         file_path: Some(file_path.to_owned()),
         crate_name: repo_name.to_owned(),
+        repo: repo_name.to_owned(),
         item_kind: None,
         span: None,
     };
@@ -110,7 +112,14 @@ pub fn parse_py(repo_name: &str, file_path: &str, source: &[u8]) -> Result<(Vec<
         let end = decl.end_byte() as u32;
         let span = Some((start, end));
 
-        let node_id = Node::compute_id(NodeKind::Item, repo_name, Some(file_path), &name, span);
+        let node_id = Node::compute_id(
+            NodeKind::Item,
+            repo_name,
+            repo_name,
+            Some(file_path),
+            &name,
+            span,
+        );
         tracing::debug!(
             file = file_path,
             kind = decl.kind(),
@@ -132,6 +141,7 @@ pub fn parse_py(repo_name: &str, file_path: &str, source: &[u8]) -> Result<(Vec<
             name: name.clone(),
             file_path: Some(file_path.to_owned()),
             crate_name: repo_name.to_owned(),
+            repo: repo_name.to_owned(),
             item_kind: Some(ik),
             span,
         });
@@ -171,7 +181,14 @@ fn extract_methods(
         let start = decl.start_byte() as u32;
         let end = decl.end_byte() as u32;
         let span = Some((start, end));
-        let node_id = Node::compute_id(NodeKind::Item, repo_name, Some(file_path), &name, span);
+        let node_id = Node::compute_id(
+            NodeKind::Item,
+            repo_name,
+            repo_name,
+            Some(file_path),
+            &name,
+            span,
+        );
 
         tracing::debug!(
             file = file_path,
@@ -193,6 +210,7 @@ fn extract_methods(
             name,
             file_path: Some(file_path.to_owned()),
             crate_name: repo_name.to_owned(),
+            repo: repo_name.to_owned(),
             item_kind: Some("method"),
             span,
         });

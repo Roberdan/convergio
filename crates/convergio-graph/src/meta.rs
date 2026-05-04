@@ -30,7 +30,7 @@ pub struct MetaSnapshot {
 
 /// Run `cargo metadata` against `manifest_dir/Cargo.toml` and return
 /// the workspace member info plus crate-level graph nodes/edges.
-pub fn snapshot(manifest_dir: &Path) -> Result<MetaSnapshot> {
+pub fn snapshot(manifest_dir: &Path, repo: &str) -> Result<MetaSnapshot> {
     let manifest = manifest_dir.join("Cargo.toml");
     let meta = MetadataCommand::new().manifest_path(&manifest).exec()?;
 
@@ -60,7 +60,7 @@ pub fn snapshot(manifest_dir: &Path) -> Result<MetaSnapshot> {
             root,
             src_root,
         };
-        let id = Node::compute_id(NodeKind::Crate, &info.name, None, &info.name, None);
+        let id = Node::compute_id(NodeKind::Crate, repo, &info.name, None, &info.name, None);
         id_for.insert(info.name.clone(), id.clone());
         nodes.push(Node {
             id,
@@ -68,6 +68,7 @@ pub fn snapshot(manifest_dir: &Path) -> Result<MetaSnapshot> {
             name: info.name.clone(),
             file_path: None,
             crate_name: info.name.clone(),
+            repo: repo.to_string(),
             item_kind: None,
             span: None,
         });
@@ -111,7 +112,7 @@ mod tests {
     fn snapshot_finds_workspace_members() {
         let here = Path::new(env!("CARGO_MANIFEST_DIR"));
         let workspace = here.parent().unwrap().parent().unwrap();
-        let snap = snapshot(workspace).unwrap();
+        let snap = snapshot(workspace, "convergio").unwrap();
         assert!(snap.crates.iter().any(|c| c.name == "convergio-graph"));
         assert!(snap.crates.iter().any(|c| c.name == "convergio-cli"));
         assert!(!snap.nodes.is_empty());

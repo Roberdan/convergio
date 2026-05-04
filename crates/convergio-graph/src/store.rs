@@ -65,14 +65,15 @@ impl Store {
         for n in nodes {
             sqlx::query(
                 "INSERT OR REPLACE INTO graph_nodes \
-                 (id, kind, name, file_path, crate_name, item_kind, span_start, span_end, last_parsed, source_mtime) \
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                 (id, kind, name, file_path, crate_name, repo, item_kind, span_start, span_end, last_parsed, source_mtime) \
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             )
             .bind(&n.id)
             .bind(n.kind.as_str())
             .bind(&n.name)
             .bind(n.file_path.as_deref())
             .bind(&n.crate_name)
+            .bind(&n.repo)
             .bind(n.item_kind)
             .bind(n.span.map(|(s, _)| s as i64))
             .bind(n.span.map(|(_, e)| e as i64))
@@ -103,14 +104,15 @@ impl Store {
         let now = Utc::now().to_rfc3339();
         sqlx::query(
             "INSERT OR REPLACE INTO graph_nodes \
-             (id, kind, name, file_path, crate_name, item_kind, span_start, span_end, last_parsed, source_mtime) \
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+             (id, kind, name, file_path, crate_name, repo, item_kind, span_start, span_end, last_parsed, source_mtime) \
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&node.id)
         .bind(node.kind.as_str())
         .bind(&node.name)
         .bind(node.file_path.as_deref())
         .bind(&node.crate_name)
+        .bind(&node.repo)
         .bind(node.item_kind)
         .bind(node.span.map(|(s, _)| s as i64))
         .bind(node.span.map(|(_, e)| e as i64))
