@@ -27,6 +27,7 @@ module.exports = {
         'brand',
         'embed',
         'coherence',
+        'parse-multi',
         // meta scopes
         'docs',
         'ci',
