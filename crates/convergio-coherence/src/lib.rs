@@ -31,6 +31,8 @@ mod agents_scan;
 mod agents_tests;
 mod body;
 mod body_scan;
+pub mod close_post_hoc;
+mod close_post_hoc_scan;
 mod parse;
 mod routes;
 mod routes_diff;
