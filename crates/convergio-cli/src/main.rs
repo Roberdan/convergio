@@ -127,6 +127,11 @@ enum Command {
         #[command(subcommand)]
         sub: commands::embed::EmbedCommand,
     },
+    /// Fleet repo management (add, ls, enable, disable; ADR-0038 F2-6).
+    Fleet {
+        #[command(subcommand)]
+        sub: commands::fleet::FleetCommand,
+    },
     /// Workspace coordination diagnostics.
     Workspace {
         #[command(subcommand)]
@@ -159,11 +164,9 @@ enum Command {
     },
     /// Run one executor tick (dispatches pending tasks).
     Dispatch,
-    /// Run Thor on a plan. Without `--wave` the verdict is
-    /// plan-strict (every task must be submitted/done). With
-    /// `--wave N` the verdict is restricted to wave N — tasks in
-    /// other waves are ignored. T3.06 enables progressive
-    /// promotion on long-running backlog plans.
+    /// Run Thor on a plan. Without `--wave` verdict is plan-strict
+    /// (every task must be submitted/done). With `--wave N` only
+    /// wave N is evaluated — enables progressive promotion (T3.06).
     Validate {
         /// Plan id.
         plan_id: String,
@@ -260,6 +263,7 @@ async fn main() -> Result<()> {
         Command::Docs { sub } => commands::docs::run(cli.output, sub).await,
         Command::Graph { sub } => commands::graph::run(&client, cli.output, sub).await,
         Command::Embed { sub } => commands::embed::run(&client, cli.output, sub).await,
+        Command::Fleet { sub } => commands::fleet::run(&client, cli.output, sub).await,
         Command::Workspace { sub } => {
             commands::workspace::run(&client, &bundle, cli.output, sub).await
         }

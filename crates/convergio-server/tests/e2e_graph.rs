@@ -36,6 +36,7 @@ async fn boot() -> (String, TempDir) {
         graph,
         embed: Arc::new(convergio_embed::EmbedStore::new(pool.clone())),
         embedder: Arc::new(convergio_embed::embedder::testing::DeterministicTestEmbedder::new(8)),
+        fleet: Arc::new(convergio_fleet::FleetStore::new(pool.clone())),
     };
 
     let listener = TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], 0)))

@@ -38,6 +38,7 @@ async fn boot() -> (String, Arc<EmbedStore>, tempfile::TempDir) {
     let state = AppState {
         durability: Arc::new(Durability::new(pool.clone())),
         bus: Arc::new(Bus::new(pool.clone())),
+        fleet: Arc::new(convergio_fleet::FleetStore::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool)),
         graph,
         embed: embed.clone(),
