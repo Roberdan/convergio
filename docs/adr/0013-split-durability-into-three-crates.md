@@ -77,6 +77,19 @@ on the v0.2 → v0.3 path.
 The split lands in three PRs over one wave to keep each diff
 reviewable.
 
+### Implementation status (2026-05-04)
+
+Stays `proposed`. Internal facade modules
+(`workspace_facade.rs`, `crdt_facade.rs`, `capability_facade.rs`,
+`agent_facade.rs`, `facade.rs`, `facade_admin.rs`,
+`facade_transitions.rs`, `facade_plan_transitions.rs`,
+`facade_retry.rs`) carve out the three intended seams *inside the
+single `convergio-durability` crate*, but the three-crate split
+(`convergio-audit` / `convergio-state` / `convergio-coordination`)
+described in PR 13.1–13.3 has not been performed. The decision still
+holds; the file-level boundaries are now legible enough that the
+crate-level split can land later without further design churn.
+
 ### Target topology
 
 ```

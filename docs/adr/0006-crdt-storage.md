@@ -1,16 +1,16 @@
 ---
 id: 0006
-status: proposed
+status: accepted
 date: 2026-04-29
 topics: [layer-0, layer-1, storage, crdt, sync]
 related_adrs: []
-touches_crates: []
-last_validated: 2026-04-30
+touches_crates: [convergio-durability, convergio-server, convergio-api]
+last_validated: 2026-05-04
 ---
 
 # 0006. Model state with row and column CRDT metadata from day zero
 
-- Status: proposed
+- Status: accepted (shipped — `crdt_actors`/`crdt_ops`/`crdt_cells`/`crdt_row_clocks` in migration `0004_crdt_core.sql`, `/v1/crdt/import` + `/v1/crdt/conflicts` routes, action enum `import_crdt_ops`/`list_crdt_conflicts`)
 - Date: 2026-04-29
 - Deciders: Roberto, Copilot
 - Tags: layer-0, layer-1, storage, crdt, sync

@@ -116,6 +116,15 @@ Chosen option: **Option C**, because it preserves the technical
 honesty of v0.1.x while giving the project a coherent forward story
 that matches the architecture already in the repo.
 
+### Implementation status (2026-05-04)
+
+Stays `proposed`. This ADR is a vision/framing decision — the long-tail
+thesis is the frame Convergio reasons inside, not a mechanism that
+ships. The deliverables it commits to (ROADMAP wave restructure,
+companion ADRs 0017/0018/0019, vertical accelerator demos) are tracked
+in those individual artefacts; the frame itself is "real, the
+buildings inside it are tracked elsewhere".
+
 ### What this decision commits us to
 
 - [`docs/vision.md`](../vision.md) is rewritten to articulate the

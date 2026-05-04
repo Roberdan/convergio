@@ -1,18 +1,18 @@
 ---
 id: 0039
-status: proposed
+status: accepted
 date: 2026-05-03
 topics: [documentation, coherence, drift, gates, retrieval, semantic]
-related_adrs: [0014, 0015, 0038]
-touches_crates: [convergio-cli, convergio-server, convergio-durability, convergio-graph]
-last_validated: 2026-05-03
+related_adrs: [0014, 0015, 0038, 0040]
+touches_crates: [convergio-cli, convergio-coherence, convergio-server, convergio-durability, convergio-graph]
+last_validated: 2026-05-04
 implemented_in: []
 authors: [Roberto D'Angelo]
 ---
 
 # 0039. Doc-coherence sweep as a recurring three-layer plan
 
-- Status: **proposed**
+- Status: accepted (shipped — L1 `cvg docs regenerate --check` (ADR-0015) and L2 deterministic verifiers (`cvg coherence check` route-table + ADR status cross-check, ADR-0040 crate `convergio-coherence`); L3 semantic sweep + recurring-plan wiring tracked as future work, see below)
 - Date: 2026-05-03
 - Deciders: Roberto D'Angelo, claude-code-roberdan
 - Tags: documentation, coherence, drift, gates, retrieval
@@ -85,6 +85,26 @@ silently skipped.
 
 Chosen option: **Option 3 — three-layer doc-coherence sweep,
 operated as a recurring Convergio plan**.
+
+### Implementation status (2026-05-04)
+
+The three-layer framework is **the accepted policy**, but the layers
+ship on independent timelines:
+
+- **L1 — mechanical AUTO blocks**: shipped. `cvg docs regenerate
+  --check` is wired in CI per ADR-0015.
+- **L2 — deterministic verifiers**: shipped this week. `cvg coherence
+  check` (route-table verifier + ADR status / supersession
+  cross-check, ADR-0040) is the umbrella verb; it is blocking in CI
+  for `--strict` failures (`accepted_no_evidence`,
+  `broken_supersession`).
+- **L3 — semantic sweep + recurring-plan wiring**: tracked as future
+  work. ADR-0038 F1/F2 already shipped the embedding substrate,
+  but the "diff-time PR comment" and "nightly recurring plan with
+  `doc_coherence_sweep` evidence rows" are not yet implemented.
+
+The framework decision is final; L3 ships when the cost / token
+budget under ADR-0038 F1 has been verified against real PRs.
 
 `cvg coherence` is the umbrella verb. It operates in three layers
 that share nothing except the plan id they attach evidence to:
