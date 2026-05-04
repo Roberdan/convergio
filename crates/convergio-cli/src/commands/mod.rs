@@ -42,6 +42,8 @@ pub mod session;
 mod session_checks;
 mod session_pre_stop;
 mod session_pre_stop_run;
+pub mod session_register_and_poll;
+mod session_register_and_poll_render;
 mod session_render;
 pub mod setup;
 mod setup_repo_path;

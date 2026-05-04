@@ -71,6 +71,34 @@ Today this is proven only for the constrained local shell runner exposed
 as `spawn_runner`. Product-quality Claude/Copilot/Cursor runner adapters
 are future work. Until those adapters exist, use Mode 1 for those hosts.
 
+## Session lifecycle is automatic
+
+The first three steps of the loop below — register, heartbeat, poll
+inbox — are no longer left to the agent's discipline. The Claude Code
+`SessionStart` hook in `.claude/settings.json` runs
+`cvg session register-and-poll` before the first user prompt:
+
+- registers the agent in `agent_registry` (`agent.registered` audit row),
+- sends an `idle` heartbeat,
+- emits `agent.session_started` once per fresh shell (deduped within
+  a 30-minute window so context restores do not spam the chain),
+- pulls the first 20 messages from `agent:<id>` and `plan:<plan_id>`
+  topics on every active plan,
+- announces session start on `coordination/agents` so peer agents
+  see the new arrival without polling.
+
+If `cargo` is unavailable in the harness PATH (sealed CI, distro
+package), copy `.claude/settings.local.json.example` to
+`.claude/settings.local.json` and point the hook at the precompiled
+`~/.convergio/bin/cvg`. Operators outside Claude Code (raw shell,
+Codex, custom runners) should run `cvg session register-and-poll`
+once on startup. The aggregate counters at
+`/v1/status.telemetry` (`agents_registered_total`,
+`agents_active_24h`, `sessions_started_24h`, `bus_messages_24h`,
+`workspace_leases_active`) make it observable that registration
+actually happens — which is how we caught two parallel sessions
+working without registering on 2026-05-04.
+
 ## What a single agent must do
 
 Every agent session needs a unique `agent_id`, for example:

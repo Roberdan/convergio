@@ -29,14 +29,22 @@ Your durable agent identity in `agent_registry` is
 cvg task transition <task_id> in-progress --agent-id claude-code-roberdan
 ```
 
-If the registry has lost the row (fresh DB), re-register via the
-typed action (do **not** call HTTP directly):
+Inside Claude Code the SessionStart hook (`.claude/settings.json`)
+already calls `cvg session register-and-poll` before the first user
+prompt — every session shows up in `agent_registry` automatically,
+with one `agent.session_started` audit row per fresh shell.
+
+If you are working outside Claude Code (raw shell, Codex CLI,
+custom runner) run it once at start:
 
 ```bash
-cvg agent register --id claude-code-roberdan --kind claude \
-  --name "Claude Code (Roberdan local)" --host macOS \
-  --capability code,test,doc,rust,bash,markdown
+cvg session register-and-poll \
+  --agent-id claude-code-roberdan --kind claude --output human
 ```
+
+The command is idempotent: re-running inside an existing session
+refreshes capabilities and heartbeat without spamming the audit
+chain (re-registration within 30 min is deduped server-side).
 
 ## 2. Cold-start reads (in order)
 

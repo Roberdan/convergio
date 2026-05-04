@@ -5,7 +5,9 @@ use crate::error::ApiError;
 use axum::extract::{Query, State};
 use axum::routing::get;
 use axum::{Json, Router};
-use convergio_durability::{Plan, PlanStatus, RecentCompletedTask, Task, TaskStatus};
+use convergio_durability::{
+    Plan, PlanStatus, RecentCompletedTask, Task, TaskStatus, TelemetryCounters,
+};
 use serde::{Deserialize, Serialize};
 
 /// Mount `/v1/status`.
@@ -34,6 +36,10 @@ struct StatusResponse {
     active_plans: Vec<PlanSummary>,
     recent_completed_plans: Vec<PlanSummary>,
     recent_completed_tasks: Vec<CompletedTask>,
+    /// Aggregate counters for the multi-agent dashboard. Each value
+    /// is a single SQL aggregate; the block is additive so existing
+    /// callers ignore it.
+    telemetry: TelemetryCounters,
 }
 
 #[derive(Serialize)]
@@ -107,10 +113,12 @@ async fn status(
         .into_iter()
         .map(completed_task)
         .collect();
+    let telemetry = state.durability.telemetry().await?;
     Ok(Json(StatusResponse {
         active_plans,
         recent_completed_plans,
         recent_completed_tasks,
+        telemetry,
     }))
 }
 
