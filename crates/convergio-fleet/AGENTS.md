@@ -67,8 +67,8 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-fleet` stats:** 5 `*.rs` files / 15 public items / 597 lines (under `src/`).
+**`convergio-fleet` stats:** 6 `*.rs` files / 19 public items / 797 lines (under `src/`).
 
 Files approaching the 300-line cap:
-- `src/store.rs` (256 lines)
+- `src/store.rs` (262 lines)
 <!-- END AUTO -->

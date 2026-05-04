@@ -57,7 +57,8 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-embed` stats:** 13 `*.rs` files / 40 public items / 1590 lines (under `src/`).
+**`convergio-embed` stats:** 13 `*.rs` files / 40 public items / 1617 lines (under `src/`).
 
-No files within 50 lines of the 300-line cap.
+Files approaching the 300-line cap:
+- `src/store.rs` (264 lines)
 <!-- END AUTO -->
