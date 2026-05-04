@@ -29,7 +29,7 @@ pub enum SetupCommand {
 }
 
 /// Supported agent hosts for generated snippets.
-#[derive(Clone, Copy, ValueEnum)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
 pub enum AgentHost {
     /// Claude Desktop / Claude Code compatible MCP config.
     Claude,
@@ -50,7 +50,9 @@ pub enum AgentHost {
 }
 
 impl AgentHost {
-    fn as_str(self) -> &'static str {
+    /// Stable host slug used in URLs, paths, and the registry `kind`
+    /// field. Stable across releases.
+    pub fn as_str(self) -> &'static str {
         match self {
             Self::Claude => "claude",
             Self::CopilotLocal => "copilot-local",
@@ -127,7 +129,11 @@ fn agent(bundle: &Bundle, host: AgentHost, force: bool) -> Result<()> {
     fs::create_dir_all(&dir).with_context(|| format!("create {}", dir.display()))?;
 
     write_snippet(&dir.join("mcp.json"), &mcp_snippet(host), force)?;
-    write_snippet(&dir.join("prompt.txt"), prompt_snippet(), force)?;
+    write_snippet(
+        &dir.join("prompt.txt"),
+        &super::setup_prompts::prompt_snippet(host),
+        force,
+    )?;
     write_snippet(&dir.join("README.txt"), &readme_snippet(host), force)?;
 
     if matches!(host, AgentHost::Claude) {
@@ -224,10 +230,6 @@ fn mcp_snippet(host: AgentHost) -> String {
     format!(
         "{{\n  \"mcpServers\": {{\n    \"{name}\": {{\n      \"type\": \"stdio\",\n      \"command\": \"convergio-mcp\",\n      \"args\": [\"--url\", \"{DEFAULT_URL}\"]\n    }}\n  }}\n}}\n"
     )
-}
-
-fn prompt_snippet() -> &'static str {
-    "Use Convergio as the local source of truth. Call convergio.help once. Use convergio.act for task lifecycle and evidence. If a gate refuses work, fix the reason, attach new evidence, and retry submit_task. Do not tell the user work is done until validate_plan returns Pass — agents submit, the validator (Thor) is the only path to done (ADR-0011).\n"
 }
 
 fn readme_snippet(host: AgentHost) -> String {

@@ -33,6 +33,41 @@ Each generated directory contains:
 | `prompt.txt` | copy into custom instructions |
 | `README.txt` | host-local reminder |
 
+## Step 0 — register every session
+
+Before doing anything else, every host session must register itself in
+the local agent registry so peer sessions can see it and the daemon
+gets a heartbeat to detect liveness. The bootstrap is baked into the
+generated `prompt.txt` for each host (see `cvg setup agent <host>`).
+
+The `agent_id` is host-shaped to prevent collisions when two sessions
+of the same host run on the same machine:
+
+| Host | `agent_id` placeholder |
+|------|------------------------|
+| `claude` (Claude Code / Desktop) | `claude-code-${USER}` |
+| `copilot-local` | `copilot-local-${USER}-${PID}` |
+| `copilot-cloud` | `copilot-cloud-${REPO_FULL_NAME}-${RUN_ID}` |
+| `cursor` | `cursor-${USER}-${WORKSPACE}` |
+| `cline` | `cline-${USER}` |
+| `continue` | `continue-${USER}` |
+| `qwen` | `qwen-${USER}` |
+| `shell` | `shell-${USER}-${PPID}` |
+
+Bootstrap (curl fallback when `cvg session register-and-poll` is not
+yet available in the installed cvg version):
+
+```bash
+curl -fsS -X POST http://127.0.0.1:8420/v1/agent-registry/agents \
+  -H 'Content-Type: application/json' \
+  -d '{"id":"<your-agent-id>","kind":"<host>","name":"<descriptive>","host":"<machine>","capabilities":["..."]}'
+
+curl -fsS -X POST http://127.0.0.1:8420/v1/agent-registry/agents/<your-agent-id>/heartbeat \
+  -H 'Content-Type: application/json' -d '{"status":"idle"}'
+```
+
+If those calls fail, the daemon is down: `cvg service start`, then retry.
+
 ## Required agent behavior
 
 1. Call `convergio.help` once.
