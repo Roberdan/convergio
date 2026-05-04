@@ -8,6 +8,13 @@ pub(crate) fn response(request: &HelpRequest) -> Value {
         HelpTopic::Quickstart => json!({
             "schema_version": SCHEMA_VERSION,
             "tools": ActionCatalog::current().tools,
+            "capabilities": {
+                "streaming": true,
+                "streams": [
+                    {"path": "/v1/audit/stream", "event": "audit"},
+                    {"path": "/v1/plans/:plan_id/messages/stream", "event": "bus"}
+                ],
+            },
             "protocol": [
                 "call convergio.help once per session",
                 "use convergio.act with schema_version and action",

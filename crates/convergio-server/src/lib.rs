@@ -12,6 +12,7 @@ mod app;
 mod capability_install;
 mod error;
 mod routes;
+mod sse;
 
 pub use app::{router, AppState};
 pub use error::ApiError;

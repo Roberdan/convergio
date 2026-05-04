@@ -1,12 +1,17 @@
 //! `/v1/audit/verify` — recompute the chain.
+//! `/v1/audit/stream` — Server-Sent Events tail (P1.1).
 
 use crate::app::AppState;
 use crate::error::ApiError;
+use crate::sse::{poll_stream, StreamEvent};
 use axum::extract::{Query, State};
+use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{Json, Router};
 use convergio_durability::audit::{AuditEntry, VerifyReport};
 use serde::Deserialize;
+use std::collections::HashSet;
+use std::sync::Arc;
 
 /// Mount audit routes.
 pub fn router() -> Router<AppState> {
@@ -14,6 +19,7 @@ pub fn router() -> Router<AppState> {
         .route("/v1/audit/verify", get(verify))
         .route("/v1/audit/refusals/latest", get(latest_refusal))
         .route("/v1/audit/events", get(events))
+        .route("/v1/audit/stream", get(stream))
 }
 
 #[derive(Deserialize)]
@@ -76,4 +82,81 @@ async fn events(
         .list_since(q.after_seq, q.limit)
         .await?;
     Ok(Json(entries))
+}
+
+#[derive(Deserialize)]
+struct StreamQuery {
+    /// Cursor: only events with `seq > since` are emitted. Defaults
+    /// to the current chain tip so a fresh client only sees new
+    /// events from connect time forward, NOT the full backlog.
+    #[serde(default)]
+    since: Option<i64>,
+    /// Optional comma-separated list of audit `transition` kinds
+    /// (e.g. `task.in_progress,plan.created`). When set, the server
+    /// drops rows whose `transition` is not in the list.
+    #[serde(default)]
+    kinds: Option<String>,
+}
+
+const STREAM_BATCH_LIMIT: i64 = 100;
+
+async fn stream(
+    State(state): State<AppState>,
+    Query(q): Query<StreamQuery>,
+) -> Result<axum::response::Response, ApiError> {
+    let initial_cursor = match q.since {
+        Some(s) => s,
+        None => {
+            // Default: current tip — only new events from now.
+            state
+                .durability
+                .audit()
+                .tail()
+                .await?
+                .map(|e| e.seq)
+                .unwrap_or(0)
+        }
+    };
+    let kinds: Option<HashSet<String>> = q.kinds.map(|s| {
+        s.split(',')
+            .map(|p| p.trim().to_string())
+            .filter(|p| !p.is_empty())
+            .collect()
+    });
+    let kinds = Arc::new(kinds);
+    let durability = state.durability.clone();
+
+    let sse = poll_stream::<serde_json::Value, _, _>("audit", initial_cursor, move |cursor| {
+        let durability = durability.clone();
+        let kinds = kinds.clone();
+        async move {
+            let rows = durability
+                .audit()
+                .list_since(cursor, STREAM_BATCH_LIMIT)
+                .await
+                .map_err(|e| e.to_string())?;
+            let filtered = rows
+                .into_iter()
+                .filter(|r| match kinds.as_ref() {
+                    Some(set) => set.contains(&r.transition),
+                    None => true,
+                })
+                .map(|r| StreamEvent {
+                    seq: r.seq,
+                    payload: serde_json::json!({
+                        "seq": r.seq,
+                        "kind": r.transition,
+                        "entity_kind": r.entity_type,
+                        "entity_id": r.entity_id,
+                        "agent_id": r.agent_id,
+                        "payload": serde_json::from_str::<serde_json::Value>(&r.payload)
+                            .unwrap_or(serde_json::Value::String(r.payload.clone())),
+                        "created_at": r.created_at,
+                    }),
+                })
+                .collect::<Vec<_>>();
+            Ok(filtered)
+        }
+    });
+    Ok(sse.into_response())
 }
