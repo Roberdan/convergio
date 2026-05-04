@@ -121,11 +121,48 @@ agent-list-header = { $count ->
     [one] One agent:
    *[other] { $count } agents:
 }
+agent-list-header-active = { $count ->
+    [one] One active agent:
+   *[other] { $count } active agents:
+}
+agent-list-stale-hidden = { $count ->
+    [one] ({ $count } stale/terminated agent hidden — use --all to show)
+   *[other] ({ $count } stale/terminated agents hidden — use --all to show)
+}
 agent-list-col-id = ID
 agent-list-col-kind = KIND
 agent-list-col-status = STATUS
 agent-list-col-current-task = CURRENT TASK
+agent-list-col-task = TASK
+agent-list-col-branch = BRANCH
+agent-list-col-last-hb = LAST_HB
+agent-list-col-capabilities = CAPABILITIES
+agent-list-col-leases = LEASES
+agent-list-col-last-audit = LAST_AUDIT
 agent-show-header = Agent { $id }:
+agent-show-kind = Kind
+agent-show-status = Status
+agent-show-registered = registered { $at }
+agent-show-capabilities = Capabilities
+agent-show-current-task = Current task
+agent-show-no-current-task = no current task
+agent-show-plan = Plan
+agent-show-task-status = Status
+agent-show-leases = Active workspace leases
+agent-show-no-leases = no leases
+agent-show-recent-audit = Recent audit
+agent-show-no-recent-audit = no recent audit
+agent-show-recent-prs = Recent PRs by this agent
+agent-show-no-recent-prs = no recent PRs
+agent-retire-stale-summary = { $count ->
+    [one] Retired { $count } stale agent (threshold { $threshold_min } min):
+   *[other] Retired { $count } stale agents (threshold { $threshold_min } min):
+}
+agent-retire-stale-dry-run = { $count ->
+    [one] Would retire { $count } stale agent (dry-run, threshold { $threshold_min } min):
+   *[other] Would retire { $count } stale agents (dry-run, threshold { $threshold_min } min):
+}
+agent-retire-stale-none = no stale agents under the threshold
 agent-not-found = Agent not found: { $id }
 
 # ---------- gate refusals (human side) ----------
