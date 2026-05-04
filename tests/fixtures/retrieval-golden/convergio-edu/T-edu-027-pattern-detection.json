@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-027-pattern-detection",
+  "repo": "convergio-edu",
+  "title": "detect shared code patterns between convergio-edu and convergio",
+  "task_body": "Run cvg fleet patterns to identify functions in convergio-edu that mirror functions in convergio (e.g. a local heartbeat implementation that duplicates the daemon reaper logic). Output a pattern report and open issues for the top-3 duplicate clusters.",
+  "expected_files": [
+    "convergio/crates/convergio-fleet/src/patterns.rs",
+    "convergio/crates/convergio-fleet/src/similar.rs",
+    "convergio/crates/convergio-fleet/src/batch.rs",
+    "convergio-edu/src/tracker/heartbeat.ts"
+  ],
+  "rationale": "patterns.rs runs the cluster detection; similar.rs holds the edge data; batch.rs computed the similarity scores; heartbeat.ts is the likely duplicate candidate.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}

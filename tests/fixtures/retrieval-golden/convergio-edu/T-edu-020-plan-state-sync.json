@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-020-plan-state-sync",
+  "repo": "convergio-edu",
+  "title": "sync plan state transitions from convergio to edu UI",
+  "task_body": "When an instructor transitions a lesson plan to done in convergio the edu UI does not update. Add a plan state change listener in the edu backend that watches the convergio bus system topic and refreshes the local plan cache. The UI receives the update via the SSE stream.",
+  "expected_files": [
+    "convergio-edu/src/backend/plan_sync.rs",
+    "convergio-edu/src/tracker/lesson_plan.ts",
+    "convergio/crates/convergio-bus/src/lib.rs",
+    "convergio/crates/convergio-api/src/lib.rs"
+  ],
+  "rationale": "plan_sync.rs watches the bus; lesson_plan.ts caches the state locally; bus/lib.rs provides the subscription API; api/lib.rs defines the transition event schema.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}

@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-022-audit-federation",
+  "repo": "convergio-edu",
+  "title": "cross-repo audit chain verification for lesson tasks",
+  "task_body": "Lesson task state changes must appear in the convergio audit chain so that the fleet audit view can show a unified timeline. Add an audit event emitter in the edu backend that posts an evidence row to the convergio task each time a lesson task changes state. Verify the audit chain stays valid after edu events.",
+  "expected_files": [
+    "convergio-edu/src/backend/audit_emitter.rs",
+    "convergio/crates/convergio-durability/src/audit.rs",
+    "convergio/crates/convergio-durability/src/evidence.rs",
+    "convergio/crates/convergio-server/src/routes/evidence.rs"
+  ],
+  "rationale": "audit_emitter.rs posts evidence; audit.rs hashes the chain; evidence.rs defines the row schema; routes/evidence.rs is the POST endpoint.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}

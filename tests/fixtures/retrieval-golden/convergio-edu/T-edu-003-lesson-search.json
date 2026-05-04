@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-003-lesson-search",
+  "repo": "convergio-edu",
+  "title": "semantic search for lesson content",
+  "task_body": "Students cannot find relevant exercises quickly. Add a search bar to the lesson listing that sends a query to the backend search endpoint. The backend calls the embed store semantic_search and returns the top-5 matching lessons ranked by cosine score.",
+  "expected_files": [
+    "convergio-edu/src/ui/lesson_search.tsx",
+    "convergio-edu/src/api/search.ts",
+    "convergio-edu/src/backend/search_handler.rs",
+    "convergio-edu/tests/integration/search.test.ts"
+  ],
+  "rationale": "lesson_search.tsx is the new UI; search.ts wraps the HTTP call; search_handler.rs calls the embed query; integration test validates end-to-end ranking.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}

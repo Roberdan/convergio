@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-013-grader-perf",
+  "repo": "convergio-edu",
+  "title": "optimise grader throughput with parallel task dispatch",
+  "task_body": "The grader processes submissions serially, causing a queue backlog during peak hours. Switch to a tokio task pool (max 4 concurrent) with bounded channel back-pressure. Add a grader_bench that measures throughput before and after the change.",
+  "expected_files": [
+    "convergio-edu/src/backend/grader.rs",
+    "convergio-edu/src/backend/pool.rs",
+    "convergio-edu/benches/grader_bench.rs",
+    "convergio-edu/Cargo.toml"
+  ],
+  "rationale": "pool.rs is the new concurrency abstraction; grader.rs is refactored to use it; Cargo.toml adds the bench target; grader_bench measures throughput.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}

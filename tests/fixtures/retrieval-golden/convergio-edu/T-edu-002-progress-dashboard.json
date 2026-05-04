@@ -1,0 +1,16 @@
+{
+  "task_id": "T-edu-002-progress-dashboard",
+  "repo": "convergio-edu",
+  "title": "student progress dashboard with live plan status",
+  "task_body": "The instructor dashboard lacks a real-time view of student progress. Add a progress dashboard that polls the plan endpoint every 10 s and renders a status table per student. Include a progress bar component that reflects completed vs total tasks.",
+  "expected_files": [
+    "convergio-edu/src/ui/dashboard.tsx",
+    "convergio-edu/src/ui/progress_bar.tsx",
+    "convergio-edu/src/api/plans.ts",
+    "convergio-edu/tests/unit/progress_bar.test.tsx"
+  ],
+  "rationale": "dashboard.tsx owns the polling loop; progress_bar.tsx is the new reusable component; plans.ts supplies the API call; test validates bar rendering.",
+  "curator": "synthetic-f2-bench",
+  "curated_at": "2026-05-04",
+  "schema_version": 1
+}
