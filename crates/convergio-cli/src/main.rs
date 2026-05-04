@@ -1,6 +1,4 @@
-//! `cvg` — Convergio command-line interface (pure HTTP client). All
-//! user-facing strings flow through [`convergio_i18n::Bundle`]; locale
-//! resolution: `--lang` → `CONVERGIO_LANG` → `LANG`/`LC_ALL` → `en` (P5).
+//! `cvg` — Convergio CLI (pure HTTP client). i18n via `Bundle`.
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
@@ -157,13 +155,16 @@ enum Command {
     },
     /// Run one executor tick (dispatches pending tasks).
     Dispatch,
-    /// Run Thor on a plan; with `--wave N` evaluates only wave N (T3.06).
+    /// Run Thor on a plan, or `--self-test` for the H11 fixture run.
     Validate {
-        /// Plan id.
-        plan_id: String,
+        /// Plan id (omit when `--self-test` is set).
+        plan_id: Option<String>,
         /// Optional wave number — when set, only tasks in this wave (T3.06).
         #[arg(long)]
         wave: Option<i64>,
+        /// Exercise Thor against a fresh fixture plan + task (P2-7).
+        #[arg(long, default_value_t = false)]
+        self_test: bool,
     },
     /// Print the Convergio brand lockup, claim, and version.
     About {
@@ -265,9 +266,11 @@ async fn main() -> Result<()> {
         Command::Session { sub } => commands::session::run(&client, &bundle, cli.output, sub).await,
         Command::Solve { mission } => commands::solve::run(&client, &mission).await,
         Command::Dispatch => commands::dispatch::run(&client).await,
-        Command::Validate { plan_id, wave } => {
-            commands::validate::run(&client, &plan_id, wave).await
-        }
+        Command::Validate {
+            plan_id,
+            wave,
+            self_test,
+        } => commands::validate::run(&client, plan_id.as_deref(), wave, self_test).await,
         Command::About { animate } => commands::about::run(&bundle, animate),
         Command::Monitor { tick_secs } => commands::monitor::run(&client, tick_secs).await,
         Command::Demo => commands::demo::run(&client).await,
