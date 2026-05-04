@@ -47,6 +47,7 @@
 
 pub mod batch;
 pub mod config;
+pub mod duplicates;
 pub mod error;
 pub mod migrate;
 pub mod patterns;
@@ -55,6 +56,7 @@ pub mod store;
 
 pub use batch::{run_similarity_batch, BatchReport};
 pub use config::{FleetConfig, FleetSection, RepoEntry, RepoRole, RetrievalSection};
+pub use duplicates::{find_duplicates, DuplicatePair};
 pub use error::{FleetError, Result};
 pub use migrate::init;
 pub use patterns::{find_patterns, ClusterMember, PatternCluster};
