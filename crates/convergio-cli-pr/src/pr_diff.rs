@@ -63,7 +63,7 @@ pub(crate) fn compare_manifest(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::commands::pr_parse::ParsedManifest;
+    use crate::pr_parse::ParsedManifest;
 
     fn pm(items: &[&str]) -> ParsedManifest {
         ParsedManifest {

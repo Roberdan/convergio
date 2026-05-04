@@ -18,7 +18,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 404 |
+| `AGENTS.md` | agent-rules | - | - | 405 |
 | `ARCHITECTURE.md` | architecture | - | - | 270 |
 | `CHANGELOG.md` | release | - | - | 804 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -35,6 +35,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-brand/AGENTS.md` | crate-rules | - | - | 45 |
 | `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 27 |
 | `crates/convergio-bus/README.md` | crate-readme | - | - | 36 |
+| `crates/convergio-cli-pr/AGENTS.md` | crate-rules | - | - | 12 |
+| `crates/convergio-cli-pr/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 49 |
 | `crates/convergio-cli-session/README.md` | crate-readme | - | - | 26 |
 | `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 39 |
@@ -93,7 +95,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0020-model-evaluation-framework.md` | adr | [convergio-durability, convergio-executor, convergio-mcp] | proposed | 281 |
 | `docs/adr/0021-okr-on-plans.md` | adr | [convergio-durability, convergio-cli, convergio-thor] | proposed | 321 |
 | `docs/adr/0022-adversarial-review-service.md` | adr | [convergio-mcp, convergio-cli, convergio-durability] | proposed | 269 |
-| `docs/adr/0023-observability-tier.md` | adr | [convergio-server, convergio-durability, convergio-cli, convergio-bus] | proposed | 245 |
+| `docs/adr/0023-observability-tier.md` | adr | [convergio-server, convergio-durability, convergio-cli, convergio-cli-pr, convergio-bus] | proposed | 245 |
 | `docs/adr/0024-bus-poll-exclude-sender.md` | adr | [convergio-bus, convergio-server, convergio-cli] | accepted | 133 |
 | `docs/adr/0025-system-session-events-topic.md` | adr | [convergio-bus, convergio-server, convergio-mcp, convergio-api] | accepted | 285 |
 | `docs/adr/0026-plan-wave-milestone-vocabulary.md` | adr | [convergio-durability, convergio-server, convergio-cli] | accepted | 206 |
