@@ -93,6 +93,8 @@ async fn start(
     convergio_embed::init(&pool).await?;
     let embed = Arc::new(convergio_embed::EmbedStore::new(pool.clone()));
     let embedder = make_embedder();
+    convergio_fleet::init(&pool).await?;
+    let fleet = Arc::new(convergio_fleet::FleetStore::new(pool.clone()));
 
     let durability = Arc::new(Durability::new(pool.clone()));
     let bus = Arc::new(Bus::new(pool.clone()));
@@ -124,6 +126,7 @@ async fn start(
         graph: graph.clone(),
         embed: embed.clone(),
         embedder: embedder.clone(),
+        fleet: fleet.clone(),
     };
     let app = router(state);
 

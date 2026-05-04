@@ -9,6 +9,7 @@ pub mod crdt;
 pub mod dispatch;
 pub mod embed;
 pub mod evidence;
+pub mod fleet;
 pub mod graph;
 pub mod health;
 pub mod messages;

@@ -20,6 +20,7 @@ mod docs_rewrite;
 pub mod doctor;
 pub mod embed;
 pub mod evidence;
+pub mod fleet;
 pub mod graph;
 mod graph_render;
 pub mod health;

@@ -5,6 +5,7 @@ use axum::response::{IntoResponse, Response};
 use axum::Json;
 use convergio_bus::BusError;
 use convergio_durability::DurabilityError;
+use convergio_fleet::FleetError;
 use convergio_lifecycle::LifecycleError;
 use serde_json::json;
 
@@ -25,8 +26,16 @@ pub enum ApiError {
     Lifecycle(LifecycleError),
     /// Tier-3 graph layer error (ADR-0014).
     Graph(convergio_graph::GraphError),
+    /// Fleet repo management error (ADR-0038, F2-6).
+    Fleet(FleetError),
     /// Internal server error (catch-all with stable code).
     Internal(String),
+}
+
+impl From<FleetError> for ApiError {
+    fn from(e: FleetError) -> Self {
+        Self::Fleet(e)
+    }
 }
 
 impl From<convergio_graph::GraphError> for ApiError {
@@ -198,6 +207,23 @@ impl IntoResponse for ApiError {
                 _ => (StatusCode::INTERNAL_SERVER_ERROR, "internal", e.to_string()),
             },
             ApiError::Graph(e) => (StatusCode::INTERNAL_SERVER_ERROR, "graph", e.to_string()),
+            ApiError::Fleet(e) => match e {
+                FleetError::RepoNotFound(n) => (
+                    StatusCode::NOT_FOUND,
+                    "not_found",
+                    format!("fleet repo '{n}' not found"),
+                ),
+                FleetError::RepoDuplicate(n) => (
+                    StatusCode::CONFLICT,
+                    "repo_duplicate",
+                    format!("repo '{n}' already exists in the fleet"),
+                ),
+                _ => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "fleet_error",
+                    e.to_string(),
+                ),
+            },
             ApiError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, "internal", msg.clone()),
         };
 

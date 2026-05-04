@@ -34,6 +34,7 @@ convergio-thor = { workspace = true }
 convergio-executor = { workspace = true }
 convergio-graph = { workspace = true }
 convergio-embed = { workspace = true }
+convergio-fleet = { workspace = true }
 
 axum = { workspace = true }
 clap = { workspace = true }

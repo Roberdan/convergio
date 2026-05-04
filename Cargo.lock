@@ -879,6 +879,7 @@ dependencies = [
  "convergio-durability",
  "convergio-embed",
  "convergio-executor",
+ "convergio-fleet",
  "convergio-graph",
  "convergio-lifecycle",
  "convergio-planner",

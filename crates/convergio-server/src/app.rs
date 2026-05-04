@@ -4,6 +4,7 @@ use axum::Router;
 use convergio_bus::Bus;
 use convergio_durability::Durability;
 use convergio_embed::{EmbedStore, Embedder};
+use convergio_fleet::FleetStore;
 use convergio_graph::Store as GraphStore;
 use convergio_lifecycle::Supervisor;
 use std::sync::Arc;
@@ -28,6 +29,8 @@ pub struct AppState {
     /// (and build with `--features fastembed`) to swap in the real
     /// ONNX model. ADR-0038 § F1-β.
     pub embedder: Arc<dyn Embedder>,
+    /// Fleet repo registry (ADR-0038, F2-6).
+    pub fleet: Arc<FleetStore>,
 }
 
 /// Build the top-level router. Test harnesses call this directly with
@@ -53,6 +56,7 @@ pub fn router(state: AppState) -> Router {
         .merge(crate::routes::workspace::router())
         .merge(crate::routes::graph::router())
         .merge(crate::routes::embed::router())
+        .merge(crate::routes::fleet::router())
         .layer(TraceLayer::new_for_http())
         .with_state(state)
 }
