@@ -1,0 +1,29 @@
+{
+  "_comment_session_start": [
+    "The committed `.claude/settings.json` SessionStart hook runs:",
+    "    cargo run --quiet -p convergio-cli -- session register-and-poll \\",
+    "      --agent-id \"claude-code-${USER}\" --kind claude --output human",
+    "If `cargo` is not on the harness PATH, copy this file to",
+    "`.claude/settings.local.json` and replace the `command` with the",
+    "precompiled CLI shipped by `cvg service install` (or `cvg update`):",
+    "    ~/.convergio/bin/cvg session register-and-poll \\",
+    "      --agent-id \"claude-code-${USER}\" --kind claude --output human",
+    "The local settings file is git-ignored so each operator can pick",
+    "the form their environment supports.",
+    "",
+    "JSON does not allow comments — this `_comment_*` key is the",
+    "agreed escape hatch for hint blocks (see CONSTITUTION § Writing)."
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.convergio/bin/cvg session register-and-poll --agent-id \"claude-code-${USER}\" --kind claude --output human || true"
+          }
+        ]
+      }
+    ]
+  }
+}

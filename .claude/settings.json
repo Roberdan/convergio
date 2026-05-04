@@ -29,6 +29,18 @@
       "Bash(ls *)"
     ]
   },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cargo run --quiet -p convergio-cli -- session register-and-poll --agent-id \"claude-code-${USER}\" --kind claude --output human || true"
+          }
+        ]
+      }
+    ]
+  },
   "lsp": {
     "rust": {
       "command": "rust-analyzer",

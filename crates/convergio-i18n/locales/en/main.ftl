@@ -177,6 +177,28 @@ session-resume-pr-line =   - #{ $number } { $title } ({ $branch })
 session-resume-pr-line-draft =   - #{ $number } [draft] { $title } ({ $branch })
 session-resume-pack-line = Context-pack for task { $task_id }: { $nodes } matched nodes, { $files } files, ~{ $est_tokens } tokens
 
+# ---------- CLI: session register-and-poll ----------
+session-register-poll-header = Convergio session register-and-poll
+session-register-poll-registered = Registered as: { $id } (kind={ $kind }, host={ $host })
+session-register-poll-heartbeat = Heartbeat: { $status }
+session-register-poll-plans-header = { $count ->
+    [0] Active plans: none
+    [one] Active plans (1):
+   *[other] Active plans ({ $count }):
+}
+session-register-poll-plan-line =   - { $id } { $title }
+session-register-poll-direct-header = { $count ->
+    [0] Pending direct messages: none
+    [one] Pending direct messages (1):
+   *[other] Pending direct messages ({ $count }):
+}
+session-register-poll-announcements-header = { $count ->
+    [0] Pending plan announcements: none
+    [one] Pending plan announcements (1):
+   *[other] Pending plan announcements ({ $count }):
+}
+session-register-poll-message-line =   - plan { $plan } seq { $seq } [{ $topic }] sender={ $sender }
+
 # ---------- brand (CLI: about) ----------
 # Brand marks (claim/subline/product name) are NOT translated — they
 # are trade dress and live in `convergio-brand`. These keys are the
