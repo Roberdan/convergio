@@ -1,0 +1,17 @@
+{
+  "task_id": "T-pr-123-cvg-agent-spawn",
+  "repo": "convergio",
+  "title": "cvg agent spawn — drive vendor CLI runners end-to-end",
+  "task_body": "Expose a CLI command that drives the daemon's spawn-runner endpoint with vendor CLIs (claude, copilot). Build the wire shape, route it through the agent subcommand module, register it on the top-level CLI.",
+  "expected_files": [
+    "crates/convergio-cli/src/commands/agent.rs",
+    "crates/convergio-cli/src/commands/agent_spawn.rs",
+    "crates/convergio-cli/src/commands/mod.rs",
+    "crates/convergio-cli/Cargo.toml"
+  ],
+  "rationale": "New agent_spawn command + the agent subcommand module that owns it; mod.rs registers; Cargo.toml gains any new dep.",
+  "curator": "claude-derived-from-pr",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-02",
+  "schema_version": 1
+}

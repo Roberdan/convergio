@@ -1,0 +1,21 @@
+{
+  "task_id": "T-pr-99-durability-refactor",
+  "repo": "convergio",
+  "title": "split durability store into per-domain modules (agents, crdt, workspace_merge)",
+  "task_body": "convergio-durability::store had grown into a single 1k+ line file. Split it into per-domain submodules (agent_rows + agent_validation + agents; crdt_rows + crdt; workspace_merge_rows + workspace_merge) and re-export from store/mod.rs.",
+  "expected_files": [
+    "crates/convergio-durability/src/store/mod.rs",
+    "crates/convergio-durability/src/store/agents.rs",
+    "crates/convergio-durability/src/store/agent_rows.rs",
+    "crates/convergio-durability/src/store/agent_validation.rs",
+    "crates/convergio-durability/src/store/crdt.rs",
+    "crates/convergio-durability/src/store/crdt_rows.rs",
+    "crates/convergio-durability/src/store/workspace_merge.rs",
+    "crates/convergio-durability/src/store/workspace_merge_rows.rs"
+  ],
+  "rationale": "Pure refactor: every file in store/ that landed in the diff is one slice of the split.",
+  "curator": "claude-derived-from-pr",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-04-30",
+  "schema_version": 1
+}
