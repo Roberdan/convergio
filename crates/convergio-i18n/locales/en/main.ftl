@@ -200,3 +200,12 @@ coherence-adrs-table-header = ADR    Declared                         Finding   
 coherence-adrs-finding-accepted-no-evidence = accepted, no evidence
 coherence-adrs-finding-proposed-likely-shipped = proposed, likely shipped
 coherence-adrs-finding-broken-supersession = broken supersession
+
+# ---------- CLI: coherence agents ----------
+coherence-agents-summary = Checked { $checked } merged PRs in [{ $since }], { $findings } finding(s); strict_passes={ $strict }.
+coherence-agents-empty = Agents coherence: no merged PRs in window.
+coherence-agents-table-header = PR     Author                 Agent matched            Finding                    Evidence
+coherence-agents-finding-no-registered-agent = no_registered_agent
+coherence-agents-finding-no-heartbeat = no_heartbeat_in_window
+coherence-agents-finding-no-coordination = no_coordination
+coherence-agents-finding-clean = clean

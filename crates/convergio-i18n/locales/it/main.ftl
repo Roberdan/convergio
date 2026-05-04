@@ -200,3 +200,12 @@ coherence-adrs-table-header = ADR    Dichiarato                       Rilievo   
 coherence-adrs-finding-accepted-no-evidence = accettata, nessuna evidenza
 coherence-adrs-finding-proposed-likely-shipped = proposta, probabilmente rilasciata
 coherence-adrs-finding-broken-supersession = supersessione rotta
+
+# ---------- CLI: coherence agents ----------
+coherence-agents-summary = Verificate { $checked } PR mergiate in [{ $since }], { $findings } rilievo/i; strict_passes={ $strict }.
+coherence-agents-empty = Coerenza agenti: nessuna PR mergiata nella finestra.
+coherence-agents-table-header = PR     Autore                 Agente associato         Rilievo                    Evidenza
+coherence-agents-finding-no-registered-agent = no_registered_agent
+coherence-agents-finding-no-heartbeat = no_heartbeat_in_window
+coherence-agents-finding-no-coordination = no_coordination
+coherence-agents-finding-clean = pulito

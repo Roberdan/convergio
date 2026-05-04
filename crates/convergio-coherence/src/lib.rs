@@ -23,6 +23,12 @@ mod adrs;
 mod adrs_scan;
 #[cfg(test)]
 mod adrs_tests;
+mod agents;
+mod agents_judge;
+mod agents_parse;
+mod agents_scan;
+#[cfg(test)]
+mod agents_tests;
 mod body;
 mod body_scan;
 mod parse;

@@ -129,6 +129,18 @@ jobs:
       - name: cvg coherence adrs is current (strict)
         run: cargo run -p convergio-cli -- coherence adrs --strict --output plain
 
+      - name: cvg coherence agents (advisory)
+        # Flags merged PRs whose author skipped the multi-agent
+        # protocol (no agent_registry entry / no heartbeat in window /
+        # no coordination messages). Advisory only — we do not flip
+        # `--strict` here until the SessionStart hook (sister PR
+        # `feat/session-register-and-poll-hook`) has bedded in for
+        # ~2 weeks. Until then this is a regression-tracking signal,
+        # not a hard gate. Daemon is unreachable in CI by design, so
+        # the verifier degrades gracefully (`daemon_reachable=false`)
+        # and emits no findings.
+        run: cargo run -p convergio-cli -- coherence agents --since 7d --output plain || true
+
       - name: legibility audit
         # CONSTITUTION § 16. Combines static caps + index density +
         # audit chain integrity into a 0-100 score. Advisory only:

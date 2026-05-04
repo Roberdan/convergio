@@ -12,6 +12,7 @@
 //! plus W4b body drift detector.
 
 use crate::adrs;
+use crate::agents;
 use crate::body::{scan_body, walk_markdown, BodyViolation};
 use crate::parse::{load_adrs, parse_index, parse_workspace_members};
 use crate::routes;
@@ -48,6 +49,27 @@ pub enum CoherenceCommand {
         #[arg(long, default_value_t = false)]
         strict: bool,
     },
+    /// Flag merged PRs whose author skipped the multi-agent protocol
+    /// (no `agent_registry` entry, no heartbeat, no coordination
+    /// messages on the bus).
+    Agents {
+        /// Repo root (defaults to cwd).
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        /// Window for merged PRs to scan. Accepts `Nd` (days, e.g.
+        /// `7d`), `Nh` (hours), or a git revision range (e.g.
+        /// `origin/main~50..origin/main`). Defaults to `7d`.
+        #[arg(long, default_value = "7d")]
+        since: String,
+        /// Exit non-zero on `no_registered_agent` and
+        /// `no_heartbeat_in_window` findings (advisory by default).
+        #[arg(long, default_value_t = false)]
+        strict: bool,
+        /// Daemon base URL. Empty / unreachable → daemon checks are
+        /// skipped (advisory only).
+        #[arg(long, default_value = "http://127.0.0.1:8420")]
+        daemon: String,
+    },
 }
 
 /// Entry point.
@@ -56,6 +78,12 @@ pub async fn run(bundle: &Bundle, output: OutputMode, cmd: CoherenceCommand) -> 
         CoherenceCommand::Check { root } => check(output, &root).await,
         CoherenceCommand::Routes { root } => routes::run(bundle, output, &root).await,
         CoherenceCommand::Adrs { root, strict } => adrs::run(bundle, output, &root, strict).await,
+        CoherenceCommand::Agents {
+            root,
+            since,
+            strict,
+            daemon,
+        } => agents::run(bundle, output, &root, &since, strict, &daemon).await,
     }
 }
 
