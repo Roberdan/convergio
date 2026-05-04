@@ -161,6 +161,60 @@ pub(super) fn parse_index(path: &Path) -> Result<BTreeMap<String, String>> {
     Ok(map)
 }
 
+/// Public-ish ADR view used by the `cvg coherence adrs` sub-verifier.
+///
+/// Differs from the internal [`Adr`] in two ways: the slug (filename
+/// minus the leading `NNNN-`) is exposed for keyword extraction, and
+/// no `path` / `related_adrs` fields are carried — the ADR
+/// status-vs-implementation cross-check does not need them.
+#[derive(Debug)]
+pub struct AdrFull {
+    /// Zero-padded ADR id (`"0006"`).
+    pub id: String,
+    /// Filename slug after the id (`"crdt-storage"` for
+    /// `0006-crdt-storage.md`).
+    pub slug: String,
+    /// Verbatim status string from frontmatter.
+    pub status: String,
+    /// `touches_crates` from frontmatter (may be empty).
+    pub touches_crates: Vec<String>,
+}
+
+/// Like [`load_adrs`], but also exposes the filename slug. Used by
+/// [`crate::adrs`] for keyword extraction.
+pub fn load_adrs_full(dir: &Path) -> Result<Vec<AdrFull>> {
+    let mut out = Vec::new();
+    for entry in fs::read_dir(dir).with_context(|| format!("read_dir {}", dir.display()))? {
+        let entry = entry?;
+        let path = entry.path();
+        let name = match path.file_name().and_then(|n| n.to_str()) {
+            Some(n) if n.ends_with(".md") && n != "README.md" => n.to_string(),
+            _ => continue,
+        };
+        let stem = name.trim_end_matches(".md");
+        let (id, slug) = match stem.split_once('-') {
+            Some((i, s)) => (i.to_string(), s.to_string()),
+            None => continue,
+        };
+        if !id.chars().all(|c| c.is_ascii_digit()) || id.is_empty() {
+            continue;
+        }
+        if id == "0000" {
+            continue;
+        }
+        let body = fs::read_to_string(&path).with_context(|| format!("read {}", path.display()))?;
+        let fm = parse_frontmatter(&body).with_context(|| format!("frontmatter {name}"))?;
+        out.push(AdrFull {
+            id,
+            slug,
+            status: fm.status,
+            touches_crates: fm.touches_crates,
+        });
+    }
+    out.sort_by(|a, b| a.id.cmp(&b.id));
+    Ok(out)
+}
+
 pub(super) fn parse_workspace_members(path: &Path) -> Result<BTreeSet<String>> {
     let body = fs::read_to_string(path).with_context(|| format!("read {}", path.display()))?;
     let parsed: toml::Value = body.parse().context("parse Cargo.toml")?;

@@ -19,6 +19,10 @@
 
 pub mod coherence;
 
+mod adrs;
+mod adrs_scan;
+#[cfg(test)]
+mod adrs_tests;
 mod body;
 mod body_scan;
 mod parse;
