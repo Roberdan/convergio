@@ -12,7 +12,7 @@
 //! Conservative on failure: missing `git`, missing log file, or
 //! shell errors all collapse to `Pass`.
 
-use crate::commands::session_pre_stop::{Check, CheckContext, CheckOutcome};
+use crate::pre_stop::{Check, CheckContext, CheckOutcome};
 use std::collections::HashSet;
 use std::path::Path;
 use std::process::Command;

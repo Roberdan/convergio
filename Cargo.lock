@@ -639,6 +639,7 @@ dependencies = [
  "chrono",
  "clap",
  "convergio-brand",
+ "convergio-cli-session",
  "convergio-coherence",
  "convergio-durability",
  "convergio-i18n",
@@ -654,6 +655,21 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "walkdir",
+]
+
+[[package]]
+name = "convergio-cli-session"
+version = "0.3.9"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "clap",
+ "convergio-i18n",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]

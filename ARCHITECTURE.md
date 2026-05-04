@@ -51,6 +51,7 @@ Layer 1-3 directly and ignore the reference Layer 4 crates.
 | `convergio-mcp` | cross-cutting | stdio MCP bridge (`convergio.help`, `convergio.act`) | no |
 | `convergio-i18n` | cross-cutting | Fluent bundles (`en`, `it`) + coverage gate | no |
 | `convergio-coherence` | cross-cutting | doc/code coherence verifiers (`cvg coherence`) | no |
+| `convergio-cli-session` | cross-cutting | session lifecycle (`cvg session`) | no |
 | `convergio-brand` | cross-cutting | palette, claim, banner, boot animation (ADR-0037) | no |
 
 ## HTTP surface

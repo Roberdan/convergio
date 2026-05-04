@@ -1,18 +1,18 @@
 //! Dispatcher for `cvg session pre-stop`.
 //!
-//! Lives next to [`super::session_pre_stop`] (the registry + outcome
-//! types) so the dispatch entry-point + human/JSON renderer stay out
-//! of `session.rs` (which is at the 300-line cap) and out of
-//! `session_pre_stop.rs` (also at the cap with the trait + tests).
+//! Lives next to [`crate::pre_stop`] (the registry + outcome types)
+//! so the dispatch entry-point + human/JSON renderer stay out of
+//! `session.rs` (which is at the 300-line cap) and out of
+//! `pre_stop.rs` (also at the cap with the trait + tests).
 
-use super::session_pre_stop::{
+use crate::pre_stop::{
     report_blocks_detach, run_pre_stop, CheckContext, CheckOutcome, PreStopReport,
 };
-use super::{Client, OutputMode};
+use crate::{Client, OutputMode};
 use anyhow::{Context, Result};
 
 /// Handle `cvg session pre-stop` from
-/// [`super::session::run`].
+/// [`crate::session::run`].
 pub fn handle(client: &Client, output: OutputMode, agent_id: String, force: bool) -> Result<()> {
     let ctx = CheckContext {
         agent_id: agent_id.clone(),
