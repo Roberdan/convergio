@@ -4,7 +4,7 @@
 //! current scope, only agents that own at least one task in that
 //! plan are listed. With no scope, every registered agent is shown.
 
-use crate::client::RegistryAgent;
+use crate::client::{AgentProcess, RegistryAgent};
 use crate::render::pane_block;
 use crate::state::AppState;
 use crate::theme;
@@ -16,24 +16,34 @@ use ratatui::Frame;
 
 /// Render the Agents pane.
 pub fn render(f: &mut Frame, area: Rect, state: &AppState, focused: bool) {
-    let scoped: Vec<RegistryAgent> = state.scoped_agents().into_iter().cloned().collect();
+    let processes = state.scoped_agent_processes();
+    let registry: Vec<RegistryAgent> = state.scoped_agents().into_iter().cloned().collect();
     let scope_crumb = state
         .scoped_plan_title()
         .map(|t| format!(" · {}", short(t, 24)))
         .unwrap_or_default();
-    let title = format!(" Agents ({}){scope_crumb} ", scoped.len());
+    let count = if processes.is_empty() {
+        registry.len()
+    } else {
+        processes.len()
+    };
+    let title = format!(" Agents ({count}){scope_crumb} ");
     let block = pane_block(&title, focused);
 
-    let selected_idx = state
-        .cursor
-        .agents
-        .selected
-        .min(scoped.len().saturating_sub(1));
-    let items: Vec<ListItem> = scoped
-        .iter()
-        .enumerate()
-        .map(|(idx, a)| ListItem::new(agent_line(a, idx == selected_idx)))
-        .collect();
+    let selected_idx = state.cursor.agents.selected.min(count.saturating_sub(1));
+    let items: Vec<ListItem> = if processes.is_empty() {
+        registry
+            .iter()
+            .enumerate()
+            .map(|(idx, a)| ListItem::new(registry_line(a, idx == selected_idx)))
+            .collect()
+    } else {
+        processes
+            .iter()
+            .enumerate()
+            .map(|(idx, a)| ListItem::new(process_line(a, idx == selected_idx)))
+            .collect()
+    };
 
     let mut list_state = ListState::default();
     list_state.select(Some(selected_idx));
@@ -44,7 +54,45 @@ pub fn render(f: &mut Frame, area: Rect, state: &AppState, focused: bool) {
     f.render_stateful_widget(list, area, &mut list_state);
 }
 
-fn agent_line(a: &RegistryAgent, is_selected: bool) -> Line<'static> {
+fn process_line(a: &AgentProcess, is_selected: bool) -> Line<'static> {
+    let (status_glyph, status_style) = theme::status_pill(&a.status);
+    let accent = if is_selected {
+        theme::accent_span()
+    } else {
+        theme::accent_gap()
+    };
+    Line::from(vec![
+        accent,
+        Span::raw(" "),
+        status_glyph,
+        Span::raw(" "),
+        Span::styled(format!("{:8}", short(&a.id, 8)), theme::heading()),
+        Span::raw(" "),
+        Span::styled(format!("{:9}", &a.kind), theme::dim()),
+        Span::raw(" "),
+        Span::styled(format!("{:10}", &a.status), status_style),
+        Span::raw(" "),
+        Span::styled(
+            format!("{:8}", short(a.task_id.as_deref().unwrap_or("-"), 8)),
+            theme::dim(),
+        ),
+        Span::raw(" "),
+        Span::styled(
+            format!(
+                "start:{} end:{} dur:{} exit:{}",
+                short_time(&a.started_at),
+                time_or_dash(a.ended_at.as_deref()),
+                process_duration(a),
+                a.exit_code
+                    .map(|c| c.to_string())
+                    .unwrap_or_else(|| "-".into())
+            ),
+            theme::dim(),
+        ),
+    ])
+}
+
+fn registry_line(a: &RegistryAgent, is_selected: bool) -> Line<'static> {
     let status = a.status.as_deref().unwrap_or("?");
     let (status_glyph, status_style) = theme::status_pill(status);
     let accent = if is_selected {
@@ -65,6 +113,34 @@ fn agent_line(a: &RegistryAgent, is_selected: bool) -> Line<'static> {
         Span::raw(" "),
         Span::styled(heartbeat_age(a.last_heartbeat_at.as_deref()), theme::dim()),
     ])
+}
+
+fn process_duration(a: &AgentProcess) -> String {
+    let Some(end) = a.ended_at.as_deref() else {
+        return "-".into();
+    };
+    let Ok(start) = chrono::DateTime::parse_from_rfc3339(&a.started_at) else {
+        return "?".into();
+    };
+    let Ok(end) = chrono::DateTime::parse_from_rfc3339(end) else {
+        return "?".into();
+    };
+    let secs = (end - start).num_seconds().max(0);
+    if secs < 60 {
+        format!("{secs}s")
+    } else if secs < 3600 {
+        format!("{}m", secs / 60)
+    } else {
+        format!("{}h{}m", secs / 3600, (secs % 3600) / 60)
+    }
+}
+
+fn short_time(raw: &str) -> String {
+    raw.get(..16).unwrap_or(raw).replace('T', " ")
+}
+
+fn time_or_dash(raw: Option<&str>) -> String {
+    raw.map(short_time).unwrap_or_else(|| "-".into())
 }
 
 fn heartbeat_age(last: Option<&str>) -> String {
@@ -114,6 +190,7 @@ mod tests {
             kind: kind.into(),
             status: Some(status.into()),
             last_heartbeat_at: None,
+            ..RegistryAgent::default()
         }
     }
 

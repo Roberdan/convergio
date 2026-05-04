@@ -1,4 +1,4 @@
-//! Active tasks pane.
+//! Tasks pane.
 //!
 //! Filtered against [`AppState::scoped_plan_id`]: when the Plans
 //! pane has a plan under its cursor, this pane shows only that
@@ -13,17 +13,16 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{List, ListItem, ListState};
 use ratatui::Frame;
 
-/// Render the Active Tasks pane.
+/// Render the Tasks pane.
 pub fn render(f: &mut Frame, area: Rect, state: &AppState, focused: bool) {
-    let scoped: Vec<TaskSummary> = state.scoped_tasks().into_iter().cloned().collect();
-    let mut sorted = scoped;
+    let mut sorted: Vec<TaskSummary> = state.scoped_tasks();
     sorted.sort_by_key(|t| status_priority(&t.status));
 
     let scope_crumb = state
         .scoped_plan_title()
         .map(|t| format!(" · {}", short(t, 24)))
         .unwrap_or_default();
-    let title = format!(" Active tasks ({}){scope_crumb} ", sorted.len());
+    let title = format!(" Tasks ({}){scope_crumb} ", sorted.len());
     let block = pane_block(&title, focused);
 
     let selected_idx = state
@@ -65,8 +64,27 @@ fn task_line(t: &TaskSummary, is_selected: bool) -> Line<'static> {
         Span::raw(" "),
         Span::styled(format!("{:18}", short(owner, 18)), theme::dim()),
         Span::raw(" "),
-        Span::raw(short(&t.title, 60).to_string()),
+        Span::raw(short(&task_title(t), 42).to_string()),
+        Span::raw(" "),
+        Span::styled(
+            format!(
+                "w{}.{:<2} start:{} end:{} dur:{}",
+                t.wave,
+                t.sequence,
+                time_or_dash(t.started_at.as_deref()),
+                time_or_dash(t.ended_at.as_deref()),
+                duration_text(t.duration_ms)
+            ),
+            theme::dim(),
+        ),
     ])
+}
+
+fn task_title(t: &TaskSummary) -> String {
+    match t.description.as_deref().filter(|d| !d.trim().is_empty()) {
+        Some(d) => format!("{} - {}", t.title, d.trim()),
+        None => t.title.clone(),
+    }
 }
 
 fn status_priority(status: &str) -> u8 {
@@ -77,6 +95,25 @@ fn status_priority(status: &str) -> u8 {
         "failed" => 3,
         "done" => 4,
         _ => 5,
+    }
+}
+
+fn time_or_dash(raw: Option<&str>) -> String {
+    raw.map(|s| s.get(..16).unwrap_or(s).replace('T', " "))
+        .unwrap_or_else(|| "-".into())
+}
+
+fn duration_text(ms: Option<i64>) -> String {
+    let Some(ms) = ms else {
+        return "-".into();
+    };
+    let secs = ms.max(0) / 1000;
+    if secs < 60 {
+        format!("{secs}s")
+    } else if secs < 3600 {
+        format!("{}m", secs / 60)
+    } else {
+        format!("{}h{}m", secs / 3600, (secs % 3600) / 60)
     }
 }
 
@@ -105,6 +142,9 @@ mod tests {
             title: format!("title-{id}"),
             status: status.into(),
             agent_id: Some("claude-code-roberdan".into()),
+            created_at: "2026-05-02T20:11:00Z".into(),
+            updated_at: "2026-05-02T20:11:00Z".into(),
+            ..TaskSummary::default()
         }
     }
 
@@ -134,7 +174,7 @@ mod tests {
             .iter()
             .map(|c| c.symbol())
             .collect::<String>();
-        assert!(dump.contains("Active tasks"));
+        assert!(dump.contains("Tasks"));
         assert!(dump.contains("in_progress"));
         assert!(dump.contains("submitted"));
     }

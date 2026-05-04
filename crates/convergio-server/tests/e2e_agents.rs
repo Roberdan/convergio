@@ -76,6 +76,16 @@ async fn spawn_get_heartbeat_round_trip_over_http() {
         .unwrap();
     assert_eq!(fetched["id"], id);
 
+    let listed: Vec<Value> = client
+        .get(format!("{base}/v1/agents?limit=10"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert!(listed.iter().any(|agent| agent["id"] == id));
+
     // Heartbeat ok.
     let hb: Value = client
         .post(format!("{base}/v1/agents/{id}/heartbeat"))

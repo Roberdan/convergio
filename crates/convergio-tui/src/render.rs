@@ -1,6 +1,6 @@
 //! Top-level layout and footer.
 //!
-//! Splits the frame into header (title bar), body (4-pane grid), and
+//! Splits the frame into header (title bar), body (multi-pane grid), and
 //! footer (status line). Each pane delegates to its own renderer in
 //! [`crate::panes`].
 
@@ -39,8 +39,12 @@ fn header_stats(state: &AppState) -> Vec<String> {
     let mut stats = vec![
         format!("plans:{}", state.plans.len()),
         format!("tasks:{}", state.tasks.len()),
-        format!("agents:{}", state.agents.len()),
+        format!(
+            "agents:{}",
+            state.agent_processes.len().max(state.agents.len())
+        ),
         format!("prs:{}", state.prs.len()),
+        format!("bus:{}", state.messages.len()),
     ];
     match version_drift(state.daemon_version.as_deref()) {
         Some(daemon) => {
@@ -62,7 +66,11 @@ fn draw_body(f: &mut Frame, area: Rect, state: &AppState) {
     }
     let rows = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
+        .constraints([
+            Constraint::Percentage(42),
+            Constraint::Percentage(38),
+            Constraint::Percentage(20),
+        ])
         .split(area);
     let top = Layout::default()
         .direction(Direction::Horizontal)
@@ -77,6 +85,7 @@ fn draw_body(f: &mut Frame, area: Rect, state: &AppState) {
     panes::tasks::render(f, top[1], state, focused(state, Pane::Tasks));
     panes::agents::render(f, bot[0], state, focused(state, Pane::Agents));
     panes::prs::render(f, bot[1], state, focused(state, Pane::Prs));
+    panes::bus::render(f, rows[2], state, focused(state, Pane::Bus));
 }
 
 fn focused(state: &AppState, pane: Pane) -> bool {
@@ -102,7 +111,7 @@ fn draw_footer(f: &mut Frame, area: Rect, state: &AppState) {
     };
     let pane_name = format!("pane: {}", state.focus.label());
     let help = match state.mode {
-        AppMode::Overview => "q quit  Enter drill  r refresh  Tab pane  j/k row",
+        AppMode::Overview => "q quit  Enter scope  Esc clear  r refresh  Tab pane  j/k row",
         AppMode::Detail(_) => "Esc back  q quit  r refresh  j/k scroll",
     };
     let line = Line::from(vec![

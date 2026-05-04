@@ -1,11 +1,6 @@
 //! Pull requests pane.
 //!
-//! Open PRs from `gh pr list`. Scoping by plan is best-effort: a PR
-//! is treated as "in scope" when its branch name or title contains
-//! the scoped plan id (or the first 8 chars of it). Without the
-//! `plan_pr_links` table this is the most reliable heuristic that
-//! does not lie — when nothing matches we still show every PR with
-//! a "no link" hint in the title crumb.
+//! Open and closed PRs from `gh pr list`.
 
 use crate::client::PrSummary;
 use crate::render::pane_block;
@@ -19,27 +14,20 @@ use ratatui::Frame;
 
 /// Render the PRs pane.
 pub fn render(f: &mut Frame, area: Rect, state: &AppState, focused: bool) {
-    let scoped_id = state.scoped_plan_id();
-    let id_short = scoped_id.map(|id| id.get(..8).unwrap_or(id));
-    let scoped: Vec<&PrSummary> = match (scoped_id, id_short) {
-        (Some(id), Some(short_id)) => state
-            .prs
-            .iter()
-            .filter(|pr| {
-                pr.head_ref_name.contains(short_id)
-                    || pr.title.contains(short_id)
-                    || pr.head_ref_name.contains(id)
-                    || pr.title.contains(id)
-            })
-            .collect(),
-        _ => state.prs.iter().collect(),
-    };
-    let scope_crumb = match (scoped_id, scoped.is_empty(), state.prs.is_empty()) {
-        (Some(_), true, false) => " · no link".to_string(),
-        (Some(_), _, _) => format!(" · {}", short(state.scoped_plan_title().unwrap_or(""), 24)),
-        _ => String::new(),
-    };
-    let title = format!(" PRs ({}){scope_crumb} ", scoped.len());
+    let scoped = state.scoped_prs();
+    let open = scoped
+        .iter()
+        .filter(|p| p.state.eq_ignore_ascii_case("open"))
+        .count();
+    let closed = scoped.len().saturating_sub(open);
+    let scope_crumb = state
+        .scoped_plan_title()
+        .map(|t| format!(" · {}", short(t, 24)))
+        .unwrap_or_default();
+    let title = format!(
+        " PRs ({}) open:{open} closed:{closed}{scope_crumb} ",
+        scoped.len()
+    );
     let block = pane_block(&title, focused);
 
     let selected_idx = state
@@ -73,12 +61,54 @@ fn pr_line(pr: &PrSummary, is_selected: bool) -> Line<'static> {
         Span::raw(" "),
         Span::styled(format!("#{:<4}", pr.number), theme::heading()),
         Span::raw(" "),
+        Span::styled(
+            format!("{:6}", state_label(&pr.state)),
+            state_style(&pr.state),
+        ),
+        Span::raw(" "),
         Span::styled(ci_glyph(&pr.ci).to_string(), ci_style(&pr.ci)),
         Span::raw(" "),
-        Span::styled(format!("{:28}", short(&pr.head_ref_name, 28)), theme::dim()),
+        Span::styled(format!("{:20}", short(&pr.head_ref_name, 20)), theme::dim()),
         Span::raw(" "),
-        Span::raw(short(&pr.title, 40).to_string()),
+        Span::styled(
+            format!(
+                "+{} -{} files:{} t:{}",
+                pr.additions,
+                pr.deletions,
+                pr.changed_files,
+                pr.tracked_task_ids.len()
+            ),
+            theme::dim(),
+        ),
+        Span::raw(" "),
+        Span::styled(
+            format!(
+                "created:{} closed:{} ",
+                time_or_dash(pr.created_at.as_deref()),
+                time_or_dash(pr.closed_at.as_deref().or(pr.merged_at.as_deref()))
+            ),
+            theme::dim(),
+        ),
+        Span::raw(short(&pr.title, 32).to_string()),
     ])
+}
+
+fn state_label(state: &str) -> &'static str {
+    match state {
+        "OPEN" | "open" => "open",
+        "MERGED" | "merged" => "merged",
+        "CLOSED" | "closed" => "closed",
+        _ => "?",
+    }
+}
+
+fn state_style(state: &str) -> Style {
+    match state {
+        "OPEN" | "open" => Style::default().fg(theme::SUCCESS),
+        "MERGED" | "merged" => Style::default().fg(theme::INFO),
+        "CLOSED" | "closed" => Style::default().fg(theme::MUTED),
+        _ => theme::dim(),
+    }
 }
 
 fn ci_glyph(ci: &str) -> &'static str {
@@ -111,6 +141,11 @@ fn short(s: &str, max: usize) -> &str {
     }
 }
 
+fn time_or_dash(raw: Option<&str>) -> String {
+    raw.map(|s| s.get(..10).unwrap_or(s).to_string())
+        .unwrap_or_else(|| "-".into())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -123,6 +158,8 @@ mod tests {
             title: title.into(),
             head_ref_name: branch.into(),
             ci: ci.into(),
+            state: "OPEN".into(),
+            ..PrSummary::default()
         }
     }
 

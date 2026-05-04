@@ -6,6 +6,7 @@
 //! up/down here the rest of the dashboard re-renders.
 
 use crate::client::Plan;
+use crate::plan_counts::PlanCounts;
 use crate::render::pane_block;
 use crate::state::AppState;
 use crate::theme;
@@ -41,7 +42,15 @@ pub fn render(f: &mut Frame, area: Rect, state: &AppState, focused: bool) {
 }
 
 fn plan_lines(p: &Plan, state: &AppState, is_selected: bool) -> Vec<Line<'static>> {
-    let active = state.tasks.iter().filter(|t| t.plan_id == p.id).count();
+    let tasks = state
+        .tasks
+        .iter()
+        .filter(|t| t.plan_id == p.id)
+        .cloned()
+        .collect::<Vec<_>>();
+    let counts = PlanCounts::from_tasks(&tasks);
+    let agents = plan_agent_count(p, state);
+    let (added, removed) = plan_diff(p, state);
     let (status_glyph, status_style) = theme::status_pill(&p.status);
     let accent = if is_selected {
         theme::accent_span()
@@ -58,21 +67,104 @@ fn plan_lines(p: &Plan, state: &AppState, is_selected: bool) -> Vec<Line<'static
         Span::raw("  "),
         Span::styled(format!("[{}]", p.status), status_style),
         Span::raw("  "),
-        Span::styled(format!("active:{active}"), theme::dim()),
+        Span::styled(
+            format!(
+                "tasks:{}/{} agents:{} +{} -{}",
+                counts.done, counts.total, agents, added, removed
+            ),
+            theme::dim(),
+        ),
     ]);
 
     let project = p.project.as_deref().unwrap_or("-").to_string();
-    let updated = p.updated_at.get(..16).unwrap_or(&p.updated_at).to_string();
+    let started = p
+        .started_at
+        .as_deref()
+        .map(short_time)
+        .unwrap_or_else(|| "not-started".into());
+    let ended = p
+        .ended_at
+        .as_deref()
+        .map(short_time)
+        .unwrap_or_else(|| "open".into());
     let meta_line = Line::from(vec![
         accent,
         Span::raw("   "),
         Span::styled(
-            format!("project: {project}  updated: {updated}"),
+            format!(
+                "project: {project}  start:{started}  end:{ended}  dur:{}",
+                duration_text(p.duration_ms)
+            ),
             theme::dim(),
         ),
     ]);
 
     vec![title_line, meta_line]
+}
+
+fn plan_agent_count(p: &Plan, state: &AppState) -> usize {
+    let task_ids = state
+        .tasks
+        .iter()
+        .filter(|t| t.plan_id == p.id)
+        .map(|t| t.id.as_str())
+        .collect::<std::collections::HashSet<_>>();
+    let mut ids = state
+        .agent_processes
+        .iter()
+        .filter(|a| {
+            a.plan_id.as_deref() == Some(p.id.as_str())
+                || a.task_id
+                    .as_deref()
+                    .map(|id| task_ids.contains(id))
+                    .unwrap_or(false)
+        })
+        .map(|a| a.id.as_str())
+        .collect::<std::collections::HashSet<_>>();
+    ids.extend(
+        state
+            .tasks
+            .iter()
+            .filter(|t| t.plan_id == p.id)
+            .filter_map(|t| t.agent_id.as_deref()),
+    );
+    ids.len()
+}
+
+fn plan_diff(p: &Plan, state: &AppState) -> (i64, i64) {
+    let task_ids = state
+        .tasks
+        .iter()
+        .filter(|t| t.plan_id == p.id)
+        .map(|t| t.id.as_str())
+        .collect::<std::collections::HashSet<_>>();
+    state
+        .prs
+        .iter()
+        .filter(|pr| {
+            pr.tracked_task_ids
+                .iter()
+                .any(|t| task_ids.contains(t.as_str()))
+        })
+        .fold((0, 0), |(a, d), pr| (a + pr.additions, d + pr.deletions))
+}
+
+fn duration_text(ms: Option<i64>) -> String {
+    let Some(ms) = ms else {
+        return "-".into();
+    };
+    let secs = ms.max(0) / 1000;
+    if secs < 60 {
+        format!("{secs}s")
+    } else if secs < 3600 {
+        format!("{}m", secs / 60)
+    } else {
+        format!("{}h{}m", secs / 3600, (secs % 3600) / 60)
+    }
+}
+
+fn short_time(raw: &str) -> String {
+    raw.get(..16).unwrap_or(raw).replace('T', " ")
 }
 
 fn truncate(s: &str, max: usize) -> &str {
@@ -119,7 +211,9 @@ mod tests {
                 title: "p1".into(),
                 project: None,
                 status: "draft".into(),
+                created_at: "2026-05-02T20:11:00Z".into(),
                 updated_at: "2026-05-02".into(),
+                ..Plan::default()
             }],
             vec![TaskSummary {
                 id: "t1".into(),
@@ -127,6 +221,9 @@ mod tests {
                 title: "do".into(),
                 status: "in_progress".into(),
                 agent_id: None,
+                created_at: "2026-05-02T20:11:00Z".into(),
+                updated_at: "2026-05-02T20:11:00Z".into(),
+                ..TaskSummary::default()
             }],
         );
         term.draw(|f| render(f, f.area(), &state, false)).unwrap();
@@ -137,7 +234,7 @@ mod tests {
             .iter()
             .map(|c| c.symbol())
             .collect::<String>();
-        assert!(dump.contains("active:1"));
+        assert!(dump.contains("tasks:0/1"));
         assert!(dump.contains("Plans"));
     }
 }
