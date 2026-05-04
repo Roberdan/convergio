@@ -95,7 +95,8 @@ async fn build_empty_fleet_returns_ok_with_zero_counts() {
         .expect("json");
     assert_eq!(body["ok"], true);
     assert_eq!(body["repos_processed"], 0);
-    assert_eq!(body["similar_edges_written"], 0);
+    // When refresh_similarity is not requested the similarity block is zeroes.
+    assert_eq!(body["similarity"]["pairs_checked"], 0);
 }
 
 #[tokio::test]
@@ -229,7 +230,8 @@ async fn refresh_similarity_returns_edge_count() {
 
     assert_eq!(body["ok"], true);
     // With a single repo, no cross-repo edges can exist.
-    let edges = body["similar_edges_written"].as_u64().unwrap_or(99);
+    let edges = body["similarity"]["similar_to"].as_u64().unwrap_or(99)
+        + body["similarity"]["duplicates"].as_u64().unwrap_or(99);
     assert_eq!(edges, 0, "single repo should produce no cross-repo edges");
     let stored = fleet.count_similar_edges(None).await.expect("count edges");
     assert_eq!(stored, 0);

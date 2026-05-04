@@ -49,6 +49,10 @@ pub enum EdgeKind {
     Mentions,
     /// `src` (a crate) depends on `dst` (another crate) via Cargo.
     DependsOn,
+    /// Cross-repo semantic similarity (cosine ≥ 0.85, ADR-0038).
+    SimilarTo,
+    /// Cross-repo structural duplicate (cosine ≥ 0.95 + same node kind, ADR-0038).
+    Duplicates,
 }
 
 impl EdgeKind {
@@ -61,6 +65,8 @@ impl EdgeKind {
             Self::Claims => "claims",
             Self::Mentions => "mentions",
             Self::DependsOn => "depends_on",
+            Self::SimilarTo => "similar_to",
+            Self::Duplicates => "duplicates",
         }
     }
 }
