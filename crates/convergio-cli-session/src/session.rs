@@ -12,6 +12,7 @@
 //! keep both files under the 300-line cap.
 
 use crate::pre_stop_run;
+use crate::register_and_poll;
 use crate::render::{self, Brief};
 use crate::{Client, OutputMode};
 use anyhow::{anyhow, Context, Result};
@@ -51,6 +52,27 @@ pub enum SessionCommand {
         #[arg(long, default_value_t = false)]
         force: bool,
     },
+    /// Register, heartbeat, and poll inbox on every active plan.
+    /// Wired as the Claude Code SessionStart hook so every session
+    /// shows up in `cvg agent list` before the first user prompt.
+    RegisterAndPoll {
+        /// Stable agent id. Defaults to `CONVERGIO_AGENT_ID`, then
+        /// `claude-code-${USER}`.
+        #[arg(long)]
+        agent_id: Option<String>,
+        /// Capability tag (repeatable). Default: code, test, doc.
+        #[arg(long = "capability", value_name = "NAME")]
+        capabilities: Vec<String>,
+        /// Host kind. Default: `claude`.
+        #[arg(long, default_value = "claude")]
+        kind: String,
+        /// Host label. Default: `uname -n`.
+        #[arg(long)]
+        host: Option<String>,
+        /// Suppress the `session-started` bus announcement.
+        #[arg(long, default_value_t = false)]
+        quiet: bool,
+    },
 }
 
 /// Entry point.
@@ -80,6 +102,22 @@ pub async fn run(
         }
         SessionCommand::PreStop { agent_id, force } => {
             pre_stop_run::handle(client, output, agent_id, force)
+        }
+        SessionCommand::RegisterAndPoll {
+            agent_id,
+            capabilities,
+            kind,
+            host,
+            quiet,
+        } => {
+            let args = register_and_poll::Args {
+                agent_id,
+                capabilities,
+                kind,
+                host,
+                quiet,
+            };
+            register_and_poll::run(client, bundle, output, args).await
         }
     }
 }

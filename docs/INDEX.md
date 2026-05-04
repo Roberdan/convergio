@@ -115,9 +115,9 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/README.md` | adr | - | - | 62 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
-| `docs/agent-resume-packet.md` | - | - | - | 209 |
+| `docs/agent-resume-packet.md` | - | - | - | 213 |
 | `docs/agents/README.md` | agent-docs | - | - | 101 |
-| `docs/multi-agent-operating-model.md` | - | - | - | 333 |
+| `docs/multi-agent-operating-model.md` | - | - | - | 364 |
 | `docs/plans/2026-05-01-triage-pass.md` | plan | - | - | 75 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
 | `docs/plans/README.md` | plan | - | - | 31 |

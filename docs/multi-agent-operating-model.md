@@ -73,6 +73,37 @@ are future work. Until those adapters exist, use Mode 1 for those hosts.
 
 ## What a single agent must do
 
+### Session lifecycle is automatic
+
+The project-level Claude Code `SessionStart` hook
+(`.claude/settings.json`) runs `cvg session register-and-poll`
+before the first user prompt. That single call:
+
+1. Registers (or refreshes) the agent identity in `agent_registry`.
+2. Sends an immediate heartbeat.
+3. Lists active plans and polls `agent:<id>` and `plan:<id>`
+   topics on each.
+4. Publishes a `session-started` envelope on every active plan's
+   `coordination/agents` topic so peers see the new session.
+
+The audit kind `agent.session_started` is emitted only when the
+agent is new or the previous heartbeat is older than 30 minutes —
+re-running the hook on a session resume does not spam the chain.
+
+`/v1/status.telemetry` exposes seven aggregate counters
+(`agents_registered_total`, `agents_active_24h`,
+`sessions_started_24h`, `plans_active`, `audit_rows_total`,
+`bus_messages_24h`, `workspace_leases_active`) so `cvg dash` and
+the multi-agent operator can see "no agent is registering" without
+staring at audit rows.
+
+If your harness has no `cargo` on PATH, copy
+`.claude/settings.local.json.example` to
+`.claude/settings.local.json` to point at the precompiled
+`~/.convergio/bin/cvg` instead.
+
+### Manual loop
+
 Every agent session needs a unique `agent_id`, for example:
 
 ```text

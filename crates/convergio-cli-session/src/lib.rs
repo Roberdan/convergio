@@ -19,6 +19,8 @@
 pub mod checks;
 pub mod pre_stop;
 pub mod pre_stop_run;
+pub mod register_and_poll;
+pub mod register_and_poll_render;
 pub mod render;
 pub mod session;
 
@@ -26,6 +28,7 @@ pub use session::{run, SessionCommand};
 
 use anyhow::{Context, Result};
 use serde::de::DeserializeOwned;
+use serde::Serialize;
 
 /// Output rendering mode for session commands.
 ///
@@ -76,6 +79,19 @@ impl Client {
             .send()
             .await
             .with_context(|| format!("GET {url}"))?;
+        json_or_err(resp).await
+    }
+
+    /// `POST path` with `body` and parse the JSON body into `T`.
+    pub async fn post<B: Serialize, T: DeserializeOwned>(&self, path: &str, body: &B) -> Result<T> {
+        let url = format!("{}{}", self.base, path);
+        let resp = self
+            .inner
+            .post(&url)
+            .json(body)
+            .send()
+            .await
+            .with_context(|| format!("POST {url}"))?;
         json_or_err(resp).await
     }
 }
