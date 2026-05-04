@@ -11,6 +11,7 @@
 //! Local-only: the daemon is not consulted. T1.17 / Tier-2 retrieval
 //! plus W4b body drift detector.
 
+use crate::adrs;
 use crate::body::{scan_body, walk_markdown, BodyViolation};
 use crate::parse::{load_adrs, parse_index, parse_workspace_members};
 use crate::routes;
@@ -37,6 +38,16 @@ pub enum CoherenceCommand {
         #[arg(long, default_value = ".")]
         root: PathBuf,
     },
+    /// Cross-check ADR `status:` frontmatter against implementation.
+    Adrs {
+        /// Repo root (defaults to cwd).
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        /// Exit non-zero on `accepted_no_evidence` and
+        /// `broken_supersession` findings (advisory by default).
+        #[arg(long, default_value_t = false)]
+        strict: bool,
+    },
 }
 
 /// Entry point.
@@ -44,6 +55,7 @@ pub async fn run(bundle: &Bundle, output: OutputMode, cmd: CoherenceCommand) -> 
     match cmd {
         CoherenceCommand::Check { root } => check(output, &root).await,
         CoherenceCommand::Routes { root } => routes::run(bundle, output, &root).await,
+        CoherenceCommand::Adrs { root, strict } => adrs::run(bundle, output, &root, strict).await,
     }
 }
 

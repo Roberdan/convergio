@@ -126,6 +126,9 @@ jobs:
           cargo run -q -p convergio-cli -- coherence routes --output plain || \
             echo "::warning::cvg coherence routes found drift (advisory)"
 
+      - name: cvg coherence adrs is current (strict)
+        run: cargo run -p convergio-cli -- coherence adrs --strict --output plain
+
       - name: legibility audit
         # CONSTITUTION § 16. Combines static caps + index density +
         # audit chain integrity into a 0-100 score. Advisory only:

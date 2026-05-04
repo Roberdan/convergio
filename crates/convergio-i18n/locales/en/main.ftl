@@ -192,3 +192,11 @@ coherence-routes-header = Routes coherence: { $count } drift item(s):
 coherence-routes-missing-in-docs = missing_in_docs: { $method } { $path } (in code at { $file }, not documented)
 coherence-routes-missing-in-code = missing_in_code: { $method } { $path } (documented in { $file }, not in code)
 coherence-routes-method-mismatch = method_mismatch: { $path } — code has [{ $code_methods }], docs have [{ $doc_methods }]
+
+# ---------- CLI: coherence adrs ----------
+coherence-adrs-summary = Checked { $checked } ADRs, { $findings } finding(s).
+coherence-adrs-empty = ADR coherence: ok (no status drift detected).
+coherence-adrs-table-header = ADR    Declared                         Finding                      Evidence
+coherence-adrs-finding-accepted-no-evidence = accepted, no evidence
+coherence-adrs-finding-proposed-likely-shipped = proposed, likely shipped
+coherence-adrs-finding-broken-supersession = broken supersession
