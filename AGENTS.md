@@ -195,7 +195,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 860 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 862 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
@@ -255,6 +255,8 @@ in-process. They use a tempdir SQLite by default — no manual setup.
 | No `unwrap()` / `expect()` in production code (tests fine) | clippy lint, manual review |
 | Every `pub` item has `///` doc comment | clippy `missing_docs` lint per crate |
 | `//!` crate-level doc at top of every `lib.rs` and `main.rs` | manual review |
+| AUTO blocks fresh (`cvg docs regenerate --check`) | lefthook `pre-push` (P0.5) + CI |
+| `docs/INDEX.md` fresh | lefthook `pre-push` (P0.5) + CI |
 
 Commit scope must be a known crate name or one of `docs|ci|chore|repo|deps`.
 Examples: `feat(durability): add audit hash chain`, `fix(server): handle 409 on gate refusal`.
