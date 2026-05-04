@@ -645,6 +645,7 @@ dependencies = [
  "convergio-i18n",
  "convergio-runner",
  "convergio-tui",
+ "futures-util",
  "predicates",
  "reqwest",
  "serde",

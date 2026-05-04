@@ -209,6 +209,31 @@ Standing principle:
 - *Then architecture* — splitting near-cap crates (check
   `./scripts/legibility-audit.sh` for current LOC).
 
+## 9b. Watching the bus (real-time observability)
+
+Once you have an open plan id and want to see other agents' coordination
+traffic live, use `cvg bus tail --follow`:
+
+```bash
+# stream every message published on this plan, live, until Ctrl-C
+cvg bus tail --plan <plan-id> --follow
+
+# narrow to a single topic
+cvg bus tail --plan <plan-id> --topic coordination/agents --follow
+
+# scripting: one JSON envelope per line
+cvg bus tail --plan <plan-id> --follow --output json
+```
+
+`--follow` consumes the SSE feed at
+`/v1/plans/:plan_id/messages/stream` (P1.1). On disconnect the CLI
+reconnects with the last-seen `seq` so you do not miss a message;
+if the daemon does not advertise streaming the CLI falls back to a
+1s polling loop and warns on stderr.
+
+For a one-shot dump (no streaming, exits immediately), use the
+companion `cvg bus list` verb — same flags, no `--follow`.
+
 ## 10. What to do when stuck
 
 1. Stop. Do not guess your way through.
