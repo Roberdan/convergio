@@ -20,7 +20,7 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-lifecycle` stats:** 6 `*.rs` files / 18 public items / 642 lines (under `src/`).
+**`convergio-lifecycle` stats:** 7 `*.rs` files / 18 public items / 710 lines (under `src/`).
 
 Files approaching the 300-line cap:
 - `src/supervisor.rs` (298 lines)

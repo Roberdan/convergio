@@ -5,8 +5,8 @@ decision behind this crate see
 [../../docs/adr/0029-tui-dashboard-crate-separation.md](../../docs/adr/0029-tui-dashboard-crate-separation.md).
 
 This crate is the **terminal dashboard** behind `cvg dash`. It is a
-human-facing console: plans, active tasks, agents, and PRs in one
-4-pane view, refreshing on a tick. It is consumed only by
+human-facing console: plans, tasks, agents, PRs, and bus messages in a
+multi-pane view, refreshing on a tick. It is consumed only by
 `convergio-cli` (the `cvg` binary) and never by the daemon, the MCP
 bridge, or another agent-facing surface.
 
@@ -54,11 +54,12 @@ bridge, or another agent-facing surface.
 | `src/client.rs` | `reqwest`-based fetcher: `GET /v1/plans`, `GET /v1/agents`, `GET /v1/audit/verify`, `gh pr list` shell-out. Read-only. |
 | `src/tick.rs` | `tokio::time::interval` refresh loop with a graceful debounce. |
 | `src/keymap.rs` | Keybinding dispatcher: `q` quit, `r` refresh-now, `Tab` change pane, `j/k` move row. |
-| `src/render.rs` | Top-level layout (4-pane split + footer + header). Each pane delegates to `panes::*`. |
+| `src/render.rs` | Top-level layout (multi-pane split + footer + header). Each pane delegates to `panes::*`. |
 | `src/panes/plans.rs` | Plans pane: title, progress bar, breakdown counts, current selection highlight. |
-| `src/panes/tasks.rs` | Active tasks pane: top N tasks with status colour + age + agent owner. |
+| `src/panes/tasks.rs` | Tasks pane: task history with status, timing, and agent owner. |
 | `src/panes/agents.rs` | Agents pane: id, kind, status (idle/working/terminated), last heartbeat. |
 | `src/panes/prs.rs` | PRs pane: number, title, branch, CI conclusion. |
+| `src/panes/bus.rs` | Bus pane: recent plan-scoped agent messages. |
 
 ## Tests
 
@@ -96,9 +97,9 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-tui` stats:** 17 `*.rs` files / 75 public items / 2750 lines (under `src/`).
+**`convergio-tui` stats:** 20 `*.rs` files / 86 public items / 3645 lines (under `src/`).
 
 Files approaching the 300-line cap:
-- `src/state.rs` (300 lines)
+- `src/scope.rs` (294 lines)
 - `src/header_banner.rs` (273 lines)
 <!-- END AUTO -->

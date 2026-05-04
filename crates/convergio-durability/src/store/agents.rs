@@ -78,6 +78,11 @@ impl AgentStore {
         Self { pool }
     }
 
+    /// Pool accessor for sibling enrichment modules.
+    pub(super) fn pool(&self) -> &convergio_db::Pool {
+        &self.pool
+    }
+
     /// Register or refresh an agent identity.
     pub async fn register(&self, input: NewAgent) -> Result<AgentRecord> {
         validate_agent_id(&input.id)?;

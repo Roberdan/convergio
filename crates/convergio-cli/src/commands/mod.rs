@@ -2,6 +2,10 @@
 
 pub mod about;
 pub mod agent;
+mod agent_format;
+mod agent_list;
+mod agent_retire;
+mod agent_show;
 mod agent_spawn;
 mod agent_spawn_heartbeat;
 mod agent_spawn_wire;

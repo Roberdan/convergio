@@ -6,10 +6,7 @@ use crate::{Durability, Result};
 use chrono::{Duration, Utc};
 use serde_json::json;
 
-/// Re-registration within this window does NOT emit a new
-/// `agent.session_started` audit row. The SessionStart hook fires on
-/// every Claude Code session resume — without this guard we would
-/// spam the audit chain on every prompt context restore.
+/// Re-registration within this window suppresses `agent.session_started`.
 const SESSION_STARTED_DEDUP_MINUTES: i64 = 30;
 
 impl Durability {
@@ -18,14 +15,11 @@ impl Durability {
         AgentStore::new(self.pool().clone())
     }
 
-    /// Register or refresh an agent identity and write an audit row.
-    ///
-    /// Emits two audit kinds:
-    /// - `agent.registered` — every call (idempotent identity refresh).
-    /// - `agent.session_started` — only when the agent is new, or when
-    ///   the previous heartbeat is older than
-    ///   [`SESSION_STARTED_DEDUP_MINUTES`]. This is the telemetry
-    ///   signal `/v1/status.telemetry.sessions_started_24h` counts.
+    /// Register or refresh an agent identity. Emits `agent.registered`
+    /// every call and `agent.session_started` only when the agent is
+    /// new or its previous heartbeat is older than
+    /// [`SESSION_STARTED_DEDUP_MINUTES`] (the telemetry signal
+    /// `/v1/status.telemetry.sessions_started_24h` counts).
     pub async fn register_agent(&self, input: NewAgent) -> Result<AgentRecord> {
         let prior = self.agents().get(&input.id).await.ok();
         let is_session_start = match &prior {

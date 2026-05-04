@@ -121,11 +121,48 @@ agent-list-header = { $count ->
     [one] Un agente:
    *[other] { $count } agenti:
 }
+agent-list-header-active = { $count ->
+    [one] Un agente attivo:
+   *[other] { $count } agenti attivi:
+}
+agent-list-stale-hidden = { $count ->
+    [one] ({ $count } agente terminato/scaduto nascosto — usa --all per mostrare)
+   *[other] ({ $count } agenti terminati/scaduti nascosti — usa --all per mostrare)
+}
 agent-list-col-id = ID
 agent-list-col-kind = TIPO
 agent-list-col-status = STATO
 agent-list-col-current-task = TASK CORRENTE
+agent-list-col-task = TASK
+agent-list-col-branch = BRANCH
+agent-list-col-last-hb = ULT_HB
+agent-list-col-capabilities = CAPACITÀ
+agent-list-col-leases = LEASE
+agent-list-col-last-audit = ULT_AUDIT
 agent-show-header = Agente { $id }:
+agent-show-kind = Tipo
+agent-show-status = Stato
+agent-show-registered = registrato { $at }
+agent-show-capabilities = Capacità
+agent-show-current-task = Task corrente
+agent-show-no-current-task = nessun task corrente
+agent-show-plan = Piano
+agent-show-task-status = Stato
+agent-show-leases = Lease workspace attivi
+agent-show-no-leases = nessun lease
+agent-show-recent-audit = Audit recente
+agent-show-no-recent-audit = nessun audit recente
+agent-show-recent-prs = PR recenti per questo agente
+agent-show-no-recent-prs = nessuna PR recente
+agent-retire-stale-summary = { $count ->
+    [one] Ritirato { $count } agente scaduto (soglia { $threshold_min } min):
+   *[other] Ritirati { $count } agenti scaduti (soglia { $threshold_min } min):
+}
+agent-retire-stale-dry-run = { $count ->
+    [one] Ritirerei { $count } agente scaduto (dry-run, soglia { $threshold_min } min):
+   *[other] Ritirerei { $count } agenti scaduti (dry-run, soglia { $threshold_min } min):
+}
+agent-retire-stale-none = nessun agente scaduto sotto la soglia
 agent-not-found = Agente non trovato: { $id }
 
 # ---------- rifiuti dei gate (lato umano) ----------

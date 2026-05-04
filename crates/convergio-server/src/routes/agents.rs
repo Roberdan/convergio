@@ -2,7 +2,7 @@
 
 use crate::app::AppState;
 use crate::error::ApiError;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use convergio_durability::{AgentRecord, DurabilityError, NewAgent, Task, TaskStatus};
@@ -13,10 +13,28 @@ use serde_json::json;
 /// Mount Layer 3 routes.
 pub fn router() -> Router<AppState> {
     Router::new()
+        .route("/v1/agents", get(list))
         .route("/v1/agents/spawn", post(spawn))
         .route("/v1/agents/spawn-runner", post(spawn_runner))
         .route("/v1/agents/:id", get(get_one))
         .route("/v1/agents/:id/heartbeat", post(heartbeat))
+}
+
+#[derive(Debug, Deserialize)]
+struct ListQuery {
+    #[serde(default = "default_limit")]
+    limit: i64,
+}
+
+fn default_limit() -> i64 {
+    100
+}
+
+async fn list(
+    State(state): State<AppState>,
+    Query(q): Query<ListQuery>,
+) -> Result<Json<Vec<AgentProcess>>, ApiError> {
+    Ok(Json(state.supervisor.list(q.limit.clamp(0, 500)).await?))
 }
 
 #[derive(Debug, Deserialize)]
