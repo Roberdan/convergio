@@ -47,3 +47,57 @@ fn setup_agent_copilot_does_not_emit_claude_extras() {
     assert!(!dir.join("settings.json").exists());
     assert!(!dir.join("skill-cvg-attach").exists());
 }
+
+/// `prompt.txt` for every host must contain the Step 0 bootstrap so
+/// the session registers itself in the local Convergio agent registry
+/// before doing anything else. Without this, peer agents cannot see
+/// the session and the daemon cannot detect liveness.
+#[test]
+fn setup_agent_prompt_txt_contains_register_and_poll_for_every_host() {
+    let cases: &[(&str, &str)] = &[
+        ("claude", "claude-code-${USER}"),
+        ("copilot-local", "copilot-local-${USER}-${PID}"),
+        ("copilot-cloud", "copilot-cloud-${REPO_FULL_NAME}-${RUN_ID}"),
+        ("cursor", "cursor-${USER}-${WORKSPACE}"),
+        ("cline", "cline-${USER}"),
+        ("continue", "continue-${USER}"),
+        ("qwen", "qwen-${USER}"),
+        ("shell", "shell-${USER}-${PPID}"),
+    ];
+    for (host, agent_id) in cases {
+        let home = tempfile::tempdir().expect("temp home");
+        cvg()
+            .env("HOME", home.path())
+            .args(["setup", "agent", host])
+            .assert()
+            .success();
+        let prompt_path = home
+            .path()
+            .join(".convergio/adapters")
+            .join(host)
+            .join("prompt.txt");
+        let body = std::fs::read_to_string(&prompt_path)
+            .unwrap_or_else(|e| panic!("read {}: {e}", prompt_path.display()));
+        assert!(
+            body.starts_with(&format!("# Convergio adapter — {host}")),
+            "host {host} prompt.txt title is wrong: {:?}",
+            body.lines().next()
+        );
+        assert!(
+            body.contains("## Step 0 — register your session"),
+            "host {host} prompt.txt is missing the Step 0 header"
+        );
+        assert!(
+            body.contains(agent_id),
+            "host {host} prompt.txt is missing agent_id placeholder {agent_id}"
+        );
+        assert!(
+            body.contains("/v1/agent-registry/agents"),
+            "host {host} prompt.txt is missing the registry endpoint"
+        );
+        assert!(
+            body.contains("cvg session register-and-poll"),
+            "host {host} prompt.txt should reference cvg session register-and-poll"
+        );
+    }
+}

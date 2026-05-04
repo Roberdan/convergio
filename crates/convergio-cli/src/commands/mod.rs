@@ -40,6 +40,7 @@ mod pr_sync_parse;
 pub mod service;
 pub mod session;
 pub mod setup;
+mod setup_prompts;
 mod setup_repo_path;
 pub mod solve;
 pub mod status;
