@@ -109,11 +109,15 @@ backfill convergio + convergio-edu + convergio-ui-framework.
 | F2-4 | Cross-repo similarity batch job (`cvg fleet build --refresh-similarity`) producing `similar_to` and `duplicates` edges | F2-1, F2-2 | edges created only above configured cosine; `match_source` recorded | unit test `similarity_batch_respects_threshold` |
 | F2-5 | `cvg fleet patterns` and `cvg fleet duplicates` | F2-4 | output JSON schema documented; `--explain <id>` evidence trail | E2E `fleet_patterns_finds_seeded_cluster` |
 | F2-6 | Cross-language fixture set under `tests/fixtures/fleet/` | F2-1 | three mini-repos (Rust + TS + Python) with ≥3 deliberate cross-language pattern duplicates | `cargo test fleet_fixtures_parse_all_languages` |
-| F2-7 | F2 go/no-go report | F2-5 | ≥3 real cross-repo patterns surfaced on Roberto's fleet; FP rate < 20% on 50 sampled pairs; +60 tests; 524 baseline still green | F2 retrospective appended to ADR-0038 decision log |
+| F2-7 | F2 go/no-go report | F2-5 | ≥3 real cross-repo patterns surfaced on Roberto's fleet; FP rate < 20% on 50 sampled pairs; +60 tests; 524 baseline still green | **landed**: F2 retrospective at [ADR-0038 § 15.8](../adr/0038-fleet-retrieval-cross-repo-graph.md#158-f2-retrospective--what-shipped-and-what-is-measurable). Pipeline complete, 843+ tests green, real-model FP measurement deferred to operator workstation (e2e harness in place). F3 conditional GO. |
 
 **F2 go/no-go criteria**: at least 3 real cross-repo patterns
 discovered AND duplicate FP rate < 20% (manual review of 50 sample
-pairs by Roberto) AND test count green.
+pairs by Roberto) AND test count green. The mechanical classifier in
+`crates/convergio-server/tests/e2e_f2_13_common.rs::classify_pair_tp`
+upper-bounds the FP rate, so the manual-review step only triggers
+when the heuristic flags ≥10 pairs as FP. See
+[`docs/spec/f2-13-measurement.md`](../spec/f2-13-measurement.md).
 
 ## F3 — Fleet-grade orchestration
 
