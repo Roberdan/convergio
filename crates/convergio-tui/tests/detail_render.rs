@@ -17,6 +17,9 @@ fn task(id: &str, plan_id: &str, status: &str, title: &str) -> TaskSummary {
         title: title.into(),
         status: status.into(),
         agent_id: None,
+        created_at: "2026-05-02T18:00:00Z".into(),
+        updated_at: "2026-05-02T18:00:00Z".into(),
+        ..TaskSummary::default()
     }
 }
 
@@ -41,7 +44,9 @@ fn plan_detail_lists_status_and_tasks() {
             title: "drill plan".into(),
             project: Some("convergio".into()),
             status: "active".into(),
+            created_at: "2026-05-02T18:00:00Z".into(),
             updated_at: "2026-05-02T18:00:00Z".into(),
+            ..Plan::default()
         }],
         tasks: vec![task("t1", "p1", "in_progress", "active task")],
         detail_tasks: vec![
@@ -71,6 +76,9 @@ fn task_detail_shows_status_and_plan_breadcrumb() {
             title: "scaffold".into(),
             status: "submitted".into(),
             agent_id: Some("claude-code".into()),
+            created_at: "2026-05-02T18:00:00Z".into(),
+            updated_at: "2026-05-02T18:00:00Z".into(),
+            ..TaskSummary::default()
         }],
         ..AppState::default()
     };
@@ -93,6 +101,7 @@ fn agent_detail_lists_owned_tasks() {
             kind: "claude".into(),
             status: Some("idle".into()),
             last_heartbeat_at: Some("2026-05-02T20:00:00Z".into()),
+            ..RegistryAgent::default()
         }],
         tasks: vec![TaskSummary {
             id: "t1".into(),
@@ -100,6 +109,9 @@ fn agent_detail_lists_owned_tasks() {
             title: "owned".into(),
             status: "in_progress".into(),
             agent_id: Some("claude-code".into()),
+            created_at: "2026-05-02T18:00:00Z".into(),
+            updated_at: "2026-05-02T18:00:00Z".into(),
+            ..TaskSummary::default()
         }],
         ..AppState::default()
     };
@@ -120,6 +132,8 @@ fn pr_detail_shows_branch_and_ci() {
             title: "header polish".into(),
             head_ref_name: "feat/header".into(),
             ci: "success".into(),
+            state: "OPEN".into(),
+            ..PrSummary::default()
         }],
         ..AppState::default()
     };

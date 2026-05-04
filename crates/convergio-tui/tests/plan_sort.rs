@@ -10,7 +10,9 @@ fn plan(id: &str, status: &str, updated: &str) -> Plan {
         title: id.into(),
         project: None,
         status: status.into(),
+        created_at: updated.into(),
         updated_at: updated.into(),
+        ..Plan::default()
     }
 }
 

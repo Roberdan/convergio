@@ -1,91 +1,32 @@
 //! HTTP client + GitHub shell-out for the dashboard. Read-only by
 //! design — actions go through `cvg` subcommands. Endpoints:
 //! `GET /v1/plans`, `/v1/plans/{id}/tasks`, `/v1/agents`,
-//! `/v1/audit/verify`, plus `gh pr list` (skipped when
+//! `/v1/plans/{id}/messages/tail`, `/v1/audit/verify`, plus `gh pr list` (skipped when
 //! `CONVERGIO_DASH_NO_GH=1`).
 
-use crate::client_gh::fetch_open_prs;
+use crate::client_gh::fetch_prs;
 use anyhow::Result;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::time::Duration;
 
-/// Plan summary, matching the daemon's `/v1/plans` response shape.
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
-pub struct Plan {
-    /// Plan id.
-    pub id: String,
-    /// Plan title shown in the Plans pane.
-    pub title: String,
-    /// Project label (`convergio`, `convergio-local`, ...).
-    #[serde(default)]
-    pub project: Option<String>,
-    /// Plan status (`draft`, `active`, `completed`, ...).
-    pub status: String,
-    /// Last-updated timestamp (RFC3339).
-    pub updated_at: String,
-}
-
-/// One task as displayed in the dashboard. The daemon's task shape
-/// is richer; we project only what the renderer needs.
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
-pub struct TaskSummary {
-    /// Task id.
-    pub id: String,
-    /// Owning plan id.
-    pub plan_id: String,
-    /// Short title.
-    pub title: String,
-    /// Status (`pending`, `in_progress`, `submitted`, `done`,
-    /// `failed`).
-    pub status: String,
-    /// Optional agent id that claimed the task.
-    #[serde(default)]
-    pub agent_id: Option<String>,
-}
-
 pub use crate::plan_counts::PlanCounts;
-
-/// Agent registry row.
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
-pub struct RegistryAgent {
-    /// Stable agent id.
-    pub id: String,
-    /// Runner kind (`shell`, `claude`, `copilot`, ...).
-    pub kind: String,
-    /// `idle`, `working`, `terminated`, ... per registry semantics.
-    #[serde(default)]
-    pub status: Option<String>,
-    /// Last heartbeat (RFC3339), if any.
-    #[serde(default)]
-    pub last_heartbeat_at: Option<String>,
-}
-
-/// Open PR row from `gh pr list`.
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
-pub struct PrSummary {
-    /// PR number.
-    pub number: i64,
-    /// PR title.
-    pub title: String,
-    /// Source branch.
-    #[serde(rename = "headRefName")]
-    pub head_ref_name: String,
-    /// Latest CI rollup ("success" / "failure" / "pending" / "").
-    #[serde(default)]
-    pub ci: String,
-}
+pub use crate::types::{AgentProcess, BusMessage, Plan, PrSummary, RegistryAgent, TaskSummary};
 
 /// Snapshot of every dataset the dashboard renders.
 #[derive(Debug, Default)]
 pub struct Snapshot {
     /// Plans.
     pub plans: Vec<Plan>,
-    /// Active tasks (`in_progress` + `submitted`).
+    /// Tasks across every loaded plan.
     pub tasks: Vec<TaskSummary>,
     /// Registered agents.
     pub agents: Vec<RegistryAgent>,
-    /// Open PRs via `gh pr list` (empty when disabled).
+    /// Supervised agent processes.
+    pub agent_processes: Vec<AgentProcess>,
+    /// PRs via `gh pr list` (empty when disabled).
     pub prs: Vec<PrSummary>,
+    /// Recent bus messages.
+    pub messages: Vec<BusMessage>,
     /// Audit chain verifies / not / unreachable.
     pub audit_ok: Option<bool>,
     /// Daemon version from `/v1/health`, compared with binary's
@@ -135,6 +76,7 @@ impl Client {
         sort_plans_by_status(&mut plans);
 
         let mut tasks: Vec<TaskSummary> = Vec::new();
+        let mut messages: Vec<BusMessage> = Vec::new();
         for p in &plans {
             if let Ok(mut ts) = self
                 .get_json::<Vec<TaskSummary>>(&format!("/v1/plans/{}/tasks", p.id))
@@ -143,17 +85,27 @@ impl Client {
                 for t in &mut ts {
                     t.plan_id = p.id.clone();
                 }
-                tasks.extend(
-                    ts.into_iter()
-                        .filter(|t| t.status == "in_progress" || t.status == "submitted"),
-                );
+                tasks.extend(ts);
+            }
+            if let Ok(mut ms) = self
+                .get_json::<Vec<BusMessage>>(&format!("/v1/plans/{}/messages/tail?limit=100", p.id))
+                .await
+            {
+                messages.append(&mut ms);
             }
         }
+        messages.sort_by_key(|m| std::cmp::Reverse(m.seq));
+        messages.truncate(200);
 
         let agents: Vec<RegistryAgent> = self
             .get_json("/v1/agent-registry/agents")
             .await
             .unwrap_or_else(|_| Vec::new());
+
+        let agent_processes: Vec<AgentProcess> = self
+            .get_json("/v1/agents?limit=200")
+            .await
+            .unwrap_or_default();
 
         let audit_ok = self
             .get_json::<serde_json::Value>("/v1/audit/verify")
@@ -173,7 +125,7 @@ impl Client {
             });
 
         let prs = if self.enable_gh {
-            fetch_open_prs(self.github_slug.as_deref()).unwrap_or_default()
+            fetch_prs(self.github_slug.as_deref()).unwrap_or_default()
         } else {
             Vec::new()
         };
@@ -182,7 +134,9 @@ impl Client {
             plans,
             tasks,
             agents,
+            agent_processes,
             prs,
+            messages,
             audit_ok,
             daemon_version,
         })
