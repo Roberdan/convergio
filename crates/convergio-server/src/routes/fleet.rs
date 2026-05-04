@@ -1,18 +1,19 @@
-//! `/v1/fleet/repos` and `/v1/fleet/build` — fleet management (ADR-0038, F2-6/F2-7/F2-8).
+//! Fleet routes (ADR-0038, F2-6/F2-7/F2-8/F2-9).
 //!
 //! Routes:
-//! - `POST   /v1/fleet/repos`        — add a repo to the fleet
-//! - `GET    /v1/fleet/repos`        — list all fleet repos
-//! - `PATCH  /v1/fleet/repos/:name`  — enable / disable a repo
-//! - `POST   /v1/fleet/build`        — parse + embed all enabled repos (idempotent)
+//! - `POST   /v1/fleet/repos`        — add a repo
+//! - `GET    /v1/fleet/repos`        — list repos
+//! - `PATCH  /v1/fleet/repos/:name`  — enable / disable
+//! - `POST   /v1/fleet/build`        — parse + embed (idempotent)
+//! - `GET    /v1/fleet/patterns`     — cross-repo cluster detection
 
 use crate::app::AppState;
 use crate::error::ApiError;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::routing::{patch, post};
 use axum::{Json, Router};
 use convergio_embed::{collect_files, ingest, DEFAULT_MAX_LINES};
-use convergio_fleet::{run_similarity_batch, FleetRepo, RepoEntry, RepoRole};
+use convergio_fleet::{find_patterns, run_similarity_batch, FleetRepo, RepoEntry, RepoRole};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::PathBuf;
@@ -23,6 +24,7 @@ pub fn router() -> Router<AppState> {
         .route("/v1/fleet/repos", post(add).get(list))
         .route("/v1/fleet/repos/:name", patch(update))
         .route("/v1/fleet/build", post(build))
+        .route("/v1/fleet/patterns", axum::routing::get(patterns))
 }
 
 #[derive(Debug, Deserialize)]
@@ -228,6 +230,34 @@ async fn build(
             "duplicates": batch_report.duplicates,
         },
     })))
+}
+
+/// Query parameters for `GET /v1/fleet/patterns`.
+#[derive(Debug, Deserialize)]
+struct PatternsQuery {
+    /// Minimum number of distinct repos a cluster must span (default 2).
+    #[serde(default = "default_min_repos")]
+    min_repos: usize,
+}
+
+fn default_min_repos() -> usize {
+    2
+}
+
+/// `GET /v1/fleet/patterns` — detect cross-repo pattern clusters (ADR-0038, F2-9).
+///
+/// Groups nodes connected by `similar_to` / `duplicates` edges that span
+/// at least `min_repos` distinct repositories.
+async fn patterns(
+    State(state): State<AppState>,
+    Query(q): Query<PatternsQuery>,
+) -> Result<Json<Value>, ApiError> {
+    let clusters = find_patterns(&state.fleet, q.min_repos)
+        .await
+        .map_err(|e| ApiError::Internal(format!("pattern detection failed: {e}")))?;
+    Ok(Json(
+        json!({ "clusters": clusters, "total": clusters.len() }),
+    ))
 }
 
 /// File extensions to embed for a given primary language.

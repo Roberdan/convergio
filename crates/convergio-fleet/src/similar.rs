@@ -115,6 +115,33 @@ impl FleetStore {
         Ok(count as u64)
     }
 
+    /// List **all** similarity edges without a limit, ordered by descending score.
+    ///
+    /// Used by the cluster-detection pass in [`crate::patterns`].
+    pub async fn list_all_similar_edges(&self) -> Result<Vec<SimilarEdge>> {
+        let rows = sqlx::query(
+            "SELECT repo_a, node_id_a, repo_b, node_id_b, score, weight, kind, built_at \
+             FROM fleet_similar_edges \
+             ORDER BY score DESC",
+        )
+        .fetch_all(self.pool().inner())
+        .await?;
+
+        Ok(rows
+            .iter()
+            .map(|r| SimilarEdge {
+                repo_a: r.get("repo_a"),
+                node_id_a: r.get("node_id_a"),
+                repo_b: r.get("repo_b"),
+                node_id_b: r.get("node_id_b"),
+                score: r.get::<f64, _>("score") as f32,
+                weight: r.get::<i64, _>("weight") as u32,
+                kind: r.get("kind"),
+                built_at: r.get("built_at"),
+            })
+            .collect())
+    }
+
     /// List all similarity edges, ordered by descending score.
     pub async fn list_similar_edges(&self, limit: usize) -> Result<Vec<SimilarEdge>> {
         let rows = sqlx::query(

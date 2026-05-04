@@ -49,6 +49,7 @@ pub mod batch;
 pub mod config;
 pub mod error;
 pub mod migrate;
+pub mod patterns;
 pub mod similar;
 pub mod store;
 
@@ -56,5 +57,6 @@ pub use batch::{run_similarity_batch, BatchReport};
 pub use config::{FleetConfig, FleetSection, RepoEntry, RepoRole, RetrievalSection};
 pub use error::{FleetError, Result};
 pub use migrate::init;
+pub use patterns::{find_patterns, ClusterMember, PatternCluster};
 pub use similar::{SimilarEdge, DUPLICATES_THRESHOLD, SIMILAR_TO_THRESHOLD};
 pub use store::{FleetRepo, FleetStore};
