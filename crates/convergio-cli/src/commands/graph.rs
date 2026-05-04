@@ -60,6 +60,11 @@ pub enum GraphCommand {
         /// Capped server-side at 100. Ignored without `--semantic`.
         #[arg(long, default_value_t = 25)]
         semantic_top_k: usize,
+        /// Linear-blend weight for structural signal (`0.0`–`1.0`).
+        /// When set, overrides RRF: score = alpha × structural + (1−alpha) × semantic.
+        /// Implies `--semantic`. Mitigates regressions when substring retrieval saturates.
+        #[arg(long)]
+        alpha: Option<f64>,
     },
     /// Compare ADR claims (touches_crates) against the actual git
     /// diff. Reports drift (touched but not declared) and ghosts
@@ -107,6 +112,7 @@ pub async fn run(client: &Client, output: OutputMode, cmd: GraphCommand) -> Resu
             validation_profile,
             semantic,
             semantic_top_k,
+            alpha,
         } => {
             let hints = ForTaskHints {
                 crate_name,
@@ -124,6 +130,7 @@ pub async fn run(client: &Client, output: OutputMode, cmd: GraphCommand) -> Resu
                 hints,
                 semantic,
                 semantic_top_k,
+                alpha,
             )
             .await
         }
@@ -208,6 +215,7 @@ async fn for_task(
     hints: ForTaskHints,
     semantic: bool,
     semantic_top_k: usize,
+    alpha: Option<f64>,
 ) -> Result<()> {
     let mut path = format!("/v1/graph/for-task/{task_id}?");
     if let Some(n) = node_limit {
@@ -216,9 +224,13 @@ async fn for_task(
     if let Some(t) = token_budget {
         path.push_str(&format!("token_budget={t}&"));
     }
-    if semantic {
+    // --alpha implies --semantic
+    if semantic || alpha.is_some() {
         path.push_str("semantic=1&");
         path.push_str(&format!("semantic_top_k={semantic_top_k}&"));
+    }
+    if let Some(a) = alpha {
+        path.push_str(&format!("alpha={a}&"));
     }
     append_query_param(&mut path, "crate", hints.crate_name.as_deref());
     append_query_param(&mut path, "related_crates", hints.related_crates.as_deref());
