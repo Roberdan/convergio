@@ -45,7 +45,6 @@ pub mod glitch;
 pub mod gradient;
 pub mod palette;
 pub mod theme;
-pub mod wordmark_big;
 
 pub use claim::{CLAIM, PRODUCT_NAME, SUBLINE};
 pub use palette::{Rgb, BLACK, CYAN, MAGENTA};
