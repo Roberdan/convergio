@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.11](https://github.com/Roberdan/convergio/compare/convergio-v0.3.10...convergio-v0.3.11) (2026-05-04)
+
+
+### Features
+
+* **cli-pr:** extract cvg pr into convergio-cli-pr + add pr merge wrapper ([823d694](https://github.com/Roberdan/convergio/commit/823d69491252cae9dbd88a50466535bb58a97c5d))
+* **cli-pr:** extract cvg pr into convergio-cli-pr + add pr merge wrapper ([ee25095](https://github.com/Roberdan/convergio/commit/ee25095e45b556f2f0eb81cb877760ae769d60c9))
+* **cli:** cvg bus tail --follow + cvg bus list (consume P1.1 SSE) ([14f07d3](https://github.com/Roberdan/convergio/commit/14f07d3a4472fdac48e6880c4111991299a2d13e))
+* **cli:** cvg bus tail --follow and cvg bus list consume sse from p1.1 ([e59e825](https://github.com/Roberdan/convergio/commit/e59e825d3802c992ce67149a3abe7a8e89ec7774))
+* **cli:** cvg discover — peer + bus + plan one-shot snapshot ([0b18b6a](https://github.com/Roberdan/convergio/commit/0b18b6aa00f563165271bacc81c5a2fd4851c153))
+* **cli:** cvg discover — peer + bus + plan one-shot snapshot ([3e957d0](https://github.com/Roberdan/convergio/commit/3e957d0076db44d6d5e89056120aa3c868f10889))
+* **cli:** cvg validate --self-test ([c2a94b5](https://github.com/Roberdan/convergio/commit/c2a94b550c2183fd05116f138a2013487bfbebbf))
+* **cli:** cvg validate --self-test ([c37c8ae](https://github.com/Roberdan/convergio/commit/c37c8ae7fe6703c08ff2f09e267a83abdee8f0ea))
+* **coherence:** add cvg coherence close-post-hoc verifier ([a7e11e4](https://github.com/Roberdan/convergio/commit/a7e11e4f501ec68cbedcc607d98849ab725f887e))
+* **coherence:** cvg coherence close-post-hoc verifier ([4159cd8](https://github.com/Roberdan/convergio/commit/4159cd803fd56094751cf11352ab8fa9f612caa0))
+* **coherence:** cvg coherence fleet sub-verifier ([7900788](https://github.com/Roberdan/convergio/commit/79007885f8d6d3b4e294f5ec13e5c11cc1ffcb57))
+* **coherence:** cvg coherence fleet sub-verifier ([96f4556](https://github.com/Roberdan/convergio/commit/96f45565b7080edaf410f429080a7eab6a1cf49a))
+* **coherence:** cvg coherence handshake — 2-session e2e smoke test ([68ae8d6](https://github.com/Roberdan/convergio/commit/68ae8d65931c68080482636bac9d3c4c91c6c4f0))
+* **coherence:** cvg coherence handshake — 2-session e2e smoke test ([505a98a](https://github.com/Roberdan/convergio/commit/505a98ab57dbcb4b3720afceda8fd98ec0698d08))
+* **tui:** cvg dash 5th pane: live bus tail filtered by selected plan ([98dc46d](https://github.com/Roberdan/convergio/commit/98dc46de99b2911ac4ef732a7f0a689a293e1b20))
+* **tui:** cvg dash 5th pane: live bus tail filtered by selected plan ([e8324fb](https://github.com/Roberdan/convergio/commit/e8324fbfc101b2b3a93ea6f663dc8b6e60922969))
+
+
+### Refactoring
+
+* **server:** extract e2e boot() helper to tests/common/mod.rs ([88cdb76](https://github.com/Roberdan/convergio/commit/88cdb769b9f0bb96a5f288236f043ccf2332f1b7))
+* **server:** extract e2e boot() to tests/common/mod.rs ([01bfff8](https://github.com/Roberdan/convergio/commit/01bfff867237799b522ee46cb27dece8927f2efb))
+
+
+### Documentation
+
+* **durability:** ADR-0042 wave-sequence gate refactor (parallel_safe) ([5ecd620](https://github.com/Roberdan/convergio/commit/5ecd620b9ed6d684eca3ca6ce56ede770c307ffb))
+* **durability:** ADR-0042 wave-sequence gate refactor (parallel_safe) ([1bb584f](https://github.com/Roberdan/convergio/commit/1bb584f74fdb5432bcf0ce19e9693d5343086490))
+* **repo:** regenerate auto blocks for tui dep change ([8e8b11e](https://github.com/Roberdan/convergio/commit/8e8b11e9659e6c6a36fda023e73b0b1c13e859c4))
+
 ## [0.3.10](https://github.com/Roberdan/convergio/compare/convergio-v0.3.9...convergio-v0.3.10) (2026-05-04)
 
 
