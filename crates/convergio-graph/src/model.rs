@@ -83,6 +83,8 @@ pub struct Node {
     pub file_path: Option<String>,
     /// Owning crate name. `__docs__` for non-code nodes.
     pub crate_name: String,
+    /// Owning repository (e.g. `convergio`). Enables fleet multi-repo graphs.
+    pub repo: String,
     /// For `kind == Item`, the item flavour (struct/fn/...).
     pub item_kind: Option<&'static str>,
     /// Byte offset span in `file_path` (None for non-code).
@@ -95,11 +97,12 @@ pub const DOCS_CRATE: &str = "__docs__";
 impl Node {
     /// Compute a stable hash from the node identity.
     ///
-    /// The hash inputs are: `kind`, `crate_name`, `file_path` (if any),
-    /// `name`, and `span` (if any). Two nodes with the same inputs
-    /// collapse to the same `id`.
+    /// The hash inputs are: `kind`, `repo`, `crate_name`, `file_path`
+    /// (if any), `name`, and `span` (if any). Two nodes with the same
+    /// inputs collapse to the same `id`.
     pub fn compute_id(
         kind: NodeKind,
+        repo: &str,
         crate_name: &str,
         file_path: Option<&str>,
         name: &str,
@@ -108,6 +111,8 @@ impl Node {
         use sha2::{Digest, Sha256};
         let mut h = Sha256::new();
         h.update(kind.as_str().as_bytes());
+        h.update(b"|");
+        h.update(repo.as_bytes());
         h.update(b"|");
         h.update(crate_name.as_bytes());
         h.update(b"|");
@@ -160,6 +165,7 @@ mod tests {
     fn node_id_is_stable() {
         let a = Node::compute_id(
             NodeKind::Item,
+            "convergio",
             "convergio-cli",
             Some("src/lib.rs"),
             "Brief",
@@ -167,6 +173,7 @@ mod tests {
         );
         let b = Node::compute_id(
             NodeKind::Item,
+            "convergio",
             "convergio-cli",
             Some("src/lib.rs"),
             "Brief",
@@ -179,6 +186,7 @@ mod tests {
     fn node_id_changes_with_inputs() {
         let a = Node::compute_id(
             NodeKind::Item,
+            "convergio",
             "convergio-cli",
             Some("src/lib.rs"),
             "Brief",
@@ -186,9 +194,31 @@ mod tests {
         );
         let b = Node::compute_id(
             NodeKind::Item,
+            "convergio",
             "convergio-cli",
             Some("src/lib.rs"),
             "Other",
+            None,
+        );
+        assert_ne!(a, b);
+    }
+
+    #[test]
+    fn node_id_changes_with_repo() {
+        let a = Node::compute_id(
+            NodeKind::Item,
+            "convergio",
+            "convergio-cli",
+            Some("src/lib.rs"),
+            "Brief",
+            None,
+        );
+        let b = Node::compute_id(
+            NodeKind::Item,
+            "other-repo",
+            "convergio-cli",
+            Some("src/lib.rs"),
+            "Brief",
             None,
         );
         assert_ne!(a, b);

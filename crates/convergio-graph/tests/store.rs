@@ -29,6 +29,7 @@ async fn upsert_then_count() -> anyhow::Result<()> {
         name: "test-crate".into(),
         file_path: None,
         crate_name: "test-crate".into(),
+        repo: "test-repo".into(),
         item_kind: None,
         span: None,
     };
@@ -49,6 +50,7 @@ async fn upsert_file_replaces_previous() -> anyhow::Result<()> {
         name: "lib".into(),
         file_path: Some("src/lib.rs".into()),
         crate_name: "x".into(),
+        repo: "test-repo".into(),
         item_kind: None,
         span: None,
     };
@@ -58,6 +60,7 @@ async fn upsert_file_replaces_previous() -> anyhow::Result<()> {
         name: "Foo".into(),
         file_path: Some("src/lib.rs".into()),
         crate_name: "x".into(),
+        repo: "test-repo".into(),
         item_kind: Some("struct"),
         span: None,
     };

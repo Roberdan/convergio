@@ -171,11 +171,12 @@ mod tests {
 
     fn crate_node(name: &str) -> Node {
         Node {
-            id: Node::compute_id(NodeKind::Crate, name, None, name, None),
+            id: Node::compute_id(NodeKind::Crate, "convergio", name, None, name, None),
             kind: NodeKind::Crate,
             name: name.into(),
             file_path: None,
             crate_name: name.into(),
+            repo: "convergio".into(),
             item_kind: None,
             span: None,
         }
@@ -183,11 +184,12 @@ mod tests {
 
     fn adr_node(name: &str) -> Node {
         Node {
-            id: Node::compute_id(NodeKind::Adr, DOCS_CRATE, None, name, None),
+            id: Node::compute_id(NodeKind::Adr, "convergio", DOCS_CRATE, None, name, None),
             kind: NodeKind::Adr,
             name: name.into(),
             file_path: None,
             crate_name: DOCS_CRATE.into(),
+            repo: "convergio".into(),
             item_kind: None,
             span: None,
         }

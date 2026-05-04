@@ -12,6 +12,7 @@ use syn::visit::Visit;
 /// Parse one `*.rs` file into nodes + edges scoped to a single
 /// module within a crate.
 ///
+/// `repo` is the owning repository name (e.g. `convergio`).
 /// `crate_name` is the owning workspace crate (e.g. `convergio-cli`).
 /// `module_path` is the dotted path inside that crate
 /// (e.g. `commands::session`); empty string for the crate root.
@@ -19,6 +20,7 @@ use syn::visit::Visit;
 /// every produced node and folded into the stable id (so the graph
 /// is portable across clones at different filesystem paths).
 pub fn parse_file(
+    repo: &str,
     crate_name: &str,
     module_path: &str,
     abs_path: &Path,
@@ -37,6 +39,7 @@ pub fn parse_file(
     };
     let module_id = Node::compute_id(
         NodeKind::Module,
+        repo,
         crate_name,
         Some(rel_path),
         &module_name,
@@ -44,6 +47,7 @@ pub fn parse_file(
     );
 
     let mut visitor = ItemVisitor {
+        repo: repo.to_string(),
         crate_name: crate_name.to_string(),
         module_path: module_path.to_string(),
         file_path: rel_path.to_string(),
@@ -57,6 +61,7 @@ pub fn parse_file(
         name: module_name,
         file_path: Some(visitor.file_path.clone()),
         crate_name: crate_name.to_string(),
+        repo: repo.to_string(),
         item_kind: None,
         span: None,
     };
@@ -66,6 +71,7 @@ pub fn parse_file(
 }
 
 struct ItemVisitor {
+    repo: String,
     crate_name: String,
     #[allow(dead_code)] // reserved for future nested-module path tracking
     module_path: String,
@@ -79,6 +85,7 @@ impl ItemVisitor {
     fn record_item(&mut self, name: &str, item_kind: &'static str) {
         let id = Node::compute_id(
             NodeKind::Item,
+            &self.repo,
             &self.crate_name,
             Some(&self.file_path),
             name,
@@ -90,6 +97,7 @@ impl ItemVisitor {
             name: name.to_string(),
             file_path: Some(self.file_path.clone()),
             crate_name: self.crate_name.clone(),
+            repo: self.repo.clone(),
             item_kind: Some(item_kind),
             span: None,
         });
@@ -103,13 +111,14 @@ impl ItemVisitor {
 
     fn record_use(&mut self, path: &str, is_pub: bool) {
         // Each `use` produces an unresolved path node + a Uses edge.
-        let id = Node::compute_id(NodeKind::Item, "<unresolved>", None, path, None);
+        let id = Node::compute_id(NodeKind::Item, &self.repo, "<unresolved>", None, path, None);
         self.nodes.push(Node {
             id: id.clone(),
             kind: NodeKind::Item,
             name: path.to_string(),
             file_path: None,
             crate_name: "<unresolved>".to_string(),
+            repo: self.repo.clone(),
             item_kind: Some("use_path"),
             span: None,
         });
@@ -239,7 +248,8 @@ mod tests {
     #[test]
     fn parses_struct_and_fn() {
         let f = write_tmp("pub struct Foo;\nfn bar() {}\n");
-        let (nodes, edges) = parse_file("test-crate", "lib", f.path(), "src/lib.rs").unwrap();
+        let (nodes, edges) =
+            parse_file("test-repo", "test-crate", "lib", f.path(), "src/lib.rs").unwrap();
         // 1 module + 1 struct + 1 fn = 3 nodes
         assert_eq!(nodes.len(), 3);
         // 2 declares edges from module
@@ -254,7 +264,8 @@ mod tests {
     fn parses_use_paths() {
         let f =
             write_tmp("use std::collections::HashMap;\npub use crate::a::B;\nuse foo::{x, y};\n");
-        let (_nodes, edges) = parse_file("test-crate", "lib", f.path(), "src/lib.rs").unwrap();
+        let (_nodes, edges) =
+            parse_file("test-repo", "test-crate", "lib", f.path(), "src/lib.rs").unwrap();
         let uses: Vec<&Edge> = edges
             .iter()
             .filter(|e| e.kind == EdgeKind::Uses || e.kind == EdgeKind::ReExports)
