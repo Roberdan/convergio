@@ -9,7 +9,7 @@
 //! land.
 //!
 //! Keeping every check behind the same trait + registry means each
-//! follow-up PR adds one file under `session_checks/` and registers
+//! follow-up PR adds one file under `checks/` and registers
 //! it here — no surgery on the dispatch loop, no risk of breaking the
 //! command shape mid-rollout.
 //!
@@ -26,7 +26,7 @@ use serde::Serialize;
 /// Outcome of one safety check.
 ///
 /// `Pass` and `Fail` are constructed by the dedicated check
-/// implementations under `session_checks/` (W0b.2 follow-up tasks
+/// implementations under `checks/` (W0b.2 follow-up tasks
 /// `5298055b`, `564926dc`, `2c181be2`, `ab515d7e`, `95e6b262`,
 /// `8dac18b9`). `#[allow(dead_code)]` is kept for now because not
 /// every variant is constructed yet from real check impls — the
@@ -62,7 +62,7 @@ impl CheckOutcome {
 }
 
 /// One safety check. Implementations live under
-/// `session_checks/`; each one owns its own SQLite/git/gh queries.
+/// `checks/`; each one owns its own SQLite/git/gh queries.
 pub trait Check: Send + Sync {
     /// Stable identifier shown in reports and logs (e.g. `"check.bus.inbound"`).
     fn id(&self) -> &'static str;
@@ -114,7 +114,7 @@ pub struct CheckResult {
 /// Their plan task ids point at the follow-ups.
 pub fn registry() -> Vec<Box<dyn Check>> {
     vec![
-        Box::new(super::session_checks::check_1_plan_pr_drift::PlanPrDriftCheck),
+        Box::new(crate::checks::check_1_plan_pr_drift::PlanPrDriftCheck),
         Box::new(StubCheck {
             id: "check.bus.inbound",
             label: "inbound bus messages addressed to me, unconsumed",
@@ -125,13 +125,13 @@ pub fn registry() -> Vec<Box<dyn Check>> {
             label: "outbound stale bus messages sent by me, never consumed",
             task_id: "2c181be2",
         }),
-        Box::new(super::session_checks::worktree_no_pr::WorktreeNoPrCheck),
+        Box::new(crate::checks::worktree_no_pr::WorktreeNoPrCheck),
         Box::new(StubCheck {
             id: "check.handshake.uncommitted",
             label: "files declared in last bus handshake but never committed",
             task_id: "95e6b262",
         }),
-        Box::new(super::session_checks::friction_missing::FrictionMissingCheck),
+        Box::new(crate::checks::friction_missing::FrictionMissingCheck),
     ]
 }
 
