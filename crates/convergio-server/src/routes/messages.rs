@@ -7,7 +7,9 @@
 
 use crate::app::AppState;
 use crate::error::ApiError;
+use crate::sse::{poll_stream, StreamEvent};
 use axum::extract::{Path, Query, State};
+use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use convergio_bus::{Message, NewMessage, TopicSummary};
@@ -20,6 +22,7 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/v1/plans/:plan_id/messages", post(publish).get(poll))
         .route("/v1/plans/:plan_id/messages/tail", get(tail))
+        .route("/v1/plans/:plan_id/messages/stream", get(stream))
         .route("/v1/plans/:plan_id/topics", get(topics))
         .route("/v1/messages/:id/ack", post(ack))
 }
@@ -143,4 +146,97 @@ async fn topics(
     Path(plan_id): Path<String>,
 ) -> Result<Json<Vec<TopicSummary>>, ApiError> {
     Ok(Json(state.bus.topics(&plan_id).await?))
+}
+
+#[derive(Deserialize)]
+struct StreamQuery {
+    /// Optional literal-match topic filter. Glob patterns
+    /// (`coordination/*`, `agent:*`) are deferred to wave-2 — the
+    /// current implementation only matches the exact string.
+    #[serde(default)]
+    topic: Option<String>,
+    /// Cursor: only messages with `seq > since` are emitted.
+    /// Defaults to the current per-plan tail so a fresh client only
+    /// sees new messages from connect time forward.
+    #[serde(default)]
+    since: Option<i64>,
+}
+
+const MESSAGE_STREAM_BATCH_LIMIT: i64 = 100;
+
+async fn stream(
+    State(state): State<AppState>,
+    Path(plan_id): Path<String>,
+    Query(q): Query<StreamQuery>,
+) -> Result<axum::response::Response, ApiError> {
+    let initial_cursor = match q.since {
+        Some(s) => s,
+        None => {
+            // Default: current per-plan tail. We snapshot the tail
+            // by paging once with cursor=0 and a generous limit;
+            // the next-cursor is the largest seq returned. For
+            // empty plans this is 0.
+            let snapshot = state
+                .bus
+                .tail(&plan_id, q.topic.as_deref(), 0, MESSAGE_STREAM_BATCH_LIMIT)
+                .await?;
+            // Walk forward in batches until we exhaust history,
+            // so we don't deliver the backlog on connect.
+            let mut last = snapshot.last().map(|m| m.seq).unwrap_or(0);
+            let mut current = last;
+            loop {
+                let more = state
+                    .bus
+                    .tail(
+                        &plan_id,
+                        q.topic.as_deref(),
+                        current,
+                        MESSAGE_STREAM_BATCH_LIMIT,
+                    )
+                    .await?;
+                if more.is_empty() {
+                    break;
+                }
+                last = more.last().map(|m| m.seq).unwrap_or(last);
+                current = last;
+            }
+            last
+        }
+    };
+    let bus = state.bus.clone();
+    let plan_id_owned = plan_id.clone();
+    let topic_owned = q.topic.clone();
+
+    let sse = poll_stream::<serde_json::Value, _, _>("bus", initial_cursor, move |cursor| {
+        let bus = bus.clone();
+        let plan_id = plan_id_owned.clone();
+        let topic = topic_owned.clone();
+        async move {
+            let rows = bus
+                .tail(
+                    &plan_id,
+                    topic.as_deref(),
+                    cursor,
+                    MESSAGE_STREAM_BATCH_LIMIT,
+                )
+                .await
+                .map_err(|e| e.to_string())?;
+            let mapped = rows
+                .into_iter()
+                .map(|m| StreamEvent {
+                    seq: m.seq,
+                    payload: serde_json::json!({
+                        "seq": m.seq,
+                        "plan_id": m.plan_id,
+                        "topic": m.topic,
+                        "sender": m.sender,
+                        "payload": m.payload,
+                        "created_at": m.created_at.to_rfc3339(),
+                    }),
+                })
+                .collect::<Vec<_>>();
+            Ok(mapped)
+        }
+    });
+    Ok(sse.into_response())
 }

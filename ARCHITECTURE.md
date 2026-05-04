@@ -96,6 +96,8 @@ All endpoints sit under `/v1`. Errors are:
 | POST | `/v1/tasks/:id/context` | 1 |
 | GET | `/v1/audit/verify` | 1 |
 | GET | `/v1/audit/refusals/latest` | 1 |
+| GET | `/v1/audit/events` | 1 |
+| GET | `/v1/audit/stream` (SSE, P1.1) | 1 |
 | GET | `/v1/crdt/conflicts` | 1 |
 | POST | `/v1/crdt/import` | 1 |
 | GET · POST | `/v1/workspace/leases` | 1 |

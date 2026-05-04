@@ -18,8 +18,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 395 |
-| `ARCHITECTURE.md` | architecture | - | - | 268 |
+| `AGENTS.md` | agent-rules | - | - | 401 |
+| `ARCHITECTURE.md` | architecture | - | - | 270 |
 | `CHANGELOG.md` | release | - | - | 646 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
@@ -117,7 +117,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 226 |
 | `docs/agents/README.md` | agent-docs | - | - | 101 |
-| `docs/multi-agent-operating-model.md` | - | - | - | 364 |
+| `docs/multi-agent-operating-model.md` | - | - | - | 367 |
 | `docs/plans/2026-05-01-triage-pass.md` | plan | - | - | 75 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
 | `docs/plans/README.md` | plan | - | - | 31 |

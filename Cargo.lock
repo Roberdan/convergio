@@ -909,6 +909,7 @@ dependencies = [
  "convergio-thor",
  "ed25519-dalek",
  "flate2",
+ "futures",
  "hex",
  "reqwest",
  "serde",
