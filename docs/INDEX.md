@@ -74,24 +74,24 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0003-migration-coexistence.md` | adr | [] | accepted | 132 |
 | `docs/adr/0004-three-sacred-principles.md` | adr | [] | accepted | 104 |
 | `docs/adr/0005-internationalization-first.md` | adr | [] | accepted | 119 |
-| `docs/adr/0006-crdt-storage.md` | adr | [] | proposed | 209 |
-| `docs/adr/0007-workspace-coordination.md` | adr | [] | proposed | 192 |
-| `docs/adr/0008-downloadable-capabilities.md` | adr | [] | proposed | 378 |
-| `docs/adr/0009-agent-client-protocol-adapter.md` | adr | [] | proposed | 92 |
+| `docs/adr/0006-crdt-storage.md` | adr | [convergio-durability, convergio-server, convergio-api] | accepted | 209 |
+| `docs/adr/0007-workspace-coordination.md` | adr | [convergio-durability, convergio-server, convergio-api] | accepted | 192 |
+| `docs/adr/0008-downloadable-capabilities.md` | adr | [] | proposed | 403 |
+| `docs/adr/0009-agent-client-protocol-adapter.md` | adr | [] | proposed | 100 |
 | `docs/adr/0010-retire-convergio-worktree-crate.md` | adr | [] | accepted | 92 |
 | `docs/adr/0011-thor-only-done.md` | adr | [] | accepted | 195 |
 | `docs/adr/0012-ooda-aware-validation.md` | adr | [] | accepted | 283 |
-| `docs/adr/0013-split-durability-into-three-crates.md` | adr | [convergio-durability, convergio-server, convergio-api] | proposed | 192 |
+| `docs/adr/0013-split-durability-into-three-crates.md` | adr | [convergio-durability, convergio-server, convergio-api] | proposed | 205 |
 | `docs/adr/0014-code-graph-tier3-retrieval.md` | adr | [convergio-graph, convergio-cli, convergio-server, convergio-durability] | accepted | 274 |
 | `docs/adr/0015-documentation-as-derived-state.md` | adr | [convergio-cli] | accepted | 184 |
-| `docs/adr/0016-long-tail-vertical-accelerators.md` | adr | [] | proposed | 218 |
-| `docs/adr/0017-ise-hve-alignment.md` | adr | [convergio-durability] | proposed | 243 |
-| `docs/adr/0018-urbanism-over-architecture.md` | adr | [] | proposed | 294 |
-| `docs/adr/0019-thinking-stack-gstack-vendored.md` | adr | [convergio-mcp, convergio-cli] | proposed | 251 |
-| `docs/adr/0020-model-evaluation-framework.md` | adr | [convergio-durability, convergio-executor, convergio-mcp] | proposed | 272 |
-| `docs/adr/0021-okr-on-plans.md` | adr | [convergio-durability, convergio-cli, convergio-thor] | proposed | 311 |
-| `docs/adr/0022-adversarial-review-service.md` | adr | [convergio-mcp, convergio-cli, convergio-durability] | proposed | 258 |
-| `docs/adr/0023-observability-tier.md` | adr | [convergio-server, convergio-durability, convergio-cli, convergio-bus] | proposed | 222 |
+| `docs/adr/0016-long-tail-vertical-accelerators.md` | adr | [] | proposed | 227 |
+| `docs/adr/0017-ise-hve-alignment.md` | adr | [convergio-durability] | proposed | 253 |
+| `docs/adr/0018-urbanism-over-architecture.md` | adr | [] | proposed | 303 |
+| `docs/adr/0019-thinking-stack-gstack-vendored.md` | adr | [convergio-mcp, convergio-cli] | proposed | 261 |
+| `docs/adr/0020-model-evaluation-framework.md` | adr | [convergio-durability, convergio-executor, convergio-mcp] | proposed | 281 |
+| `docs/adr/0021-okr-on-plans.md` | adr | [convergio-durability, convergio-cli, convergio-thor] | proposed | 321 |
+| `docs/adr/0022-adversarial-review-service.md` | adr | [convergio-mcp, convergio-cli, convergio-durability] | proposed | 269 |
+| `docs/adr/0023-observability-tier.md` | adr | [convergio-server, convergio-durability, convergio-cli, convergio-bus] | proposed | 245 |
 | `docs/adr/0024-bus-poll-exclude-sender.md` | adr | [convergio-bus, convergio-server, convergio-cli] | accepted | 133 |
 | `docs/adr/0025-system-session-events-topic.md` | adr | [convergio-bus, convergio-server, convergio-mcp, convergio-api] | accepted | 285 |
 | `docs/adr/0026-plan-wave-milestone-vocabulary.md` | adr | [convergio-durability, convergio-server, convergio-cli] | accepted | 206 |
@@ -106,8 +106,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0035-runner-registry-toml.md` | adr | [convergio-runner, convergio-executor, convergio-cli] | accepted | 100 |
 | `docs/adr/0036-opus-backed-planner.md` | adr | [convergio-planner, convergio-server] | accepted | 101 |
 | `docs/adr/0037-brand-kit-and-claim.md` | adr | [convergio-brand, convergio-cli, convergio-tui, convergio-server, convergio-i18n] | accepted | 91 |
-| `docs/adr/0038-fleet-retrieval-cross-repo-graph.md` | adr | [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api] | proposed | 1032 |
-| `docs/adr/0039-doc-coherence-sweep.md` | adr | [convergio-cli, convergio-server, convergio-durability, convergio-graph] | proposed | 239 |
+| `docs/adr/0038-fleet-retrieval-cross-repo-graph.md` | adr | [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api] | proposed | 1047 |
+| `docs/adr/0039-doc-coherence-sweep.md` | adr | [convergio-cli, convergio-coherence, convergio-server, convergio-durability, convergio-graph] | accepted | 259 |
 | `docs/adr/0040-split-coherence-into-its-own-crate.md` | adr | [convergio-cli, convergio-coherence] | accepted | 186 |
 | `docs/adr/README.md` | adr | - | - | 61 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |

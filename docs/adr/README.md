@@ -23,8 +23,8 @@ do not edit between the markers.
 | [0003](./0003-migration-coexistence.md) | 0003. Per-crate migrations on a shared `_sqlx_migrations` table | accepted |
 | [0004](./0004-three-sacred-principles.md) | 0004. Three sacred principles: zero tolerance, security first, accessibility first | accepted |
 | [0005](./0005-internationalization-first.md) | 0005. Internationalization first (P5) — Italian + English from day one | accepted |
-| [0006](./0006-crdt-storage.md) | 0006. Model state with row and column CRDT metadata from day zero | proposed |
-| [0007](./0007-workspace-coordination.md) | 0007. Coordinate multi-agent workspace changes with leases and patch proposals | proposed |
+| [0006](./0006-crdt-storage.md) | 0006. Model state with row and column CRDT metadata from day zero | accepted |
+| [0007](./0007-workspace-coordination.md) | 0007. Coordinate multi-agent workspace changes with leases and patch proposals | accepted |
 | [0008](./0008-downloadable-capabilities.md) | 0008. Install new behavior as signed isolated capabilities | proposed |
 | [0009](./0009-agent-client-protocol-adapter.md) | 0009. Treat Agent Client Protocol as a future northbound editor adapter | proposed |
 | [0010](./0010-retire-convergio-worktree-crate.md) | 0010. Retire the convergio-worktree crate | accepted |
@@ -56,6 +56,6 @@ do not edit between the markers.
 | [0036](./0036-opus-backed-planner.md) | 0036. Opus-backed planner replaces the line-split heuristic | accepted |
 | [0037](./0037-brand-kit-and-claim.md) | 0037. Brand kit, claim, and shared `convergio-brand` crate | accepted |
 | [0038](./0038-fleet-retrieval-cross-repo-graph.md) | 0038. Fleet retrieval & cross-repo graph (semantic + multi-language) | proposed |
-| [0039](./0039-doc-coherence-sweep.md) | 0039. Doc-coherence sweep as a recurring three-layer plan | proposed |
+| [0039](./0039-doc-coherence-sweep.md) | 0039. Doc-coherence sweep as a recurring three-layer plan | accepted |
 | [0040](./0040-split-coherence-into-its-own-crate.md) | 0040. Split the coherence verifiers into their own crate | accepted |
 <!-- END AUTO -->

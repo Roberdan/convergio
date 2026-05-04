@@ -111,6 +111,15 @@ Chosen option: **Option C**, because it preserves the safety belt
 v0.1.x already shipped while leaving the long-tail surface
 permissive enough to support thousands of vertical accelerators.
 
+### Implementation status (2026-05-04)
+
+Stays `proposed`. This ADR is a design-philosophy decision — it names
+the urbanism frame (Le Corbusier building codes + Jacobs street life,
+Modulor as `(task, evidence, gate, audit_row)`, capability namespaces
+as zoning) so future ADRs can be evaluated against it. The frame is
+real; no code change ships under this ADR alone, by design (§
+"Neutral").
+
 ### Convergio is the municipality
 
 The metaphor sharpens once we stop calling Convergio "the urban

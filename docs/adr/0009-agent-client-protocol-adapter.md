@@ -46,6 +46,14 @@ task, evidence, gate, and audit model.
 Chosen option: **Option 3**, because it keeps the current MCP tool
 contract stable while leaving a clean path for editor adoption.
 
+### Implementation status (2026-05-04)
+
+Stays `proposed`: the ADR is explicitly future-facing — it reserves the
+`convergio-acp` adapter slot rather than shipping it. No `convergio-acp`
+crate, no ACP transport, no editor session mapping exist today, by
+design (§ "v0.1 scope" leaves ACP out of the public v0.1 cut). The
+frame is real; the building inside it is tracked elsewhere.
+
 ### Positive consequences
 
 - Editors that support ACP can eventually use Convergio directly.

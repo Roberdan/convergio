@@ -115,6 +115,16 @@ indistinguishable from no OKR at all (option A and B); only
 gate-and-validation enforcement creates the discipline F26 was
 asking for.
 
+### Implementation status (2026-05-04)
+
+Stays `proposed`. None of the schema or gate machinery has shipped:
+`plans.objective` does not exist, the `plan_key_results` table does
+not exist, `tasks.contributes_to_kr_id` does not exist, and neither
+`PlanCoherenceGate` nor `PlanOutcomeGate` is implemented. `cvg plan
+triage` exists for stale-task surfacing but is unrelated to OKR. The
+ADR is gated on Wave 1 (smart Thor T3.02) and remains the intended
+schema shape until then.
+
 ### Schema (Wave 1)
 
 ```sql

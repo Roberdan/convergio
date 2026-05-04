@@ -2,9 +2,11 @@
 //!
 //! Split out to honour the 300-line per-file cap. Synthetic ADR text +
 //! synthetic crate dirs cover each finding bucket. The bootstrapped
-//! current-repo findings (ADR-0006/0007/0008/0023 etc.) are captured
-//! as a fixture in [`bootstrap_findings_fixture`] so future drift
-//! fixes do not silently break the test.
+//! current-repo findings (ADR-0008 / ADR-0023 — capability registry
+//! and observability tier remain `proposed` after the audit pass that
+//! flipped 0006 + 0007 to `accepted`) are captured as a fixture in
+//! [`bootstrap_findings_fixture`] so future drift fixes do not
+//! silently break the test.
 
 #![cfg(test)]
 
@@ -127,12 +129,17 @@ fn finding_strict_classification() {
     assert!(!Finding::ProposedLikelyShipped.is_strict());
 }
 
-/// Fixture: at the time of shipping, the verifier should flag at least
-/// the four ADRs called out in PR #138 as `proposed_likely_shipped`.
-/// If a future PR flips one of these to `accepted` (and the evidence
-/// remains), this test will be the first to notice the test_run fixture
-/// is stale and need updating.
-const BOOTSTRAP_PROPOSED_SHIPPED: &[&str] = &["0006", "0007", "0008", "0023"];
+/// Fixture: after the audit pass that flipped ADR-0006 (CRDT) and
+/// ADR-0007 (workspace coordination) to `accepted` (their tables,
+/// routes, and API actions are shipped end-to-end), the verifier
+/// should still flag ADR-0008 (downloadable capabilities — only
+/// signing + install-file primitives shipped, lifecycle and registry
+/// not yet) and ADR-0023 (observability tier — only baseline
+/// `tracing-subscriber` wired, no rotation / request-id / OTel) as
+/// `proposed_likely_shipped`. If a future PR flips one of these two
+/// to `accepted` (and the evidence remains), this test will be the
+/// first to notice the fixture is stale and needs updating.
+const BOOTSTRAP_PROPOSED_SHIPPED: &[&str] = &["0008", "0023"];
 
 #[test]
 fn bootstrap_findings_fixture() {

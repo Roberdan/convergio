@@ -1,16 +1,16 @@
 ---
 id: 0007
-status: proposed
+status: accepted
 date: 2026-04-29
 topics: [layer-4, workspace, git, multi-agent, merge]
 related_adrs: []
-touches_crates: []
-last_validated: 2026-04-30
+touches_crates: [convergio-durability, convergio-server, convergio-api]
+last_validated: 2026-05-04
 ---
 
 # 0007. Coordinate multi-agent workspace changes with leases and patch proposals
 
-- Status: proposed
+- Status: accepted (shipped — `workspace_resources`/`workspace_leases`/`patch_proposals`/`merge_queue`/`workspace_conflicts` in migration `0005_workspace_coordination.sql`, full `/v1/workspace/leases`, `/v1/workspace/patches`, `/v1/workspace/merge/next`, `/v1/workspace/merge-queue`, `/v1/workspace/conflicts` surface, action enum `submit_patch_proposal`)
 - Date: 2026-04-29
 - Deciders: Roberto, Copilot
 - Tags: layer-4, workspace, git, multi-agent, merge

@@ -116,6 +116,17 @@ through adversarial review) without locking the reflex to a
 specific vendor and without delaying the practice until Wave 2
 ships.
 
+### Implementation status (2026-05-04)
+
+Stays `proposed`. No `governance.adversarial_review` MCP action, no
+`governance.*` capability namespace, and no
+`docs/templates/adversarial-challenge.md` template ship today. The
+practice is followed manually for strategic doc sets (per the worked
+example) but the automation that would graduate this ADR depends on
+the runner-adapter + capability + model-evaluation surfaces from
+ADR-0019/0020/0008. The ombudsman frame is real; the automated
+service is future work.
+
 ### What "strategic" means for trigger purposes
 
 Adversarial review is required (advisory now, gating in Wave 2)

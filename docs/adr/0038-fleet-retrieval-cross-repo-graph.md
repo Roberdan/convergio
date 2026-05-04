@@ -248,6 +248,21 @@ brain.
 **Chosen: Option D (Full fleet brain), staged in three phases with
 go/no-go gates.**
 
+### Implementation status (2026-05-04)
+
+Stays `proposed`. F1 (single-repo embedding prototype, `convergio-
+embed` crate, golden-set bench, `cvg graph for-task --semantic` /
+`--gap-check`) is shipped and the F2 GO verdict is recorded in § 15.7.
+F2 (multi-language tree-sitter parsing via `convergio-parse-multi`,
+`convergio-fleet` crate, `cvg fleet add/ls/build`, cross-repo
+`similar_to` / `duplicates` edges, `/v1/fleet/*` HTTP routes) is
+landing crate-by-crate as ADR-0038 sister PRs. F3 (cross-repo
+`fleet_plans`, `cvg audit verify --fleet`, fleet-scoped audit
+federation, MCP `convergio.fleet.*` actions) is not yet implemented.
+The ADR stays `proposed` until F3 lands or is explicitly deferred via
+a successor ADR — F1 + F2 alone do not cover the full decision
+surface.
+
 Justification:
 
 - **Aligned with demand**: Roberto's stated pain is fleet-scoped. Any
