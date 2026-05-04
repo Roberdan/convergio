@@ -9,5 +9,6 @@
 //! from the `NotImplemented` outcome so operators can find the
 //! follow-up.
 
+pub mod check_1_plan_pr_drift;
 pub mod friction_missing;
 pub mod worktree_no_pr;
