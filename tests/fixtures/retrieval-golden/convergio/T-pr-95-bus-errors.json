@@ -1,0 +1,18 @@
+{
+  "task_id": "T-pr-95-bus-errors",
+  "repo": "convergio",
+  "title": "harden convergio-bus error mapping — surface 404 / 422 / 500 cleanly",
+  "task_body": "BusError variants were collapsing to a generic 500 in the server, hiding NotFound and validation problems. Map each variant to a distinct HTTP code, update the lifecycle test, and route ApiError::Bus through the new mapping.",
+  "expected_files": [
+    "crates/convergio-bus/src/error.rs",
+    "crates/convergio-bus/src/bus.rs",
+    "crates/convergio-bus/tests/lifecycle.rs",
+    "crates/convergio-server/src/error.rs",
+    "crates/convergio-server/tests/e2e_bus.rs"
+  ],
+  "rationale": "bus error.rs adds variants; bus.rs returns them; lifecycle test seeds the cases; server error.rs maps to HTTP; e2e_bus asserts the codes.",
+  "curator": "claude-derived-from-pr",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-04-29",
+  "schema_version": 1
+}

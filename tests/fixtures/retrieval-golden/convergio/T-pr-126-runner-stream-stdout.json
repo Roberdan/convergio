@@ -1,0 +1,15 @@
+{
+  "task_id": "T-pr-126-runner-stream-stdout",
+  "repo": "convergio",
+  "title": "stream the spawned runner's stdout to the operator instead of buffering",
+  "task_body": "When cvg agent spawn drives a vendor CLI, the operator wants live progress on stdout, not a single dump at the end. Update the runner to forward child process stdout line by line, and surface it through the CLI command.",
+  "expected_files": [
+    "crates/convergio-runner/src/runner.rs",
+    "crates/convergio-cli/src/commands/agent_spawn.rs"
+  ],
+  "rationale": "The runner does the streaming; the CLI command consumes it.",
+  "curator": "claude-derived-from-pr",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-03",
+  "schema_version": 1
+}

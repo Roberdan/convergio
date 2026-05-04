@@ -1,0 +1,20 @@
+{
+  "task_id": "T-pr-143-coherence-routes-verifier",
+  "repo": "convergio",
+  "title": "cvg coherence check verifies the HTTP route registry is in sync with the docs",
+  "task_body": "Add a coherence verifier that diffs the daemon's actually-mounted routes against what the AGENTS.md surface lists. New cvg coherence sub-subcommands parse the router source and compare. CI surfaces drift as a warning.",
+  "expected_files": [
+    "crates/convergio-cli/src/commands/coherence.rs",
+    "crates/convergio-cli/src/commands/coherence_routes.rs",
+    "crates/convergio-cli/src/commands/coherence_routes_diff.rs",
+    "crates/convergio-cli/src/commands/coherence_routes_parse.rs",
+    "crates/convergio-cli/src/commands/mod.rs",
+    "crates/convergio-cli/src/main.rs",
+    ".github/workflows/ci.yml"
+  ],
+  "rationale": "New coherence_routes module + parse/diff helpers; existing coherence.rs gains the wiring; main.rs registers the subcommand; CI runs the new check.",
+  "curator": "claude-derived-from-pr",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-03",
+  "schema_version": 1
+}

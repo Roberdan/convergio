@@ -1,0 +1,24 @@
+{
+  "task_id": "T-pr-118-timing-cache",
+  "repo": "convergio",
+  "title": "materialised timing cache + plan↔PR link table",
+  "task_body": "Persist per-task timing aggregates and a plan-to-PR mapping so cvg status / dash do not have to recompute from the audit log on every render. Two new migrations, schema changes on the durability facade, an e2e test that exercises the timing cache.",
+  "expected_files": [
+    "crates/convergio-durability/migrations/0009_task_timing.sql",
+    "crates/convergio-durability/migrations/0010_plan_pr_links.sql",
+    "crates/convergio-durability/src/facade.rs",
+    "crates/convergio-durability/src/facade_admin.rs",
+    "crates/convergio-durability/src/facade_plan_transitions.rs",
+    "crates/convergio-durability/src/facade_transitions.rs",
+    "crates/convergio-durability/src/model.rs",
+    "crates/convergio-durability/src/store/plans.rs",
+    "crates/convergio-durability/src/store/tasks.rs",
+    "crates/convergio-server/tests/e2e_timing_cache.rs",
+    "docs/adr/0031-materialised-timing-cache.md"
+  ],
+  "rationale": "Two migrations land the schema; facade + store touch the read/write path; the model gains the new fields; the e2e proves the cache keeps up; the ADR records the decision.",
+  "curator": "claude-derived-from-pr",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-02",
+  "schema_version": 1
+}
