@@ -1,13 +1,6 @@
-//! `cvg fleet ...` — fleet repo management (ADR-0038, F2-6/F2-7).
-//!
+//! `cvg fleet ...` — fleet repo management (ADR-0038, F2-6/F2-7/F2-9).
 //! Pure HTTP. The daemon owns the fleet store; the CLI just renders.
-//!
-//! Subcommands:
-//! - `add <path>`   — register a repo (reads `convergio.yaml` for `derives_from`)
-//! - `ls`           — list all repos
-//! - `enable  <name>`  — re-enable a disabled repo
-//! - `disable <name>`  — disable a repo (without removing it)
-//! - `build`        — parse + embed all enabled repos (idempotent)
+//! Subcommands: `add`, `ls`, `enable`, `disable`, `build`, `patterns`.
 
 use super::{Client, OutputMode};
 use anyhow::{Context, Result};
@@ -63,6 +56,12 @@ pub enum FleetCommand {
         #[arg(long)]
         refresh_similarity: bool,
     },
+    /// Detect pattern clusters spanning ≥2 repos over `similar_to` edges.
+    Patterns {
+        /// Minimum distinct repos a cluster must span (default 2).
+        #[arg(long, default_value_t = 2)]
+        min_repos: usize,
+    },
 }
 
 /// Entry point.
@@ -93,6 +92,9 @@ pub async fn run(client: &Client, output: OutputMode, cmd: FleetCommand) -> Resu
         FleetCommand::Disable { name } => toggle(client, output, &name, false).await,
         FleetCommand::Build { refresh_similarity } => {
             fleet_build(client, output, refresh_similarity).await
+        }
+        FleetCommand::Patterns { min_repos } => {
+            super::fleet_patterns::run(client, output, min_repos).await
         }
     }
 }
