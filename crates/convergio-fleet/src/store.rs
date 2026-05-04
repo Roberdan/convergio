@@ -51,6 +51,12 @@ impl FleetStore {
         Self { pool }
     }
 
+    /// Crate-internal access to the underlying pool, used by sibling
+    /// modules within this crate (e.g. [`crate::similar`]).
+    pub(crate) fn pool(&self) -> &Pool {
+        &self.pool
+    }
+
     /// Insert a repo from a [`RepoEntry`]. Returns
     /// [`FleetError::RepoDuplicate`] if the name already exists.
     pub async fn add_repo(&self, entry: &RepoEntry) -> Result<()> {

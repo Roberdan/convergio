@@ -3,8 +3,9 @@
 //! Fleet abstraction for Convergio v4 (ADR-0038, F2).
 //!
 //! Owns:
-//! - [`config`] — `fleet.toml` schema (ADR-0038 § 5.6)
-//! - [`store`]  — `fleet_repos`, `fleet_plans`, `fleet_plan_repos` DB layer
+//! - [`config`]  — `fleet.toml` schema (ADR-0038 § 5.6)
+//! - [`store`]   — `fleet_repos`, `fleet_plans`, `fleet_plan_repos` DB layer
+//! - [`similar`] — cross-repo similarity edge store (ADR-0038, F2-7)
 //! - [`migrate`] — migration runner (range 800-899, ADR-0003)
 //!
 //! ## Architecture
@@ -13,6 +14,7 @@
 //! |--------|----------------|
 //! | [`config`]  | Typed `fleet.toml` structs — deserialize/serialize only |
 //! | [`store`]   | [`FleetStore`] — CRUD over `fleet_repos` and fleet plans |
+//! | [`similar`] | Cross-repo similarity edges on [`FleetStore`] |
 //! | [`migrate`] | Run pending migrations (idempotent) |
 //!
 //! ## Quickstart
@@ -46,9 +48,11 @@
 pub mod config;
 pub mod error;
 pub mod migrate;
+pub mod similar;
 pub mod store;
 
 pub use config::{FleetConfig, FleetSection, RepoEntry, RepoRole, RetrievalSection};
 pub use error::{FleetError, Result};
 pub use migrate::init;
+pub use similar::{SimilarEdge, DUPLICATES_THRESHOLD, SIMILAR_TO_THRESHOLD};
 pub use store::{FleetRepo, FleetStore};
