@@ -1,0 +1,20 @@
+{
+  "task_id": "T-pr-97-graph-reliability",
+  "repo": "convergio",
+  "title": "harden convergio-graph — token extraction, query stability, store roundtrip",
+  "task_body": "Tier-3 retrieval was occasionally flaky on edge-case queries (empty tokens, single-char tokens). Tighten the tokeniser, stabilise the query path, add roundtrip tests against the SQLite store, and refresh meta-edge handling in cargo_metadata.",
+  "expected_files": [
+    "crates/convergio-graph/src/tokens.rs",
+    "crates/convergio-graph/src/query.rs",
+    "crates/convergio-graph/src/store.rs",
+    "crates/convergio-graph/src/meta.rs",
+    "crates/convergio-graph/src/lib.rs",
+    "crates/convergio-graph/tests/query.rs",
+    "crates/convergio-graph/tests/store.rs"
+  ],
+  "rationale": "tokens.rs owns extraction; query.rs the read path; store.rs the SQLite layer; meta.rs the cargo_metadata layer; the two tests pin the new behavior.",
+  "curator": "claude-derived-from-pr",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-04-29",
+  "schema_version": 1
+}

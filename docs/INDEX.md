@@ -102,7 +102,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0035-runner-registry-toml.md` | adr | [convergio-runner, convergio-executor, convergio-cli] | accepted | 100 |
 | `docs/adr/0036-opus-backed-planner.md` | adr | [convergio-planner, convergio-server] | accepted | 101 |
 | `docs/adr/0037-brand-kit-and-claim.md` | adr | [convergio-brand, convergio-cli, convergio-tui, convergio-server, convergio-i18n] | accepted | 91 |
-| `docs/adr/0038-fleet-retrieval-cross-repo-graph.md` | adr | [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api] | proposed | 962 |
+| `docs/adr/0038-fleet-retrieval-cross-repo-graph.md` | adr | [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api] | proposed | 1032 |
 | `docs/adr/0039-doc-coherence-sweep.md` | adr | [convergio-cli, convergio-server, convergio-durability, convergio-graph] | proposed | 239 |
 | `docs/adr/0040-split-coherence-into-its-own-crate.md` | adr | [convergio-cli, convergio-coherence] | accepted | 186 |
 | `docs/adr/README.md` | adr | - | - | 61 |
@@ -115,7 +115,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
 | `docs/plans/README.md` | plan | - | - | 31 |
 | `docs/plans/convergio-local-public-readiness.md` | plan | - | Published v0.1.0 | 244 |
-| `docs/plans/fleet-retrieval-cross-repo-graph.md` | plan | - | F1 complete (α/β/γ/δ/ε/ζ landed); F2 conditional GO pending hand-curated fixtures | 170 |
+| `docs/plans/fleet-retrieval-cross-repo-graph.md` | plan | - | F1 complete (α/β/γ/δ/ε/ζ landed); 30-fixture curated bench done; F2 GO | 170 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
 | `docs/plans/v0.2-friction-log.md` | plan | - | - | 188 |

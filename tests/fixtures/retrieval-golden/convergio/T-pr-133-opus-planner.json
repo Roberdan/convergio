@@ -1,0 +1,21 @@
+{
+  "task_id": "T-pr-133-opus-planner",
+  "repo": "convergio",
+  "title": "Opus-backed planner replaces the line-split heuristic",
+  "task_body": "The Layer-4 planner used a naive newline-split heuristic to turn a mission into tasks. Replace it with an Opus-backed solver that produces a structured plan via a JSON schema. Keep the heuristic as a fallback when the LLM is unavailable.",
+  "expected_files": [
+    "crates/convergio-planner/src/opus.rs",
+    "crates/convergio-planner/src/planner.rs",
+    "crates/convergio-planner/src/heuristic.rs",
+    "crates/convergio-planner/src/schema.rs",
+    "crates/convergio-planner/src/lib.rs",
+    "crates/convergio-planner/Cargo.toml",
+    "crates/convergio-planner/tests/solve.rs",
+    "crates/convergio-server/tests/e2e_planner_capability.rs"
+  ],
+  "rationale": "opus.rs owns the new path; heuristic stays as fallback; schema describes the LLM output; planner.rs orchestrates; lib re-exports; tests pin behavior.",
+  "curator": "claude-derived-from-pr",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-03",
+  "schema_version": 1
+}

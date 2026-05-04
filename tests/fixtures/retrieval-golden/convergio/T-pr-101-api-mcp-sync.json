@@ -1,0 +1,15 @@
+{
+  "task_id": "T-pr-101-api-mcp-sync",
+  "repo": "convergio",
+  "title": "keep convergio-api action schema and convergio-mcp help in sync",
+  "task_body": "The MCP help payload was lagging the api-crate schema; agents got stale action descriptions. Add a coverage test in convergio-api that walks the schema and asserts each action is documented in convergio-mcp::help. Update the help table to match.",
+  "expected_files": [
+    "crates/convergio-api/src/tests.rs",
+    "crates/convergio-mcp/src/help.rs"
+  ],
+  "rationale": "The api-side test is the new check; mcp::help carries the help text it now must match.",
+  "curator": "claude-derived-from-pr",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-04-30",
+  "schema_version": 1
+}

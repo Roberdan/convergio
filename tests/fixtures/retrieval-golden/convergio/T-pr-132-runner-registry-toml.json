@@ -1,0 +1,22 @@
+{
+  "task_id": "T-pr-132-runner-registry-toml",
+  "repo": "convergio",
+  "title": "TOML-driven runner registry — add custom vendors without recompiling",
+  "task_body": "Today vendor CLIs are hard-coded in convergio-runner. Move the catalog into a TOML file the operator can edit, parse it at startup, expose Registry::for_kind so the executor and CLI both consult one source of truth.",
+  "expected_files": [
+    "crates/convergio-runner/src/registry.rs",
+    "crates/convergio-runner/src/runner_config.rs",
+    "crates/convergio-runner/src/runner.rs",
+    "crates/convergio-runner/src/kind.rs",
+    "crates/convergio-runner/src/lib.rs",
+    "crates/convergio-runner/Cargo.toml",
+    "crates/convergio-executor/src/defaults.rs",
+    "crates/convergio-executor/src/executor.rs",
+    "crates/convergio-cli/src/commands/agent_spawn.rs"
+  ],
+  "rationale": "registry + runner_config + kind own the new abstraction; runner.rs consumes it; lib.rs re-exports; executor defaults + executor pick from the registry; agent_spawn uses the kind type.",
+  "curator": "claude-derived-from-pr",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-03",
+  "schema_version": 1
+}

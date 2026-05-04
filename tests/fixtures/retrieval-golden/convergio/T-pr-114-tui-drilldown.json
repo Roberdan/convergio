@@ -1,0 +1,19 @@
+{
+  "task_id": "T-pr-114-tui-drilldown",
+  "repo": "convergio",
+  "title": "TUI drill-down + plan ordering by status",
+  "task_body": "From the plans pane, ENTER drills into a detail view; ESC pops back. Plans are ordered by status so active work is on top. Keymap and mode model gain drill-down state; the detail pane renders one plan's worth of context.",
+  "expected_files": [
+    "crates/convergio-tui/src/keymap.rs",
+    "crates/convergio-tui/src/mode.rs",
+    "crates/convergio-tui/src/state.rs",
+    "crates/convergio-tui/src/plan_counts.rs",
+    "crates/convergio-tui/src/render.rs",
+    "crates/convergio-tui/src/panes/detail.rs"
+  ],
+  "rationale": "Mode model + state hold the drill stack; keymap binds the keys; render dispatches; detail pane is the new view; plan_counts owns the status sort.",
+  "curator": "claude-derived-from-pr",
+  "curated_at": "2026-05-04",
+  "task_completed_at": "2026-05-02",
+  "schema_version": 1
+}
