@@ -168,6 +168,61 @@ Convergio needs three separate concepts:
 
 Do not overload one field for all three.
 
+## Agent registry kinds
+
+`agent_registry.kind` is a permissive lower-case string. Validation
+(see `convergio-durability::store::agent_validation`) only requires
+`[a-z0-9._-]{1,64}`, so new hosts can land without a schema change.
+For consistency across `cvg agent list`, the TUI dashboard, and
+`cvg coherence agents`, use one of the documented kinds below
+whenever you can:
+
+| `kind` | Used by | Notes |
+|--------|---------|-------|
+| `claude` | top-level Claude Code session | registered by `/cvg-attach` |
+| `claude-code` | alias for `claude` (legacy) | accepted; prefer `claude` |
+| `copilot` | GitHub Copilot CLI session | |
+| `cursor` | Cursor agent | |
+| `codex` | OpenAI Codex CLI | |
+| `aider` | Aider | |
+| `shell` | shell-runner spawned by the executor | |
+| `subagent` | Claude Code subagent (Task tool) | wrapped by `/cvg-spawn` (see § Subagent lifecycle below) |
+
+## Subagent lifecycle
+
+Claude Code subagents — the helpers a parent session launches via
+the `Task` tool — run in a different harness from the top-level
+session. The `SessionStart` hook in `.claude/settings.json` does
+**not** fire for them, so without action they are invisible to
+the daemon.
+
+The `/cvg-spawn` skill closes that gap. It generates the canonical
+register / heartbeat / retire wrapper and the parent agent prepends
+the rendered block to the subagent brief. The contract:
+
+1. **Register with `kind=subagent`.** The `agent_id` is a
+   derivative of the parent's identity / task description, e.g.
+   `subagent-${TASK_DESC_SLUG}-${HEX8}`. Using a derivative id
+   makes parentage visible in `cvg agent list` even though the
+   registry itself does not model edges.
+2. **Heartbeat ~every 5 min** while the subagent is working. The
+   reaper (default 5-minute timeout) flips silent agents to
+   `unhealthy`, which surfaces in the dashboard.
+3. **Retire on finish.** The subagent always POSTs to
+   `/v1/agent-registry/agents/${id}/retire` before exiting,
+   including on failure paths, so the registry does not collect
+   zombies. Top-level sessions do this via the `Stop` hook;
+   subagents do it inline at the end of their brief.
+4. **TUI rendering.** `cvg dash` lists subagents alongside
+   top-level sessions but in the dim-text style — they are
+   support workers, not first-class swarm members.
+
+The `/cvg-spawn` skill performs no network I/O itself; it only
+emits the wrapper text. The parent agent is therefore free to
+audit (or modify) the rendered block before pasting it into the
+brief — Convergio still records the resulting register / retire
+in the audit chain.
+
 ## Cross-agent peer-review through observability
 
 A peer-review between two Claude Code sessions happened on 2026-05-01
