@@ -114,7 +114,14 @@ impl AppState {
                         title: p.title.clone(),
                     })
             }
-            Pane::Bus => None,
+            Pane::Bus => self
+                .scoped_messages()
+                .get(self.cursor.bus.selected)
+                .map(|m| DetailTarget::BusMessage {
+                    id: m.id.clone(),
+                    seq: m.seq,
+                    topic: m.topic.clone(),
+                }),
         }
     }
 

@@ -61,6 +61,17 @@ pub enum DetailTarget {
         /// PR title.
         title: String,
     },
+    /// A single bus message — full payload + headers in the detail
+    /// panel. Stored by stable id so the detail keeps rendering even
+    /// if the buffer rolls past the row.
+    BusMessage {
+        /// Message id (stable across reads).
+        id: String,
+        /// Sequence number for the title crumb.
+        seq: i64,
+        /// Topic captured at drill time.
+        topic: String,
+    },
 }
 
 /// Cross-pane drill-down scope.

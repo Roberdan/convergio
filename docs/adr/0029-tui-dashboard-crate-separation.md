@@ -156,3 +156,67 @@ MCP bridge also installs the dashboard as part of `cvg`.
   `convergio-i18n`; pure layout strings (`Plans`, `Tasks`, …) start
   English-only and are migrated later if a non-English operator
   reports it as a barrier.
+
+## P1.3 — Bus pane (live SSE tail)
+
+Status: implemented 2026-05-04 on `feat/dash-bus-pane`.
+
+`cvg dash` adds a fifth pane — **Bus** — under the existing 4-pane
+grid. The pane subscribes to
+`/v1/plans/:plan_id/messages/stream` (P1.1, ADR-0029 wave-2 SSE)
+for the currently-selected plan and renders buffered messages
+newest-first with topic-family colour cues:
+
+| Topic prefix | Family | Colour | Glyph |
+|--------------|--------|--------|-------|
+| `coordination/*` | Coordination | green (`SUCCESS`) | `◇` |
+| `agent:*` / `agent.*` | Agent | blue (`INFO`) | `▣` |
+| `system.*` | System | gray (`MUTED`) | `▦` |
+| `plan:*` | Plan | yellow (`WARNING`) | `▷` |
+| any other | Other | default text | `·` |
+
+Glyphs duplicate the colour cue so the pane stays parseable on
+monochrome terminals (CONSTITUTION P3).
+
+### Tab order
+
+Plans → Tasks → Agents → PRs → **Bus** → Plans. Tab cycles forward,
+Shift+Tab cycles back. The Bus pane is laid out as a 20%-tall row
+beneath the 2×2 top grid; this keeps the four hotspots above the
+fold on a 24-row terminal.
+
+### Drill-down
+
+`Enter` on a Bus row opens the detail panel
+(`DetailTarget::BusMessage`) which shows headers (seq, topic,
+sender, plan, created_at) plus the pretty-printed JSON payload.
+`Esc` returns to the overview.
+
+### Capability probe + fallback
+
+The supervisor first attempts SSE. On network failure, non-2xx, or
+a `Content-Type` that is not `text/event-stream`, it switches to a
+1-second polling loop against `/v1/plans/:plan_id/messages/tail`
+and surfaces a `polling fallback` tag in the pane title plus a
+pane-body hint when the buffer is empty (i18n key
+`dash-bus-polling-fallback`). This means older daemons that have
+not yet shipped P1.1 still light the pane with live data, just on
+a slower cadence.
+
+### Buffer
+
+`bus_stream` owns an `Arc<Mutex<VecDeque<BusMessage>>>` capped at
+200 rows. The supervisor pushes events as they arrive, deduping
+on `seq` and `id`. The renderer snapshots the buffer on every
+frame; `AppState::merge_live_bus` folds the live tail into the
+poll-derived `messages` vector so the existing scope filter
+(`AppState::scoped_messages`) keeps working unchanged.
+
+### Tests
+
+- Unit: SSE chunk parser (`drain_events`), payload shape decoder,
+  topic family classifier, ring-buffer dedup + cap.
+- Integration: a mock `text/event-stream` server emits 3 events
+  and the supervisor accumulates them in seq order with the right
+  topic-family classification; a 404 server forces the polling
+  fallback transport state.

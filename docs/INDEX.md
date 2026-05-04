@@ -66,7 +66,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-server/README.md` | crate-readme | - | - | 58 |
 | `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 22 |
-| `crates/convergio-tui/AGENTS.md` | crate-rules | - | - | 105 |
+| `crates/convergio-tui/AGENTS.md` | crate-rules | - | - | 112 |
 | `crates/convergio-tui/README.md` | crate-readme | - | - | 98 |
 | `docs/AGENTS.md` | - | - | - | 63 |
 | `docs/INDEX.md` | - | - | - | - |
@@ -99,7 +99,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0026-plan-wave-milestone-vocabulary.md` | adr | [convergio-durability, convergio-server, convergio-cli] | accepted | 206 |
 | `docs/adr/0027-executor-loop-wired-in-daemon.md` | adr | [convergio-server, convergio-executor] | accepted | 127 |
 | `docs/adr/0028-runner-kinds-shell-claude-copilot.md` | adr | [convergio-server, convergio-mcp] | accepted | 136 |
-| `docs/adr/0029-tui-dashboard-crate-separation.md` | adr | [convergio-cli, convergio-tui] | accepted | 158 |
+| `docs/adr/0029-tui-dashboard-crate-separation.md` | adr | [convergio-cli, convergio-tui] | accepted | 222 |
 | `docs/adr/0030-crate-versioning-policy.md` | adr | [] | accepted | 105 |
 | `docs/adr/0031-materialised-timing-cache.md` | adr | [convergio-durability, convergio-tui] | accepted | 83 |
 | `docs/adr/0032-vendor-cli-runners.md` | adr | [convergio-runner, convergio-executor, convergio-cli] | accepted | 122 |
