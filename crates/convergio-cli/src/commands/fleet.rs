@@ -1,6 +1,6 @@
-//! `cvg fleet ...` — fleet repo management (ADR-0038, F2-6/F2-7/F2-9).
+//! `cvg fleet ...` — fleet repo management (ADR-0038, F2-6/F2-7/F2-9/F2-10).
 //! Pure HTTP. The daemon owns the fleet store; the CLI just renders.
-//! Subcommands: `add`, `ls`, `enable`, `disable`, `build`, `patterns`.
+//! Subcommands: `add`, `ls`, `enable`, `disable`, `build`, `patterns`, `duplicates`.
 
 use super::{Client, OutputMode};
 use anyhow::{Context, Result};
@@ -62,6 +62,18 @@ pub enum FleetCommand {
         #[arg(long, default_value_t = 2)]
         min_repos: usize,
     },
+    /// List cross-repo near-exact duplicate pairs (cosine ≥ threshold).
+    Duplicates {
+        /// Cosine similarity threshold (default 0.95).
+        #[arg(long, default_value_t = 0.95)]
+        cosine: f64,
+        /// Restrict to one repo pair, e.g. "alpha:beta".
+        #[arg(long)]
+        repo_pair: Option<String>,
+        /// Show 1–3 line semantic diff preview per pair.
+        #[arg(long)]
+        diff_preview: bool,
+    },
 }
 
 /// Entry point.
@@ -91,10 +103,18 @@ pub async fn run(client: &Client, output: OutputMode, cmd: FleetCommand) -> Resu
         FleetCommand::Enable { name } => toggle(client, output, &name, true).await,
         FleetCommand::Disable { name } => toggle(client, output, &name, false).await,
         FleetCommand::Build { refresh_similarity } => {
-            fleet_build(client, output, refresh_similarity).await
+            super::fleet_build::run(client, output, refresh_similarity).await
         }
         FleetCommand::Patterns { min_repos } => {
             super::fleet_patterns::run(client, output, min_repos).await
+        }
+        FleetCommand::Duplicates {
+            cosine,
+            repo_pair,
+            diff_preview,
+        } => {
+            super::fleet_duplicates::run(client, output, cosine, repo_pair.as_deref(), diff_preview)
+                .await
         }
     }
 }
@@ -266,34 +286,4 @@ fn default_parser(language: &str) -> String {
     } else {
         "tree-sitter".to_owned()
     }
-}
-
-async fn fleet_build(client: &Client, output: OutputMode, refresh_similarity: bool) -> Result<()> {
-    let body = json!({ "refresh_similarity": refresh_similarity });
-    let resp: Value = client.post("/v1/fleet/build", &body).await?;
-    match output {
-        OutputMode::Json => println!("{}", serde_json::to_string_pretty(&resp)?),
-        OutputMode::Plain => {
-            println!(
-                "processed={} skipped={} embedded={} edges={}",
-                resp["repos_processed"].as_u64().unwrap_or(0),
-                resp["repos_skipped"].as_u64().unwrap_or(0),
-                resp["embed"]["embedded"].as_u64().unwrap_or(0),
-                resp["similar_edges_written"].as_u64().unwrap_or(0),
-            );
-        }
-        OutputMode::Human => {
-            let processed = resp["repos_processed"].as_u64().unwrap_or(0);
-            let embedded = resp["embed"]["embedded"].as_u64().unwrap_or(0);
-            let skipped = resp["embed"]["skipped_unchanged"].as_u64().unwrap_or(0);
-            let edges = resp["similar_edges_written"].as_u64().unwrap_or(0);
-            let model = resp["model"].as_str().unwrap_or("?");
-            println!("Fleet build complete ({model}). Repos: {processed}");
-            println!("  Files embedded: {embedded}  skipped: {skipped}");
-            if refresh_similarity {
-                println!("  Similarity edges: {edges}");
-            }
-        }
-    }
-    Ok(())
 }
