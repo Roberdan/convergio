@@ -295,6 +295,6 @@ async fn main() -> Result<()> {
             )
             .await
         }
-        Command::Bus { sub } => commands::bus::run(&client, cli.output, sub).await,
+        Command::Bus { sub } => commands::bus::run(&client, &bundle, cli.output, sub).await,
     }
 }

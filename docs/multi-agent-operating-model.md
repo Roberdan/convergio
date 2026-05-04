@@ -272,10 +272,17 @@ The lesson is small and load-bearing:
 - Convention beats coordination protocol. The bus carries the ack;
   the review itself is observability.
 
+For a real-time view of bus traffic on a plan, the canonical
+human / agent verb is `cvg bus tail --plan <id> --follow`, which
+consumes the SSE feed at `/v1/plans/:plan_id/messages/stream` and
+prints each message as it lands. The TUI dashboard (`cvg dash`)
+exposes the same data in a Bus pane (P1.3, future work).
+
 Open gaps the dogfood made visible (still applicable):
 
-- **Push notifications.** The bus is poll-only; a session that
-  doesn't poll misses the handshake. SSE/websocket is future work.
+- **Push notifications.** SSE shipped in P1.1 + `cvg bus tail
+  --follow` in P1.2; a session that does not subscribe still misses
+  the handshake. Websocket / outbound webhook remain future work.
 - **Skill-aware assignment.** Both sessions knew their territories
   because a human said so. No scheduler exists.
 - **File-level conflict prevention.** Workspace leases exist as an

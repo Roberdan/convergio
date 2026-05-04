@@ -268,3 +268,10 @@ coherence-agents-finding-no-registered-agent = no_registered_agent
 coherence-agents-finding-no-heartbeat = no_heartbeat_in_window
 coherence-agents-finding-no-coordination = no_coordination
 coherence-agents-finding-clean = clean
+
+# ---------- CLI: bus tail / list (P1.2) ----------
+bus-tail-following = Following bus on plan { $plan } (Ctrl-C to exit)
+bus-tail-disconnect = bus stream disconnected, reconnecting...
+bus-tail-streaming-unavailable-fallback-polling = WARN: daemon does not advertise streaming; falling back to 1s polling.
+bus-tail-empty = No messages.
+bus-list-summary = Plan { $plan } — { $count } message(s)

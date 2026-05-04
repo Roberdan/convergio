@@ -7,27 +7,52 @@
 //! plan for `--project <name>` (default `convergio-local`), the same
 //! resolver `cvg session resume` uses.
 
-use super::{Client, OutputMode};
+use super::bus_render::BusOutput;
+use super::{bus_extra, bus_tail, Client, OutputMode};
 use anyhow::{anyhow, Context, Result};
 use clap::Subcommand;
+use convergio_i18n::Bundle;
 use serde::Deserialize;
 use serde_json::Value;
 
 /// Bus subcommands.
 #[derive(Subcommand)]
 pub enum BusCommand {
-    /// Print messages on a plan, oldest first. Includes consumed
-    /// messages — for unread-only agent-style polling, use the MCP
-    /// `poll_messages` action.
+    /// Print messages on a plan, oldest first. With `--follow`,
+    /// subscribe to the SSE feed (P1.1) and print events as they
+    /// arrive; on disconnect we reconnect with the last-seen seq;
+    /// if the daemon does not advertise streaming we fall back to
+    /// polling. Ctrl-C exits.
     Tail {
-        /// Plan id. If omitted, resolves the most recent open plan
-        /// in `--project`.
+        /// Plan id. Defaults to the most recent open plan in `--project`.
         #[arg(long)]
         plan: Option<String>,
         /// Project filter when no plan id is given.
         #[arg(long, default_value = "convergio-local")]
         project: String,
-        /// Optional topic filter. If omitted, every topic is shown.
+        /// Literal-match topic filter (glob is wave-2).
+        #[arg(long)]
+        topic: Option<String>,
+        /// Only return messages with `seq > since` (exclusive).
+        #[arg(long, default_value_t = 0)]
+        since: i64,
+        /// Cap on the number of messages in non-follow mode (1..=100).
+        #[arg(long, default_value_t = 50)]
+        limit: i64,
+        /// Stream new messages live via SSE (P1.1).
+        #[arg(long, short = 'f')]
+        follow: bool,
+    },
+    /// Print the latest N messages on a plan and exit. Static-dump
+    /// companion to `tail` without --follow; explicit for scripting.
+    List {
+        /// Plan id. Defaults to the most recent open plan in `--project`.
+        #[arg(long)]
+        plan: Option<String>,
+        /// Project filter when no plan id is given.
+        #[arg(long, default_value = "convergio-local")]
+        project: String,
+        /// Literal-match topic filter.
         #[arg(long)]
         topic: Option<String>,
         /// Only return messages with `seq > since` (exclusive).
@@ -65,7 +90,12 @@ pub enum BusCommand {
 }
 
 /// Entry point.
-pub async fn run(client: &Client, output: OutputMode, cmd: BusCommand) -> Result<()> {
+pub async fn run(
+    client: &Client,
+    bundle: &Bundle,
+    output: OutputMode,
+    cmd: BusCommand,
+) -> Result<()> {
     match cmd {
         BusCommand::Tail {
             plan,
@@ -73,12 +103,36 @@ pub async fn run(client: &Client, output: OutputMode, cmd: BusCommand) -> Result
             topic,
             since,
             limit,
+            follow,
         } => {
-            tail(
+            let plan = resolve_plan(client, plan.as_deref(), &project).await?;
+            if follow {
+                bus_tail::follow(
+                    client,
+                    bundle,
+                    BusOutput::from_global(output),
+                    &plan.id,
+                    topic.as_deref(),
+                    since,
+                )
+                .await
+            } else {
+                tail(client, output, &plan, topic.as_deref(), since, limit).await
+            }
+        }
+        BusCommand::List {
+            plan,
+            project,
+            topic,
+            since,
+            limit,
+        } => {
+            let plan = resolve_plan(client, plan.as_deref(), &project).await?;
+            bus_tail::list(
                 client,
-                output,
-                plan.as_deref(),
-                &project,
+                bundle,
+                BusOutput::from_global(output),
+                &plan.id,
                 topic.as_deref(),
                 since,
                 limit,
@@ -86,7 +140,7 @@ pub async fn run(client: &Client, output: OutputMode, cmd: BusCommand) -> Result
             .await
         }
         BusCommand::Topics { plan, project } => {
-            topics(client, output, plan.as_deref(), &project).await
+            bus_extra::topics(client, output, plan.as_deref(), &project).await
         }
         BusCommand::Post {
             topic,
@@ -95,7 +149,7 @@ pub async fn run(client: &Client, output: OutputMode, cmd: BusCommand) -> Result
             plan,
             project,
         } => {
-            post(
+            bus_extra::post(
                 client,
                 output,
                 plan.as_deref(),
@@ -112,13 +166,11 @@ pub async fn run(client: &Client, output: OutputMode, cmd: BusCommand) -> Result
 async fn tail(
     client: &Client,
     output: OutputMode,
-    plan_id: Option<&str>,
-    project: &str,
+    plan: &Plan,
     topic: Option<&str>,
     since: i64,
     limit: i64,
 ) -> Result<()> {
-    let plan = resolve_plan(client, plan_id, project).await?;
     let mut path = format!(
         "/v1/plans/{}/messages/tail?cursor={since}&limit={limit}",
         plan.id
@@ -137,74 +189,7 @@ async fn tail(
                 println!("seq={seq} topic={topic} sender={sender}");
             }
         }
-        OutputMode::Human => render_tail_human(&plan, &messages),
-    }
-    Ok(())
-}
-
-async fn topics(
-    client: &Client,
-    output: OutputMode,
-    plan_id: Option<&str>,
-    project: &str,
-) -> Result<()> {
-    let plan = resolve_plan(client, plan_id, project).await?;
-    let summaries: Vec<Value> = client.get(&format!("/v1/plans/{}/topics", plan.id)).await?;
-    match output {
-        OutputMode::Json => println!("{}", serde_json::to_string_pretty(&summaries)?),
-        OutputMode::Plain => {
-            for s in &summaries {
-                let t = s.get("topic").and_then(Value::as_str).unwrap_or("?");
-                let c = s.get("count").and_then(Value::as_i64).unwrap_or(0);
-                let last = s.get("last_seq").and_then(Value::as_i64).unwrap_or(0);
-                println!("topic={t} count={c} last_seq={last}");
-            }
-        }
-        OutputMode::Human => {
-            println!("Plan {} ({} topics)", plan.id, summaries.len());
-            for s in &summaries {
-                let t = s.get("topic").and_then(Value::as_str).unwrap_or("?");
-                let c = s.get("count").and_then(Value::as_i64).unwrap_or(0);
-                let last = s.get("last_seq").and_then(Value::as_i64).unwrap_or(0);
-                let at = s.get("last_at").and_then(Value::as_str).unwrap_or("?");
-                println!("  - {t} ({c} msgs, last seq={last} at {at})");
-            }
-        }
-    }
-    Ok(())
-}
-
-async fn post(
-    client: &Client,
-    output: OutputMode,
-    plan_id: Option<&str>,
-    project: &str,
-    topic: &str,
-    payload: &str,
-    sender: Option<&str>,
-) -> Result<()> {
-    let plan = resolve_plan(client, plan_id, project).await?;
-    let payload: Value = serde_json::from_str(payload)
-        .with_context(|| format!("payload must be valid JSON: {payload}"))?;
-    let body = serde_json::json!({
-        "topic": topic,
-        "payload": payload,
-        "sender": sender,
-    });
-    let m: Value = client
-        .post(&format!("/v1/plans/{}/messages", plan.id), &body)
-        .await?;
-    match output {
-        OutputMode::Json => println!("{}", serde_json::to_string_pretty(&m)?),
-        OutputMode::Plain => {
-            let seq = m.get("seq").and_then(Value::as_i64).unwrap_or(0);
-            let id = m.get("id").and_then(Value::as_str).unwrap_or("?");
-            println!("seq={seq} id={id}");
-        }
-        OutputMode::Human => {
-            let seq = m.get("seq").and_then(Value::as_i64).unwrap_or(0);
-            println!("Posted to {topic} on plan {} as seq {seq}.", plan.id);
-        }
+        OutputMode::Human => render_tail_human(plan, &messages),
     }
     Ok(())
 }
@@ -231,7 +216,11 @@ fn render_tail_human(plan: &Plan, messages: &[Value]) {
     }
 }
 
-async fn resolve_plan(client: &Client, plan_id: Option<&str>, project: &str) -> Result<Plan> {
+pub(super) async fn resolve_plan(
+    client: &Client,
+    plan_id: Option<&str>,
+    project: &str,
+) -> Result<Plan> {
     if let Some(id) = plan_id {
         return client
             .get(&format!("/v1/plans/{id}"))
@@ -247,11 +236,20 @@ async fn resolve_plan(client: &Client, plan_id: Option<&str>, project: &str) -> 
         .ok_or_else(|| anyhow!("no open plan found for project={project}"))
 }
 
+/// Minimal plan shape used by the bus dispatcher to resolve
+/// `--plan` / `--project` shorthand into a concrete plan id.
+///
+/// Re-exported `pub(super)` so [`super::bus_extra`] can call
+/// [`resolve_plan`] without duplicating the resolver logic.
 #[derive(Debug, Deserialize)]
-struct Plan {
-    id: String,
+pub(super) struct Plan {
+    /// Plan UUID.
+    pub id: String,
+    /// Project name (None for orphan plans).
     #[serde(default)]
-    project: Option<String>,
-    status: String,
-    updated_at: String,
+    pub project: Option<String>,
+    /// Lifecycle status string (`draft` / `active` / `completed`...).
+    pub status: String,
+    /// RFC3339 timestamp used to pick the most-recent open plan.
+    pub updated_at: String,
 }
