@@ -38,6 +38,7 @@ module.exports = {
         'repo',
         'deps',
         'tests',
+        'skills',
       ],
     ],
     'scope-empty': [2, 'never'],
