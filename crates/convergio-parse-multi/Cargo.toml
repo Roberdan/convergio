@@ -1,0 +1,22 @@
+[package]
+name = "convergio-parse-multi"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Multi-language AST parsing layer for Convergio fleet retrieval (ADR-0038, F2)."
+readme = "AGENTS.md"
+keywords = ["parser", "ast", "tree-sitter", "retrieval"]
+categories = ["parser-implementations", "asynchronous"]
+
+[lints]
+workspace = true
+
+[dependencies]
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tree-sitter = "0.23"
+tree-sitter-typescript = "0.23"
+tree-sitter-python = "0.23"
