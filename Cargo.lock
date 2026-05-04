@@ -661,12 +661,16 @@ name = "convergio-coherence"
 version = "0.3.9"
 dependencies = [
  "anyhow",
+ "chrono",
  "clap",
  "convergio-i18n",
+ "reqwest",
  "serde",
  "serde_json",
  "tempfile",
+ "tokio",
  "toml",
+ "tracing",
  "walkdir",
 ]
 

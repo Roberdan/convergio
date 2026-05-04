@@ -28,10 +28,10 @@ use serde::Serialize;
 /// `Pass` and `Fail` are constructed by the dedicated check
 /// implementations under `session_checks/` (W0b.2 follow-up tasks
 /// `5298055b`, `564926dc`, `2c181be2`, `ab515d7e`, `95e6b262`,
-/// `8dac18b9`). The scaffold's stub implementation only produces
-/// `NotImplemented`; `#[allow(dead_code)]` keeps the dispatch surface
-/// public + serializable without tripping clippy until the first
-/// real check ships.
+/// `8dac18b9`). `#[allow(dead_code)]` is kept for now because not
+/// every variant is constructed yet from real check impls — the
+/// remaining three HTTP-shaped stubs still produce
+/// `NotImplemented`.
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "snake_case", tag = "kind")]
@@ -106,17 +106,15 @@ pub struct CheckResult {
 
 /// Build the canonical registry.
 ///
-/// `worktree_no_pr` and `friction_missing` are real (shell-only,
-/// sub-second). The four HTTP-shaped checks remain as
-/// `NotImplemented` stubs — promoting them needs an async dispatch
-/// surface. Their plan task ids point at the follow-ups.
+/// `check_1_plan_pr_drift`, `worktree_no_pr` and `friction_missing`
+/// are real (shell + curl, sub-second). The three remaining
+/// HTTP-shaped checks (`bus.inbound`, `bus.outbound`,
+/// `handshake.uncommitted`) stay as `NotImplemented` stubs —
+/// promoting each needs its own per-check PR (W0b.2 follow-ups).
+/// Their plan task ids point at the follow-ups.
 pub fn registry() -> Vec<Box<dyn Check>> {
     vec![
-        Box::new(StubCheck {
-            id: "check.plan_pr_drift",
-            label: "plan-vs-merged-PR drift",
-            task_id: "5298055b",
-        }),
+        Box::new(super::session_checks::check_1_plan_pr_drift::PlanPrDriftCheck),
         Box::new(StubCheck {
             id: "check.bus.inbound",
             label: "inbound bus messages addressed to me, unconsumed",
@@ -211,7 +209,8 @@ mod tests {
 
     #[test]
     fn stub_checks_still_point_at_their_task_ids() {
-        // Four checks are still stubs — they must reference the
+        // Three checks remain HTTP-shaped stubs after Check 1
+        // (plan-vs-merged-PR drift) shipped — they must reference the
         // plan task that promotes them (operator clue).
         let report = run_pre_stop(&ctx(), false).expect("scaffold runs");
         let stub_ids: Vec<&'static str> = report
@@ -222,7 +221,7 @@ mod tests {
                 _ => None,
             })
             .collect();
-        assert_eq!(stub_ids.len(), 4, "four checks remain HTTP-shaped stubs");
+        assert_eq!(stub_ids.len(), 3, "three checks remain HTTP-shaped stubs");
         for tid in stub_ids {
             assert!(!tid.is_empty(), "stub must point at a task");
         }
