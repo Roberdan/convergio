@@ -67,23 +67,31 @@ impl Theme {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::panic::{catch_unwind, resume_unwind, UnwindSafe};
+    use std::sync::Mutex;
+
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
 
     /// Helper: resolve with a known TTY state inside an env-cleared
     /// scope. We do not parallelise these tests because they touch
     /// process-wide env vars.
-    fn with_clean_env<F: FnOnce() -> R, R>(f: F) -> R {
+    fn with_clean_env<F: FnOnce() -> R + UnwindSafe, R>(f: F) -> R {
+        let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let prev_theme = env::var("CONVERGIO_THEME").ok();
         let prev_no = env::var("NO_COLOR").ok();
         env::remove_var("CONVERGIO_THEME");
         env::remove_var("NO_COLOR");
-        let r = f();
+        let result = catch_unwind(f);
         if let Some(v) = prev_theme {
             env::set_var("CONVERGIO_THEME", v);
         }
         if let Some(v) = prev_no {
             env::set_var("NO_COLOR", v);
         }
-        r
+        match result {
+            Ok(value) => value,
+            Err(payload) => resume_unwind(payload),
+        }
     }
 
     #[test]
