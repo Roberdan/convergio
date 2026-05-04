@@ -79,8 +79,9 @@ pub use model::{
     Evidence, NewPlan, NewTask, Plan, PlanStatus, RecentCompletedTask, Task, TaskStatus,
 };
 pub use store::{
-    AgentHeartbeat, AgentRecord, AgentStore, AppendOutcome, CrdtActor, CrdtCell, CrdtOp, CrdtStore,
-    NewAgent, NewCrdtOp,
+    AgentAuditEntry, AgentHeartbeat, AgentLease, AgentPrLink, AgentRecord, AgentStore,
+    AgentSummary, AppendOutcome, CrdtActor, CrdtCell, CrdtOp, CrdtStore, CurrentTaskMeta, NewAgent,
+    NewCrdtOp, RetireStaleResult, StaleAgentReport,
 };
 pub use store::{Capability, CapabilityStore, NewCapability};
 pub use store::{MergeOutcome, MergeQueueItem};
