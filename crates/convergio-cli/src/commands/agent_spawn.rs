@@ -6,6 +6,7 @@
 //! it inline. The vendor CLI inherits the operator's existing auth;
 //! Convergio never sees the API key (ADR-0032).
 
+use super::agent_spawn_heartbeat::{register_agent, HeartbeatGuard};
 use super::agent_spawn_wire::TaskWire;
 use super::{Client, OutputMode};
 use anyhow::{anyhow, Context as _, Result};
@@ -100,12 +101,23 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
         eprintln!("{summary}");
     }
 
-    let mut child = cmd.spawn().with_context(|| {
-        format!(
-            "failed to spawn vendor CLI `{}` — is it installed and on PATH?",
-            kind.vendor
-        )
-    })?;
+    // Auto-register + heartbeat (issue #176): make this sub-agent visible
+    // to `cvg coherence agents` and `cvg dash` so PRs it ships are not
+    // flagged `no_heartbeat_in_window`. Best-effort: a daemon hiccup
+    // logs a warning and execution continues.
+    register_agent(client, &agent, &kind, &task.id).await;
+    let heartbeat = HeartbeatGuard::start(client.clone(), agent.clone(), task.id.clone());
+
+    let mut child = match cmd.spawn() {
+        Ok(c) => c,
+        Err(e) => {
+            heartbeat.finish("terminated").await;
+            return Err(anyhow::Error::new(e).context(format!(
+                "failed to spawn vendor CLI `{}` — is it installed and on PATH?",
+                kind.vendor
+            )));
+        }
+    };
     if let Some(mut stdin) = child.stdin.take() {
         stdin
             .write_all(prompt.as_bytes())
@@ -134,6 +146,12 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
     if let Some(h) = stderr_handle {
         let _ = h.join();
     }
+    let final_status = if status.success() {
+        "idle"
+    } else {
+        "terminated"
+    };
+    heartbeat.finish(final_status).await;
     if !status.success() {
         return Err(anyhow!(
             "vendor CLI exited with non-zero status: {:?}",
