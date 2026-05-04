@@ -107,6 +107,29 @@ gaps (metrics + structured logs + correlation) without locking
 operators into a specific backend or paying the cost when they
 do not opt in.
 
+### Implementation status (2026-05-04)
+
+Stays `proposed`. Only the baseline is in place: `tracing-subscriber`
+with `EnvFilter` (`CONVERGIO_LOG`) wired in
+`crates/convergio-server/src/main.rs`, plus
+`tower_http::trace::TraceLayer::new_for_http()` on the router. None of
+the ADR's load-bearing pieces ship yet:
+
+- no `tracing-appender` / `CONVERGIO_LOG_DIR` daily rotation,
+- no `request_id` middleware injecting `X-Request-Id` / `req_id` span
+  field,
+- no `req_id` / `agent_id` / `task_id` span propagation through
+  durability/bus,
+- no `otel` cargo feature, no `tracing-opentelemetry` /
+  `opentelemetry-otlp` exporter,
+- no `convergio.reaper.tasks_reaped_total` /
+  `convergio.watcher.processes_checked_total` counters,
+- no `cvg doctor` `log_dir` / `otel` lines.
+
+The reaper aspirational comment is still a comment. The ADR remains
+the intended shape; flipping to `accepted` requires the file-rotation
++ request-id middleware to land at minimum.
+
 ### Concrete shape
 
 1. **`tracing-appender`** added unconditionally to

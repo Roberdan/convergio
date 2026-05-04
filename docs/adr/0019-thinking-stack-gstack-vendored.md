@@ -115,6 +115,16 @@ infrastructure, isolates gstack's filesystem from Convergio's,
 provides a signed and versioned upgrade path, and lets Convergio
 overlay its principles without forking.
 
+### Implementation status (2026-05-04)
+
+Stays `proposed`. No `convergio-thinking-bundles/gstack` repo is
+published, no `thinking-stack-gstack` capability bundle is produced or
+signed, and `cvg capability sync` does not exist. The ADR depends on
+ADR-0008 graduating beyond the local install-file primitive. Until the
+remote bundle pipeline ships, this ADR documents the intended
+packaging choice; gstack remains an *adjacent* tool, not a Convergio
+capability.
+
 ### How it works (operational sketch)
 
 1. **Bundle source**: `convergio-thinking-bundles/gstack/`

@@ -120,6 +120,16 @@ Chosen option: **Option C**, because it preserves Convergio's
 opinionated gate semantics while making the alignment with adjacent
 Microsoft work explicit and useful.
 
+### Implementation status (2026-05-04)
+
+Stays `proposed`. This ADR is a positioning thesis — the alignment
+table maps the five sacred principles against ISE NFRs and hve-core
+concepts; the only mechanism it commits to (a real `A11yGate` for the
+P3 honesty gap, an optional `EngineeringFundamentalsGate`) is tracked
+under ROADMAP Wave 1 / Wave 2 and should graduate this ADR when those
+gates ship. The frame is real; the buildings inside it are tracked
+elsewhere.
+
 ### Mapping the five sacred principles ↔ ISE NFR + hve-core
 
 | Convergio | ISE Playbook | hve-core | Convergio gate | Status |

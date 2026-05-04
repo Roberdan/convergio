@@ -50,6 +50,31 @@ Chosen option: **Option 3**, because it separates failure domains and
 allows Convergio to grow without giving arbitrary code access to the core
 process.
 
+### Implementation status (2026-05-04)
+
+**Partially shipped — status remains `proposed` until the remote
+distribution model lands.**
+
+Shipped today:
+
+- Ed25519 signature verification primitive
+  (`convergio_durability::capability_signature::capability_signature_payload`).
+- `POST /v1/capabilities/install-file` and
+  `POST /v1/capabilities/verify-signature` routes; matching
+  `cvg capability install-file` / `cvg capability verify-signature`
+  CLI verbs.
+
+Not yet shipped (and load-bearing for graduating this ADR):
+
+- Capability `disable` / `remove` / `sync` lifecycle verbs.
+- Daemon-to-capability JSON-RPC stdio protocol with per-capability
+  tokens and action allow-listing.
+- Capability-local `state.db` migrations + registry-recorded migration
+  hashes.
+- `doctor.json` declarative checks consumed by `cvg doctor`.
+- Supply-chain CI (cargo-deny / cargo-audit / SBOM / build provenance)
+  and the first-party remote registry.
+
 ### Positive consequences
 
 - New features can ship independently.

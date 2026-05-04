@@ -119,6 +119,15 @@ as ground truth (no new authoritative data source), pays no extra
 inference cost on the happy path, and surfaces drift in
 production rather than at calibration boundaries.
 
+### Implementation status (2026-05-04)
+
+Stays `proposed`. No `model_evaluations` or `task_taxonomy` table
+exists, no `eval.record` / `eval.recommend` / `eval.report` /
+`eval.calibrate` MCP actions are wired, and `cvg eval` is not a CLI
+verb. The ADR depends on multi-vendor routing (T4.04) and smart Thor
+(T3.02), neither of which has shipped. The framework is the intended
+shape; nothing about it is implemented yet.
+
 ### Architecture sketch
 
 #### New schema (Wave 2)
