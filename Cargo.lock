@@ -748,6 +748,8 @@ version = "0.3.9"
 dependencies = [
  "chrono",
  "convergio-db",
+ "convergio-embed",
+ "convergio-graph",
  "serde",
  "sqlx",
  "tempfile",
