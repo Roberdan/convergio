@@ -28,6 +28,7 @@ module.exports = {
         'embed',
         'coherence',
         'parse-multi',
+        'fleet',
         // meta scopes
         'docs',
         'ci',

@@ -743,6 +743,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "convergio-fleet"
+version = "0.3.9"
+dependencies = [
+ "chrono",
+ "convergio-db",
+ "serde",
+ "sqlx",
+ "tempfile",
+ "thiserror 1.0.69",
+ "tokio",
+ "toml",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "convergio-graph"
 version = "0.3.9"
 dependencies = [

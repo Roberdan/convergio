@@ -1,0 +1,29 @@
+[package]
+name = "convergio-fleet"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Fleet abstraction for Convergio: fleet.toml schema, fleet_repos table, and cross-repo orchestration (ADR-0038, F2)."
+readme = "AGENTS.md"
+keywords = ["fleet", "multi-repo", "orchestration", "agents"]
+categories = ["database", "asynchronous"]
+
+[lints]
+workspace = true
+
+[dependencies]
+convergio-db = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true }
+toml = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+tokio = { workspace = true }
