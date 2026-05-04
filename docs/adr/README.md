@@ -59,4 +59,5 @@ do not edit between the markers.
 | [0039](./0039-doc-coherence-sweep.md) | 0039. Doc-coherence sweep as a recurring three-layer plan | accepted |
 | [0040](./0040-split-coherence-into-its-own-crate.md) | 0040. Split the coherence verifiers into their own crate | accepted |
 | [0041](./0041-split-session-into-its-own-crate.md) | 0041. Split the session lifecycle suite into its own crate | accepted |
+| [0042](./0042-wave-sequence-gate-parallel-safe.md) | 0042. Wave-sequence gate refactor — opt-in parallel waves via per-task `parallel_safe` | accepted |
 <!-- END AUTO -->
