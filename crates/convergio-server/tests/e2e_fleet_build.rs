@@ -46,6 +46,7 @@ async fn boot() -> (String, Arc<FleetStore>, Arc<EmbedStore>, tempfile::TempDir)
         graph,
         embed: embed.clone(),
         embedder: Arc::new(DeterministicTestEmbedder::new(8)),
+        audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let app = router(state);
 

@@ -15,7 +15,7 @@ use ratatui::Frame;
 
 /// Render the Tasks pane.
 pub fn render(f: &mut Frame, area: Rect, state: &AppState, focused: bool) {
-    let mut sorted: Vec<TaskSummary> = state.scoped_tasks();
+    let mut sorted: Vec<TaskSummary> = state.scoped_tasks().into_iter().cloned().collect();
     sorted.sort_by_key(|t| status_priority(&t.status));
 
     let scope_crumb = state

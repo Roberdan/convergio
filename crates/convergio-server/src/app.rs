@@ -2,12 +2,13 @@
 
 use axum::Router;
 use convergio_bus::Bus;
+use convergio_durability::audit::VerifyReport;
 use convergio_durability::Durability;
 use convergio_embed::{EmbedStore, Embedder};
 use convergio_fleet::FleetStore;
 use convergio_graph::Store as GraphStore;
 use convergio_lifecycle::Supervisor;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tower_http::trace::TraceLayer;
 
 /// Application state injected into every handler.
@@ -31,6 +32,11 @@ pub struct AppState {
     pub embedder: Arc<dyn Embedder>,
     /// Fleet repo registry (ADR-0038, F2-6).
     pub fleet: Arc<FleetStore>,
+    /// Memoised full-chain audit verify result. Keyed by tail `seq`; auto-
+    /// invalidated when a new audit row is appended (tail advances). Shared
+    /// across all clones via `Arc` — one warm call benefits every concurrent
+    /// request. Only applies to the parameter-free `/v1/audit/verify` call.
+    pub audit_verify_cache: Arc<Mutex<Option<(i64, VerifyReport)>>>,
 }
 
 /// Build the top-level router. Test harnesses call this directly with

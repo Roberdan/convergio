@@ -56,6 +56,33 @@ async fn verify(
     State(state): State<AppState>,
     Query(q): Query<VerifyQuery>,
 ) -> Result<Json<VerifyReport>, ApiError> {
+    // Fast path: memoised full-chain verify keyed by tail seq.
+    if q.from.is_none() && q.to.is_none() {
+        let tail_seq = state
+            .durability
+            .audit()
+            .tail()
+            .await?
+            .map(|e| e.seq)
+            .unwrap_or(0);
+        {
+            let guard = state
+                .audit_verify_cache
+                .lock()
+                .expect("audit_verify_cache poisoned");
+            if let Some((cached_seq, ref report)) = *guard {
+                if cached_seq == tail_seq {
+                    return Ok(Json(report.clone()));
+                }
+            }
+        }
+        let report = state.durability.audit().verify(None, None).await?;
+        *state
+            .audit_verify_cache
+            .lock()
+            .expect("audit_verify_cache poisoned") = Some((tail_seq, report.clone()));
+        return Ok(Json(report));
+    }
     let report = state.durability.audit().verify(q.from, q.to).await?;
     Ok(Json(report))
 }

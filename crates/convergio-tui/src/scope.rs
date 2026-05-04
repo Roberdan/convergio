@@ -29,16 +29,16 @@ impl AppState {
     }
 
     /// Tasks visible under the current scope.
-    pub fn scoped_tasks(&self) -> Vec<TaskSummary> {
+    ///
+    /// Returns borrowed references — callers that need owned values call
+    /// `.into_iter().cloned().collect()`. This avoids cloning 367 tasks
+    /// on every render tick when `scoped_agents` and
+    /// `scoped_agent_processes` also need a filtered task set.
+    pub fn scoped_tasks(&self) -> Vec<&TaskSummary> {
         match &self.scope {
-            Scope::All => self.tasks.clone(),
-            Scope::Plan { id, .. } => self
-                .tasks
-                .iter()
-                .filter(|t| t.plan_id == *id)
-                .cloned()
-                .collect(),
-            Scope::Task { id, .. } => self.tasks.iter().filter(|t| t.id == *id).cloned().collect(),
+            Scope::All => self.tasks.iter().collect(),
+            Scope::Plan { id, .. } => self.tasks.iter().filter(|t| t.plan_id == *id).collect(),
+            Scope::Task { id, .. } => self.tasks.iter().filter(|t| t.id == *id).collect(),
             Scope::Agent { id } => {
                 let task_ids = self
                     .agent_processes
@@ -52,7 +52,6 @@ impl AppState {
                         t.agent_id.as_deref() == Some(id.as_str())
                             || task_ids.contains(t.id.as_str())
                     })
-                    .cloned()
                     .collect()
             }
             Scope::Pr { number, .. } => {
@@ -60,7 +59,6 @@ impl AppState {
                 self.tasks
                     .iter()
                     .filter(|t| linked.contains(t.id.as_str()))
-                    .cloned()
                     .collect()
             }
         }
@@ -162,14 +160,15 @@ impl AppState {
                 .cloned()
                 .collect(),
             Scope::Agent { .. } => {
-                let task_ids = self
-                    .scoped_tasks()
-                    .into_iter()
-                    .map(|t| t.id)
-                    .collect::<HashSet<_>>();
+                let tasks = self.scoped_tasks();
+                let task_ids: HashSet<&str> = tasks.iter().map(|t| t.id.as_str()).collect();
                 self.prs
                     .iter()
-                    .filter(|pr| pr.tracked_task_ids.iter().any(|t| task_ids.contains(t)))
+                    .filter(|pr| {
+                        pr.tracked_task_ids
+                            .iter()
+                            .any(|t| task_ids.contains(t.as_str()))
+                    })
                     .cloned()
                     .collect()
             }

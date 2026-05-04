@@ -36,6 +36,7 @@ async fn boot() -> (String, tempfile::TempDir) {
         embed: Arc::new(convergio_embed::EmbedStore::new(pool.clone())),
         embedder: Arc::new(convergio_embed::embedder::testing::DeterministicTestEmbedder::new(8)),
         fleet: Arc::new(convergio_fleet::FleetStore::new(pool.clone())),
+        audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let listener = TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], 0)))
         .await
