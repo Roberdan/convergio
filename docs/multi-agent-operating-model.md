@@ -73,6 +73,37 @@ are future work. Until those adapters exist, use Mode 1 for those hosts.
 
 ## What a single agent must do
 
+### Session lifecycle is automatic
+
+The project-level Claude Code `SessionStart` hook
+(`.claude/settings.json`) runs `cvg session register-and-poll`
+before the first user prompt. That single call:
+
+1. Registers (or refreshes) the agent identity in `agent_registry`.
+2. Sends an immediate heartbeat.
+3. Lists active plans and polls `agent:<id>` and `plan:<id>`
+   topics on each.
+4. Publishes a `session-started` envelope on every active plan's
+   `coordination/agents` topic so peers see the new session.
+
+The audit kind `agent.session_started` is emitted only when the
+agent is new or the previous heartbeat is older than 30 minutes —
+re-running the hook on a session resume does not spam the chain.
+
+`/v1/status.telemetry` exposes seven aggregate counters
+(`agents_registered_total`, `agents_active_24h`,
+`sessions_started_24h`, `plans_active`, `audit_rows_total`,
+`bus_messages_24h`, `workspace_leases_active`) so `cvg dash` and
+the multi-agent operator can see "no agent is registering" without
+staring at audit rows.
+
+If your harness has no `cargo` on PATH, copy
+`.claude/settings.local.json.example` to
+`.claude/settings.local.json` to point at the precompiled
+`~/.convergio/bin/cvg` instead.
+
+### Manual loop
+
 Every agent session needs a unique `agent_id`, for example:
 
 ```text
@@ -167,6 +198,61 @@ Convergio needs three separate concepts:
 | role/skills | `rust`, `review`, `docs` | scheduling and task matching |
 
 Do not overload one field for all three.
+
+## Agent registry kinds
+
+`agent_registry.kind` is a permissive lower-case string. Validation
+(see `convergio-durability::store::agent_validation`) only requires
+`[a-z0-9._-]{1,64}`, so new hosts can land without a schema change.
+For consistency across `cvg agent list`, the TUI dashboard, and
+`cvg coherence agents`, use one of the documented kinds below
+whenever you can:
+
+| `kind` | Used by | Notes |
+|--------|---------|-------|
+| `claude` | top-level Claude Code session | registered by `/cvg-attach` |
+| `claude-code` | alias for `claude` (legacy) | accepted; prefer `claude` |
+| `copilot` | GitHub Copilot CLI session | |
+| `cursor` | Cursor agent | |
+| `codex` | OpenAI Codex CLI | |
+| `aider` | Aider | |
+| `shell` | shell-runner spawned by the executor | |
+| `subagent` | Claude Code subagent (Task tool) | wrapped by `/cvg-spawn` (see § Subagent lifecycle below) |
+
+## Subagent lifecycle
+
+Claude Code subagents — the helpers a parent session launches via
+the `Task` tool — run in a different harness from the top-level
+session. The `SessionStart` hook in `.claude/settings.json` does
+**not** fire for them, so without action they are invisible to
+the daemon.
+
+The `/cvg-spawn` skill closes that gap. It generates the canonical
+register / heartbeat / retire wrapper and the parent agent prepends
+the rendered block to the subagent brief. The contract:
+
+1. **Register with `kind=subagent`.** The `agent_id` is a
+   derivative of the parent's identity / task description, e.g.
+   `subagent-${TASK_DESC_SLUG}-${HEX8}`. Using a derivative id
+   makes parentage visible in `cvg agent list` even though the
+   registry itself does not model edges.
+2. **Heartbeat ~every 5 min** while the subagent is working. The
+   reaper (default 5-minute timeout) flips silent agents to
+   `unhealthy`, which surfaces in the dashboard.
+3. **Retire on finish.** The subagent always POSTs to
+   `/v1/agent-registry/agents/${id}/retire` before exiting,
+   including on failure paths, so the registry does not collect
+   zombies. Top-level sessions do this via the `Stop` hook;
+   subagents do it inline at the end of their brief.
+4. **TUI rendering.** `cvg dash` lists subagents alongside
+   top-level sessions but in the dim-text style — they are
+   support workers, not first-class swarm members.
+
+The `/cvg-spawn` skill performs no network I/O itself; it only
+emits the wrapper text. The parent agent is therefore free to
+audit (or modify) the rendered block before pasting it into the
+brief — Convergio still records the resulting register / retire
+in the audit chain.
 
 ## Cross-agent peer-review through observability
 

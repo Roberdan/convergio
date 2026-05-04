@@ -10,7 +10,7 @@
 //! the check returns `Pass` with no findings rather than blocking
 //! detach — a safety net is not allowed to be a brick wall.
 
-use crate::commands::session_pre_stop::{Check, CheckContext, CheckOutcome};
+use crate::pre_stop::{Check, CheckContext, CheckOutcome};
 use std::process::Command;
 
 /// Concrete check implementation.

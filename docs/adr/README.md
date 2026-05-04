@@ -58,4 +58,5 @@ do not edit between the markers.
 | [0038](./0038-fleet-retrieval-cross-repo-graph.md) | 0038. Fleet retrieval & cross-repo graph (semantic + multi-language) | proposed |
 | [0039](./0039-doc-coherence-sweep.md) | 0039. Doc-coherence sweep as a recurring three-layer plan | accepted |
 | [0040](./0040-split-coherence-into-its-own-crate.md) | 0040. Split the coherence verifiers into their own crate | accepted |
+| [0041](./0041-split-session-into-its-own-crate.md) | 0041. Split the session lifecycle suite into its own crate | accepted |
 <!-- END AUTO -->

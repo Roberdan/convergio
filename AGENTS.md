@@ -103,6 +103,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-brand` — Brand kit for Convergio: palette, claim, banner, boot animation — shared by CLI, TUI, daemon
 - `convergio-bus` — Layer 2 of Convergio: persistent agent message bus (topic + direct + ack), scoped per plan
 - `convergio-cli` — cvg — pure HTTP client for the Convergio daemon
+- `convergio-cli-session` — Session lifecycle commands (cvg session) extracted from convergio-cli
 - `convergio-coherence` — Documentation/code coherence verifiers for Convergio (`cvg coherence` suite)
 - `convergio-db` — SQLite database pool for the local Convergio runtime
 - `convergio-durability` — Layer 1 of Convergio: plans, tasks, evidence, hash-chained audit log, gate pipeline
@@ -194,7 +195,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 843 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 855 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
