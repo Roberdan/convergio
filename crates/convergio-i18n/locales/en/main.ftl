@@ -16,6 +16,11 @@ health-ok = Daemon is healthy. Version: { $version }
 health-unreachable = Could not reach daemon at { $url }: { $reason }
 health-drift = WARNING drift: workspace expects { $expected }, daemon running { $running }. Run `cvg update`.
 
+# ---------- CLI: pre-dispatch drift warning (P1-2) ----------
+cli-drift-warning = WARN: convergio CLI is v{ $cli } but daemon at { $url } is running v{ $daemon }
+cli-drift-fix-hint = WARN: run `cvg service restart` (or restart the daemon manually) to pick up the latest changes.
+cli-drift-suppress-hint = WARN: suppress with { $env }=1
+
 # ---------- CLI: update ----------
 update-rebuild-header = Rebuilding daemon, CLI, and MCP binaries...
 update-rebuild-step = building { $crate }

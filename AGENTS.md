@@ -196,7 +196,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 931 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 936 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
@@ -230,7 +230,6 @@ The full top-level CLI surface is also auto-regenerated:
 - `cvg service`
 - `cvg session`
 - `cvg setup`
-- `cvg setup-fleet`
 - `cvg solve`
 - `cvg status`
 - `cvg task`
@@ -261,6 +260,8 @@ in-process. They use a tempdir SQLite by default — no manual setup.
 | No `unwrap()` / `expect()` in production code (tests fine) | clippy lint, manual review |
 | Every `pub` item has `///` doc comment | clippy `missing_docs` lint per crate |
 | `//!` crate-level doc at top of every `lib.rs` and `main.rs` | manual review |
+| AUTO blocks fresh (`cvg docs regenerate --check`) | lefthook `pre-push` (P0.5) + CI |
+| `docs/INDEX.md` fresh | lefthook `pre-push` (P0.5) + CI |
 
 Commit scope must be a known crate name or one of `docs|ci|chore|repo|deps`.
 Examples: `feat(durability): add audit hash chain`, `fix(server): handle 409 on gate refusal`.
@@ -345,7 +346,11 @@ For the full HTTP surface, drive `cvg` (typed) or `curl` (raw):
   `POST /v1/capabilities/:name/disable`
 - Layer 4: `POST /v1/solve`, `POST /v1/dispatch`,
   `POST /v1/capabilities/planner/solve` (ADR-0036)
-- Status / cold-start: `GET /v1/status`, `GET /v1/health`
+- Status / cold-start: `GET /v1/status`, `GET /v1/health` (also
+  carries `running_version`; every daemon-touching `cvg` invocation
+  probes this and prints a stderr WARN if the CLI's
+  `CARGO_PKG_VERSION` differs — suppress with
+  `CONVERGIO_NO_DRIFT_WARN=1`)
 - Graph (Tier-3, ADR-0014): `POST /v1/graph/build`,
   `GET /v1/graph/stats`, `POST /v1/graph/refresh`,
   `GET /v1/graph/for-task/:id`, `GET /v1/graph/drift`,

@@ -5,6 +5,8 @@ use clap::{Parser, Subcommand};
 use convergio_i18n::{detect_locale, Bundle};
 
 mod commands;
+mod dispatch;
+mod drift;
 
 #[derive(Parser)]
 #[command(name = "cvg", version, about = "Convergio CLI", long_about = None)]
@@ -31,7 +33,7 @@ struct Cli {
 }
 
 #[derive(Subcommand)]
-enum Command {
+pub(crate) enum Command {
     /// Probe the daemon.
     Health,
     /// Initialize local configuration.
@@ -39,11 +41,13 @@ enum Command {
         #[command(subcommand)]
         sub: Option<commands::setup::SetupCommand>,
     },
-    /// Diagnose local configuration and daemon health. `--kill-zombies`
-    /// opts into cleanup of long-running e2e_* processes (P0-6).
+    /// Diagnose local configuration and daemon health.
     Doctor {
+        /// Print machine-readable JSON.
         #[arg(long)]
         json: bool,
+        /// Identify and offer to kill stale `target/.../deps/e2e_*`
+        /// processes (interactive). See ADR-0044.
         #[arg(long)]
         kill_zombies: bool,
     },
@@ -151,7 +155,10 @@ enum Command {
         sub: commands::session::SessionCommand,
     },
     /// Solve a mission into a plan (Layer 4 planner).
-    Solve { mission: String },
+    Solve {
+        /// Mission text — newline-separated tasks.
+        mission: String,
+    },
     /// Run one executor tick (dispatches pending tasks).
     Dispatch,
     /// Run Thor on a plan, or `--self-test` for the H11 fixture run.
@@ -173,6 +180,7 @@ enum Command {
     },
     /// Stream daemon audit events brand-coloured (Ctrl-C exits).
     Monitor {
+        /// Poll interval in seconds (clamped to `[1, 60]`).
         #[arg(long, env = "CONVERGIO_MONITOR_TICK_SECS", default_value_t = 1)]
         tick_secs: u64,
     },
@@ -180,6 +188,7 @@ enum Command {
     Demo,
     /// Open the read-only TUI dashboard (cvg dash, ADR-0029).
     Dash {
+        /// Refresh interval in seconds (clamped to [1, 300]).
         #[arg(long, env = "CONVERGIO_DASH_TICK_SECS", default_value_t = 5)]
         tick_secs: u64,
     },
@@ -216,83 +225,12 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
     let locale = detect_locale(cli.lang.as_deref());
     let bundle = Bundle::new(locale).context("load CLI Fluent bundle")?;
-    let client = commands::Client::new(cli.url);
-    match cli.command {
-        Command::Health => commands::health::run(&client, &bundle, cli.output).await,
-        Command::Setup { sub } => commands::setup::run(&client, &bundle, cli.output, sub).await,
-        Command::Doctor { json, kill_zombies } => {
-            commands::doctor::run(&client, &bundle, cli.output, json, kill_zombies).await
-        }
-        Command::Status {
-            completed_limit,
-            project,
-            all,
-            show_waves,
-            mine,
-        } => {
-            commands::status::run(
-                &client,
-                &bundle,
-                cli.output,
-                completed_limit,
-                project,
-                all,
-                show_waves,
-                mine,
-            )
-            .await
-        }
-        Command::Plan { sub } => commands::plan::run(&client, &bundle, cli.output, sub).await,
-        Command::Task { sub } => commands::task::run(&client, cli.output, sub).await,
-        Command::Evidence { sub } => commands::evidence::run(&client, sub).await,
-        Command::Audit { sub } => commands::audit::run(&client, sub).await,
-        Command::Agent { sub } => commands::agent::run(&client, &bundle, cli.output, sub).await,
-        Command::Crdt { sub } => commands::crdt::run(&client, &bundle, cli.output, sub).await,
-        Command::Capability { sub } => {
-            commands::capability::run(&client, &bundle, cli.output, sub).await
-        }
-        Command::Coherence { sub } => commands::coherence::run(&bundle, cli.output, sub).await,
-        Command::Docs { sub } => commands::docs::run(cli.output, sub).await,
-        Command::Graph { sub } => commands::graph::run(&client, cli.output, sub).await,
-        Command::Embed { sub } => commands::embed::run(&client, cli.output, sub).await,
-        Command::Fleet { sub } => commands::fleet::run(&client, cli.output, sub).await,
-        Command::Workspace { sub } => {
-            commands::workspace::run(&client, &bundle, cli.output, sub).await
-        }
-        Command::Mcp { sub } => commands::mcp::run(&bundle, sub).await,
-        Command::Pr { sub } => commands::pr::run(&client, &bundle, cli.output, sub).await,
-        Command::Service { sub } => commands::service::run(&bundle, sub).await,
-        Command::Session { sub } => commands::session::run(&client, &bundle, cli.output, sub).await,
-        Command::Solve { mission } => commands::solve::run(&client, &mission).await,
-        Command::Dispatch => commands::dispatch::run(&client).await,
-        Command::Validate {
-            plan_id,
-            wave,
-            self_test,
-        } => commands::validate::run(&client, plan_id.as_deref(), wave, self_test).await,
-        Command::About { animate } => commands::about::run(&bundle, animate),
-        Command::Monitor { tick_secs } => commands::monitor::run(&client, tick_secs).await,
-        Command::Demo => commands::demo::run(&client).await,
-        Command::Dash { tick_secs } => commands::dash::run(client.base(), tick_secs).await,
-        Command::Update {
-            if_needed,
-            skip_restart,
-            changelog,
-        } => {
-            commands::update::run(
-                &client,
-                &bundle,
-                cli.output,
-                if_needed,
-                skip_restart,
-                changelog,
-            )
-            .await
-        }
-        Command::Bus { sub } => commands::bus::run(&client, &bundle, cli.output, sub).await,
-        Command::Discover { since, agent_id } => {
-            let args = commands::discover::DiscoverArgs { since, agent_id };
-            commands::discover::run(&client, &bundle, cli.output, args).await
-        }
+    if !matches!(
+        cli.command,
+        Command::Setup { .. } | Command::Service { .. } | Command::About { .. }
+    ) {
+        drift::check_and_warn(&bundle, &cli.url, env!("CARGO_PKG_VERSION")).await;
     }
+    let client = commands::Client::new(cli.url);
+    dispatch::run(client, bundle, cli.output, cli.command).await
 }
