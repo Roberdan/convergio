@@ -17,12 +17,14 @@
 //! no longer need to shell out to `cvg`.
 
 pub mod checks;
+pub mod heartbeat_since_last_turn;
 pub mod pre_stop;
 pub mod pre_stop_run;
 pub mod register_and_poll;
 pub mod register_and_poll_render;
 pub mod render;
 pub mod session;
+pub mod session_models;
 
 pub use session::{run, SessionCommand};
 
