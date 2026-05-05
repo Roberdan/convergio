@@ -40,7 +40,7 @@ pub(crate) async fn run(
             .await
         }
         Command::Plan { sub } => commands::plan::run(&client, &bundle, output, sub).await,
-        Command::Task { sub } => commands::task::run(&client, output, sub).await,
+        Command::Task { sub } => commands::task::run(&client, &bundle, output, sub).await,
         Command::Evidence { sub } => commands::evidence::run(&client, sub).await,
         Command::Audit { sub } => commands::audit::run(&client, sub).await,
         Command::Agent { sub } => commands::agent::run(&client, &bundle, output, sub).await,
