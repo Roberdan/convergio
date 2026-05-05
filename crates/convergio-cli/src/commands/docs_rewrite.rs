@@ -108,6 +108,55 @@ fn next_marker(slice: &str, live: &[(usize, usize)], slice_offset: usize) -> Opt
     None
 }
 
+/// Remove git conflict markers (`<<<<<<<` / `=======` / `>>>>>>>`) that
+/// appear inside AUTO blocks. Content between markers is discarded — the
+/// rewriter regenerates it. Markers outside AUTO blocks are left untouched.
+pub(super) fn strip_auto_conflicts(content: &str, marker_size: u32) -> String {
+    let cs = "<".repeat(marker_size as usize);
+    let sep = "=".repeat(marker_size as usize);
+    let ce = ">".repeat(marker_size as usize);
+    enum St {
+        Normal,
+        InAuto,
+        AcOurs,
+        AcTheirs,
+    }
+    let mut st = St::Normal;
+    let mut out = String::with_capacity(content.len());
+    for line in content.split_inclusive('\n') {
+        let t = line.trim_end_matches(['\n', '\r']);
+        match st {
+            St::Normal => {
+                if t.starts_with(BEGIN) {
+                    st = St::InAuto;
+                }
+                out.push_str(line);
+            }
+            St::InAuto => {
+                if t == END {
+                    st = St::Normal;
+                    out.push_str(line);
+                } else if t.starts_with(&cs) {
+                    st = St::AcOurs;
+                } else {
+                    out.push_str(line);
+                }
+            }
+            St::AcOurs => {
+                if t.starts_with(&sep) {
+                    st = St::AcTheirs;
+                }
+            }
+            St::AcTheirs => {
+                if t.starts_with(&ce) {
+                    st = St::InAuto;
+                }
+            }
+        }
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -164,5 +213,18 @@ mod tests {
         let input = "Use `<!-- BEGIN AUTO:dummy -->` for examples.\n";
         let out = rewrite(input, &Strict, Path::new("test.md"), Path::new(".")).unwrap();
         assert_eq!(out, input);
+    }
+
+    #[test]
+    fn strip_auto_conflicts_resolves_inside_keeps_outside() {
+        let inside = "<!-- BEGIN AUTO:x -->\n<<<<<<< ours\n-a\n=======\n-b\n>>>>>>> theirs\n<!-- END AUTO -->\n";
+        let o = strip_auto_conflicts(inside, 7);
+        assert!(
+            !o.contains("<<<<<<<")
+                && o.contains("<!-- BEGIN AUTO:x -->")
+                && o.contains("<!-- END AUTO -->")
+        );
+        let outside = "<<<<<<< ours\nfoo\n=======\nbar\n>>>>>>> theirs\n";
+        assert!(strip_auto_conflicts(outside, 7).contains("<<<<<<<"));
     }
 }
