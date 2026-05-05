@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.13](https://github.com/Roberdan/convergio/compare/convergio-v0.3.12...convergio-v0.3.13) (2026-05-05)
+
+
+### Features
+
+* **cli-plan-run:** plan run --max-parallel + resume hint (p1-8) ([81d6bf5](https://github.com/Roberdan/convergio/commit/81d6bf5f0822885da29fedb7743d991139bbd69f))
+* **cli-plan-run:** plan run --max-parallel + resume hint (p1-8) ([f8c9103](https://github.com/Roberdan/convergio/commit/f8c9103b254e0aac8ad6bde057aefa441db0c7de))
+* **cli-plan-run:** plan run --max-parallel + resume hint (P1-8) ([d58c25c](https://github.com/Roberdan/convergio/commit/d58c25cb1bf50d48ba73cf9f562244d5cd9fa5a4))
+* **cli:** cvg task create --template flag (p2-10) ([a0ac90e](https://github.com/Roberdan/convergio/commit/a0ac90e3a9ffd31e7388d11890d7757d8c9bcaaa))
+* **cli:** cvg task create --template flag (P2-10) ([a82920f](https://github.com/Roberdan/convergio/commit/a82920f32e3168231b7ae5abe33032f412f8181e))
+* **durability,server,cli-pr:** PR# → agent_id mapping in plan_pr_links (P2-3 / F47) ([1460a61](https://github.com/Roberdan/convergio/commit/1460a6119beb861dfd8def2bcd71b8dfad72ec05))
+* **durability,server,cli-pr:** PR# → agent_id mapping in plan_pr_links (P2-3 / F47) ([70f5116](https://github.com/Roberdan/convergio/commit/70f511690443a8528278a14d3bba61102362c7cb))
+* **durability:** P2-4 rolling 7d telemetry time-series at 1-min resolution ([30196f5](https://github.com/Roberdan/convergio/commit/30196f5d031ff667f70c5dfa2e9a48bda6706662))
+* **durability:** rolling 7d telemetry time-series at 1-min resolution ([4115b54](https://github.com/Roberdan/convergio/commit/4115b54e52d50f28efad2835235cf5e672eb849a))
+* **lifecycle:** relay sub-agent stdout to plan bus (adr-0046, p2-8) ([80fb975](https://github.com/Roberdan/convergio/commit/80fb97582cc4275937fd24536c7dca4f49d22c2e))
+* **lifecycle:** relay sub-agent stdout to plan bus (P2-8) ([bd235cd](https://github.com/Roberdan/convergio/commit/bd235cd3d40201c321f35d19f4a7125cee45f9bc))
+
+
+### Bug Fixes
+
+* **durability:** bump telemetry migration to 0014 (race with p2-3 0013) ([5b15597](https://github.com/Roberdan/convergio/commit/5b155978a586325a0d9b32a6f92655ace21b31d9))
+
 ## [0.3.12](https://github.com/Roberdan/convergio/compare/convergio-v0.3.11...convergio-v0.3.12) (2026-05-05)
 
 
