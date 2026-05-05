@@ -24,6 +24,7 @@ name = "convergio"
 path = "src/main.rs"
 
 [dependencies]
+convergio-api = { workspace = true }
 convergio-brand = { workspace = true }
 convergio-db = { workspace = true }
 convergio-durability = { workspace = true }
