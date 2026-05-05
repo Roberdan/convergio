@@ -6,6 +6,71 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.12](https://github.com/Roberdan/convergio/compare/convergio-v0.3.11...convergio-v0.3.12) (2026-05-05)
+
+
+### Features
+
+* **api:** action type registry (p3-1) ([8469222](https://github.com/Roberdan/convergio/commit/846922273e3a3cfbef7836b6ec825effe8f80476))
+* **api:** action type registry (P3-1) ([4ea9c53](https://github.com/Roberdan/convergio/commit/4ea9c535f2d194f04598b48c41624c635ef917d7))
+* **api:** compensating action types (p3-3) ([b8043b8](https://github.com/Roberdan/convergio/commit/b8043b862332bede6be304fc04e06e5761f36de8))
+* **api:** compensating action types (P3-3) ([6415cd5](https://github.com/Roberdan/convergio/commit/6415cd500fd31a2c0c338abe921adf14194e945a))
+* **cli-session:** bus inbox auto-ack + claude code pretooluse heartbeat hook ([b958387](https://github.com/Roberdan/convergio/commit/b9583870a231a73c895dc88cfd3f3d5a04c566fe))
+* **cli-session:** bus inbox auto-ack + Claude Code PreToolUse heartbeat hook (P1-3) ([bc052b6](https://github.com/Roberdan/convergio/commit/bc052b6c24a7c092a5429d7138c59229081b52a0))
+* **cli:** cvg agent retire &lt;id&gt; cli + clearer 422 on heartbeat retired ([1e9ffce](https://github.com/Roberdan/convergio/commit/1e9ffce1a941a220b17bb3cf54f75b907139edd5))
+* **cli:** cvg agent retire &lt;id&gt; cli + clearer 422 on heartbeat retired ([6fbf94c](https://github.com/Roberdan/convergio/commit/6fbf94c79d8791b24d02717ee1d7e615eac59dc0))
+* **cli:** cvg doctor --kill-zombies + e2e_f2_13 timeout (P0-6) ([554a48d](https://github.com/Roberdan/convergio/commit/554a48d9f7ed62a2b6cadaccc718f22eda708223))
+* **cli:** cvg doctor kill-zombies + e2e f2-13 timeout ([83a021b](https://github.com/Roberdan/convergio/commit/83a021b0e8c5cd7fd5fff9fa43fba2d1e416f117))
+* **cli:** cvg setup fleet bootstrap (p0-2) ([b2bdfb5](https://github.com/Roberdan/convergio/commit/b2bdfb56637671908cfa93ec3273b2cb813ad872))
+* **cli:** cvg setup fleet bootstrap (P0-2) ([b3de345](https://github.com/Roberdan/convergio/commit/b3de345a25f7f09bb4aefdf4955ec868bf4ada9e))
+* **cli:** cvg task complete orchestrator (p1-1) ([d2fea76](https://github.com/Roberdan/convergio/commit/d2fea76866b359a76ac94987b3e6f721c1594552))
+* **cli:** cvg task complete orchestrator (P1-1) ([11e74f8](https://github.com/Roberdan/convergio/commit/11e74f81a1ab5bd6f2efcf3ba35b74dccd870114))
+* **cli:** git merge driver for auto-block markdown files (p2-9) ([cebd052](https://github.com/Roberdan/convergio/commit/cebd052e34c7aa2768e58dea14bd6fc4cfbe5c98))
+* **cli:** git merge driver for auto-block markdown files (p2-9) ([0378bd8](https://github.com/Roberdan/convergio/commit/0378bd8d6b9e60e82d090a785e11e8067446d11a))
+* **cli:** warn on daemon version drift (suppressible via env var) ([20a7543](https://github.com/Roberdan/convergio/commit/20a75436ebbe3a725ee2c3e21299efd352619f16))
+* **cli:** warn on daemon version drift (suppressible via env var) ([c2fef41](https://github.com/Roberdan/convergio/commit/c2fef4186eb7f7a1593408e5cad0284d4d67ebe6))
+* **coherence,cli:** plan execution contract + setup self-check ([60ced0a](https://github.com/Roberdan/convergio/commit/60ced0a0fae79a9e50d037e0f55aaab88d439895))
+* **coherence,cli:** plan execution contract + setup self-check (ADR-0044) ([dccf4f2](https://github.com/Roberdan/convergio/commit/dccf4f2a2fc73b28c7d73e76e8bb7810e0e02468))
+* **docs:** F3 — per-host real-time context push (ADR-0045 + Cursor reference) ([5b1226e](https://github.com/Roberdan/convergio/commit/5b1226ea956e5a31c3920b541c0c474cc41101ff))
+* **docs:** F3 — per-host real-time context push (ADR-0045 + Cursor reference) ([6af685c](https://github.com/Roberdan/convergio/commit/6af685ca62bdc44b7b3fbfff784b3a7f22d1f100))
+* **durability,cli,server:** P0-7 — plan.number field + cvg plan run ([aabcaa9](https://github.com/Roberdan/convergio/commit/aabcaa9f964361b3753f72095a27e77b72e41c89))
+* **durability,cli,server:** P0-7+P1-8 — plan.number + cvg plan run &lt;N&gt; ([90ab045](https://github.com/Roberdan/convergio/commit/90ab0457238f00c4e26123690682c8a6144838af))
+* **durability:** auto-populate agents.current_task_id on task transitions (p2-1) ([e003f37](https://github.com/Roberdan/convergio/commit/e003f37d79eb626fc0b29b52eac6031f891d6a4f))
+* **durability:** auto-populate agents.current_task_id on transitions (p2-1) ([e67d182](https://github.com/Roberdan/convergio/commit/e67d182bc71fdea79464b7334501b82db76a4748))
+* **durability:** declarative gate preconditions (p3-2) ([3a783cf](https://github.com/Roberdan/convergio/commit/3a783cf3cf3e0f20b38a192f226783b638828ba2))
+* **durability:** declarative gate preconditions (P3-2) ([0702081](https://github.com/Roberdan/convergio/commit/07020814f0b2bfd8cf7dc5c1ba29ef6c9d30de73))
+* **durability:** extend reaper to retire stale agents ([b7c967b](https://github.com/Roberdan/convergio/commit/b7c967bb383b4829487b00d19bd3668c6f00c6e4))
+* **durability:** P0-3 extend reaper to retire stale agents ([203972d](https://github.com/Roberdan/convergio/commit/203972db831f602fc40a92245ccc88c99bb027c8))
+* **mcp:** API consistency — id for entity-self, deprecate agent_id (ADR-0043) ([be0a6d8](https://github.com/Roberdan/convergio/commit/be0a6d8e972e22c59d3685280141ce658e359b2c))
+* **mcp:** API consistency — id for entity-self, deprecate agent_id alias (ADR-0043) ([5126456](https://github.com/Roberdan/convergio/commit/512645640fea9ce4dffbfbae6ead4d62360f2e89))
+* **repo:** SessionStart hook also auto-fires cvg session resume (P2-6) ([e2e63be](https://github.com/Roberdan/convergio/commit/e2e63bece257c5facfd89008891d58074b0afd15))
+* **repo:** SessionStart hook also auto-fires cvg session resume (P2-6) ([d27323a](https://github.com/Roberdan/convergio/commit/d27323a6d6d2e18b5aa9625b61ad5e6fa2db1974))
+* **server:** agent list ?status= and ?limit= filters (P2-11 step 1) ([328757a](https://github.com/Roberdan/convergio/commit/328757a0382be1d99714884f0fbc55c3f6a1be6f))
+* **server:** agent list status+limit filters (p2-11 step 1) ([e05cdef](https://github.com/Roberdan/convergio/commit/e05cdef9430b3f37b5d831a7243795e79cacaa7c))
+* **server:** POST /v1/audit/append for agent-emitted custom audit rows (P2-2) ([344fea3](https://github.com/Roberdan/convergio/commit/344fea395bb548dbf603a07d5fc7aeb6e4fc6498))
+* **server:** POST /v1/audit/append for agent-emitted custom audit rows (P2-2) ([a532ddf](https://github.com/Roberdan/convergio/commit/a532ddf94e98068042092bd512c6ba169b726d73))
+* **skills:** cvg-spawn budget pre-check (p1-6) ([4d14a95](https://github.com/Roberdan/convergio/commit/4d14a958c5c638f7284ae017f66a09791169321b))
+* **skills:** cvg-spawn budget pre-check (P1-6) ([a6de6d6](https://github.com/Roberdan/convergio/commit/a6de6d6498bc7b66a4fb3a6dc1236b903670e252))
+* **tui:** hide exited agents by default + dash retire-stale (P2-11 step 2+3) ([e36aa6f](https://github.com/Roberdan/convergio/commit/e36aa6fc42e01f4af7ef162f3f0dd051511521c4))
+* **tui:** hide exited agents by default + retire-stale on dash startup (p2-11 step 2+3) ([bf4572f](https://github.com/Roberdan/convergio/commit/bf4572fa0c375e7f791db05d04195ca707908d4f))
+
+
+### Bug Fixes
+
+* **durability:** begin immediate for atomic plan number assignment ([1246dc1](https://github.com/Roberdan/convergio/commit/1246dc14e2b7743e30c0ce56dff1d8554fb7e4ef))
+
+
+### Refactoring
+
+* **repo:** regenerate auto blocks on demand + nightly cron ([e023057](https://github.com/Roberdan/convergio/commit/e0230572caceca3c7cc7f895cceec59a27eaedab))
+* **repo:** regenerate auto blocks on demand + nightly cron, drop per-pr gate ([ab40fe3](https://github.com/Roberdan/convergio/commit/ab40fe39a886aefb889aa3040fb22319d992c0bb))
+
+
+### Documentation
+
+* **api:** ADR-0043 API consistency — id and payload naming ([04650f0](https://github.com/Roberdan/convergio/commit/04650f0cbc8dd2260aff2fbc14e074b5684cb54a))
+* **api:** ADR-0043 API consistency (P1-4) ([ac8cfd3](https://github.com/Roberdan/convergio/commit/ac8cfd386da7060f3d3511dfc3ec38646309e826))
+
 ## [Unreleased]
 
 ### Breaking Changes
