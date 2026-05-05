@@ -1,24 +1,19 @@
-//! `cvg session ...` — cold-start brief from the daemon.
+//! `cvg session ...` — cold-start brief and lifecycle subcommands.
 //!
-//! Replaces the static handoff markdown that goes stale. Every value
-//! printed here comes from a live daemon query (health, audit, plan
-//! tasks) plus an optional `gh pr list` shell-out for the queue.
-//!
-//! The markdown packet (`docs/agent-resume-packet.md`) is now the
-//! TIMELESS half of the cold-start; this command is the time-specific
-//! half — read both, in that order, after a session reset.
-//!
-//! Renderers live in the sibling [`crate::render`] module to
-//! keep both files under the 300-line cap.
+//! Every value printed by `resume` comes from a live daemon query
+//! (health, audit, plan tasks) plus an optional `gh pr list`. The
+//! TIMELESS handoff lives in `docs/agent-resume-packet.md`. Renderers
+//! live in the sibling [`crate::render`] module to keep both files
+//! under the 300-line cap.
 
 use crate::pre_stop_run;
 use crate::register_and_poll;
 use crate::render::{self, Brief};
+use crate::session_models::{Plan, PrSummary, Task, TaskCounts};
 use crate::{Client, OutputMode};
 use anyhow::{anyhow, Context, Result};
 use clap::Subcommand;
 use convergio_i18n::Bundle;
-use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::process::Command;
 
@@ -72,6 +67,23 @@ pub enum SessionCommand {
         /// Suppress the `session-started` bus announcement.
         #[arg(long, default_value_t = false)]
         quiet: bool,
+        /// Skip auto-ack of unicast `agent:<id>` direct messages.
+        /// Default (P1-3) acks each direct after rendering. Broadcast
+        /// topics (`plan:*`, `coordination/*`) are never auto-acked.
+        #[arg(long, default_value_t = false)]
+        no_auto_ack: bool,
+    },
+    /// Idempotent heartbeat for the Claude Code `PreToolUse` hook
+    /// (P1-3). Throttled by a per-pid timestamp file under
+    /// `~/.convergio/state/sessions/`. Errors are swallowed.
+    HeartbeatSinceLastTurn {
+        /// Stable agent id. Defaults to `CONVERGIO_AGENT_ID`, then
+        /// `claude-code-${USER}`.
+        #[arg(long)]
+        agent_id: Option<String>,
+        /// Status to send. Defaults to `working`.
+        #[arg(long, default_value = "working")]
+        status: String,
     },
 }
 
@@ -109,6 +121,7 @@ pub async fn run(
             kind,
             host,
             quiet,
+            no_auto_ack,
         } => {
             let args = register_and_poll::Args {
                 agent_id,
@@ -116,8 +129,12 @@ pub async fn run(
                 kind,
                 host,
                 quiet,
+                no_auto_ack,
             };
             register_and_poll::run(client, bundle, output, args).await
+        }
+        SessionCommand::HeartbeatSinceLastTurn { agent_id, status } => {
+            crate::heartbeat_since_last_turn::run(client, agent_id, status).await
         }
     }
 }
@@ -186,11 +203,8 @@ async fn resolve_plan(client: &Client, plan_id: Option<&str>, project: &str) -> 
         .ok_or_else(|| anyhow!("no open plan found for project={project}"))
 }
 
-/// A plan is "open" — i.e. valid for `cvg session resume` to focus
-/// on — when its status is `draft` or `active`. `completed` and
-/// `cancelled` are terminal and would yield misleading next-task
-/// guidance even if their `updated_at` is more recent than the
-/// real active plan.
+/// `draft` / `active` are open; `completed` / `cancelled` are
+/// terminal and would yield misleading next-task guidance.
 fn is_open_status(status: &str) -> bool {
     matches!(status, "draft" | "active")
 }
@@ -230,68 +244,6 @@ fn fetch_open_prs() -> Result<Vec<PrSummary>> {
         );
     }
     serde_json::from_slice(&out.stdout).context("parse gh output")
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct Plan {
-    pub(crate) id: String,
-    pub(crate) title: String,
-    #[serde(default)]
-    pub(crate) description: Option<String>,
-    #[serde(default)]
-    pub(crate) project: Option<String>,
-    pub(crate) status: String,
-    pub(crate) updated_at: String,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub(crate) struct Task {
-    pub(crate) id: String,
-    pub(crate) title: String,
-    pub(crate) status: String,
-    pub(crate) wave: i64,
-    pub(crate) sequence: i64,
-    pub(crate) created_at: String,
-}
-
-#[derive(Debug, Default, Serialize)]
-pub(crate) struct TaskCounts {
-    pub(crate) total: usize,
-    pub(crate) done: usize,
-    pub(crate) pending: usize,
-    pub(crate) in_progress: usize,
-    pub(crate) submitted: usize,
-    pub(crate) failed: usize,
-}
-
-impl From<&[Task]> for TaskCounts {
-    fn from(tasks: &[Task]) -> Self {
-        let mut c = TaskCounts {
-            total: tasks.len(),
-            ..Default::default()
-        };
-        for t in tasks {
-            match t.status.as_str() {
-                "done" => c.done += 1,
-                "pending" => c.pending += 1,
-                "in_progress" => c.in_progress += 1,
-                "submitted" => c.submitted += 1,
-                "failed" => c.failed += 1,
-                _ => {}
-            }
-        }
-        c
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct PrSummary {
-    pub(crate) number: i64,
-    pub(crate) title: String,
-    #[serde(rename = "headRefName")]
-    pub(crate) head_ref_name: String,
-    #[serde(rename = "isDraft", default)]
-    pub(crate) is_draft: bool,
 }
 
 #[cfg(test)]

@@ -124,10 +124,16 @@ fn print_message_line(bundle: &Bundle, plan_id: &str, m: &Value) {
         .unwrap_or_else(|| "?".to_string());
     let topic = m.get("topic").and_then(Value::as_str).unwrap_or("?");
     let sender = m.get("sender").and_then(Value::as_str).unwrap_or("-");
+    let consumed = m.get("consumed").and_then(Value::as_bool).unwrap_or(false);
+    let key = if consumed {
+        "session-register-poll-message-line-consumed"
+    } else {
+        "session-register-poll-message-line"
+    };
     println!(
         "{}",
         bundle.t(
-            "session-register-poll-message-line",
+            key,
             &[
                 ("plan", plan_id),
                 ("seq", &seq),

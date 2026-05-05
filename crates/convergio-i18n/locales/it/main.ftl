@@ -256,6 +256,7 @@ session-register-poll-announcements-header = { $count ->
    *[other] Annunci di piano in attesa ({ $count }):
 }
 session-register-poll-message-line =   - piano { $plan } seq { $seq } [{ $topic }] sender={ $sender }
+session-register-poll-message-line-consumed =   - piano { $plan } seq { $seq } [{ $topic }] sender={ $sender } (consumato)
 
 # ---------- brand (CLI: about) ----------
 # I marchi (claim/subline/nome prodotto) NON vengono tradotti — sono
