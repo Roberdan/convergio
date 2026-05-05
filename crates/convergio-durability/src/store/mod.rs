@@ -17,6 +17,7 @@ mod crdt_rows;
 mod evidence;
 mod plans;
 mod tasks;
+pub(crate) mod telemetry_series;
 mod workspace;
 mod workspace_merge;
 mod workspace_merge_rows;
@@ -34,6 +35,7 @@ pub use crdt_merge::CrdtCell;
 pub use evidence::EvidenceStore;
 pub use plans::PlanStore;
 pub use tasks::TaskStore;
+pub use telemetry_series::{TelemetryPoint, TelemetrySeriesStore};
 pub use workspace::{
     NewWorkspaceLease, NewWorkspaceResource, WorkspaceLease, WorkspaceResource, WorkspaceStore,
 };
