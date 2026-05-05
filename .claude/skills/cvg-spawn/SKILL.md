@@ -54,15 +54,21 @@ The skill produces three deterministic outputs:
    - `TASK_DESC_SLUG` = first 24 chars of the task description,
      lower-cased, spaces replaced with `-`, non-alnum stripped.
    - `HEX8` = 8 random hex chars (`openssl rand -hex 4`).
-2. A 6-line bash block to prepend to the subagent brief:
+2. A bash block to prepend to the subagent brief:
    - line 1: `SUBAGENT_ID="subagent-<slug>-<hex8>"`
-   - line 2: register POST to `/v1/agent-registry/agents` with
+   - line 2: **budget pre-check** — `./scripts/check-context-budget.sh`
+     aborts the subagent if any crate is over the per-crate hard cap
+     (P1-6 / finding E5). Pick a smaller task or refactor first.
+   - line 3: register POST to `/v1/agent-registry/agents` with
      `kind=subagent`.
-   - line 3: heartbeat POST to
+   - line 4: heartbeat POST to
      `/v1/agent-registry/agents/${SUBAGENT_ID}/heartbeat`.
-   - line 4: `# heartbeat every 5 min while working`
-   - line 5: `# ... do work ...`
-   - line 6: retire POST to
+   - line 5: `# heartbeat every 5 min while working`
+   - line 6: **budget mid-flight reminder** — re-run
+     `check-context-budget.sh` every ~200 LOC so the subagent does
+     not push past cap on push.
+   - line 7: `# ... do work ...`
+   - line 8: retire POST to
      `/v1/agent-registry/agents/${SUBAGENT_ID}/retire`.
 3. A one-line confirmation summary the parent prints back to the
    user before launching the subagent:
