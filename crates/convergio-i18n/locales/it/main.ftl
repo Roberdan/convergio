@@ -16,6 +16,11 @@ health-ok = Il daemon è attivo. Versione: { $version }
 health-unreachable = Impossibile raggiungere il daemon su { $url }: { $reason }
 health-drift = ATTENZIONE disallineamento: il workspace è alla versione { $expected }, il daemon esegue { $running }. Esegui `cvg update`.
 
+# ---------- CLI: avviso di disallineamento pre-dispatch (P1-2) ----------
+cli-drift-warning = ATTENZIONE: il CLI convergio è v{ $cli } ma il daemon su { $url } esegue v{ $daemon }
+cli-drift-fix-hint = ATTENZIONE: esegui `cvg service restart` (o riavvia il daemon manualmente) per applicare le ultime modifiche.
+cli-drift-suppress-hint = ATTENZIONE: per sopprimere imposta { $env }=1
+
 # ---------- CLI: update ----------
 update-rebuild-header = Ricostruzione di daemon, CLI e MCP in corso...
 update-rebuild-step = compilo { $crate }
