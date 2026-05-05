@@ -58,6 +58,7 @@ mod status_render;
 pub mod task;
 mod task_complete;
 mod task_render;
+pub mod task_templates;
 pub mod update;
 mod update_release_notes;
 mod update_repo_root;
