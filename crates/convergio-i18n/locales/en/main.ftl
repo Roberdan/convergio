@@ -256,6 +256,7 @@ session-register-poll-announcements-header = { $count ->
    *[other] Pending plan announcements ({ $count }):
 }
 session-register-poll-message-line =   - plan { $plan } seq { $seq } [{ $topic }] sender={ $sender }
+session-register-poll-message-line-consumed =   - plan { $plan } seq { $seq } [{ $topic }] sender={ $sender } (consumed)
 
 # ---------- brand (CLI: about) ----------
 # Brand marks (claim/subline/product name) are NOT translated — they

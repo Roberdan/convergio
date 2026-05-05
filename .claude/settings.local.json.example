@@ -24,6 +24,27 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.convergio/bin/cvg session heartbeat-since-last-turn --agent-id \"claude-code-${USER}\" >/dev/null 2>&1 &"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.convergio/bin/cvg session pre-stop --agent-id \"claude-code-${USER}\" || true"
+          }
+        ]
+      }
     ]
   }
 }

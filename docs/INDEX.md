@@ -18,7 +18,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 411 |
+| `AGENTS.md` | agent-rules | - | - | 405 |
 | `ARCHITECTURE.md` | architecture | - | - | 270 |
 | `CHANGELOG.md` | release | - | - | 839 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -30,7 +30,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `STATUS.md` | - | - | - | 40 |
 | `assets/branding/README.md` | - | - | - | 57 |
 | `crates/AGENTS.md` | - | - | - | 30 |
-| `crates/convergio-api/AGENTS.md` | crate-rules | - | - | 25 |
+| `crates/convergio-api/AGENTS.md` | crate-rules | - | - | 26 |
 | `crates/convergio-api/README.md` | crate-readme | - | - | 7 |
 | `crates/convergio-brand/AGENTS.md` | crate-rules | - | - | 45 |
 | `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 27 |
@@ -39,14 +39,14 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-cli-pr/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 49 |
 | `crates/convergio-cli-session/README.md` | crate-readme | - | - | 26 |
-| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 39 |
+| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 40 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 31 |
 | `crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
 | `crates/convergio-coherence/AGENTS.md` | crate-rules | - | - | 67 |
 | `crates/convergio-coherence/README.md` | crate-readme | - | - | 23 |
 | `crates/convergio-db/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-db/README.md` | crate-readme | - | - | 26 |
-| `crates/convergio-durability/AGENTS.md` | crate-rules | - | - | 84 |
+| `crates/convergio-durability/AGENTS.md` | crate-rules | - | - | 85 |
 | `crates/convergio-embed/AGENTS.md` | crate-rules | - | - | 65 |
 | `crates/convergio-executor/AGENTS.md` | crate-rules | - | - | 26 |
 | `crates/convergio-executor/README.md` | crate-readme | - | - | 7 |

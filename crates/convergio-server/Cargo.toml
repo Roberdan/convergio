@@ -62,3 +62,5 @@ tempfile = { workspace = true }
 sqlx = { workspace = true, features = ["sqlite"] }
 ed25519-dalek = { workspace = true }
 convergio-graph = { workspace = true }
+convergio-cli-session = { workspace = true }
+convergio-i18n = { workspace = true }

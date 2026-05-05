@@ -29,6 +29,7 @@ impl Bridge {
             Action::SubmitTask => self.transition(request.params, "submitted").await,
             Action::ValidatePlan => self.validate_plan(request.params).await,
             Action::AuditVerify => self.audit_verify(request.params).await,
+            Action::AuditAppend => self.post("/v1/audit/append", request.params).await,
             Action::ImportCrdtOps => self.post("/v1/crdt/import", request.params).await,
             Action::ListCrdtConflicts => self.get("/v1/crdt/conflicts").await,
             Action::RegisterAgent => self.post("/v1/agent-registry/agents", request.params).await,

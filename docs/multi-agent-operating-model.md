@@ -102,6 +102,28 @@ If your harness has no `cargo` on PATH, copy
 `.claude/settings.local.json` to point at the precompiled
 `~/.convergio/bin/cvg` instead.
 
+#### Inbox / direct messages
+
+`cvg session register-and-poll` auto-acks every unicast `agent:<id>`
+direct message after rendering it (P1-3). This means:
+
+- The same direct never re-surfaces on the next poll (`consumed_at`
+  flips to non-null in the `agent_messages` row).
+- Plan-wide topics (`plan:*`) and coordination topics
+  (`coordination/*`) are NEVER auto-acked — those are broadcasts and
+  every agent must see them.
+- Pass `--no-auto-ack` to opt out (e.g. tooling that wants the
+  daemon to retain delivery state).
+
+#### Per-tool-use heartbeat
+
+The Claude Code `PreToolUse` hook fires
+`cvg session heartbeat-since-last-turn` before every Bash / Edit /
+Write / MultiEdit / NotebookEdit call. The command is throttled by a
+per-pid timestamp file under `~/.convergio/state/sessions/`, so the
+daemon only sees a real `POST /heartbeat` every ~5 minutes. Sessions
+doing 4-hour solo runs no longer look stale in `cvg agent list`.
+
 ### Manual loop
 
 Every agent session needs a unique `agent_id`, for example:

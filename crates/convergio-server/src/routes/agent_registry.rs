@@ -55,8 +55,26 @@ async fn register(
     Ok(Json(state.durability.register_agent(body).await?))
 }
 
-async fn list(State(state): State<AppState>) -> Result<Json<Vec<AgentRecord>>, ApiError> {
-    Ok(Json(state.durability.agents().list().await?))
+#[derive(Debug, Default, Deserialize)]
+struct AgentListQuery {
+    /// Filter by canonical agent status (`working`, `idle`, `ready`, `terminated`, …).
+    status: Option<String>,
+    /// Maximum number of rows to return. Caps at 1000 server-side.
+    limit: Option<i64>,
+}
+
+async fn list(
+    State(state): State<AppState>,
+    Query(q): Query<AgentListQuery>,
+) -> Result<Json<Vec<AgentRecord>>, ApiError> {
+    let limit = q.limit.map(|n| n.clamp(1, 1000));
+    Ok(Json(
+        state
+            .durability
+            .agents()
+            .list_filtered(q.status.as_deref(), limit)
+            .await?,
+    ))
 }
 
 async fn get_one(

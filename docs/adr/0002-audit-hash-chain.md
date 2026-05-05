@@ -85,7 +85,37 @@ new ADR.
 - A row added between insert and chain-update is a bug surface.
   Mitigation: insert and chain-update happen in one DB transaction.
 
+## Custom kinds
+
+Originally only daemon-internal transitions wrote audit rows
+(`task.in_progress`, `plan.created`, `evidence.attached`, etc.). The
+P2-2 retrospective (2026-05-04 retro item A8) found that agent CLI
+subcommands wanting to emit operational signals — `session.pre_stop`
+checks, `cvg coherence` scans, retro boomerangs — had no path: they
+fell back to `tracing::info!` and lost the hash-chain signal.
+
+`POST /v1/audit/append` (P2-2) extends this ADR with **agent-emitted
+custom rows**. The route is just another append: it goes through the
+same `AuditLog::append` writer, hashes the same way, and verifies
+through `GET /v1/audit/verify` exactly like daemon-written rows. No
+new chain, no new schema.
+
+The contract:
+
+| Field | Rule |
+|---|---|
+| `kind` | Must match `^[a-z][a-z0-9_]*\.[a-z0-9_]+(\.[a-z0-9_]+)*$`. Examples: `myapp.session.pre_stop.check.1`, `cvg.coherence.scan`. |
+| `kind` | Must NOT start with daemon-reserved prefixes (`task.`, `plan.`, `evidence.`, `crdt.`, `workspace.`, `capability.`) and must NOT be a reserved name (`agent.session_started`, `agent.retired`, `agent.retired_stale`). 422 `kind_reserved`. |
+| `entity_kind` | Closed enum: `agent | task | plan | evidence | free`. `free` is the catch-all for non-Convergio entities. |
+| `entity_id` | Required, non-empty. Opaque to the daemon. |
+| `agent_id` | Optional. Use the registered agent identity when known. |
+| `payload` | Must be a JSON object (scalars and arrays rejected with 422 `payload_not_object`) so downstream tools stay machine-readable. |
+
+The `convergio.act audit_append` action wraps this route; agents
+should prefer it over raw HTTP.
+
 ## Links
 
 - Spec: [docs/spec/v3-durability-layer.md](../spec/v3-durability-layer.md) § "Layer 1 — Durability Core"
 - Constitution: [CONSTITUTION.md](../../CONSTITUTION.md) § 7
+- P2-2 retro: 2026-05-04 retrospective, A8 (agent-emitted audit rows)
