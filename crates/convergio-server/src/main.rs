@@ -98,7 +98,7 @@ async fn start(
 
     let durability = Arc::new(Durability::new(pool.clone()));
     let bus = Arc::new(Bus::new(pool.clone()));
-    let supervisor = Arc::new(Supervisor::new(pool));
+    let supervisor = Arc::new(Supervisor::new_with_bus(pool, (*bus).clone()));
 
     let reaper_config = ReaperConfig {
         timeout: Duration::seconds(parse_env_i64("CONVERGIO_REAPER_TIMEOUT_SECS", 300)),

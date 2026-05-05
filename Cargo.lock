@@ -845,6 +845,7 @@ name = "convergio-lifecycle"
 version = "0.3.11"
 dependencies = [
  "chrono",
+ "convergio-bus",
  "convergio-db",
  "nix",
  "serde",
