@@ -10,7 +10,17 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 /// Run diagnostics.
-pub async fn run(client: &Client, bundle: &Bundle, output: OutputMode, json: bool) -> Result<()> {
+pub async fn run(
+    client: &Client,
+    bundle: &Bundle,
+    output: OutputMode,
+    json: bool,
+    kill_zombies: bool,
+) -> Result<()> {
+    if kill_zombies {
+        super::doctor_zombies::run().await?;
+        return Ok(());
+    }
     let report = build_report(client).await;
     match if json { OutputMode::Json } else { output } {
         OutputMode::Human => print_human(bundle, &report),
