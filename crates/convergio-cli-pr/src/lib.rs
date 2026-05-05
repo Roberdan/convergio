@@ -9,6 +9,7 @@
 
 pub mod pr;
 pub mod pr_diff;
+pub mod pr_link;
 pub mod pr_merge;
 pub mod pr_merge_io;
 pub mod pr_parse;

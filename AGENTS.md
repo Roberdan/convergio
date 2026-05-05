@@ -301,7 +301,8 @@ For the full HTTP surface, drive `cvg` (typed) or `curl` (raw):
 
 - Plans: `POST /v1/plans`, `GET /v1/plans`, `GET /v1/plans/:id`,
   `PATCH /v1/plans/:id` (rename), `POST /v1/plans/:id/transition`,
-  `GET /v1/plans/:id/triage`, `POST /v1/plans/:id/validate`
+  `GET /v1/plans/:id/triage`, `POST /v1/plans/:id/validate`,
+  `POST /v1/plans/:id/pr-links` (P2-3, agent↔PR mapping; migration 0013)
 - Tasks: `POST /v1/plans/:plan_id/tasks`, `GET /v1/tasks/:id`,
   `POST /v1/tasks/:id/transition`, `POST /v1/tasks/:id/retry`,
   `POST /v1/tasks/:id/close-post-hoc` (ADR-0026),

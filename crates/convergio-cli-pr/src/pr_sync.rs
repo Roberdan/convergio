@@ -17,6 +17,7 @@
 //! Convention: PR authors add a `Tracks:` line to the PR body for every
 //! task this PR closes. See `.github/pull_request_template.md`.
 
+use super::pr_link::detect_repo_slug_or_unknown;
 use super::pr_sync_parse::parse_tracks_lines;
 use super::{Client, OutputMode};
 use anyhow::{Context, Result};
@@ -60,7 +61,10 @@ pub async fn run(
         }
     }
 
-    // 4. Transition each in turn.
+    // 4. Resolve repo slug once (best-effort; needed for plan_pr_links).
+    let repo_slug = detect_repo_slug_or_unknown();
+
+    // 5. Transition each in turn and populate plan_pr_links.
     let mut report = SyncReport {
         scanned_prs: prs.len(),
         tracked_pairs: tracked.len(),
@@ -79,6 +83,32 @@ pub async fn run(
             }
         };
         let status = task.get("status").and_then(Value::as_str).unwrap_or("");
+        let task_plan_id = task
+            .get("plan_id")
+            .and_then(Value::as_str)
+            .unwrap_or("")
+            .to_string();
+        let task_agent_id = task
+            .get("agent_id")
+            .and_then(Value::as_str)
+            .map(str::to_string);
+
+        // Populate plan_pr_links regardless of task status so the
+        // mapping is recorded even for already-closed tasks.
+        if !task_plan_id.is_empty() {
+            let link_body = json!({
+                "pr_number": pr_num,
+                "repo_slug": repo_slug,
+                "task_id":   task_id,
+                "agent_id":  task_agent_id,
+            });
+            // Non-fatal — if the plan is missing or the daemon is
+            // unreachable we log it and continue.
+            let _: Result<Value> = client
+                .post(&format!("/v1/plans/{task_plan_id}/pr-links"), &link_body)
+                .await;
+        }
+
         if matches!(status, "submitted" | "done") {
             report.skipped.push(SyncSkip {
                 pr_number: pr_num,

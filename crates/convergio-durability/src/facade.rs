@@ -5,7 +5,9 @@ use crate::audit::{append_tx, AuditLog, EntityKind};
 use crate::error::Result;
 use crate::gates::{self, Pipeline};
 use crate::model::{Evidence, NewPlan, NewTask, Plan, PlanStatus, Task, TaskStatus};
-use crate::store::{CrdtStore, EvidenceStore, PlanStore, TaskStore, WorkspaceStore};
+use crate::store::{
+    CrdtStore, EvidenceStore, PlanPrLinksStore, PlanStore, TaskStore, WorkspaceStore,
+};
 use chrono::Utc;
 use convergio_db::Pool;
 use serde_json::json;
@@ -64,6 +66,11 @@ impl Durability {
     /// Workspace coordination store accessor.
     pub fn workspace(&self) -> WorkspaceStore {
         WorkspaceStore::new(self.pool.clone())
+    }
+
+    /// Plan↔PR link store accessor (P2-3 / F47).
+    pub fn plan_pr_links(&self) -> PlanPrLinksStore {
+        PlanPrLinksStore::new(self.pool.clone())
     }
 
     /// Audit log accessor.
