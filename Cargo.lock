@@ -923,6 +923,7 @@ dependencies = [
  "axum",
  "chrono",
  "clap",
+ "convergio-api",
  "convergio-brand",
  "convergio-bus",
  "convergio-cli-session",

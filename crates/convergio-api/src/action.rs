@@ -163,4 +163,127 @@ impl Action {
             Self::AgentPrompt => "agent_prompt",
         }
     }
+
+    /// Capability bucket used by the P3-1 registry.
+    pub fn capability(self) -> &'static str {
+        match self {
+            Self::Status | Self::AgentPrompt => "status",
+            Self::CreatePlan | Self::ValidatePlan => "plans",
+            Self::CreateTask
+            | Self::ListTasks
+            | Self::NextTask
+            | Self::ClaimTask
+            | Self::Heartbeat
+            | Self::SubmitTask
+            | Self::GetTaskContext => "tasks",
+            Self::AddEvidence => "evidence",
+            Self::AuditVerify | Self::ExplainLastRefusal => "audit",
+            Self::RegisterAgent
+            | Self::ListAgents
+            | Self::HeartbeatAgent
+            | Self::RetireAgent
+            | Self::SpawnRunner => "agents",
+            Self::ListCapabilities | Self::GetCapability | Self::PlannerSolve => "capabilities",
+            Self::ImportCrdtOps | Self::ListCrdtConflicts => "crdt",
+            Self::ClaimWorkspaceLease
+            | Self::ListWorkspaceLeases
+            | Self::ReleaseWorkspaceLease
+            | Self::SubmitPatchProposal
+            | Self::EnqueuePatchProposal
+            | Self::ProcessMergeQueue
+            | Self::ListMergeQueue
+            | Self::ListWorkspaceConflicts => "workspace",
+            Self::PublishMessage | Self::PollMessages | Self::AckMessage => "validation",
+        }
+    }
+
+    /// One-line summary used by the P3-1 registry.
+    pub fn summary(self) -> &'static str {
+        match self {
+            Self::Status => "Diagnose daemon and integration readiness.",
+            Self::CreatePlan => "Create a plan.",
+            Self::CreateTask => "Create a task under a plan.",
+            Self::ListTasks => "List tasks for a plan.",
+            Self::NextTask => "Find the next task to work on.",
+            Self::ClaimTask => "Claim a task as in progress.",
+            Self::Heartbeat => "Touch a task heartbeat.",
+            Self::AddEvidence => "Attach evidence to a task.",
+            Self::GetTaskContext => "Generate a compact task-scoped context packet.",
+            Self::PublishMessage => "Publish a plan-scoped bus message.",
+            Self::PollMessages => "Poll unacknowledged plan-scoped bus messages.",
+            Self::AckMessage => "Acknowledge a plan-scoped bus message.",
+            Self::SubmitTask => "Submit a task and run gates.",
+            Self::ValidatePlan => "Validate a plan; promote submitted tasks to done.",
+            Self::AuditVerify => "Verify the audit hash chain.",
+            Self::ImportCrdtOps => "Import a CRDT operation batch.",
+            Self::ListCrdtConflicts => "List unresolved CRDT conflicts.",
+            Self::RegisterAgent => "Register or refresh an agent identity.",
+            Self::ListAgents => "List durable agent identities.",
+            Self::HeartbeatAgent => "Record an agent registry heartbeat.",
+            Self::RetireAgent => "Retire an agent identity.",
+            Self::SpawnRunner => "Spawn the local shell runner adapter.",
+            Self::PlannerSolve => "Solve a mission through the installed planner capability.",
+            Self::ListCapabilities => "List installed local capabilities.",
+            Self::GetCapability => "Get one installed local capability.",
+            Self::ClaimWorkspaceLease => "Claim a workspace resource lease.",
+            Self::ListWorkspaceLeases => "List active workspace leases.",
+            Self::ReleaseWorkspaceLease => "Release a workspace resource lease.",
+            Self::SubmitPatchProposal => "Submit a workspace patch proposal.",
+            Self::EnqueuePatchProposal => "Enqueue an accepted patch proposal.",
+            Self::ProcessMergeQueue => "Process the next pending merge queue item.",
+            Self::ListMergeQueue => "List merge queue items.",
+            Self::ListWorkspaceConflicts => "List open workspace conflicts.",
+            Self::ExplainLastRefusal => "Explain the most recent gate refusal for a task.",
+            Self::AgentPrompt => "Return the canonical agent prompt addendum.",
+        }
+    }
+
+    /// Compensating action that undoes this one's side effects when
+    /// a clean inverse exists (P3-3 — Palantir-inspired compensating
+    /// actions). Returns `None` for actions whose effect cannot be
+    /// reversed by another action of the same surface.
+    pub fn compensate(self) -> Option<Self> {
+        match self {
+            Self::RegisterAgent => Some(Self::RetireAgent),
+            Self::RetireAgent => Some(Self::RegisterAgent),
+            Self::ClaimWorkspaceLease => Some(Self::ReleaseWorkspaceLease),
+            Self::Status
+            | Self::CreatePlan
+            | Self::CreateTask
+            | Self::ListTasks
+            | Self::NextTask
+            | Self::ClaimTask
+            | Self::Heartbeat
+            | Self::AddEvidence
+            | Self::GetTaskContext
+            | Self::PublishMessage
+            | Self::PollMessages
+            | Self::AckMessage
+            | Self::SubmitTask
+            | Self::ValidatePlan
+            | Self::AuditVerify
+            | Self::ImportCrdtOps
+            | Self::ListCrdtConflicts
+            | Self::ListAgents
+            | Self::HeartbeatAgent
+            | Self::SpawnRunner
+            | Self::PlannerSolve
+            | Self::ListCapabilities
+            | Self::GetCapability
+            | Self::ListWorkspaceLeases
+            | Self::ReleaseWorkspaceLease
+            | Self::SubmitPatchProposal
+            | Self::EnqueuePatchProposal
+            | Self::ProcessMergeQueue
+            | Self::ListMergeQueue
+            | Self::ListWorkspaceConflicts
+            | Self::ExplainLastRefusal
+            | Self::AgentPrompt => None,
+        }
+    }
+
+    /// True iff [`Self::compensate`] returns `Some`.
+    pub fn is_reversible(self) -> bool {
+        self.compensate().is_some()
+    }
 }

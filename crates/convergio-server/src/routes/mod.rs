@@ -2,6 +2,7 @@
 
 pub mod agent_registry;
 pub mod agents;
+pub mod api_actions;
 pub mod audit;
 pub mod capabilities;
 pub mod context;
@@ -11,6 +12,7 @@ pub mod embed;
 pub mod evidence;
 pub mod fleet;
 pub(crate) mod fleet_duplicates;
+pub mod gate_preconditions;
 pub mod graph;
 pub mod health;
 pub mod messages;
