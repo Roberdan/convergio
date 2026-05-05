@@ -71,17 +71,19 @@ pub enum PlanCommand {
         #[arg(long)]
         auto_close: bool,
     },
-    /// Run a plan's pending tasks sequentially (wave/seq order).
-    ///
-    /// Iterates pending tasks ordered by (wave, sequence). For each task:
-    /// claims it, transitions to submitted, publishes a bus announcement.
-    /// Halts with a non-zero exit code on the first failure.
+    /// Run a plan's pending tasks (wave/seq order). Halts on the first
+    /// failure and prints a resume hint. `--max-parallel <K>` (default 1,
+    /// clamped to [1, 16]) runs that many tasks of the same wave at once;
+    /// across waves we stay sequential so the wave-sequence gate holds.
     Run {
         /// Plan number (integer) or UUID.
         id: String,
         /// Agent id to record on task transitions.
         #[arg(long, env = "CONVERGIO_AGENT_ID")]
         agent_id: Option<String>,
+        /// Max concurrent tasks within the same wave.
+        #[arg(long, default_value_t = 1)]
+        max_parallel: u8,
     },
 }
 
@@ -256,8 +258,20 @@ pub async fn run(
         } => {
             super::plan_triage::run(client, bundle, output, &id, stale_days, auto_close).await?;
         }
-        PlanCommand::Run { id, agent_id } => {
-            super::plan_run::run(client, bundle, output, &id, agent_id.as_deref()).await?;
+        PlanCommand::Run {
+            id,
+            agent_id,
+            max_parallel,
+        } => {
+            super::plan_run::run(
+                client,
+                bundle,
+                output,
+                &id,
+                agent_id.as_deref(),
+                max_parallel,
+            )
+            .await?;
         }
     }
     Ok(())
