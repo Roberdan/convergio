@@ -19,6 +19,7 @@ path = "src/main.rs"
 [dependencies]
 convergio-brand = { workspace = true }
 convergio-cli-pr = { workspace = true }
+convergio-cli-plan-run = { workspace = true }
 convergio-cli-session = { workspace = true }
 convergio-coherence = { workspace = true }
 convergio-durability = { workspace = true }

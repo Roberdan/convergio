@@ -15,6 +15,7 @@ module.exports = {
         'server',
         'cli',
         'cli-pr',
+        'cli-plan-run',
         'cli-session',
         'session',
         'planner',

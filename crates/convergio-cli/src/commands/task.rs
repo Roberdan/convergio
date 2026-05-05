@@ -1,6 +1,7 @@
 //! `cvg task ...` — create, inspect and transition local tasks.
 
 use super::task_render::{render_task, render_task_list};
+use super::task_templates::{resolve_evidence, TaskTemplate};
 use super::{Client, OutputMode};
 use anyhow::{bail, Result};
 use clap::{Subcommand, ValueEnum};
@@ -28,6 +29,11 @@ pub enum TaskCommand {
         /// Required evidence kinds (comma-separated, e.g. `code,test`).
         #[arg(long, value_delimiter = ',')]
         evidence_required: Vec<String>,
+        /// Task category template — pre-populates `evidence_required`
+        /// from a category-specific default (P2-10). User-supplied
+        /// `--evidence-required` values are merged on top.
+        #[arg(long, value_enum)]
+        template: Option<TaskTemplate>,
         /// Optional runner kind (ADR-0034) in the wire format
         /// `<vendor>:<model>` — e.g. `claude:sonnet`,
         /// `claude:opus`, `copilot:gpt-5.2`, `qwen:qwen3-coder`.
@@ -148,10 +154,12 @@ pub async fn run(
             wave,
             sequence,
             evidence_required,
+            template,
             runner,
             profile,
             max_budget_usd,
         } => {
+            let evidence_required = resolve_evidence(evidence_required, template);
             let body = json!({
                 "title": title,
                 "description": description,
