@@ -111,7 +111,9 @@ fn draw_footer(f: &mut Frame, area: Rect, state: &AppState) {
     };
     let pane_name = format!("pane: {}", state.focus.label());
     let help = match state.mode {
-        AppMode::Overview => "q quit  Enter scope  Esc clear  r refresh  Tab pane  j/k row",
+        AppMode::Overview => {
+            "q quit  Enter scope  Esc clear  r refresh  Tab pane  j/k row  e exited"
+        }
         AppMode::Detail(_) => "Esc back  q quit  r refresh  j/k scroll",
     };
     let line = Line::from(vec![

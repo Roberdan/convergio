@@ -3,6 +3,7 @@
 //! `Enter` on a plan/task/agent/PR sets a cross-pane scope. Startup
 //! scope is [`Scope::All`], so every pane initially shows everything.
 
+use crate::agent_filter::filter_exited;
 use crate::client::{AgentProcess, BusMessage, PrSummary, RegistryAgent, TaskSummary};
 use crate::state::{AppState, Scope};
 use std::collections::HashSet;
@@ -65,27 +66,31 @@ impl AppState {
     }
 
     /// Registered agents visible under the current scope.
+    /// Also applies `show_exited_agents` (P2-11): hides
+    /// `terminated`/`retired`/`exited` rows by default.
     pub fn scoped_agents(&self) -> Vec<&RegistryAgent> {
-        let tasks = self.scoped_tasks();
-        let task_ids = tasks.iter().map(|t| t.id.as_str()).collect::<HashSet<_>>();
-        let owners = tasks
-            .iter()
-            .filter_map(|t| t.agent_id.as_deref())
-            .collect::<HashSet<_>>();
-        match self.scope {
+        let candidates: Vec<&RegistryAgent> = match self.scope {
             Scope::All => self.agents.iter().collect(),
-            _ => self
-                .agents
-                .iter()
-                .filter(|a| {
-                    owners.contains(a.id.as_str())
-                        || a.current_task_id
-                            .as_deref()
-                            .map(|id| task_ids.contains(id))
-                            .unwrap_or(false)
-                })
-                .collect(),
-        }
+            _ => {
+                let tasks = self.scoped_tasks();
+                let task_ids = tasks.iter().map(|t| t.id.as_str()).collect::<HashSet<_>>();
+                let owners = tasks
+                    .iter()
+                    .filter_map(|t| t.agent_id.as_deref())
+                    .collect::<HashSet<_>>();
+                self.agents
+                    .iter()
+                    .filter(|a| {
+                        owners.contains(a.id.as_str())
+                            || a.current_task_id
+                                .as_deref()
+                                .map(|id| task_ids.contains(id))
+                                .unwrap_or(false)
+                    })
+                    .collect()
+            }
+        };
+        filter_exited(candidates, self.show_exited_agents)
     }
 
     /// Supervised agent processes visible under the current scope.
