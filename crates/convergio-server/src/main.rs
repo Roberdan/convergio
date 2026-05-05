@@ -9,6 +9,7 @@ use convergio_brand::{boot, theme::Theme};
 use convergio_bus::Bus;
 use convergio_db::Pool;
 use convergio_durability::reaper::{self, ReaperConfig};
+use convergio_durability::telemetry_collector::{self, CollectorConfig};
 use convergio_durability::{init as init_durability, Durability};
 use convergio_executor::{spawn_loop as executor_spawn_loop, Executor, SpawnTemplate};
 use convergio_lifecycle::watcher::{self, WatcherConfig};
@@ -123,6 +124,11 @@ async fn start(
     ));
     let executor_tick = Duration::seconds(parse_env_i64("CONVERGIO_EXECUTOR_TICK_SECS", 30));
     let _executor_loop = executor_spawn_loop(executor, executor_tick);
+
+    let collector_config = CollectorConfig {
+        tick_interval: Duration::seconds(parse_env_i64("CONVERGIO_TELEMETRY_TICK_SECS", 60)),
+    };
+    let _telemetry_collector = telemetry_collector::spawn(durability.clone(), collector_config);
 
     let state = AppState {
         durability: durability.clone(),
