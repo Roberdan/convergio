@@ -1,4 +1,4 @@
-//! Integration tests for `telemetry_series` (migration 0013).
+//! Integration tests for `telemetry_series` (migration 0014).
 //!
 //! Tests drive `record_telemetry_snapshot` and `query_telemetry_series`
 //! directly — no wall-clock sleep required.
@@ -38,11 +38,11 @@ async fn migration_creates_table_and_index() {
     assert_eq!(idx, 1, "bucket index must exist");
 
     let applied: i64 =
-        sqlx::query_scalar("SELECT COUNT(*) FROM _sqlx_migrations WHERE version = 13")
+        sqlx::query_scalar("SELECT COUNT(*) FROM _sqlx_migrations WHERE version = 14")
             .fetch_one(dur.pool().inner())
             .await
             .unwrap();
-    assert_eq!(applied, 1, "migration 0013 must be recorded");
+    assert_eq!(applied, 1, "migration 0014 must be recorded");
 }
 
 #[tokio::test]

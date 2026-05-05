@@ -1,4 +1,4 @@
-//! DAO for the `telemetry_series` table (migration 0013).
+//! DAO for the `telemetry_series` table (migration 0014).
 //!
 //! Stores 1-minute resolution snapshots of [`crate::TelemetryCounters`]
 //! with a 7-day rolling window.  Reads are served by
