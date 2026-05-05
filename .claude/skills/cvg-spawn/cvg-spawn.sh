@@ -56,14 +56,20 @@ fi
 HEX="$(random_hex)"
 SUBAGENT_ID="subagent-${SLUG}-${HEX}"
 
-# 6-line wrapper. Keep this tight: one logical step per line so the
-# parent agent can paste it verbatim. The brief itself goes between
-# the heartbeat-reminder line and the retire line.
+# Wrapper. One logical step per line so the parent agent can paste
+# it verbatim. The brief itself goes between the heartbeat-reminder
+# line and the retire line. Budget pre-check (P1-6, finding E5):
+# the subagent runs check-context-budget.sh before writing, targets
+# ≤ 90% of the per-crate cap, and snapshots remaining budget every
+# ~200 LOC of new code.
 cat <<RENDER
 SUBAGENT_ID="${SUBAGENT_ID}"
+# P1-6 budget pre-check — abort early if any crate is over the per-crate cap.
+./scripts/check-context-budget.sh || { echo "context-budget pre-check refused; pick a smaller task or refactor first" >&2; exit 1; }
 curl -fsS -X POST ${DAEMON_URL}/v1/agent-registry/agents -H 'Content-Type: application/json' -d "{\"id\":\"\${SUBAGENT_ID}\",\"kind\":\"subagent\",\"name\":\"${TASK_DESC}\",\"host\":\"\${HOSTNAME:-macOS}\",\"capabilities\":[\"edit\",\"read\",\"shell\"]}" >/dev/null
 curl -fsS -X POST ${DAEMON_URL}/v1/agent-registry/agents/\${SUBAGENT_ID}/heartbeat -H 'Content-Type: application/json' -d '{"status":"working"}' >/dev/null
-# heartbeat every 5 min while working: re-run the line above
+# heartbeat every 5 min while working: re-run the line above.
+# Snapshot remaining budget every ~200 LOC: ./scripts/check-context-budget.sh
 # ... do work (the actual subagent brief goes here) ...
 curl -fsS -X POST ${DAEMON_URL}/v1/agent-registry/agents/\${SUBAGENT_ID}/retire -H 'Content-Type: application/json' -d '{}' >/dev/null
 RENDER
