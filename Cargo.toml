@@ -7,6 +7,7 @@ members = [
     "crates/convergio-server",
     "crates/convergio-cli",
     "crates/convergio-cli-pr",
+    "crates/convergio-cli-plan-run",
     "crates/convergio-cli-session",
     "crates/convergio-planner",
     "crates/convergio-thor",
@@ -122,6 +123,7 @@ convergio-runner = { path = "crates/convergio-runner" }
 convergio-brand = { path = "crates/convergio-brand" }
 convergio-embed = { path = "crates/convergio-embed" }
 convergio-cli-pr = { path = "crates/convergio-cli-pr" }
+convergio-cli-plan-run = { path = "crates/convergio-cli-plan-run" }
 convergio-cli-session = { path = "crates/convergio-cli-session" }
 convergio-coherence = { path = "crates/convergio-coherence" }
 convergio-parse-multi = { path = "crates/convergio-parse-multi" }
