@@ -8,7 +8,7 @@
 //! deadlock plans whose wave 1 contained an intentional probe or any
 //! permanently-rejected task.
 
-use super::{Gate, GateContext};
+use super::{Gate, GateContext, GatePrecondition};
 use crate::error::{DurabilityError, Result};
 use crate::model::TaskStatus;
 
@@ -46,6 +46,15 @@ impl Gate for WaveSequenceGate {
             })
         } else {
             Ok(())
+        }
+    }
+
+    fn describe(&self) -> GatePrecondition {
+        GatePrecondition {
+            gate: "wave_sequence",
+            requires_evidence_kinds: vec![],
+            active_target_status: vec!["in_progress"],
+            refusal_reasons: vec!["earlier_wave_tasks_still_open"],
         }
     }
 }
