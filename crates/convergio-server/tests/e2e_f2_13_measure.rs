@@ -23,9 +23,26 @@ mod common;
 use convergio_fleet::{find_duplicates, find_patterns};
 use serde_json::Value;
 
+/// P0-6 / finding H4: long-running e2e tests must fail loud, not
+/// run forever. The body is wrapped in `tokio::time::timeout` with
+/// a 3-minute default; override via `CONVERGIO_E2E_F2_13_TIMEOUT_SECS`.
+fn timeout_secs() -> u64 {
+    std::env::var("CONVERGIO_E2E_F2_13_TIMEOUT_SECS")
+        .ok()
+        .and_then(|s| s.parse::<u64>().ok())
+        .unwrap_or(180)
+}
+
 #[tokio::test]
 #[ignore = "F2-13 measurement — slow (embeds real repos); run with --ignored --nocapture"]
 async fn f2_13_measure_cross_repo_patterns_and_fp_rate() {
+    let timeout = std::time::Duration::from_secs(timeout_secs());
+    tokio::time::timeout(timeout, run_measurement())
+        .await
+        .expect("F2-13 measurement timed out — increase CONVERGIO_E2E_F2_13_TIMEOUT_SECS");
+}
+
+async fn run_measurement() {
     let embedder = common::make_embedder();
     let model_id = embedder.model_id().to_owned();
     let (base, fleet_store, _embed, _dir) = common::boot_with_embedder(embedder).await;
