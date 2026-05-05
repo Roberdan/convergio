@@ -27,7 +27,12 @@ pub fn render(f: &mut Frame, area: Rect, state: &AppState, focused: bool) {
     } else {
         processes.len()
     };
-    let title = format!(" Agents ({count}){scope_crumb} ");
+    let exited_crumb = if state.show_exited_agents {
+        " · exited:on"
+    } else {
+        ""
+    };
+    let title = format!(" Agents ({count}){scope_crumb}{exited_crumb} ");
     let block = pane_block(&title, focused);
 
     let selected_idx = state.cursor.agents.selected.min(count.saturating_sub(1));
@@ -203,6 +208,7 @@ mod tests {
                 agent("claude-code-roberdan", "claude", "idle"),
                 agent("copilot-overnight", "copilot", "terminated"),
             ],
+            show_exited_agents: true,
             ..AppState::default()
         };
         term.draw(|f| render(f, f.area(), &state, true)).unwrap();
@@ -217,6 +223,31 @@ mod tests {
         assert!(dump.contains("claude-code-roberdan"));
         assert!(dump.contains("idle"));
         assert!(dump.contains("terminated"));
+        assert!(dump.contains("exited:on"));
+    }
+
+    #[test]
+    fn render_agents_hides_terminated_by_default() {
+        let backend = TestBackend::new(110, 6);
+        let mut term = Terminal::new(backend).unwrap();
+        let state = AppState {
+            agents: vec![
+                agent("claude-code-roberdan", "claude", "idle"),
+                agent("copilot-overnight", "copilot", "terminated"),
+            ],
+            ..AppState::default()
+        };
+        term.draw(|f| render(f, f.area(), &state, true)).unwrap();
+        let dump = term
+            .backend()
+            .buffer()
+            .content()
+            .iter()
+            .map(|c| c.symbol())
+            .collect::<String>();
+        assert!(dump.contains("claude-code-roberdan"));
+        assert!(!dump.contains("copilot-overnight"));
+        assert!(!dump.contains("exited:on"));
     }
 
     #[test]

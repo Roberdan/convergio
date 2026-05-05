@@ -28,6 +28,10 @@ pub enum Action {
     /// at the overview. The overview/detail split lives in
     /// [`crate::state::AppState`]; the keymap only emits the intent.
     Back,
+    /// Toggle whether `terminated` / `retired` agents are listed in
+    /// the Agents pane. Default is to hide; pressing `e` reveals
+    /// them so an operator can audit historical runs.
+    ToggleHideExited,
     /// Key was bound to no action — caller ignores.
     Noop,
 }
@@ -52,6 +56,7 @@ impl KeyMap {
             KeyCode::BackTab => Action::PanePrev,
             KeyCode::Char('j') | KeyCode::Down => Action::RowDown,
             KeyCode::Char('k') | KeyCode::Up => Action::RowUp,
+            KeyCode::Char('e') => Action::ToggleHideExited,
             _ => Action::Noop,
         }
     }
@@ -131,5 +136,11 @@ mod tests {
     fn unbound_keys_are_noop() {
         let km = KeyMap;
         assert_eq!(km.translate(key(Char('x'))), Action::Noop);
+    }
+
+    #[test]
+    fn e_toggles_hide_exited() {
+        let km = KeyMap;
+        assert_eq!(km.translate(key(Char('e'))), Action::ToggleHideExited);
     }
 }
