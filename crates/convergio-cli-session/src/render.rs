@@ -3,7 +3,7 @@
 //! Split out of [`crate::session`] to honour the 300-line per-file
 //! cap (CONSTITUTION § 13).
 
-use crate::session::{Plan, PrSummary, Task, TaskCounts};
+use crate::session_models::{Plan, PrSummary, Task, TaskCounts};
 use crate::OutputMode;
 use anyhow::Result;
 use convergio_i18n::Bundle;

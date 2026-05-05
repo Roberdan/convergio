@@ -1,12 +1,10 @@
-//! `cvg session register-and-poll` — automatic SessionStart wiring.
+//! `cvg session register-and-poll` — SessionStart wiring.
 //!
-//! Forces every Claude Code (and other harness) session to register
-//! itself in `agent_registry`, send a heartbeat, list active plans,
-//! and pull the first slice of inbox messages. The Claude Code
-//! `SessionStart` hook in `.claude/settings.json` calls this command
-//! before the first user prompt, closing the gap that let two
-//! parallel sessions work in the repo on 2026-05-04 without ever
-//! showing up in the registry.
+//! Registers in `agent_registry`, heartbeats, lists active plans,
+//! pulls direct + plan-wide inbox slices, and (P1-3) auto-acks each
+//! unicast `agent:<id>` direct message before rendering so the inbox
+//! does not re-surface on every poll. Broadcast topics
+//! (`plan:*`, `coordination/*`) are never auto-acked.
 
 use crate::register_and_poll_render;
 use crate::{Client, OutputMode};
@@ -36,6 +34,8 @@ pub struct Args {
     /// When `true`, skip publishing the `session-started` bus
     /// announcement on every active plan.
     pub quiet: bool,
+    /// When `true`, skip auto-acking unicast direct messages.
+    pub no_auto_ack: bool,
 }
 
 /// Entry point.
@@ -59,8 +59,11 @@ pub async fn run(client: &Client, bundle: &Bundle, output: OutputMode, args: Arg
     let mut announcements: Vec<(String, Vec<Value>)> = Vec::new();
     for plan in &plans {
         let pid = plan.id.as_str();
-        let inbox = poll_topic(client, pid, &format!("agent:{agent_id}")).await?;
+        let mut inbox = poll_topic(client, pid, &format!("agent:{agent_id}")).await?;
         if !inbox.is_empty() {
+            if !args.no_auto_ack {
+                auto_ack_unicast(client, &agent_id, &mut inbox).await;
+            }
             direct.push((pid.to_string(), inbox));
         }
         let plan_topic = poll_topic(client, pid, &format!("plan:{pid}")).await?;
@@ -155,6 +158,23 @@ async fn active_plans(client: &Client) -> Result<Vec<PlanRef>> {
         .collect())
 }
 
+/// Ack each unicast message and annotate it with `"consumed": true`
+/// on success. Errors are swallowed so a stale row can't abort poll.
+async fn auto_ack_unicast(client: &Client, consumer: &str, inbox: &mut [Value]) {
+    for m in inbox.iter_mut() {
+        let Some(id) = m.get("id").and_then(Value::as_str) else {
+            continue;
+        };
+        let body = serde_json::json!({"consumer": consumer});
+        let path = format!("/v1/messages/{id}/ack");
+        if client.post::<_, Value>(&path, &body).await.is_ok() {
+            if let Some(obj) = m.as_object_mut() {
+                obj.insert("consumed".to_string(), Value::Bool(true));
+            }
+        }
+    }
+}
+
 async fn poll_topic(client: &Client, plan_id: &str, topic: &str) -> Result<Vec<Value>> {
     let path = format!("/v1/plans/{plan_id}/messages?topic={topic}&limit=20");
     client
@@ -213,8 +233,7 @@ fn current_branch() -> Option<String> {
     Some(String::from_utf8_lossy(&out.stdout).trim().to_string())
 }
 
-/// One plan entry returned by `/v1/plans`. Public to the sibling
-/// renderer module so it can format it without re-cloning.
+/// One plan entry returned by `/v1/plans`.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct PlanRef {
     /// Plan UUID.
@@ -222,20 +241,18 @@ pub struct PlanRef {
     /// Display title.
     #[serde(default)]
     pub title: String,
-    /// Plan status (`draft` / `active` after the filter in
-    /// [`active_plans`]).
+    /// Plan status (`draft` / `active` after [`active_plans`]).
     #[serde(default)]
     pub status: String,
 }
 
-/// Inputs the renderer needs to produce one of the three output
-/// modes. Borrows everything to avoid cloning the message vectors.
+/// Borrowed inputs for the three render modes.
 pub struct SessionReport<'a> {
-    /// JSON returned by `POST /v1/agent-registry/agents`.
+    /// JSON from `POST /v1/agent-registry/agents`.
     pub agent: Value,
-    /// JSON returned by `POST /v1/agent-registry/agents/:id/heartbeat`.
+    /// JSON from `POST /v1/agent-registry/agents/:id/heartbeat`.
     pub heartbeat: Value,
-    /// Active plans the agent is now visible on.
+    /// Active plans visible to the agent.
     pub plans: &'a [PlanRef],
     /// `(plan_id, messages)` for direct (`agent:<id>`) traffic.
     pub direct: &'a [(String, Vec<Value>)],
