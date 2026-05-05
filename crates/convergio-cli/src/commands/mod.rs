@@ -45,6 +45,7 @@ pub mod pr;
 pub mod service;
 pub mod session;
 pub mod setup;
+pub mod setup_fleet;
 mod setup_prompts;
 mod setup_repo_path;
 pub mod solve;
