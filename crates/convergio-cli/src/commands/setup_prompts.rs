@@ -43,6 +43,19 @@ pub fn prompt_snippet(host: AgentHost) -> String {
          done\n\
          ```\n\n\
          If those commands fail, the daemon is down: `cvg service start`, then retry.\n\n\
+         ## Step 0.5 — load the cold-start packet\n\n\
+         After register, run `cvg session resume` to load live state\n\
+         (daemon health, audit chain, active plan, top pending tasks,\n\
+         open PRs). For Claude Code this is already automated: the\n\
+         project-level `SessionStart` hook in `.claude/settings.json`\n\
+         fires both `cvg session register-and-poll` AND\n\
+         `cvg session resume --output plain` before the first user\n\
+         prompt, so you start with full context. Set\n\
+         `CONVERGIO_NO_AUTO_RESUME=1` to skip the resume half.\n\n\
+         For other hosts, run it manually once after Step 0:\n\n\
+         ```\n\
+         cvg session resume --output plain\n\
+         ```\n\n\
          ## Working loop\n\n\
          Use Convergio as the local source of truth. Call convergio.help once. \
          Use convergio.act for task lifecycle and evidence. If a gate refuses \
@@ -111,6 +124,21 @@ mod tests {
             assert!(
                 body.contains("/v1/agent-registry/agents"),
                 "host {:?} prompt.txt is missing the registry endpoint",
+                host.as_str()
+            );
+            assert!(
+                body.contains("Step 0.5"),
+                "host {:?} prompt.txt is missing the Step 0.5 (session resume) block",
+                host.as_str()
+            );
+            assert!(
+                body.contains("cvg session resume"),
+                "host {:?} prompt.txt should reference cvg session resume",
+                host.as_str()
+            );
+            assert!(
+                body.contains("CONVERGIO_NO_AUTO_RESUME"),
+                "host {:?} prompt.txt should mention the CONVERGIO_NO_AUTO_RESUME escape hatch",
                 host.as_str()
             );
         }
