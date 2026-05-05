@@ -264,6 +264,24 @@ Convergio needs three separate concepts:
 
 Do not overload one field for all three.
 
+## Live state: who is working on what
+
+`agents.current_task_id` and `agents.status` are kept in lock-step
+with task transitions and the reaper, so a single
+`SELECT id, status, current_task_id FROM agents` (or `cvg agent
+list`) is an authoritative live-state snapshot:
+
+| Trigger | Effect on the agent row |
+|---------|--------------------------|
+| `transition_task → in_progress` with `agent_id` | `status='working'`, `current_task_id=task_id` |
+| `transition_task` away from `in_progress` | `status='idle'`, `current_task_id=NULL` (only if it still pointed at this task) |
+| Reaper releases a stale `in_progress` task | same clear, only if the previous owner still pointed at it |
+
+The "still pointed at" guard means an agent that has already claimed
+a different task is never disturbed when an old task is reaped or
+released. Both writes happen inside the same transaction as the task
+update, so nobody can read a half-applied state.
+
 ## Agent registry kinds
 
 `agent_registry.kind` is a permissive lower-case string. Validation
