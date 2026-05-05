@@ -33,8 +33,18 @@ If you are running inside Claude Code, the project-level
 `SessionStart` hook in `.claude/settings.json` runs
 `cvg session register-and-poll` automatically before the first
 prompt — your agent shows up in `agent_registry` without you
-typing anything. If you are outside Claude Code (or `cargo` is not
-on PATH and you have not installed the precompiled binary), run it
+typing anything. The same `.claude/settings.json` also wires a
+`PreToolUse` hook (P1-3) that fires
+`cvg session heartbeat-since-last-turn` before every Bash / Edit /
+Write call. It is throttled by a per-pid timestamp file, so the
+daemon sees a real `POST /heartbeat` only every ~5 minutes — but
+your session never goes silent during a long run, and `cvg agent
+list` keeps showing it as `working`. The `Stop` hook fires
+`cvg session pre-stop` so the end-of-session safety net always
+runs.
+
+If you are outside Claude Code (or `cargo` is not on PATH and you
+have not installed the precompiled binary), run register-and-poll
 once at session start:
 
 ```bash

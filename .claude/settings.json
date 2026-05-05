@@ -39,6 +39,7 @@
           }
         ]
       }
+<<<<<<< HEAD
     ],
     "PostToolUse": [
       {
@@ -49,6 +50,30 @@
           }
         ]
       }
+||||||| 344fea3
+=======
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cargo run --quiet -p convergio-cli -- session heartbeat-since-last-turn --agent-id \"claude-code-${USER}\" >/dev/null 2>&1 &"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cargo run --quiet -p convergio-cli -- session pre-stop --agent-id \"claude-code-${USER}\" || true"
+          }
+        ]
+      }
+>>>>>>> origin/main
     ]
   },
   "lsp": {

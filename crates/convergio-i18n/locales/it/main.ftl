@@ -257,6 +257,7 @@ session-register-poll-announcements-header = { $count ->
    *[other] Annunci di piano in attesa ({ $count }):
 }
 session-register-poll-message-line =   - piano { $plan } seq { $seq } [{ $topic }] sender={ $sender }
+session-register-poll-message-line-consumed =   - piano { $plan } seq { $seq } [{ $topic }] sender={ $sender } (consumato)
 session-register-poll-acked = { $count ->
     [one] Ack automatico di 1 messaggio diretto.
    *[other] Ack automatico di { $count } messaggi diretti.
