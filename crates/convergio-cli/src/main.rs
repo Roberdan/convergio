@@ -39,11 +39,13 @@ enum Command {
         #[command(subcommand)]
         sub: Option<commands::setup::SetupCommand>,
     },
-    /// Diagnose local configuration and daemon health.
+    /// Diagnose local configuration and daemon health. `--kill-zombies`
+    /// opts into cleanup of long-running e2e_* processes (P0-6).
     Doctor {
-        /// Print machine-readable JSON.
         #[arg(long)]
         json: bool,
+        #[arg(long)]
+        kill_zombies: bool,
     },
     /// Show active plans and recently completed work.
     Status {
@@ -149,10 +151,7 @@ enum Command {
         sub: commands::session::SessionCommand,
     },
     /// Solve a mission into a plan (Layer 4 planner).
-    Solve {
-        /// Mission text — newline-separated tasks.
-        mission: String,
-    },
+    Solve { mission: String },
     /// Run one executor tick (dispatches pending tasks).
     Dispatch,
     /// Run Thor on a plan, or `--self-test` for the H11 fixture run.
@@ -174,7 +173,6 @@ enum Command {
     },
     /// Stream daemon audit events brand-coloured (Ctrl-C exits).
     Monitor {
-        /// Poll interval in seconds (clamped to `[1, 60]`).
         #[arg(long, env = "CONVERGIO_MONITOR_TICK_SECS", default_value_t = 1)]
         tick_secs: u64,
     },
@@ -182,7 +180,6 @@ enum Command {
     Demo,
     /// Open the read-only TUI dashboard (cvg dash, ADR-0029).
     Dash {
-        /// Refresh interval in seconds (clamped to [1, 300]).
         #[arg(long, env = "CONVERGIO_DASH_TICK_SECS", default_value_t = 5)]
         tick_secs: u64,
     },
@@ -222,8 +219,10 @@ async fn main() -> Result<()> {
     let client = commands::Client::new(cli.url);
     match cli.command {
         Command::Health => commands::health::run(&client, &bundle, cli.output).await,
-        Command::Setup { sub } => commands::setup::run(&bundle, sub).await,
-        Command::Doctor { json } => commands::doctor::run(&client, &bundle, cli.output, json).await,
+        Command::Setup { sub } => commands::setup::run(&client, &bundle, cli.output, sub).await,
+        Command::Doctor { json, kill_zombies } => {
+            commands::doctor::run(&client, &bundle, cli.output, json, kill_zombies).await
+        }
         Command::Status {
             completed_limit,
             project,

@@ -1,15 +1,16 @@
-//! Smoke test for the lefthook `pre-push` doc-regen gate (P0.5).
+//! Smoke test asserting the lefthook `pre-push` doc-regen gate is
+//! gone (retro 544e78cc P2-9 / ADR-0015 § Drift policy).
 //!
-//! Recurring CI failures on PRs #169 / #170 / #173 were caused by
-//! AUTO blocks not being regenerated locally before push. The
-//! lefthook `pre-push` hook now blocks the push if either
-//! `cvg docs regenerate --check` or
-//! `./scripts/generate-docs-index.sh --check` would fail.
+//! The gate added in P0.5 (#178) was a band-aid for the recurring
+//! CI failures on PRs #169 / #170 / #173 caused by per-PR AUTO-block
+//! regen. The root-cause fix is to stop regenerating per-PR (cron
+//! reconciles nightly) — so the lefthook commands `docs-regen-check`
+//! and `docs-index-check` MUST NOT be present in `lefthook.yml`.
 //!
-//! This test exercises the hook end-to-end when `lefthook` is on
-//! PATH; it is a no-op (with a stderr notice) on machines that do
-//! not have lefthook installed, so CI remains green without making
-//! lefthook a hard prerequisite.
+//! This test also runs `lefthook validate` when the binary is on
+//! PATH to catch syntactic regressions; it is a no-op (with a stderr
+//! notice) on machines that do not have lefthook installed, so CI
+//! remains green without making lefthook a hard prerequisite.
 
 use std::path::PathBuf;
 use std::process::Command;
@@ -59,26 +60,26 @@ fn lefthook_pre_push_runs_when_available() {
 }
 
 #[test]
-fn lefthook_yml_contains_pre_push_doc_gate() {
+fn lefthook_yml_has_no_pre_push_doc_gate() {
+    // ADR-0015 § Drift policy. The per-PR doc-regen gate is removed;
+    // drift is reconciled by the nightly cron in
+    // `.github/workflows/auto-blocks-drift.yml`. Re-introducing
+    // either gate brings back the O(N²) merge cascade.
     let Some(root) = workspace_root() else {
         eprintln!("workspace root not found, skipping");
         return;
     };
     let cfg = std::fs::read_to_string(root.join("lefthook.yml")).expect("read lefthook.yml");
     assert!(
-        cfg.contains("pre-push:"),
-        "lefthook.yml missing pre-push block",
+        !cfg.contains("docs-regen-check:"),
+        "lefthook.yml must NOT contain docs-regen-check (ADR-0015 § Drift policy)",
     );
     assert!(
-        cfg.contains("docs-regen-check:"),
-        "lefthook.yml missing docs-regen-check command",
+        !cfg.contains("docs-index-check:"),
+        "lefthook.yml must NOT contain docs-index-check (ADR-0015 § Drift policy)",
     );
     assert!(
-        cfg.contains("docs-index-check:"),
-        "lefthook.yml missing docs-index-check command",
-    );
-    assert!(
-        cfg.contains("LEFTHOOK_SKIP_DOC_REGEN"),
-        "lefthook.yml missing documented escape hatch",
+        !cfg.contains("LEFTHOOK_SKIP_DOC_REGEN"),
+        "lefthook.yml must NOT reference the doc-regen escape hatch (ADR-0015 § Drift policy)",
     );
 }

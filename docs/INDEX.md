@@ -18,9 +18,9 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 406 |
+| `AGENTS.md` | agent-rules | - | - | 405 |
 | `ARCHITECTURE.md` | architecture | - | - | 270 |
-| `CHANGELOG.md` | release | - | - | 804 |
+| `CHANGELOG.md` | release | - | - | 839 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 158 |
@@ -87,7 +87,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0012-ooda-aware-validation.md` | adr | [] | accepted | 283 |
 | `docs/adr/0013-split-durability-into-three-crates.md` | adr | [convergio-durability, convergio-server, convergio-api] | proposed | 205 |
 | `docs/adr/0014-code-graph-tier3-retrieval.md` | adr | [convergio-graph, convergio-cli, convergio-server, convergio-durability] | accepted | 274 |
-| `docs/adr/0015-documentation-as-derived-state.md` | adr | [convergio-cli] | accepted | 184 |
+| `docs/adr/0015-documentation-as-derived-state.md` | adr | [convergio-cli] | accepted | 211 |
 | `docs/adr/0016-long-tail-vertical-accelerators.md` | adr | [] | proposed | 227 |
 | `docs/adr/0017-ise-hve-alignment.md` | adr | [convergio-durability] | proposed | 253 |
 | `docs/adr/0018-urbanism-over-architecture.md` | adr | [] | proposed | 303 |
@@ -115,10 +115,11 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0040-split-coherence-into-its-own-crate.md` | adr | [convergio-cli, convergio-coherence] | accepted | 186 |
 | `docs/adr/0041-split-session-into-its-own-crate.md` | adr | [convergio-cli, convergio-cli-session] | accepted | 200 |
 | `docs/adr/0042-wave-sequence-gate-parallel-safe.md` | adr | [convergio-durability, convergio-server, convergio-api, convergio-cli] | accepted | 262 |
-| `docs/adr/README.md` | adr | - | - | 63 |
+| `docs/adr/0043-api-id-and-payload-consistency.md` | adr | [convergio-server, convergio-api, convergio-mcp, convergio-cli] | accepted | 154 |
+| `docs/adr/README.md` | adr | - | - | 64 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
-| `docs/agent-resume-packet.md` | - | - | - | 252 |
+| `docs/agent-resume-packet.md` | - | - | - | 247 |
 | `docs/agents/README.md` | agent-docs | - | - | 101 |
 | `docs/multi-agent-operating-model.md` | - | - | - | 420 |
 | `docs/plans/2026-05-01-triage-pass.md` | plan | - | - | 75 |
