@@ -27,7 +27,7 @@ Supported actions are:
 `status`, `create_plan`, `create_task`, `list_tasks`, `next_task`,
 `claim_task`, `heartbeat`, `add_evidence`, `submit_task`,
 `get_task_context`, `publish_message`, `poll_messages`, `ack_message`,
-`validate_plan`, `audit_verify`, `import_crdt_ops`,
+`validate_plan`, `audit_verify`, `audit_append`, `import_crdt_ops`,
 `list_crdt_conflicts`, `register_agent`, `list_agents`,
 `heartbeat_agent`, `retire_agent`, `spawn_runner`, `planner.solve`,
 `list_capabilities`, `get_capability`, `explain_last_refusal`, and
