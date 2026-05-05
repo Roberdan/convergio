@@ -54,6 +54,7 @@ pub mod solve;
 pub mod status;
 mod status_render;
 pub mod task;
+mod task_complete;
 mod task_render;
 pub mod update;
 mod update_release_notes;
