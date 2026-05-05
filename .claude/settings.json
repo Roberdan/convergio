@@ -39,6 +39,16 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/cvg-heartbeat.sh || true"
+          }
+        ]
+      }
     ]
   },
   "lsp": {

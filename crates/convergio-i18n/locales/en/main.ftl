@@ -134,6 +134,7 @@ plan-triage-closed = Closed { $count } tasks.
 plan-triage-skipped = Triage cancelled — no tasks closed.
 
 # ---------- CLI: agent ----------
+agent-heartbeat-ok = Heartbeat sent: { $id } (status={ $status })
 agent-list-empty = No registered agents.
 agent-list-header = { $count ->
     [one] One agent:
@@ -256,6 +257,10 @@ session-register-poll-announcements-header = { $count ->
    *[other] Pending plan announcements ({ $count }):
 }
 session-register-poll-message-line =   - plan { $plan } seq { $seq } [{ $topic }] sender={ $sender }
+session-register-poll-acked = { $count ->
+    [one] Auto-acked 1 direct message.
+   *[other] Auto-acked { $count } direct messages.
+}
 
 # ---------- brand (CLI: about) ----------
 # Brand marks (claim/subline/product name) are NOT translated — they

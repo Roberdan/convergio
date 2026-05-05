@@ -134,6 +134,7 @@ plan-triage-closed = { $count } task chiusi.
 plan-triage-skipped = Triage annullato — nessun task chiuso.
 
 # ---------- CLI: agent ----------
+agent-heartbeat-ok = Heartbeat inviato: { $id } (status={ $status })
 agent-list-empty = Nessun agente registrato.
 agent-list-header = { $count ->
     [one] Un agente:
@@ -256,6 +257,10 @@ session-register-poll-announcements-header = { $count ->
    *[other] Annunci di piano in attesa ({ $count }):
 }
 session-register-poll-message-line =   - piano { $plan } seq { $seq } [{ $topic }] sender={ $sender }
+session-register-poll-acked = { $count ->
+    [one] Ack automatico di 1 messaggio diretto.
+   *[other] Ack automatico di { $count } messaggi diretti.
+}
 
 # ---------- brand (CLI: about) ----------
 # I marchi (claim/subline/nome prodotto) NON vengono tradotti — sono

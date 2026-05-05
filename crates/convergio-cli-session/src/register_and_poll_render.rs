@@ -36,6 +36,7 @@ fn render_json(report: &SessionReport<'_>) -> Result<()> {
             .iter()
             .map(envelope_json)
             .collect::<Vec<_>>(),
+        "acked_direct": report.acked_direct,
     });
     println!("{}", serde_json::to_string_pretty(&v)?);
     Ok(())
@@ -63,6 +64,7 @@ fn render_plain(report: &SessionReport<'_>) {
     for (p, m) in report.announcements {
         println!("announcement\t{p}\t{}", m.len());
     }
+    println!("acked_direct\t{}", report.acked_direct);
 }
 
 fn render_human(bundle: &Bundle, report: &SessionReport<'_>) {
@@ -99,6 +101,12 @@ fn render_human(bundle: &Bundle, report: &SessionReport<'_>) {
         );
     }
     print_envelopes(bundle, "session-register-poll-direct-header", report.direct);
+    if report.acked_direct > 0 {
+        println!(
+            "{}",
+            bundle.t_n("session-register-poll-acked", report.acked_direct as i64,)
+        );
+    }
     print_envelopes(
         bundle,
         "session-register-poll-announcements-header",

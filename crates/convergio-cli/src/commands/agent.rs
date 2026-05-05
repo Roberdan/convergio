@@ -13,6 +13,7 @@
 //! count, last audit), `show` switches to the rich
 //! `details` view, and `retire-stale` is a new bulk cleanup.
 
+use super::agent_heartbeat;
 use super::agent_list::{self, ColumnProfile, ListArgs};
 use super::agent_retire::{self, RetireArgs};
 use super::agent_retire_one;
@@ -60,6 +61,16 @@ pub enum AgentCommand {
         /// Actually retire matched agents (default: dry-run).
         #[arg(long)]
         apply: bool,
+    },
+    /// Post a single heartbeat to the registry. Intended for use in
+    /// Claude Code `PostToolUse` hooks where a background loop is
+    /// not available.
+    Heartbeat {
+        /// Agent id (e.g. `claude-code-roberdan`).
+        agent_id: String,
+        /// Status string (default: `working`).
+        #[arg(long, default_value = "working")]
+        status: String,
     },
     /// Spawn a vendor-CLI agent against a single task (ADR-0032).
     ///
@@ -127,6 +138,15 @@ pub async fn run(
             .await
         }
         AgentCommand::Show { id } => agent_show::run(client, bundle, output, &id).await,
+        AgentCommand::Heartbeat { agent_id, status } => {
+            agent_heartbeat::run(
+                client,
+                bundle,
+                output,
+                agent_heartbeat::Args { agent_id, status },
+            )
+            .await
+        }
         AgentCommand::Retire { id } => agent_retire_one::run(client, bundle, output, &id).await,
         AgentCommand::RetireStale {
             threshold_min,

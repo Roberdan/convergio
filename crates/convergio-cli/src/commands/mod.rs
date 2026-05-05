@@ -3,6 +3,7 @@
 pub mod about;
 pub mod agent;
 mod agent_format;
+mod agent_heartbeat;
 mod agent_list;
 mod agent_retire;
 mod agent_retire_one;

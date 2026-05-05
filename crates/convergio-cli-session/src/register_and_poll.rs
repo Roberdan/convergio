@@ -57,10 +57,12 @@ pub async fn run(client: &Client, bundle: &Bundle, output: OutputMode, args: Arg
 
     let mut direct: Vec<(String, Vec<Value>)> = Vec::new();
     let mut announcements: Vec<(String, Vec<Value>)> = Vec::new();
+    let mut acked_direct: usize = 0;
     for plan in &plans {
         let pid = plan.id.as_str();
         let inbox = poll_topic(client, pid, &format!("agent:{agent_id}")).await?;
         if !inbox.is_empty() {
+            acked_direct += ack_messages(client, &inbox, &agent_id).await;
             direct.push((pid.to_string(), inbox));
         }
         let plan_topic = poll_topic(client, pid, &format!("plan:{pid}")).await?;
@@ -79,6 +81,7 @@ pub async fn run(client: &Client, bundle: &Bundle, output: OutputMode, args: Arg
         plans: &plans,
         direct: &direct,
         announcements: &announcements,
+        acked_direct,
     };
     register_and_poll_render::render(output, bundle, &report)
 }
@@ -163,6 +166,24 @@ async fn poll_topic(client: &Client, plan_id: &str, topic: &str) -> Result<Vec<V
         .with_context(|| format!("GET {path}"))
 }
 
+/// Best-effort ack of each message; logs failures, returns success count.
+async fn ack_messages(client: &Client, msgs: &[Value], consumer: &str) -> usize {
+    let mut count = 0usize;
+    for msg in msgs {
+        let Some(id) = msg.get("id").and_then(Value::as_str) else {
+            continue;
+        };
+        let body = json!({"consumer": consumer});
+        let res: Result<Value> = client.post(&format!("/v1/messages/{id}/ack"), &body).await;
+        if let Err(e) = res {
+            eprintln!("warning: ack {id} failed: {e}");
+        } else {
+            count += 1;
+        }
+    }
+    count
+}
+
 async fn announce_session_start(
     client: &Client,
     plans: &[PlanRef],
@@ -241,6 +262,8 @@ pub struct SessionReport<'a> {
     pub direct: &'a [(String, Vec<Value>)],
     /// `(plan_id, messages)` for plan-wide (`plan:<id>`) traffic.
     pub announcements: &'a [(String, Vec<Value>)],
+    /// Direct messages acked this run.
+    pub acked_direct: usize,
 }
 
 #[cfg(test)]
@@ -248,9 +271,7 @@ mod tests {
     use super::*;
     use std::sync::Mutex;
 
-    // Tests in a single binary share process-global env. Without
-    // serialization the `USER` / `CONVERGIO_AGENT_ID` writes race
-    // and the assertions are flaky.
+    // Mutex: env-var mutations in a single binary race without serialization.
     static ENV_LOCK: Mutex<()> = Mutex::new(());
 
     #[test]
