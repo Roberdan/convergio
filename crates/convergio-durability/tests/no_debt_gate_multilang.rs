@@ -38,6 +38,8 @@ async fn task_with_diff(dur: &Durability, diff: &str) -> convergio_durability::T
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

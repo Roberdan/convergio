@@ -34,6 +34,8 @@ async fn make_task(dur: &Durability, payload: serde_json::Value) -> convergio_du
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

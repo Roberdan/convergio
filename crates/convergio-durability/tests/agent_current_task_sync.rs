@@ -50,6 +50,8 @@ async fn make_task(dur: &Durability, plan_title: &str) -> String {
             evidence_required: vec![],
             runner_kind: None,
             profile: None,
+            template: None,
+
             max_budget_usd: None,
         },
     )

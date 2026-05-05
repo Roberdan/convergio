@@ -37,6 +37,8 @@ async fn add_task_in_wave(
                 evidence_required,
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

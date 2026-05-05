@@ -201,6 +201,37 @@ pub struct RecentCompletedTask {
     pub updated_at: DateTime<Utc>,
 }
 
+/// Task category used to pre-populate `evidence_required` defaults.
+///
+/// When `template` is set on [`NewTask`] and `evidence_required` is left
+/// empty, the store applies the category's default evidence list so
+/// agents start with the right gate requirements without manual wiring.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TaskTemplate {
+    /// New code shipped as a PR — requires PR link and passing tests.
+    Impl,
+    /// Documentation or ADR change — requires PR link only.
+    Docs,
+    /// Code restructuring without behaviour change — requires PR link and
+    /// passing tests.
+    Refactor,
+    /// New or extended test suite — requires PR link and test evidence.
+    Test,
+}
+
+impl TaskTemplate {
+    /// Returns the default `evidence_required` kinds for this template.
+    pub fn default_evidence(self) -> Vec<String> {
+        match self {
+            Self::Impl => vec!["pr_link".into(), "test_pass".into()],
+            Self::Docs => vec!["pr_link".into()],
+            Self::Refactor => vec!["pr_link".into(), "test_pass".into()],
+            Self::Test => vec!["pr_link".into(), "test_pass".into()],
+        }
+    }
+}
+
 /// Input for [`crate::store::TaskStore::create`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NewTask {
@@ -214,9 +245,14 @@ pub struct NewTask {
     pub title: String,
     /// Optional details.
     pub description: Option<String>,
-    /// Required evidence kinds.
+    /// Required evidence kinds. When empty and `template` is set, the
+    /// template's defaults are applied by the store.
     #[serde(default)]
     pub evidence_required: Vec<String>,
+    /// Optional task category. Fills `evidence_required` with category
+    /// defaults when `evidence_required` is left empty.
+    #[serde(default)]
+    pub template: Option<TaskTemplate>,
     /// Optional runner kind override (ADR-0034). `None` ⇒ daemon default.
     #[serde(default)]
     pub runner_kind: Option<String>,
@@ -226,6 +262,19 @@ pub struct NewTask {
     /// Optional session budget cap (USD).
     #[serde(default)]
     pub max_budget_usd: Option<f32>,
+}
+
+impl NewTask {
+    /// If `evidence_required` is empty and a `template` is set, fill
+    /// `evidence_required` from the template's defaults. Idempotent.
+    pub fn resolve_evidence(mut self) -> Self {
+        if self.evidence_required.is_empty() {
+            if let Some(t) = self.template {
+                self.evidence_required = t.default_evidence();
+            }
+        }
+        self
+    }
 }
 
 fn default_one() -> i64 {

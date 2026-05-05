@@ -7,6 +7,30 @@ use clap::{Subcommand, ValueEnum};
 use convergio_i18n::Bundle;
 use serde_json::{json, Value};
 
+/// Task category template for `--template`.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum TemplateArg {
+    /// New code shipped as a PR (requires pr_link + test_pass).
+    Impl,
+    /// Documentation or ADR change (requires pr_link).
+    Docs,
+    /// Code restructuring (requires pr_link + test_pass).
+    Refactor,
+    /// New or extended test suite (requires pr_link + test_pass).
+    Test,
+}
+
+impl TemplateArg {
+    fn as_api(self) -> &'static str {
+        match self {
+            Self::Impl => "impl",
+            Self::Docs => "docs",
+            Self::Refactor => "refactor",
+            Self::Test => "test",
+        }
+    }
+}
+
 /// Task subcommands.
 #[derive(Subcommand)]
 pub enum TaskCommand {
@@ -26,8 +50,14 @@ pub enum TaskCommand {
         #[arg(long, default_value_t = 1)]
         sequence: i64,
         /// Required evidence kinds (comma-separated, e.g. `code,test`).
+        /// When omitted and `--template` is set, defaults come from the
+        /// template.
         #[arg(long, value_delimiter = ',')]
         evidence_required: Vec<String>,
+        /// Task category template: pre-populates `evidence_required` when
+        /// the field is empty. One of: `impl`, `docs`, `refactor`, `test`.
+        #[arg(long)]
+        template: Option<TemplateArg>,
         /// Optional runner kind (ADR-0034) in the wire format
         /// `<vendor>:<model>` — e.g. `claude:sonnet`,
         /// `claude:opus`, `copilot:gpt-5.2`, `qwen:qwen3-coder`.
@@ -148,6 +178,7 @@ pub async fn run(
             wave,
             sequence,
             evidence_required,
+            template,
             runner,
             profile,
             max_budget_usd,
@@ -158,6 +189,7 @@ pub async fn run(
                 "wave": wave,
                 "sequence": sequence,
                 "evidence_required": evidence_required,
+                "template": template.map(|t| t.as_api()),
                 "runner_kind": runner,
                 "profile": profile,
                 "max_budget_usd": max_budget_usd,

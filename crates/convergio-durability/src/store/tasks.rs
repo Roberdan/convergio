@@ -19,7 +19,11 @@ impl TaskStore {
     }
 
     /// Insert a new task with status `pending`.
+    ///
+    /// When `input.template` is set and `input.evidence_required` is empty,
+    /// the template's default evidence kinds are applied automatically.
     pub async fn create(&self, plan_id: &str, input: NewTask) -> Result<Task> {
+        let input = input.resolve_evidence();
         let now = Utc::now();
         let task = Task {
             id: Uuid::new_v4().to_string(),

@@ -71,6 +71,8 @@ async fn task_with_evidence(
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

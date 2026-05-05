@@ -49,6 +49,8 @@ async fn refuses_when_earlier_wave_open() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -65,6 +67,8 @@ async fn refuses_when_earlier_wave_open() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -110,6 +114,8 @@ async fn treats_failed_as_terminal() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -135,6 +141,8 @@ async fn treats_failed_as_terminal() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -169,6 +177,8 @@ async fn passes_for_first_wave() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

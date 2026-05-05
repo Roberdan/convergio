@@ -77,6 +77,7 @@ pub use facade_telemetry::TelemetryCounters;
 pub use migrate::init;
 pub use model::{
     Evidence, NewPlan, NewTask, Plan, PlanStatus, RecentCompletedTask, Task, TaskStatus,
+    TaskTemplate,
 };
 pub use store::{
     AgentAuditEntry, AgentHeartbeat, AgentLease, AgentPrLink, AgentRecord, AgentStore,

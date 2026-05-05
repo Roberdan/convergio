@@ -158,6 +158,7 @@ async fn persist(durability: &Durability, shape: PlanShape) -> Result<String> {
                     title: t.title,
                     description: t.description,
                     evidence_required: t.evidence_required,
+                    template: None,
                     runner_kind: t.runner_kind,
                     profile: t.profile,
                     max_budget_usd: t.max_budget_usd,

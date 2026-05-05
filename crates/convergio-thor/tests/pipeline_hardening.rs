@@ -42,6 +42,8 @@ async fn submitted_plan(dur: &Durability) -> (String, String) {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

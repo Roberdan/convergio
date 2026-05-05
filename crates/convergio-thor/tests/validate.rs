@@ -35,6 +35,8 @@ async fn plan_with_one_task(dur: &Durability, evidence_required: Vec<String>) ->
                 evidence_required,
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

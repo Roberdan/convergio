@@ -43,6 +43,8 @@ async fn context_packet_collects_task_state_messages_agents_and_agent_docs() {
                 evidence_required: vec!["code".into()],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

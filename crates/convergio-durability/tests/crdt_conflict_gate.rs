@@ -51,6 +51,8 @@ async fn unresolved_task_crdt_conflict_blocks_submit() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

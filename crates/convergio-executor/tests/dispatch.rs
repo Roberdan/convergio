@@ -62,6 +62,8 @@ async fn tick_skips_later_waves_until_earlier_done() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -78,6 +80,8 @@ async fn tick_skips_later_waves_until_earlier_done() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -117,6 +121,8 @@ async fn tick_dispatches_later_wave_after_earlier_failed() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -133,6 +139,8 @@ async fn tick_dispatches_later_wave_after_earlier_failed() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

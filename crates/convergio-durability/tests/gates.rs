@@ -51,6 +51,8 @@ async fn plan_status_gate_refuses_when_plan_completed() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -99,6 +101,8 @@ async fn plan_status_gate_passes_for_active_plan() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -133,6 +137,8 @@ async fn evidence_gate_refuses_when_kind_missing() {
                 evidence_required: vec!["test_pass".into(), "pr_url".into()],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -178,6 +184,8 @@ async fn evidence_gate_passes_when_all_kinds_present() {
                 evidence_required: vec!["test_pass".into()],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -218,6 +226,8 @@ async fn evidence_gate_no_op_for_in_progress_target() {
                 evidence_required: vec!["test_pass".into()],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

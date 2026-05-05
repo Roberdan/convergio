@@ -101,6 +101,8 @@ async fn reaps_tasks_with_stale_heartbeat() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -167,6 +169,8 @@ async fn does_not_reap_fresh_tasks() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -217,6 +221,8 @@ async fn reaps_tasks_that_never_heartbeat() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

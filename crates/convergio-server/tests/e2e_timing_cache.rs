@@ -75,6 +75,8 @@ async fn task_timing_cache_tracks_in_progress_then_done() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -207,6 +209,8 @@ async fn close_post_hoc_writes_timing_cache() {
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

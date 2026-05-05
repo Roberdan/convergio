@@ -35,6 +35,8 @@ async fn task_with_diff(dur: &Durability, diff: &str) -> convergio_durability::T
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )
@@ -265,6 +267,8 @@ async fn fires_through_full_facade_pipeline() {
                 evidence_required: vec!["code".into()],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

@@ -55,6 +55,8 @@ async fn make_titled_task(
                 evidence_required: vec![],
                 runner_kind: None,
                 profile: None,
+                template: None,
+
                 max_budget_usd: None,
             },
         )

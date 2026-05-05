@@ -134,6 +134,7 @@ impl Durability {
     pub async fn create_task(&self, plan_id: &str, input: NewTask) -> Result<Task> {
         // Make sure the plan exists (yields NotFound if not).
         self.plans().get(plan_id).await?;
+        let input = input.resolve_evidence();
         let now = Utc::now();
         let task = Task {
             id: Uuid::new_v4().to_string(),

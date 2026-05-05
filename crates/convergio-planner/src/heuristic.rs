@@ -46,6 +46,7 @@ pub async fn solve(durability: &Durability, mission: &str) -> Result<String> {
                     title: (*line).to_string(),
                     description: None,
                     evidence_required: vec![],
+                    template: None,
                     runner_kind: None,
                     profile: None,
                     max_budget_usd: None,
