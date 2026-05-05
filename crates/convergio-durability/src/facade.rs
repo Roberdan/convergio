@@ -72,22 +72,16 @@ impl Durability {
     }
 
     /// Create a plan, assign the next project-group number atomically, and write the audit row.
+    ///
+    /// Uses `BEGIN IMMEDIATE` so concurrent writers do not race the
+    /// `MAX(number)+1` → `INSERT` pair onto the same `(project, number)`.
     pub async fn create_plan(&self, input: NewPlan) -> Result<Plan> {
         let now = Utc::now();
         let mut tx = self.pool.inner().begin().await?;
+        sqlx::query("ROLLBACK").execute(&mut *tx).await.ok();
+        sqlx::query("BEGIN IMMEDIATE").execute(&mut *tx).await?;
 
-        let number: i64 = if let Some(ref p) = input.project {
-            sqlx::query_scalar("SELECT COALESCE(MAX(number), 0) + 1 FROM plans WHERE project = ?")
-                .bind(p)
-                .fetch_one(&mut *tx)
-                .await?
-        } else {
-            sqlx::query_scalar(
-                "SELECT COALESCE(MAX(number), 0) + 1 FROM plans WHERE project IS NULL",
-            )
-            .fetch_one(&mut *tx)
-            .await?
-        };
+        let number = PlanStore::next_number_in_tx(&mut tx, input.project.as_deref()).await?;
 
         let plan = Plan {
             id: Uuid::new_v4().to_string(),

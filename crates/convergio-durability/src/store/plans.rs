@@ -60,6 +60,28 @@ impl PlanStore {
         rows.into_iter().map(TryInto::try_into).collect()
     }
 
+    /// Allocate the next plan number within the given project group, scoped
+    /// to an open SQLite transaction. Caller must have already issued
+    /// `BEGIN IMMEDIATE` so the read → INSERT pair is atomic.
+    pub async fn next_number_in_tx(
+        tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
+        project: Option<&str>,
+    ) -> Result<i64> {
+        let n = if let Some(p) = project {
+            sqlx::query_scalar("SELECT COALESCE(MAX(number), 0) + 1 FROM plans WHERE project = ?")
+                .bind(p)
+                .fetch_one(&mut **tx)
+                .await?
+        } else {
+            sqlx::query_scalar(
+                "SELECT COALESCE(MAX(number), 0) + 1 FROM plans WHERE project IS NULL",
+            )
+            .fetch_one(&mut **tx)
+            .await?
+        };
+        Ok(n)
+    }
+
     /// Update the status column. Caller is responsible for running the
     /// gate pipeline before calling.
     pub async fn set_status(&self, id: &str, status: PlanStatus) -> Result<()> {
