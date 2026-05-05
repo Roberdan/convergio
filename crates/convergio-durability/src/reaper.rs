@@ -2,8 +2,10 @@
 //!
 //! The reaper periodically scans `tasks` for rows in `in_progress`
 //! whose `last_heartbeat_at` is older than [`ReaperConfig::timeout`],
-//! moves them back to `pending`, clears `agent_id`, and writes one
-//! `task.reaped` audit row per release.
+//! moves them back to `pending`, clears `agent_id`, mirrors the
+//! release into the previous owner's `agents` row (matches the
+//! transition-time sync — P2-1), and writes one `task.reaped`
+//! audit row per release.
 //!
 //! There is **exactly one** of these per daemon. If you find yourself
 //! adding a second background loop in Layer 1, stop and consider
@@ -150,11 +152,12 @@ async fn release_one(
     cutoff: &DateTime<Utc>,
 ) -> Result<bool> {
     let mut tx = durability.pool().inner().begin().await?;
+    let now = Utc::now().to_rfc3339();
     let updated = sqlx::query(
         "UPDATE tasks SET status = 'pending', agent_id = NULL, updated_at = ? \
          WHERE id = ? AND status = 'in_progress'",
     )
-    .bind(Utc::now().to_rfc3339())
+    .bind(&now)
     .bind(task_id)
     .execute(&mut *tx)
     .await?
@@ -163,6 +166,22 @@ async fn release_one(
     if updated == 0 {
         tx.rollback().await?;
         return Ok(false);
+    }
+
+    // Mirror release into the agents row (P2-1, F46b write-side).
+    // Only clears if the agent still points at this task — prevents
+    // clobbering an agent that has since claimed a different one.
+    if let Some(aid) = agent_id {
+        sqlx::query(
+            "UPDATE agents \
+             SET current_task_id = NULL, status = 'idle', updated_at = ? \
+             WHERE id = ? AND current_task_id = ?",
+        )
+        .bind(&now)
+        .bind(aid)
+        .bind(task_id)
+        .execute(&mut *tx)
+        .await?;
     }
 
     append_tx(
