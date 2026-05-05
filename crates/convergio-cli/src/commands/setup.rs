@@ -26,6 +26,13 @@ pub enum SetupCommand {
         #[arg(long)]
         force: bool,
     },
+    /// Bootstrap the operator's fleet: detect ~/GitHub/convergio*
+    /// repos, register them, run fleet build (P0-2).
+    Fleet {
+        /// Re-register repos even if already in the fleet.
+        #[arg(long)]
+        force: bool,
+    },
 }
 
 /// Supported agent hosts for generated snippets.
@@ -67,11 +74,17 @@ impl AgentHost {
 }
 
 /// Run setup. With no subcommand, runs `init`.
-pub async fn run(bundle: &Bundle, cmd: Option<SetupCommand>) -> Result<()> {
+pub async fn run(
+    client: &super::Client,
+    bundle: &Bundle,
+    output: super::OutputMode,
+    cmd: Option<SetupCommand>,
+) -> Result<()> {
     let command = cmd.unwrap_or(SetupCommand::Init { force: false });
     match command {
         SetupCommand::Init { force } => init(bundle, force),
         SetupCommand::Agent { host, force } => agent(bundle, host, force),
+        SetupCommand::Fleet { force } => super::setup_fleet::run(client, output, force).await,
     }
 }
 

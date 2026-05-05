@@ -219,7 +219,7 @@ async fn main() -> Result<()> {
     let client = commands::Client::new(cli.url);
     match cli.command {
         Command::Health => commands::health::run(&client, &bundle, cli.output).await,
-        Command::Setup { sub } => commands::setup::run(&bundle, sub).await,
+        Command::Setup { sub } => commands::setup::run(&client, &bundle, cli.output, sub).await,
         Command::Doctor { json, kill_zombies } => {
             commands::doctor::run(&client, &bundle, cli.output, json, kill_zombies).await
         }
