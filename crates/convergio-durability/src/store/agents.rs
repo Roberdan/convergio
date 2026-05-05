@@ -177,11 +177,30 @@ impl AgentStore {
 
     /// List all non-terminated agents first, then historical rows.
     pub async fn list(&self) -> Result<Vec<AgentRecord>> {
-        let rows = sqlx::query_as::<_, AgentRow>(&format!(
-            "{AGENT_SELECT} ORDER BY status = 'terminated', updated_at DESC"
-        ))
-        .fetch_all(self.pool.inner())
-        .await?;
+        self.list_filtered(None, None).await
+    }
+
+    /// List agents with optional `status` filter + `limit` (P2-11).
+    /// `status` accepts canonical AgentStatus strings (`working`,
+    /// `idle`, `ready`, `terminated`, …).
+    pub async fn list_filtered(
+        &self,
+        status: Option<&str>,
+        limit: Option<i64>,
+    ) -> Result<Vec<AgentRecord>> {
+        let mut sql = if status.is_some() {
+            format!("{AGENT_SELECT} WHERE status = ? ORDER BY updated_at DESC")
+        } else {
+            format!("{AGENT_SELECT} ORDER BY status = 'terminated', updated_at DESC")
+        };
+        if let Some(n) = limit.filter(|&n| n > 0) {
+            sql.push_str(&format!(" LIMIT {n}"));
+        }
+        let mut q = sqlx::query_as::<_, AgentRow>(&sql);
+        if let Some(s) = status {
+            q = q.bind(s);
+        }
+        let rows = q.fetch_all(self.pool.inner()).await?;
         rows.into_iter().map(TryInto::try_into).collect()
     }
 }
