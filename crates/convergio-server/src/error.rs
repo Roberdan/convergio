@@ -18,6 +18,15 @@ pub enum ApiError {
         /// Human-readable message.
         message: String,
     },
+    /// Request was syntactically valid but failed a semantic rule
+    /// (returned as HTTP 422). Used for typed-route field validation
+    /// (e.g. reserved audit kinds, payload shape).
+    Validation {
+        /// Stable error code (e.g. `kind_reserved`).
+        code: &'static str,
+        /// Human-readable explanation.
+        message: String,
+    },
     /// Layer 1 error.
     Durability(DurabilityError),
     /// Layer 2 error.
@@ -104,6 +113,9 @@ impl IntoResponse for ApiError {
         let (status, code, message) = match &self {
             ApiError::BadRequest { code, message } => {
                 (StatusCode::BAD_REQUEST, *code, message.clone())
+            }
+            ApiError::Validation { code, message } => {
+                (StatusCode::UNPROCESSABLE_ENTITY, *code, message.clone())
             }
             ApiError::Durability(e) => match e {
                 DurabilityError::NotFound { .. } => {

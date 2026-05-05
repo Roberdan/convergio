@@ -309,7 +309,9 @@ For the full HTTP surface, drive `cvg` (typed) or `curl` (raw):
   `GET /v1/tasks/:id/evidence`, `DELETE /v1/evidence/:id`
 - Audit: `GET /v1/audit/verify`,
   `GET /v1/audit/refusals/latest`, `GET /v1/audit/events`,
-  `GET /v1/audit/stream?since=&kinds=` (SSE, P1.1)
+  `GET /v1/audit/stream?since=&kinds=` (SSE, P1.1),
+  `POST /v1/audit/append` (P2-2, agent-emitted custom rows; see
+  ADR-0002 § Custom kinds)
 - Bus (plan-scoped): `POST /v1/plans/:plan_id/messages`,
   `GET /v1/plans/:plan_id/messages?topic=&cursor=&exclude_sender=`
   (ADR-0024), `GET /v1/plans/:plan_id/messages/tail`,
