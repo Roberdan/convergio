@@ -6,7 +6,7 @@ use axum::extract::{Path, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use chrono::{Duration, Utc};
-use convergio_durability::{NewPlan, Plan, PlanStatus, Task};
+use convergio_durability::{NewPlan, NewPlanPrLink, Plan, PlanStatus, Task};
 use serde::Deserialize;
 
 /// Mount `/v1/plans` routes.
@@ -16,6 +16,7 @@ pub fn router() -> Router<AppState> {
         .route("/v1/plans/:id", get(by_id).patch(rename))
         .route("/v1/plans/:id/transition", post(transition))
         .route("/v1/plans/:id/triage", get(triage))
+        .route("/v1/plans/:id/pr-links", post(add_pr_link))
 }
 
 #[derive(Deserialize)]
@@ -124,4 +125,43 @@ async fn triage(
         .list_stale_by_plan(&id, before)
         .await?;
     Ok(Json(tasks))
+}
+
+/// Body for `POST /v1/plans/:id/pr-links`.
+#[derive(Deserialize)]
+struct AddPrLinkBody {
+    pr_number: i64,
+    repo_slug: String,
+    #[serde(default)]
+    branch: Option<String>,
+    #[serde(default)]
+    task_id: Option<String>,
+    #[serde(default)]
+    agent_id: Option<String>,
+}
+
+async fn add_pr_link(
+    State(state): State<AppState>,
+    Path(plan_id): Path<String>,
+    Json(body): Json<AddPrLinkBody>,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    state
+        .durability
+        .plan_pr_links()
+        .add(NewPlanPrLink {
+            plan_id: plan_id.clone(),
+            task_id: body.task_id.clone(),
+            pr_number: body.pr_number,
+            repo_slug: body.repo_slug.clone(),
+            branch: body.branch.clone(),
+            agent_id: body.agent_id.clone(),
+        })
+        .await?;
+    Ok(Json(serde_json::json!({
+        "ok": true,
+        "plan_id": plan_id,
+        "pr_number": body.pr_number,
+        "repo_slug": body.repo_slug,
+        "agent_id": body.agent_id,
+    })))
 }
