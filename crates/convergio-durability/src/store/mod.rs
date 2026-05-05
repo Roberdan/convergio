@@ -15,8 +15,10 @@ mod crdt_merge;
 mod crdt_merge_types;
 mod crdt_rows;
 mod evidence;
+mod plan_pr_links;
 mod plans;
 mod tasks;
+pub(crate) mod telemetry_series;
 mod workspace;
 mod workspace_merge;
 mod workspace_merge_rows;
@@ -32,8 +34,10 @@ pub use capabilities::{Capability, CapabilityStore, NewCapability};
 pub use crdt::{AppendOutcome, CrdtActor, CrdtOp, CrdtStore, NewCrdtOp};
 pub use crdt_merge::CrdtCell;
 pub use evidence::EvidenceStore;
+pub use plan_pr_links::{NewPlanPrLink, PlanPrLinksStore};
 pub use plans::PlanStore;
 pub use tasks::TaskStore;
+pub use telemetry_series::{TelemetryPoint, TelemetrySeriesStore};
 pub use workspace::{
     NewWorkspaceLease, NewWorkspaceResource, WorkspaceLease, WorkspaceResource, WorkspaceStore,
 };

@@ -238,4 +238,38 @@ mod tests {
         let v = serde_json::json!({"what_just_happened": "P0 complete"});
         assert!(payload_summary(&v).contains("P0 complete"));
     }
+
+    #[test]
+    fn render_stdout_relay_message_shown_in_bus_pane() {
+        let backend = TestBackend::new(200, 6);
+        let mut term = Terminal::new(backend).unwrap();
+        let state = AppState {
+            messages: vec![BusMessage {
+                id: "m2".into(),
+                seq: 1,
+                plan_id: Some("p1".into()),
+                topic: "agent:proc-42:stdout".into(),
+                sender: Some("proc-42".into()),
+                payload: serde_json::json!({"type": "stdout", "text": "hello from agent", "seq": 0}),
+                created_at: "2026-05-05T10:00:00Z".into(),
+                ..BusMessage::default()
+            }],
+            ..AppState::default()
+        };
+        term.draw(|f| render(f, f.area(), &state, true)).unwrap();
+        let dump = term
+            .backend()
+            .buffer()
+            .content()
+            .iter()
+            .map(|c| c.symbol())
+            .collect::<String>();
+        assert!(dump.contains("agent:proc-42:stdout"), "topic not rendered");
+        assert!(dump.contains("hello from agent"), "stdout text not shown");
+        // TopicFamily::Agent is resolved for agent:* topics.
+        assert_eq!(
+            TopicFamily::classify("agent:proc-42:stdout"),
+            TopicFamily::Agent
+        );
+    }
 }

@@ -63,4 +63,5 @@ do not edit between the markers.
 | [0043](./0043-api-id-and-payload-consistency.md) | 0043. API consistency — `id` and `payload` field naming | accepted |
 | [0044](./0044-plan-execution-contract.md) | 0044. Plan execution contract — required mechanism utilization per task | accepted |
 | [0045](./0045-per-host-realtime-context-push.md) | 0045. Per-host real-time context push: Cursor / Copilot / Cline strategies | accepted |
+| [0046](./0046-stdout-relay-to-bus.md) | 0046. Sub-agent stdout relay to the plan bus | accepted |
 <!-- END AUTO -->

@@ -103,6 +103,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-brand` — Brand kit for Convergio: palette, claim, banner, boot animation — shared by CLI, TUI, daemon
 - `convergio-bus` — Layer 2 of Convergio: persistent agent message bus (topic + direct + ack), scoped per plan
 - `convergio-cli` — cvg — pure HTTP client for the Convergio daemon
+- `convergio-cli-plan-run` — Plan-run orchestrator (cvg plan run) extracted from convergio-cli
 - `convergio-cli-pr` — Pull-request commands (cvg pr) extracted from convergio-cli
 - `convergio-cli-session` — Session lifecycle commands (cvg session) extracted from convergio-cli
 - `convergio-coherence` — Documentation/code coherence verifiers for Convergio (`cvg coherence` suite)
@@ -196,7 +197,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 996 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 1011 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
@@ -300,7 +301,8 @@ For the full HTTP surface, drive `cvg` (typed) or `curl` (raw):
 
 - Plans: `POST /v1/plans`, `GET /v1/plans`, `GET /v1/plans/:id`,
   `PATCH /v1/plans/:id` (rename), `POST /v1/plans/:id/transition`,
-  `GET /v1/plans/:id/triage`, `POST /v1/plans/:id/validate`
+  `GET /v1/plans/:id/triage`, `POST /v1/plans/:id/validate`,
+  `POST /v1/plans/:id/pr-links` (P2-3, agent↔PR mapping; migration 0013)
 - Tasks: `POST /v1/plans/:plan_id/tasks`, `GET /v1/tasks/:id`,
   `POST /v1/tasks/:id/transition`, `POST /v1/tasks/:id/retry`,
   `POST /v1/tasks/:id/close-post-hoc` (ADR-0026),

@@ -18,9 +18,9 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 407 |
+| `AGENTS.md` | agent-rules | - | - | 409 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
-| `CHANGELOG.md` | release | - | - | 918 |
+| `CHANGELOG.md` | release | - | - | 940 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 158 |
@@ -35,6 +35,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-brand/AGENTS.md` | crate-rules | - | - | 45 |
 | `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 27 |
 | `crates/convergio-bus/README.md` | crate-readme | - | - | 36 |
+| `crates/convergio-cli-plan-run/AGENTS.md` | crate-rules | - | - | 17 |
+| `crates/convergio-cli-plan-run/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-pr/AGENTS.md` | crate-rules | - | - | 12 |
 | `crates/convergio-cli-pr/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 49 |
@@ -118,7 +120,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0043-api-id-and-payload-consistency.md` | adr | [convergio-server, convergio-api, convergio-mcp, convergio-cli] | accepted | 154 |
 | `docs/adr/0044-plan-execution-contract.md` | adr | [convergio-cli, convergio-coherence] | accepted | 110 |
 | `docs/adr/0045-per-host-realtime-context-push.md` | adr | [convergio-cli-session] | accepted | 113 |
-| `docs/adr/README.md` | adr | - | - | 66 |
+| `docs/adr/0046-stdout-relay-to-bus.md` | adr | [convergio-lifecycle, convergio-server] | accepted | 77 |
+| `docs/adr/README.md` | adr | - | - | 67 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |

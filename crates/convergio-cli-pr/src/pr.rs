@@ -13,6 +13,7 @@
 //! both files under the 300-line cap.
 
 use super::pr_diff::{compare_manifest, fetch_pr_files};
+use super::pr_link::LinkArgs;
 use super::pr_merge::MergeArgs;
 use super::pr_parse::parse_manifest;
 use super::pr_render;
@@ -52,6 +53,10 @@ pub enum PrCommand {
     /// Subsumes A2/B1/B5/C5/C6/F3 from the 2026-05-04 retrospective.
     /// See `~/Desktop/convergio-retrospective-2026-05-04.md` §2 P0-1.
     Merge(MergeArgs),
+    /// Register a PR↔plan mapping in the daemon so the system knows
+    /// which agent opened a given PR. Call this immediately after
+    /// `gh pr create`. P2-3 / F47.
+    Link(LinkArgs),
 }
 
 /// Run a pr subcommand.
@@ -67,6 +72,7 @@ pub async fn run(
             super::pr_sync::run(client, plan, agent_id, output).await
         }
         PrCommand::Merge(args) => super::pr_merge::run(client, output, args).await,
+        PrCommand::Link(args) => super::pr_link::run(client, output, args).await,
     }
 }
 

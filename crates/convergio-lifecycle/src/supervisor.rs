@@ -1,8 +1,9 @@
 //! Supervisor — spawns processes and tracks them in the DB.
 
 use crate::error::{LifecycleError, Result};
-use crate::model::{AgentProcess, ProcessStatus, SpawnSpec};
-use chrono::{DateTime, Utc};
+use crate::model::{parse_ts, parse_ts_opt, AgentProcess, ProcessStatus, SpawnSpec};
+use crate::supervisor_helpers::{spawn_timeout, timeout_query};
+use chrono::Utc;
 use convergio_db::Pool;
 use std::process::Stdio;
 use std::time::{Duration as StdDuration, Instant};
@@ -16,13 +17,22 @@ const DEFAULT_SPAWN_TIMEOUT: StdDuration = StdDuration::from_secs(10);
 #[derive(Clone)]
 pub struct Supervisor {
     pool: Pool,
+    bus: Option<convergio_bus::Bus>,
 }
 
 impl Supervisor {
     /// Wrap a pool. The caller is responsible for having run
     /// [`crate::init`] at least once.
     pub fn new(pool: Pool) -> Self {
-        Self { pool }
+        Self { pool, bus: None }
+    }
+
+    /// Return a supervisor that relays process stdout to the plan bus.
+    pub fn new_with_bus(pool: Pool, bus: convergio_bus::Bus) -> Self {
+        Self {
+            pool,
+            bus: Some(bus),
+        }
     }
 
     /// Borrow the underlying pool — needed by the watcher loop.
@@ -90,7 +100,12 @@ impl Supervisor {
         } else {
             cmd.stdin(Stdio::null());
         }
-        cmd.stdout(Stdio::null());
+        let pipe_stdout = self.bus.is_some() && spec.plan_id.is_some();
+        if pipe_stdout {
+            cmd.stdout(Stdio::piped());
+        } else {
+            cmd.stdout(Stdio::null());
+        }
         cmd.stderr(Stdio::null());
 
         let mut child = match cmd.spawn() {
@@ -117,6 +132,18 @@ impl Supervisor {
                 let _ = stdin.write_all(payload.as_bytes()).await;
                 drop(stdin);
             }
+        }
+
+        // Relay stdout lines to the plan bus when wired.
+        if let (Some(bus), Some(plan_id), Some(stdout)) =
+            (self.bus.clone(), spec.plan_id.as_ref(), child.stdout.take())
+        {
+            tokio::spawn(crate::stdout_relay::relay(
+                stdout,
+                plan_id.clone(),
+                id.clone(),
+                bus,
+            ));
         }
 
         let pid = child.id().map(|p| p as i64);
@@ -253,46 +280,5 @@ impl TryFrom<ProcessRow> for AgentProcess {
             started_at: parse_ts("started_at", &r.started_at)?,
             ended_at: parse_ts_opt("ended_at", r.ended_at.as_deref())?,
         })
-    }
-}
-
-fn parse_ts(field: &'static str, s: &str) -> Result<DateTime<Utc>> {
-    DateTime::parse_from_rfc3339(s)
-        .map(|d| d.with_timezone(&Utc))
-        .map_err(|_| LifecycleError::InvalidTimestamp {
-            field,
-            value: s.to_string(),
-        })
-}
-
-fn parse_ts_opt(field: &'static str, s: Option<&str>) -> Result<Option<DateTime<Utc>>> {
-    s.map(|value| parse_ts(field, value)).transpose()
-}
-
-async fn timeout_query<E>(
-    command: &str,
-    timeout: StdDuration,
-    started: Instant,
-    query: E,
-) -> Result<sqlx::sqlite::SqliteQueryResult>
-where
-    E: std::future::Future<
-        Output = std::result::Result<sqlx::sqlite::SqliteQueryResult, sqlx::Error>,
-    >,
-{
-    let remaining = timeout
-        .checked_sub(started.elapsed())
-        .filter(|d| !d.is_zero())
-        .ok_or_else(|| spawn_timeout(command, timeout))?;
-    tokio::time::timeout(remaining, query)
-        .await
-        .map_err(|_| spawn_timeout(command, timeout))?
-        .map_err(LifecycleError::from)
-}
-
-fn spawn_timeout(command: &str, timeout: StdDuration) -> LifecycleError {
-    LifecycleError::SpawnTimedOut {
-        command: command.to_string(),
-        timeout_ms: timeout.as_millis(),
     }
 }

@@ -47,6 +47,7 @@ fn pr_from_row(r: sqlx::sqlite::SqliteRow) -> Result<AgentPrLink> {
         branch: r.try_get("branch")?,
         plan_id: r.try_get("plan_id")?,
         task_id: r.try_get("task_id")?,
+        agent_id: r.try_get("agent_id")?,
         created_at: parse_ts(&r.try_get::<String, _>("created_at")?),
     })
 }
@@ -235,7 +236,7 @@ impl AgentStore {
         let limit = limit.clamp(1, 50);
         let rows = if let Some(plan) = plan_id {
             sqlx::query(
-                "SELECT plan_id, task_id, pr_number, repo_slug, branch, created_at \
+                "SELECT plan_id, task_id, pr_number, repo_slug, branch, agent_id, created_at \
                  FROM plan_pr_links WHERE plan_id = ? ORDER BY created_at DESC LIMIT ?",
             )
             .bind(plan)
@@ -244,7 +245,7 @@ impl AgentStore {
             .await?
         } else if let Some(task) = task_id {
             sqlx::query(
-                "SELECT plan_id, task_id, pr_number, repo_slug, branch, created_at \
+                "SELECT plan_id, task_id, pr_number, repo_slug, branch, agent_id, created_at \
                  FROM plan_pr_links WHERE task_id = ? ORDER BY created_at DESC LIMIT ?",
             )
             .bind(task)
