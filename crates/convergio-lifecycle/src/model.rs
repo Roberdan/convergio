@@ -3,6 +3,22 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+pub(crate) fn parse_ts(field: &'static str, s: &str) -> crate::error::Result<DateTime<Utc>> {
+    DateTime::parse_from_rfc3339(s)
+        .map(|d| d.with_timezone(&Utc))
+        .map_err(|_| crate::error::LifecycleError::InvalidTimestamp {
+            field,
+            value: s.to_string(),
+        })
+}
+
+pub(crate) fn parse_ts_opt(
+    field: &'static str,
+    s: Option<&str>,
+) -> crate::error::Result<Option<DateTime<Utc>>> {
+    s.map(|value| parse_ts(field, value)).transpose()
+}
+
 /// Process lifecycle.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]

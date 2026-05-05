@@ -16,6 +16,7 @@ workspace = true
 
 [dependencies]
 convergio-db = { workspace = true }
+convergio-bus = { workspace = true }
 sqlx = { workspace = true }
 tokio = { workspace = true, features = ["process"] }
 serde = { workspace = true }

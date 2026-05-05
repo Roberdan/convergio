@@ -42,7 +42,9 @@
 mod error;
 mod migrate;
 mod model;
+mod stdout_relay;
 mod supervisor;
+mod supervisor_helpers;
 mod supervisor_list;
 pub mod watcher;
 
