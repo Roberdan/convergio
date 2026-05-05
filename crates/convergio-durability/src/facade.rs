@@ -71,11 +71,27 @@ impl Durability {
         AuditLog::new(self.pool.clone())
     }
 
-    /// Create a plan and write the audit row.
+    /// Create a plan, assign the next project-group number atomically, and write the audit row.
     pub async fn create_plan(&self, input: NewPlan) -> Result<Plan> {
         let now = Utc::now();
+        let mut tx = self.pool.inner().begin().await?;
+
+        let number: i64 = if let Some(ref p) = input.project {
+            sqlx::query_scalar("SELECT COALESCE(MAX(number), 0) + 1 FROM plans WHERE project = ?")
+                .bind(p)
+                .fetch_one(&mut *tx)
+                .await?
+        } else {
+            sqlx::query_scalar(
+                "SELECT COALESCE(MAX(number), 0) + 1 FROM plans WHERE project IS NULL",
+            )
+            .fetch_one(&mut *tx)
+            .await?
+        };
+
         let plan = Plan {
             id: Uuid::new_v4().to_string(),
+            number,
             title: input.title,
             description: input.description,
             project: input.project,
@@ -87,12 +103,13 @@ impl Durability {
             duration_ms: None,
         };
 
-        let mut tx = self.pool.inner().begin().await?;
         sqlx::query(
-            "INSERT INTO plans (id, title, description, project, status, created_at, updated_at) \
-             VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO plans \
+             (id, number, title, description, project, status, created_at, updated_at) \
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&plan.id)
+        .bind(plan.number)
         .bind(&plan.title)
         .bind(&plan.description)
         .bind(&plan.project)
@@ -108,6 +125,7 @@ impl Durability {
             "plan.created",
             &json!({
                 "plan_id": plan.id,
+                "number": plan.number,
                 "title": plan.title,
                 "project": plan.project,
             }),

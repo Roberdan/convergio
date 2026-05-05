@@ -48,6 +48,23 @@ async fn by_id(
     State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<Json<Plan>, ApiError> {
+    // Accept either a plain integer plan number or a UUID.
+    if let Ok(num) = id.parse::<i64>() {
+        let plan = state
+            .durability
+            .plans()
+            .find_by_number(num)
+            .await?
+            .ok_or_else(|| {
+                crate::error::ApiError::Durability(
+                    convergio_durability::DurabilityError::NotFound {
+                        entity: "plan",
+                        id: id.clone(),
+                    },
+                )
+            })?;
+        return Ok(Json(plan));
+    }
     let plan = state.durability.plans().get(&id).await?;
     Ok(Json(plan))
 }

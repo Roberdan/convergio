@@ -103,6 +103,13 @@ plan-list-header = { $count ->
     [one] One plan:
    *[other] { $count } plans:
 }
+plan-list-line = #{ $number } { $title } [{ $status }]
+
+# ---------- CLI: plan run ----------
+plan-run-started = Running plan #{ $number }: { $title } ({ $pending } pending tasks)
+plan-run-task-submitted = [{ $wave }.{ $seq }] { $title } → submitted ✓
+plan-run-halted = Halted at task [{ $wave }.{ $seq }] { $title }: { $error }
+plan-run-complete = Plan #{ $number } complete: { $count } tasks submitted.
 
 # ---------- CLI: plan triage ----------
 plan-triage-empty = No stale tasks found (pending/failed, not touched in { $days } days).
