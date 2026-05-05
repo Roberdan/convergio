@@ -54,6 +54,8 @@ pub struct AgentPrLink {
     pub branch: Option<String>,
     pub plan_id: String,
     pub task_id: Option<String>,
+    /// Agent that opened the PR (migration 0013; `None` for legacy rows).
+    pub agent_id: Option<String>,
     pub created_at: DateTime<Utc>,
 }
 
