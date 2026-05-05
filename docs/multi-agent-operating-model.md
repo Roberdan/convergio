@@ -261,11 +261,15 @@ the rendered block to the subagent brief. The contract:
 2. **Heartbeat ~every 5 min** while the subagent is working. The
    reaper (default 5-minute timeout) flips silent agents to
    `unhealthy`, which surfaces in the dashboard.
-3. **Retire on finish.** The subagent always POSTs to
-   `/v1/agent-registry/agents/${id}/retire` before exiting,
-   including on failure paths, so the registry does not collect
-   zombies. Top-level sessions do this via the `Stop` hook;
-   subagents do it inline at the end of their brief.
+3. **Retire on finish.** The subagent always retires before
+   exiting — `cvg agent retire <id>` (preferred) or the equivalent
+   `POST /v1/agent-registry/agents/${id}/retire` — including on
+   failure paths, so the registry does not collect zombies. The
+   heartbeat route refuses `status="retired"` with HTTP 422 by
+   design; do not work around that by sending `status="idle"`,
+   which leaves the agent un-retired. Top-level sessions retire
+   via the `Stop` hook; subagents do it inline at the end of
+   their brief.
 4. **TUI rendering.** `cvg dash` lists subagents alongside
    top-level sessions but in the dim-text style — they are
    support workers, not first-class swarm members.

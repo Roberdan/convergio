@@ -175,6 +175,9 @@ agent-retire-stale-dry-run = { $count ->
    *[other] Would retire { $count } stale agents (dry-run, threshold { $threshold_min } min):
 }
 agent-retire-stale-none = no stale agents under the threshold
+agent-retire-success = Agent { $id } retired
+agent-retire-not-found = Agent not found: { $id } (already retired or never registered)
+agent-retire-help-after-422 = Heartbeat cannot set status='retired' — use `cvg agent retire { $id }` (or POST /v1/agent-registry/agents/{ $id }/retire).
 agent-not-found = Agent not found: { $id }
 
 # ---------- gate refusals (human side) ----------

@@ -175,6 +175,9 @@ agent-retire-stale-dry-run = { $count ->
    *[other] Ritirerei { $count } agenti scaduti (dry-run, soglia { $threshold_min } min):
 }
 agent-retire-stale-none = nessun agente scaduto sotto la soglia
+agent-retire-success = Agente { $id } ritirato
+agent-retire-not-found = Agente non trovato: { $id } (già ritirato o mai registrato)
+agent-retire-help-after-422 = L'heartbeat non può impostare status='retired' — usa `cvg agent retire { $id }` (oppure POST /v1/agent-registry/agents/{ $id }/retire).
 agent-not-found = Agente non trovato: { $id }
 
 # ---------- rifiuti dei gate (lato umano) ----------

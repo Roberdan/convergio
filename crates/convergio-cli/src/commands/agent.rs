@@ -15,6 +15,7 @@
 
 use super::agent_list::{self, ColumnProfile, ListArgs};
 use super::agent_retire::{self, RetireArgs};
+use super::agent_retire_one;
 use super::agent_show;
 use super::agent_spawn;
 use super::{Client, OutputMode};
@@ -42,6 +43,12 @@ pub enum AgentCommand {
     /// Show a single agent record by id (rich, multi-section view).
     Show {
         /// Agent id (e.g. `claude-code-roberdan`).
+        id: String,
+    },
+    /// Retire a single agent by id (idempotent: hits
+    /// `POST /v1/agent-registry/agents/:id/retire`).
+    Retire {
+        /// Agent id to retire (e.g. `subagent-p1-5`).
         id: String,
     },
     /// Bulk-retire agents whose heartbeat is older than the
@@ -120,6 +127,7 @@ pub async fn run(
             .await
         }
         AgentCommand::Show { id } => agent_show::run(client, bundle, output, &id).await,
+        AgentCommand::Retire { id } => agent_retire_one::run(client, bundle, output, &id).await,
         AgentCommand::RetireStale {
             threshold_min,
             apply,
