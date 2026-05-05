@@ -1,0 +1,30 @@
+name: AUTO blocks drift detection
+
+# ADR-0015 § Drift policy. Derived state (AUTO blocks + docs/INDEX.md)
+# is reconciled on demand and via this nightly cron — NOT per-PR. The
+# per-PR regen model created an O(N²) cascade on serial merges (retro
+# 544e78cc P2-9). For now this job only detects + logs drift; auto-PR
+# creation is a follow-up that needs a bot token.
+
+on:
+  schedule:
+    - cron: '17 4 * * *'  # 04:17 UTC daily
+  workflow_dispatch:
+
+jobs:
+  detect-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - run: |
+          cargo run -q -p convergio-cli -- docs regenerate
+          ./scripts/generate-docs-index.sh
+          if git diff --quiet; then
+            echo "No drift."
+            exit 0
+          fi
+          echo "Drift detected — would open auto-PR (placeholder until cron-bot wired)."
+          git diff --stat

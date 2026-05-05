@@ -132,25 +132,20 @@ cargo fmt --all -- --check
 RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings
 RUSTFLAGS="-Dwarnings" cargo test --workspace
 ./scripts/check-context-budget.sh              # exit 0 clean, 2 soft-warn ok
-cargo run -p convergio-cli -- docs regenerate --check
-./scripts/generate-docs-index.sh --check
 ./scripts/legibility-audit.sh --quiet          # target ≥ 70, ideal ≥ 85
 ```
 
 If any step fails, fix first, then re-run **all** of them. Never
 push with known failures.
 
-`cargo run -p convergio-cli -- docs regenerate --check` and
-`./scripts/generate-docs-index.sh --check` also run automatically as
-lefthook `pre-push` hooks (P0.5) so a stale push is blocked at the
-source — but you should still run them manually as part of the
-listed pipeline. Recurring CI failures on PRs #169 / #170 / #173 are
-the reason this gate exists.
-
-The escape hatch `LEFTHOOK_SKIP_DOC_REGEN=1 git push` is documented
-for emergencies only — never normal usage. Use of the bypass is
-visible in shell history and should be paired with a follow-up PR
-that regenerates the docs.
+AUTO blocks drift (`cvg docs regenerate`) and `docs/INDEX.md` drift
+are reconciled nightly via the cron in
+`.github/workflows/auto-blocks-drift.yml` (ADR-0015 § Drift policy).
+Running `cargo run -p convergio-cli -- docs regenerate` and
+`./scripts/generate-docs-index.sh` locally is fine but no longer
+gated — the per-PR gate created an O(N²) cascade on serial merges
+(retro 544e78cc P2-9) and was removed in favour of the nightly
+reconciliation.
 
 ## 6. PR template hygiene (CONSTITUTION § 13)
 
