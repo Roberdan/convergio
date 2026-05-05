@@ -76,8 +76,27 @@ are future work. Until those adapters exist, use Mode 1 for those hosts.
 ### Session lifecycle is automatic
 
 The project-level Claude Code `SessionStart` hook
-(`.claude/settings.json`) runs `cvg session register-and-poll`
-before the first user prompt. That single call:
+(`.claude/settings.json`) runs **two** Convergio commands in
+sequence before the first user prompt (P2-6):
+
+1. `cvg session register-and-poll` — see below.
+2. `cvg session resume --output plain` — prints live state
+   (daemon health, audit chain, active plan, top pending tasks,
+   open PRs) so the agent's first turn already has cold-start
+   context. Skipped when `CONVERGIO_NO_AUTO_RESUME=1` is exported.
+
+Each block is delimited by a marker line so the agent reads them
+as two distinct sections:
+
+```
+=== Convergio session bootstrap ===
+[register-and-poll output]
+
+=== Convergio session resume (live state) ===
+[session resume output]
+```
+
+The first command (`register-and-poll`):
 
 1. Registers (or refreshes) the agent identity in `agent_registry`.
 2. Sends an immediate heartbeat.
@@ -176,7 +195,9 @@ Identity resolution mirrors `cvg status --mine`: `--agent-id` flag →
 is `cvg session register-and-poll` → `cvg session resume` →
 `cvg discover` so the agent has both its own brief and the swarm's
 shape before claiming work — this is the F2 mitigation for the
-"territory by luck" anti-pattern.
+"territory by luck" anti-pattern. Inside Claude Code the first two
+steps are auto-fired by the `SessionStart` hook (P2-6); only
+`cvg discover` remains a manual reach.
 
 ## Does the database act as context?
 
@@ -242,6 +263,24 @@ Convergio needs three separate concepts:
 | role/skills | `rust`, `review`, `docs` | scheduling and task matching |
 
 Do not overload one field for all three.
+
+## Live state: who is working on what
+
+`agents.current_task_id` and `agents.status` are kept in lock-step
+with task transitions and the reaper, so a single
+`SELECT id, status, current_task_id FROM agents` (or `cvg agent
+list`) is an authoritative live-state snapshot:
+
+| Trigger | Effect on the agent row |
+|---------|--------------------------|
+| `transition_task → in_progress` with `agent_id` | `status='working'`, `current_task_id=task_id` |
+| `transition_task` away from `in_progress` | `status='idle'`, `current_task_id=NULL` (only if it still pointed at this task) |
+| Reaper releases a stale `in_progress` task | same clear, only if the previous owner still pointed at it |
+
+The "still pointed at" guard means an agent that has already claimed
+a different task is never disturbed when an old task is reaped or
+released. Both writes happen inside the same transaction as the task
+update, so nobody can read a half-applied state.
 
 ## Agent registry kinds
 

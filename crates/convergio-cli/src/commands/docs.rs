@@ -22,6 +22,7 @@ use super::docs_generators::{
     gen_adr_index, gen_cvg_subcommands, gen_test_count, gen_workspace_members,
 };
 use super::docs_generators_crate::gen_crate_stats;
+use super::docs_merge_driver;
 use super::docs_rewrite::{rewrite, GeneratorLookup};
 use super::OutputMode;
 use anyhow::{anyhow, Context, Result};
@@ -43,12 +44,58 @@ pub enum DocsCommand {
         #[arg(long)]
         check: bool,
     },
+    /// Git merge driver for `*.md` files (P2-9). Git calls:
+    /// `cvg docs merge-driver %O %A %B --conflict-marker-size %L --path %P`
+    MergeDriver {
+        base: PathBuf,
+        ours: PathBuf,
+        theirs: PathBuf,
+        #[arg(long, default_value_t = 7)]
+        conflict_marker_size: u32,
+        #[arg(long)]
+        path: Option<PathBuf>,
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+    },
+    /// Register the merge driver in `.git/config` and create/update
+    /// `.gitattributes` so every `*.md` file uses it on merge.
+    InstallMergeDriver {
+        /// Repo root (default: cwd).
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+    },
 }
 
 /// Entry point.
 pub async fn run(output: OutputMode, cmd: DocsCommand) -> Result<()> {
     match cmd {
         DocsCommand::Regenerate { root, check } => regenerate(output, &root, check).await,
+        DocsCommand::MergeDriver {
+            base,
+            ours,
+            theirs,
+            conflict_marker_size,
+            path,
+            root,
+        } => {
+            let code = docs_merge_driver::run_merge_driver(
+                &base,
+                &ours,
+                &theirs,
+                conflict_marker_size,
+                path.as_deref(),
+                &root,
+                &Registry::default(),
+            )?;
+            std::process::exit(code);
+        }
+        DocsCommand::InstallMergeDriver { root } => {
+            docs_merge_driver::install_merge_driver(&root)?;
+            if matches!(output, OutputMode::Human) {
+                println!("Merge driver installed. Use `git merge` as usual — AUTO blocks resolve automatically.");
+            }
+            Ok(())
+        }
     }
 }
 

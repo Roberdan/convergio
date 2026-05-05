@@ -1,0 +1,4 @@
+# Use the Convergio AUTO-blocks merge driver for all markdown files.
+# Install with: cvg docs install-merge-driver
+# See: ADR-0015, P2-9
+*.md merge=cvg-auto-blocks
