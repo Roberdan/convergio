@@ -30,34 +30,55 @@ cvg task transition <task_id> in-progress --agent-id claude-code-roberdan
 ```
 
 If you are running inside Claude Code, the project-level
-`SessionStart` hook in `.claude/settings.json` runs
-`cvg session register-and-poll` automatically before the first
-prompt — your agent shows up in `agent_registry` without you
-typing anything. The same `.claude/settings.json` also wires a
-`PreToolUse` hook (P1-3) that fires
-`cvg session heartbeat-since-last-turn` before every Bash / Edit /
-Write call. It is throttled by a per-pid timestamp file, so the
-daemon sees a real `POST /heartbeat` only every ~5 minutes — but
-your session never goes silent during a long run, and `cvg agent
-list` keeps showing it as `working`. The `Stop` hook fires
-`cvg session pre-stop` so the end-of-session safety net always
-runs.
+`SessionStart` hook in `.claude/settings.json` fires both
+`cvg session register-and-poll` AND `cvg session resume --output plain`
+automatically before the first prompt — your agent shows up in
+`agent_registry` AND your first turn already has live state
+(daemon health, audit chain, active plan, top pending tasks, open
+PRs) without you typing anything (P2-6). The hook's output is
+delimited by two marker lines:
 
-If you are outside Claude Code (or `cargo` is not on PATH and you
-have not installed the precompiled binary), run register-and-poll
+```
+=== Convergio session bootstrap ===
+[register-and-poll output]
+
+=== Convergio session resume (live state) ===
+[session resume output]
+```
+
+Set `CONVERGIO_NO_AUTO_RESUME=1` (same shape as
+`CONVERGIO_NO_DRIFT_WARN`) if you want the hook to skip the resume
+half.
+
+The same `.claude/settings.json` also wires a `PreToolUse` hook
+(P1-3) that fires `cvg session heartbeat-since-last-turn` before
+every Bash / Edit / Write call. It is throttled by a per-pid
+timestamp file, so the daemon sees a real `POST /heartbeat` only
+every ~5 minutes — but your session never goes silent during a
+long run, and `cvg agent list` keeps showing it as `working`. The
+`Stop` hook fires `cvg session pre-stop` so the end-of-session
+safety net always runs.
+
+If you are outside Claude Code (or `cargo` is not on PATH and
+you have not installed the precompiled binary), run them manually
 once at session start:
 
 ```bash
 cvg session register-and-poll --agent-id claude-code-roberdan \
   --kind claude
+cvg session resume
 ```
 
 ## 2. Cold-start reads (in order)
 
-Live state first — every value below is a daemon query, never stale:
+Live state first — every value below is a daemon query, never stale.
+Inside Claude Code, the first line is **already auto-fired** by the
+SessionStart hook (P2-6); it is listed here so an agent that lost
+its scrollback or that runs under a different host can re-trigger it
+manually:
 
 ```bash
-cvg session resume                # daemon, audit, active plan, next tasks, open PRs
+cvg session resume                # daemon, audit, active plan, next tasks, open PRs (auto-fired)
 cvg session resume --output json  # same brief, machine-readable
 cvg discover                      # active peers + top-5 bus topics + your plans (F2)
 cvg pr stack                      # merge order + conflict matrix (uses gh)

@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cargo run --quiet -p convergio-cli -- session register-and-poll --agent-id \"claude-code-${USER}\" --kind claude --output human || true"
+            "command": "bash -c 'echo \"=== Convergio session bootstrap ===\"; cargo run --quiet -p convergio-cli -- session register-and-poll --agent-id \"claude-code-${USER}\" --kind claude --output human || true; if [ \"${CONVERGIO_NO_AUTO_RESUME:-0}\" != \"1\" ]; then echo; echo \"=== Convergio session resume (live state) ===\"; cargo run --quiet -p convergio-cli -- session resume --output plain || true; fi'"
           }
         ]
       }

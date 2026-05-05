@@ -165,11 +165,10 @@ impl Bridge {
     }
 
     async fn heartbeat_agent(&self, mut params: Value) -> AgentResponse {
-        let agent_id = match required_str(&params, "agent_id") {
-            Ok(value) => value,
-            Err(response) => return response,
+        let agent_id = match resolve_agent_id(&mut params) {
+            Ok(v) => v,
+            Err(r) => return r,
         };
-        remove_key(&mut params, "agent_id");
         self.post(
             &format!("/v1/agent-registry/agents/{agent_id}/heartbeat"),
             params,
@@ -177,10 +176,10 @@ impl Bridge {
         .await
     }
 
-    async fn retire_agent(&self, params: Value) -> AgentResponse {
-        let agent_id = match required_str(&params, "agent_id") {
-            Ok(value) => value,
-            Err(response) => return response,
+    async fn retire_agent(&self, mut params: Value) -> AgentResponse {
+        let agent_id = match resolve_agent_id(&mut params) {
+            Ok(v) => v,
+            Err(r) => return r,
         };
         self.post(
             &format!("/v1/agent-registry/agents/{agent_id}/retire"),
@@ -238,6 +237,24 @@ impl Bridge {
     }
 }
 
+/// ADR-0043: `id` is canonical for entity-self; `agent_id` is a deprecated alias.
+pub(crate) fn resolve_agent_id(params: &mut Value) -> Result<String, AgentResponse> {
+    for key in ["id", "agent_id"] {
+        if let Some(v) = params
+            .get(key)
+            .and_then(Value::as_str)
+            .map(ToOwned::to_owned)
+        {
+            if key == "agent_id" {
+                tracing::warn!("deprecated 'agent_id'; use 'id' (ADR-0043, removed 0.4.0)");
+            }
+            remove_key(params, key);
+            return Ok(v);
+        }
+    }
+    Err(invalid("missing string param: id".to_owned()))
+}
+
 pub(crate) fn required_str(params: &Value, key: &str) -> Result<String, AgentResponse> {
     params
         .get(key)
@@ -246,7 +263,7 @@ pub(crate) fn required_str(params: &Value, key: &str) -> Result<String, AgentRes
         .ok_or_else(|| invalid(format!("missing string param: {key}")))
 }
 
-fn audit_path(params: &Value) -> Result<String, AgentResponse> {
+pub(crate) fn audit_path(params: &Value) -> Result<String, AgentResponse> {
     let mut query = Vec::new();
     for key in ["from", "to"] {
         if let Some(value) = params.get(key) {
@@ -266,34 +283,5 @@ fn audit_path(params: &Value) -> Result<String, AgentResponse> {
 pub(crate) fn remove_key(value: &mut Value, key: &str) {
     if let Value::Object(map) = value {
         map.remove(key);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use convergio_api::AgentCode;
-
-    #[tokio::test]
-    async fn act_rejects_schema_mismatch_before_network() {
-        let bridge = Bridge::new("http://127.0.0.1:1".into());
-        let response = bridge
-            .dispatch(ActRequest {
-                schema_version: "999".into(),
-                action: Action::Status,
-                params: json!({}),
-            })
-            .await;
-        assert!(!response.ok);
-        assert_eq!(response.code, AgentCode::SchemaVersionMismatch);
-        assert_eq!(response.next, Some(NextHint::RefreshHelp));
-    }
-
-    #[test]
-    fn audit_path_validates_numbers() {
-        let path = audit_path(&json!({"from": 1, "to": 9})).unwrap();
-        assert_eq!(path, "/v1/audit/verify?from=1&to=9");
-        let err = audit_path(&json!({"from": "bad"})).unwrap_err();
-        assert_eq!(err.code, AgentCode::InvalidRequest);
     }
 }

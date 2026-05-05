@@ -160,10 +160,9 @@ fn action_help(action: Option<Action>) -> Value {
         }),
         Action::ListCrdtConflicts => json!({"params": {}}),
         Action::RegisterAgent => json!({
-            "_note": "register_agent uses 'id' (the new agent id you choose). \
-                      heartbeat_agent and retire_agent use 'agent_id' (an \
-                      already-registered agent id). Two distinct fields, two \
-                      distinct purposes — do not interchange.",
+            "_note": "All agent actions use 'id' for the agent's own primary key \
+                      (ADR-0043): register_agent, heartbeat_agent, and retire_agent \
+                      all accept 'id'. This is the entity-self convention.",
             "params": {
                 "id": "stable-agent-id (you choose; lower-case, no whitespace)",
                 "kind": "claude | copilot | cursor | codex | shell | aider | claude-sdk | gpt-4o | ... (lower-case ASCII + - . _; max 64 chars)",
@@ -175,19 +174,20 @@ fn action_help(action: Option<Action>) -> Value {
         }),
         Action::ListAgents => json!({"params": {}}),
         Action::HeartbeatAgent => json!({
-            "_note": "heartbeat_agent uses 'agent_id' (existing agent). \
-                      Do not pass 'id' — that's the register_agent param.",
+            "_note": "Pass 'id' (the agent's own primary key, same convention as \
+                      register_agent — ADR-0043). 'agent_id' is a deprecated alias \
+                      accepted until 0.4.0 with a warning.",
             "params": {
-                "agent_id": "stable-agent-id (must already be registered)",
+                "id": "stable-agent-id (must already be registered)",
                 "current_task_id": "uuid?",
                 "status": "idle|working|unhealthy?"
             }
         }),
         Action::RetireAgent => json!({
-            "_note": "retire_agent uses 'agent_id' (existing agent), like \
-                      heartbeat_agent. Not 'id' (that's register_agent).",
+            "_note": "Pass 'id' (the agent's own primary key — ADR-0043). \
+                      'agent_id' is accepted as a deprecated alias until 0.4.0.",
             "params": {
-                "agent_id": "stable-agent-id (must already be registered)"
+                "id": "stable-agent-id (must already be registered)"
             }
         }),
         Action::SpawnRunner => json!({

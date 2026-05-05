@@ -43,6 +43,19 @@ pub fn prompt_snippet(host: AgentHost) -> String {
          done\n\
          ```\n\n\
          If those commands fail, the daemon is down: `cvg service start`, then retry.\n\n\
+         ## Step 0.5 — load the cold-start packet\n\n\
+         After register, run `cvg session resume` to load live state\n\
+         (daemon health, audit chain, active plan, top pending tasks,\n\
+         open PRs). For Claude Code this is already automated: the\n\
+         project-level `SessionStart` hook in `.claude/settings.json`\n\
+         fires both `cvg session register-and-poll` AND\n\
+         `cvg session resume --output plain` before the first user\n\
+         prompt, so you start with full context. Set\n\
+         `CONVERGIO_NO_AUTO_RESUME=1` to skip the resume half.\n\n\
+         For other hosts, run it manually once after Step 0:\n\n\
+         ```\n\
+         cvg session resume --output plain\n\
+         ```\n\n\
          ## Working loop\n\n\
          Use Convergio as the local source of truth. Call convergio.help once. \
          Use convergio.act for task lifecycle and evidence. If a gate refuses \
@@ -75,60 +88,51 @@ pub fn agent_id_placeholder(host: AgentHost) -> &'static str {
 mod tests {
     use super::*;
 
+    const ALL_HOSTS: &[AgentHost] = &[
+        AgentHost::Claude,
+        AgentHost::CopilotLocal,
+        AgentHost::CopilotCloud,
+        AgentHost::Cursor,
+        AgentHost::Cline,
+        AgentHost::Continue,
+        AgentHost::Qwen,
+        AgentHost::Shell,
+    ];
+
     /// Every host's prompt.txt must begin with the title line followed
     /// by the Step 0 block within the first 6 lines, so an agent that
     /// reads the head of the file cannot skip registration.
     #[test]
     fn step_zero_is_first_section_for_every_host() {
-        for host in [
-            AgentHost::Claude,
-            AgentHost::CopilotLocal,
-            AgentHost::CopilotCloud,
-            AgentHost::Cursor,
-            AgentHost::Cline,
-            AgentHost::Continue,
-            AgentHost::Qwen,
-            AgentHost::Shell,
-        ] {
+        for &host in ALL_HOSTS {
             let body = prompt_snippet(host);
-            let head: Vec<&str> = body.lines().take(6).collect();
-            let head_blob = head.join("\n");
+            let head_blob: String = body.lines().take(6).collect::<Vec<_>>().join("\n");
             assert!(
                 head_blob.contains("Step 0"),
-                "host {:?} prompt.txt is missing 'Step 0' in head: {head_blob}",
+                "host {:?} missing 'Step 0' in head: {head_blob}",
                 host.as_str()
             );
-            assert!(
-                body.contains(agent_id_placeholder(host)),
-                "host {:?} prompt.txt is missing its agent_id placeholder",
-                host.as_str()
-            );
-            assert!(
-                body.contains("register-and-poll"),
-                "host {:?} prompt.txt should reference cvg session register-and-poll",
-                host.as_str()
-            );
-            assert!(
-                body.contains("/v1/agent-registry/agents"),
-                "host {:?} prompt.txt is missing the registry endpoint",
-                host.as_str()
-            );
+            for needle in [
+                agent_id_placeholder(host),
+                "register-and-poll",
+                "/v1/agent-registry/agents",
+                "Step 0.5",
+                "cvg session resume",
+                "CONVERGIO_NO_AUTO_RESUME",
+            ] {
+                assert!(
+                    body.contains(needle),
+                    "host {:?} prompt.txt missing {needle:?}",
+                    host.as_str()
+                );
+            }
         }
     }
 
     #[test]
     fn agent_id_placeholders_are_unique_per_host() {
-        let placeholders = [
-            agent_id_placeholder(AgentHost::Claude),
-            agent_id_placeholder(AgentHost::CopilotLocal),
-            agent_id_placeholder(AgentHost::CopilotCloud),
-            agent_id_placeholder(AgentHost::Cursor),
-            agent_id_placeholder(AgentHost::Cline),
-            agent_id_placeholder(AgentHost::Continue),
-            agent_id_placeholder(AgentHost::Qwen),
-            agent_id_placeholder(AgentHost::Shell),
-        ];
-        let mut sorted = placeholders.to_vec();
+        let placeholders: Vec<&str> = ALL_HOSTS.iter().map(|&h| agent_id_placeholder(h)).collect();
+        let mut sorted = placeholders.clone();
         sorted.sort_unstable();
         sorted.dedup();
         assert_eq!(sorted.len(), placeholders.len(), "duplicate placeholders");
