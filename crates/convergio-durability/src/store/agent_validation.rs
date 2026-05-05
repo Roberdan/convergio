@@ -35,12 +35,12 @@ pub(super) fn validate_agent_kind(kind: &str) -> Result<()> {
     }
     Ok(())
 }
-
+// C4 + C8 (2026-05-04 retro): heartbeat refuses 'retired'; use POST /retire.
 pub(super) fn validate_status(status: &str) -> Result<()> {
-    if !matches!(status, "idle" | "working" | "unhealthy" | "terminated") {
-        return Err(DurabilityError::InvalidAgent {
-            reason: "unknown agent status".into(),
-        });
-    }
-    Ok(())
+    let reason: String = match status {
+        "idle" | "working" | "unhealthy" | "terminated" => return Ok(()),
+        "retired" => "status 'retired' cannot be set via heartbeat — use POST /v1/agent-registry/agents/:id/retire instead".into(),
+        s => format!("unknown agent status '{s}' (allowed: idle, working, unhealthy, terminated)"),
+    };
+    Err(DurabilityError::InvalidAgent { reason })
 }

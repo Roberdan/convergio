@@ -135,8 +135,13 @@ curl -fsS -X POST http://127.0.0.1:8420/v1/agent-registry/agents \
   -d "{\"id\":\"${SUBAGENT_ID}\",\"kind\":\"subagent\",\"name\":\"<one-line>\",\"host\":\"macOS\",\"capabilities\":[...]}"
 curl -fsS -X POST http://127.0.0.1:8420/v1/agent-registry/agents/${SUBAGENT_ID}/heartbeat -H 'Content-Type: application/json' -d '{"status":"working"}'
 # ... do work; re-run the heartbeat line every ~5 min ...
-curl -fsS -X POST http://127.0.0.1:8420/v1/agent-registry/agents/${SUBAGENT_ID}/retire -H 'Content-Type: application/json' -d '{}'
+cvg agent retire "${SUBAGENT_ID}"   # or: curl -fsS -X POST http://127.0.0.1:8420/v1/agent-registry/agents/${SUBAGENT_ID}/retire -H 'Content-Type: application/json' -d '{}'
 ```
+
+Heartbeat is for liveness only — it refuses `status="retired"` with
+HTTP 422 and tells you to use `cvg agent retire <id>` (or the
+explicit `/retire` route). Setting `status="idle"` on exit instead
+of retiring leaves a zombie in the registry; do not do that.
 
 `kind=subagent` is the documented marker for these helpers (see
 `docs/multi-agent-operating-model.md` § Subagent lifecycle). It lets

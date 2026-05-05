@@ -18,7 +18,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 405 |
+| `AGENTS.md` | agent-rules | - | - | 411 |
 | `ARCHITECTURE.md` | architecture | - | - | 270 |
 | `CHANGELOG.md` | release | - | - | 839 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -39,7 +39,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-cli-pr/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 49 |
 | `crates/convergio-cli-session/README.md` | crate-readme | - | - | 26 |
-| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 40 |
+| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 39 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 31 |
 | `crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
 | `crates/convergio-coherence/AGENTS.md` | crate-rules | - | - | 67 |
@@ -64,7 +64,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-planner/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-planner/README.md` | crate-readme | - | - | 8 |
 | `crates/convergio-runner/AGENTS.md` | crate-rules | - | - | 53 |
-| `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 27 |
+| `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 28 |
 | `crates/convergio-server/README.md` | crate-readme | - | - | 58 |
 | `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 22 |
@@ -119,9 +119,9 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/README.md` | adr | - | - | 64 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
-| `docs/agent-resume-packet.md` | - | - | - | 247 |
+| `docs/agent-resume-packet.md` | - | - | - | 270 |
 | `docs/agents/README.md` | agent-docs | - | - | 101 |
-| `docs/multi-agent-operating-model.md` | - | - | - | 420 |
+| `docs/multi-agent-operating-model.md` | - | - | - | 424 |
 | `docs/plans/2026-05-01-triage-pass.md` | plan | - | - | 75 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
 | `docs/plans/README.md` | plan | - | - | 31 |
