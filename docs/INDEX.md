@@ -20,7 +20,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `.github/pull_request_template.md` | - | - | - | 64 |
 | `AGENTS.md` | agent-rules | - | - | 406 |
 | `ARCHITECTURE.md` | architecture | - | - | 270 |
-| `CHANGELOG.md` | release | - | - | 804 |
+| `CHANGELOG.md` | release | - | - | 839 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 158 |
@@ -115,7 +115,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0040-split-coherence-into-its-own-crate.md` | adr | [convergio-cli, convergio-coherence] | accepted | 186 |
 | `docs/adr/0041-split-session-into-its-own-crate.md` | adr | [convergio-cli, convergio-cli-session] | accepted | 200 |
 | `docs/adr/0042-wave-sequence-gate-parallel-safe.md` | adr | [convergio-durability, convergio-server, convergio-api, convergio-cli] | accepted | 262 |
-| `docs/adr/README.md` | adr | - | - | 63 |
+| `docs/adr/0043-api-id-and-payload-consistency.md` | adr | [convergio-server, convergio-api, convergio-mcp, convergio-cli] | accepted | 154 |
+| `docs/adr/README.md` | adr | - | - | 64 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 252 |

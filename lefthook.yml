@@ -52,31 +52,6 @@ commit-msg:
     commitlint:
       run: npx --yes @commitlint/cli --edit {1}
 
-pre-push:
-  commands:
-    docs-regen-check:
-      # Block the push if AUTO blocks (cvg docs regenerate) drifted.
-      # Recurring CI failures observed on PRs #169, #170, #173 — fix
-      # at the source instead of after the fact in CI (P0.5).
-      run: cargo run --quiet -p convergio-cli -- docs regenerate --check
-      skip:
-        - run: test "${LEFTHOOK_SKIP_DOC_REGEN:-0}" = "1"
-      fail_text: |
-        AUTO blocks are stale. Run:
-          cargo run -p convergio-cli -- docs regenerate
-          ./scripts/generate-docs-index.sh
-        then `git add -A && git commit --amend --no-edit && git push --force-with-lease`.
-        To bypass once: LEFTHOOK_SKIP_DOC_REGEN=1 git push (audited).
-    docs-index-check:
-      # Block the push if docs/INDEX.md drifted from generator output.
-      run: ./scripts/generate-docs-index.sh --check
-      skip:
-        - run: test "${LEFTHOOK_SKIP_DOC_REGEN:-0}" = "1"
-      fail_text: |
-        docs/INDEX.md is stale. Run:
-          ./scripts/generate-docs-index.sh
-        then `git add -A && git commit --amend --no-edit && git push --force-with-lease`.
-
 post-merge:
   commands:
     cvg-update:
