@@ -165,6 +165,38 @@ pub struct ActionCatalog {
     pub actions: Vec<&'static str>,
 }
 
+/// Discoverable per-action metadata (P3-1 — Palantir-inspired
+/// Action type registry).
+///
+/// Each action ships with a stable name + the human-readable summary
+/// captured from its `Action` enum doc-comment. The MCP bridge and
+/// any external tool can read this without re-implementing the
+/// catalog: see [`actions_registry`] and the
+/// `GET /v1/api/actions` daemon route.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ActionMetadata {
+    /// Stable action slug (e.g. `"submit_task"`).
+    pub name: String,
+    /// Snake-case capability bucket the action belongs to (one of
+    /// [`CAPABILITIES`]).
+    pub capability: &'static str,
+    /// One-line summary derived from the `Action` enum doc-comment.
+    pub summary: &'static str,
+}
+
+/// Full registry: every supported [`Action`] enriched with
+/// capability + summary. Stable order = enum declaration order.
+pub fn actions_registry() -> Vec<ActionMetadata> {
+    Action::ALL
+        .iter()
+        .map(|a| ActionMetadata {
+            name: a.as_str().to_string(),
+            capability: a.capability(),
+            summary: a.summary(),
+        })
+        .collect()
+}
+
 /// Stable MCP tool names.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ToolNames {

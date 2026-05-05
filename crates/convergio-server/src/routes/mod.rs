@@ -2,6 +2,7 @@
 
 pub mod agent_registry;
 pub mod agents;
+pub mod api_actions;
 pub mod audit;
 pub mod capabilities;
 pub mod context;
