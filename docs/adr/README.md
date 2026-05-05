@@ -61,4 +61,5 @@ do not edit between the markers.
 | [0041](./0041-split-session-into-its-own-crate.md) | 0041. Split the session lifecycle suite into its own crate | accepted |
 | [0042](./0042-wave-sequence-gate-parallel-safe.md) | 0042. Wave-sequence gate refactor — opt-in parallel waves via per-task `parallel_safe` | accepted |
 | [0043](./0043-api-id-and-payload-consistency.md) | 0043. API consistency — `id` and `payload` field naming | accepted |
+| [0044](./0044-plan-execution-contract.md) | 0044. Plan execution contract — required mechanism utilization per task | accepted |
 <!-- END AUTO -->

@@ -85,3 +85,57 @@ fn catalog_exposes_exact_two_tools() {
     assert_eq!(catalog.tools.act, ACT_TOOL);
     assert_eq!(catalog.actions.len(), Action::ALL.len());
 }
+
+#[test]
+fn register_and_retire_agent_compensate_each_other() {
+    assert_eq!(
+        Action::RegisterAgent.compensate(),
+        Some(Action::RetireAgent)
+    );
+    assert_eq!(
+        Action::RetireAgent.compensate(),
+        Some(Action::RegisterAgent)
+    );
+    assert!(Action::RegisterAgent.is_reversible());
+    assert!(Action::RetireAgent.is_reversible());
+}
+
+#[test]
+fn workspace_lease_claim_compensates_with_release() {
+    assert_eq!(
+        Action::ClaimWorkspaceLease.compensate(),
+        Some(Action::ReleaseWorkspaceLease)
+    );
+    // ReleaseWorkspaceLease intentionally returns None — re-claiming
+    // a released lease is the operator's call, not a mechanical undo.
+    assert_eq!(Action::ReleaseWorkspaceLease.compensate(), None);
+}
+
+#[test]
+fn read_only_actions_are_not_reversible() {
+    for action in [
+        Action::Status,
+        Action::ListTasks,
+        Action::AuditVerify,
+        Action::ListAgents,
+    ] {
+        assert!(
+            !action.is_reversible(),
+            "{} should not be reversible",
+            action.as_str()
+        );
+    }
+}
+
+#[test]
+fn at_least_three_actions_have_compensating_pairs() {
+    let reversible: Vec<&str> = Action::ALL
+        .iter()
+        .filter(|a| a.is_reversible())
+        .map(|a| a.as_str())
+        .collect();
+    assert!(
+        reversible.len() >= 3,
+        "expected ≥3 reversible actions, got {reversible:?}"
+    );
+}

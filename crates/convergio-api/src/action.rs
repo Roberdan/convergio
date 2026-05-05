@@ -40,6 +40,8 @@ pub enum Action {
     ValidatePlan,
     /// Verify the audit hash chain.
     AuditVerify,
+    /// Append a custom hash-chained audit row (P2-2, ADR-0002 § Custom kinds).
+    AuditAppend,
     /// Import and materialize a CRDT operation batch.
     ImportCrdtOps,
     /// List unresolved CRDT conflicts.
@@ -101,6 +103,7 @@ impl Action {
         Self::SubmitTask,
         Self::ValidatePlan,
         Self::AuditVerify,
+        Self::AuditAppend,
         Self::ImportCrdtOps,
         Self::ListCrdtConflicts,
         Self::RegisterAgent,
@@ -141,6 +144,7 @@ impl Action {
             Self::SubmitTask => "submit_task",
             Self::ValidatePlan => "validate_plan",
             Self::AuditVerify => "audit_verify",
+            Self::AuditAppend => "audit_append",
             Self::ImportCrdtOps => "import_crdt_ops",
             Self::ListCrdtConflicts => "list_crdt_conflicts",
             Self::RegisterAgent => "register_agent",
@@ -177,7 +181,7 @@ impl Action {
             | Self::SubmitTask
             | Self::GetTaskContext => "tasks",
             Self::AddEvidence => "evidence",
-            Self::AuditVerify | Self::ExplainLastRefusal => "audit",
+            Self::AuditVerify | Self::AuditAppend | Self::ExplainLastRefusal => "audit",
             Self::RegisterAgent
             | Self::ListAgents
             | Self::HeartbeatAgent
@@ -215,6 +219,7 @@ impl Action {
             Self::SubmitTask => "Submit a task and run gates.",
             Self::ValidatePlan => "Validate a plan; promote submitted tasks to done.",
             Self::AuditVerify => "Verify the audit hash chain.",
+            Self::AuditAppend => "Append a custom hash-chained audit row.",
             Self::ImportCrdtOps => "Import a CRDT operation batch.",
             Self::ListCrdtConflicts => "List unresolved CRDT conflicts.",
             Self::RegisterAgent => "Register or refresh an agent identity.",
@@ -236,5 +241,55 @@ impl Action {
             Self::ExplainLastRefusal => "Explain the most recent gate refusal for a task.",
             Self::AgentPrompt => "Return the canonical agent prompt addendum.",
         }
+    }
+
+    /// Compensating action that undoes this one's side effects when
+    /// a clean inverse exists (P3-3 — Palantir-inspired compensating
+    /// actions). Returns `None` for actions whose effect cannot be
+    /// reversed by another action of the same surface.
+    pub fn compensate(self) -> Option<Self> {
+        match self {
+            Self::RegisterAgent => Some(Self::RetireAgent),
+            Self::RetireAgent => Some(Self::RegisterAgent),
+            Self::ClaimWorkspaceLease => Some(Self::ReleaseWorkspaceLease),
+            Self::Status
+            | Self::CreatePlan
+            | Self::CreateTask
+            | Self::ListTasks
+            | Self::NextTask
+            | Self::ClaimTask
+            | Self::Heartbeat
+            | Self::AddEvidence
+            | Self::GetTaskContext
+            | Self::PublishMessage
+            | Self::PollMessages
+            | Self::AckMessage
+            | Self::SubmitTask
+            | Self::ValidatePlan
+            | Self::AuditVerify
+            | Self::ImportCrdtOps
+            | Self::ListCrdtConflicts
+            | Self::ListAgents
+            | Self::HeartbeatAgent
+            | Self::SpawnRunner
+            | Self::PlannerSolve
+            | Self::ListCapabilities
+            | Self::GetCapability
+            | Self::ListWorkspaceLeases
+            | Self::ReleaseWorkspaceLease
+            | Self::SubmitPatchProposal
+            | Self::EnqueuePatchProposal
+            | Self::ProcessMergeQueue
+            | Self::ListMergeQueue
+            | Self::ListWorkspaceConflicts
+            | Self::ExplainLastRefusal
+            | Self::AgentPrompt
+            | Self::AuditAppend => None,
+        }
+    }
+
+    /// True iff [`Self::compensate`] returns `Some`.
+    pub fn is_reversible(self) -> bool {
+        self.compensate().is_some()
     }
 }

@@ -84,6 +84,12 @@ setup-next-doctor = Then: run `cvg doctor`
 setup-agent-created = Adapter snippets created for { $host }: { $path }
 setup-agent-copy = Copy mcp.json into the agent host MCP configuration and prompt.txt into its instructions.
 setup-agent-claude-extras = Claude Code extras: copy skill-cvg-attach/ into ~/.claude/skills/cvg-attach/ and merge settings.json into ~/.claude/settings.json so SessionStart registers this session with the local daemon. See { $path }/README.txt for the full steps.
+setup-self-check-header = Convergio install self-check (ADR-0044)
+setup-self-check-ok = OK   { $name }: { $message }
+setup-self-check-warn = WARN { $name }: { $message }
+setup-self-check-fail = FAIL { $name }: { $message }
+setup-self-check-summary-ok = Self-check passed.
+setup-self-check-summary-fail = Self-check failed — fix FAIL items before starting a task.
 doctor-header = Convergio doctor for { $url }
 doctor-ok = OK { $name }: { $message }
 doctor-warn = WARN { $name }: { $message }
@@ -296,6 +302,12 @@ coherence-handshake-success = handshake complete in { $elapsed }ms (timeout was 
 coherence-handshake-fail = handshake failed after { $elapsed }ms (timeout was { $timeout }ms)
 coherence-handshake-timeout = handshake timed out after { $elapsed }ms (deadline { $timeout }ms)
 
+# ---------- CLI: coherence plan-execution (ADR-0044) ----------
+coherence-plan-execution-summary = Plan { $plan }… — { $closed } closed task(s), { $compliant } compliant, score { $score }%
+coherence-plan-execution-plan-checks = Plan-level: registry={ $registry }  bus={ $bus }
+coherence-plan-execution-task-ok = OK   { $id }… { $title }
+coherence-plan-execution-task-fail = FAIL { $id }… { $title } — missing: { $missing }
+
 # ---------- CLI: bus tail / list (P1.2) ----------
 bus-tail-following = Following bus on plan { $plan } (Ctrl-C to exit)
 bus-tail-disconnect = bus stream disconnected, reconnecting...
@@ -311,3 +323,13 @@ discover-your-plans = YOUR PLANS (where your agent_id appears, latest first):
 discover-empty-peers = (no active peers in window)
 discover-empty-bus = (no recent bus activity)
 discover-empty-plans = (no plans assigned to you)
+
+# ---------- CLI: task complete orchestrator (P1-1) ----------
+task-complete-step-graph = [complete] graph for-task --semantic …
+task-complete-step-embed = [complete] embed for-task …
+task-complete-step-evidence-graph = [complete] evidence add graph_pack …
+task-complete-step-evidence-embed = [complete] evidence add embed_query …
+task-complete-step-evidence-pr = [complete] evidence add pr_link (PR #{ $pr }) …
+task-complete-step-submit = [complete] transition → submitted …
+task-complete-step-thor = [complete] validate plan (Thor) …
+task-complete-thor-failed = Thor validation failed: { $verdict }
