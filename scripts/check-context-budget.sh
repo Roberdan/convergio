@@ -22,10 +22,13 @@ repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo_root"
 
 # Caps (per CONSTITUTION § Agent context budget)
-#   - 12_000 lines is the hard ceiling for "an agent can grok this in
+#   - 13_000 lines is the hard ceiling for "an agent can grok this in
 #     one 200k-context window with comfort margin for diff + thought".
 #     Bumped: 10_000 → 11_000 (2026-05, initial durability growth).
 #             11_000 → 12_000 (2026-05, P0-3 agent-reaper retirement).
+#             12_000 → 13_000 (2026-05, P1-3 + P2-9 absorbed by cli;
+#             cli-split ADR pending — agent_*, fleet, setup, update,
+#             coherence subcommands are all candidates for extraction).
 #     The shape of that crate (audit chain + plans + tasks + evidence +
 #     workspace + capabilities + crdt + gates + agent-reaper) is
 #     intentional and a real split needs ADR work — track it under
@@ -35,7 +38,7 @@ cd "$repo_root"
 RS_HARD=300
 NON_RS_SOFT=500
 CRATE_SOFT=5000
-CRATE_HARD=12000
+CRATE_HARD=13000
 
 hard_fail=0
 soft_warn=0
