@@ -4,6 +4,7 @@ use super::task_render::{render_task, render_task_list};
 use super::{Client, OutputMode};
 use anyhow::{bail, Result};
 use clap::{Subcommand, ValueEnum};
+use convergio_i18n::Bundle;
 use serde_json::{json, Value};
 
 /// Task subcommands.
@@ -90,6 +91,19 @@ pub enum TaskCommand {
         #[arg(long)]
         agent_id: Option<String>,
     },
+    /// Orchestrate full task completion: graph for-task --semantic →
+    /// embed for-task → evidence add ×N → transition submitted →
+    /// validate plan (Thor) → done.
+    Complete {
+        /// Task id.
+        task_id: String,
+        /// GitHub PR number to record as evidence.
+        #[arg(long)]
+        pr: u64,
+        /// Agent id for audit rows.
+        #[arg(long)]
+        agent_id: Option<String>,
+    },
 }
 
 /// CLI-friendly task status values that an agent may request.
@@ -120,7 +134,12 @@ impl TaskTarget {
 }
 
 /// Run a task subcommand.
-pub async fn run(client: &Client, output: OutputMode, cmd: TaskCommand) -> Result<()> {
+pub async fn run(
+    client: &Client,
+    bundle: &Bundle,
+    output: OutputMode,
+    cmd: TaskCommand,
+) -> Result<()> {
     match cmd {
         TaskCommand::Create {
             plan_id,
@@ -200,6 +219,15 @@ pub async fn run(client: &Client, output: OutputMode, cmd: TaskCommand) -> Resul
                 _ => println!("{}", serde_json::to_string_pretty(&ok)?),
             }
             Ok(())
+        }
+        TaskCommand::Complete {
+            task_id,
+            pr,
+            agent_id,
+        } => {
+            let done = super::task_complete::run(client, bundle, &task_id, pr, agent_id.as_deref())
+                .await?;
+            render_task(&done, output)
         }
     }
 }

@@ -40,6 +40,8 @@ pub enum Action {
     ValidatePlan,
     /// Verify the audit hash chain.
     AuditVerify,
+    /// Append a custom hash-chained audit row (P2-2, ADR-0002 § Custom kinds).
+    AuditAppend,
     /// Import and materialize a CRDT operation batch.
     ImportCrdtOps,
     /// List unresolved CRDT conflicts.
@@ -101,6 +103,7 @@ impl Action {
         Self::SubmitTask,
         Self::ValidatePlan,
         Self::AuditVerify,
+        Self::AuditAppend,
         Self::ImportCrdtOps,
         Self::ListCrdtConflicts,
         Self::RegisterAgent,
@@ -141,6 +144,7 @@ impl Action {
             Self::SubmitTask => "submit_task",
             Self::ValidatePlan => "validate_plan",
             Self::AuditVerify => "audit_verify",
+            Self::AuditAppend => "audit_append",
             Self::ImportCrdtOps => "import_crdt_ops",
             Self::ListCrdtConflicts => "list_crdt_conflicts",
             Self::RegisterAgent => "register_agent",
@@ -177,7 +181,7 @@ impl Action {
             | Self::SubmitTask
             | Self::GetTaskContext => "tasks",
             Self::AddEvidence => "evidence",
-            Self::AuditVerify | Self::ExplainLastRefusal => "audit",
+            Self::AuditVerify | Self::AuditAppend | Self::ExplainLastRefusal => "audit",
             Self::RegisterAgent
             | Self::ListAgents
             | Self::HeartbeatAgent
@@ -215,6 +219,7 @@ impl Action {
             Self::SubmitTask => "Submit a task and run gates.",
             Self::ValidatePlan => "Validate a plan; promote submitted tasks to done.",
             Self::AuditVerify => "Verify the audit hash chain.",
+            Self::AuditAppend => "Append a custom hash-chained audit row.",
             Self::ImportCrdtOps => "Import a CRDT operation batch.",
             Self::ListCrdtConflicts => "List unresolved CRDT conflicts.",
             Self::RegisterAgent => "Register or refresh an agent identity.",
@@ -278,7 +283,8 @@ impl Action {
             | Self::ListMergeQueue
             | Self::ListWorkspaceConflicts
             | Self::ExplainLastRefusal
-            | Self::AgentPrompt => None,
+            | Self::AgentPrompt
+            | Self::AuditAppend => None,
         }
     }
 

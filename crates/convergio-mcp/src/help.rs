@@ -127,6 +127,21 @@ fn action_help(action: Option<Action>) -> Value {
         }),
         Action::ValidatePlan => json!({"params": {"plan_id": "uuid"}}),
         Action::AuditVerify => json!({"params": {"from": "integer?", "to": "integer?"}}),
+        Action::AuditAppend => json!({
+            "_note": "Custom hash-chained audit row. kind must match \
+                      ^[a-z][a-z0-9_]*\\.[a-z0-9_]+(\\.[a-z0-9_]+)*$ \
+                      and must NOT start with daemon-reserved prefixes \
+                      (task./plan./evidence./crdt./workspace./capability.) \
+                      or use reserved names (agent.session_started, \
+                      agent.retired, agent.retired_stale).",
+            "params": {
+                "kind": "myapp.session.pre_stop.check.1",
+                "entity_kind": "agent | task | plan | evidence | free",
+                "entity_id": "string (opaque correlation key)",
+                "agent_id": "string?",
+                "payload": "object"
+            }
+        }),
         Action::ImportCrdtOps => json!({
             "params": {
                 "agent_id": "string?",

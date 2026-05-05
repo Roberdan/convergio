@@ -22,6 +22,10 @@ pub enum EntityKind {
     Workspace,
     /// Capability registry event.
     Capability,
+    /// Free-form entity reference for agent-emitted custom audit rows
+    /// (ADR-0002 § Custom kinds, P2-2). The `entity_id` is opaque to
+    /// the daemon — agents use it as a correlation key.
+    Free,
 }
 
 impl EntityKind {
@@ -35,6 +39,7 @@ impl EntityKind {
             Self::Crdt => "crdt",
             Self::Workspace => "workspace",
             Self::Capability => "capability",
+            Self::Free => "free",
         }
     }
 }

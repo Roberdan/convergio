@@ -11,11 +11,14 @@
 //!   diff actual axum route declarations under
 //!   `crates/convergio-server/src/routes/` against the documented
 //!   surface in `ARCHITECTURE.md` / `AGENTS.md`.
+//! - [`coherence::run`] with [`coherence::CoherenceCommand::PlanExecution`] —
+//!   per-plan mechanism compliance score (ADR-0044).
 //!
 //! Extracted from `convergio-cli` per ADR-0040 to honour the
 //! 11k-line per-crate hard cap (CONSTITUTION § 13). The verifiers
 //! are pure (no daemon dependency), so they remain agent-callable
-//! from any CLI, skill, or runner.
+//! from any CLI, skill, or runner. Exception: `PlanExecution` and
+//! `Handshake` require a running daemon.
 
 pub mod coherence;
 
@@ -31,6 +34,7 @@ mod agents_scan;
 mod agents_tests;
 mod body;
 mod body_scan;
+pub(crate) mod check;
 pub mod close_post_hoc;
 mod close_post_hoc_scan;
 pub mod fleet;
@@ -41,6 +45,8 @@ mod handshake_run;
 #[cfg(test)]
 mod handshake_tests;
 mod parse;
+pub mod plan_execution;
+mod plan_execution_scan;
 mod routes;
 mod routes_diff;
 mod routes_parse;

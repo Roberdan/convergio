@@ -19,14 +19,15 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-cli` stats:** 65 `*.rs` files / 67 public items / 10124 lines (under `src/`).
+**`convergio-cli` stats:** 67 `*.rs` files / 70 public items / 10585 lines (under `src/`).
 
 Files approaching the 300-line cap:
 - `src/commands/graph.rs` (300 lines)
 - `src/commands/discover.rs` (297 lines)
+- `src/commands/setup.rs` (291 lines)
 - `src/commands/fleet.rs` (289 lines)
 - `src/commands/service.rs` (288 lines)
-- `src/commands/setup.rs` (286 lines)
+- `src/commands/setup_self_check.rs` (280 lines)
 - `src/commands/status_render.rs` (272 lines)
 - `src/commands/update_run.rs` (272 lines)
 - `src/commands/doctor.rs` (269 lines)

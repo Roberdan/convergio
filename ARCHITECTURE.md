@@ -98,6 +98,7 @@ All endpoints sit under `/v1`. Errors are:
 | GET | `/v1/audit/refusals/latest` | 1 |
 | GET | `/v1/audit/events` | 1 |
 | GET | `/v1/audit/stream` (SSE, P1.1) | 1 |
+| POST | `/v1/audit/append` (P2-2, ADR-0002 § Custom kinds) | 1 |
 | GET | `/v1/crdt/conflicts` | 1 |
 | POST | `/v1/crdt/import` | 1 |
 | GET · POST | `/v1/workspace/leases` | 1 |
