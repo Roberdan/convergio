@@ -18,9 +18,9 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 405 |
-| `ARCHITECTURE.md` | architecture | - | - | 270 |
-| `CHANGELOG.md` | release | - | - | 839 |
+| `AGENTS.md` | agent-rules | - | - | 407 |
+| `ARCHITECTURE.md` | architecture | - | - | 271 |
+| `CHANGELOG.md` | release | - | - | 918 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 158 |
@@ -39,7 +39,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-cli-pr/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 49 |
 | `crates/convergio-cli-session/README.md` | crate-readme | - | - | 26 |
-| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 40 |
+| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 41 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 31 |
 | `crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
 | `crates/convergio-coherence/AGENTS.md` | crate-rules | - | - | 67 |
@@ -64,17 +64,17 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-planner/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-planner/README.md` | crate-readme | - | - | 8 |
 | `crates/convergio-runner/AGENTS.md` | crate-rules | - | - | 53 |
-| `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 28 |
+| `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 30 |
 | `crates/convergio-server/README.md` | crate-readme | - | - | 58 |
 | `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 22 |
-| `crates/convergio-tui/AGENTS.md` | crate-rules | - | - | 112 |
+| `crates/convergio-tui/AGENTS.md` | crate-rules | - | - | 113 |
 | `crates/convergio-tui/README.md` | crate-readme | - | - | 98 |
 | `docs/AGENTS.md` | - | - | - | 63 |
 | `docs/INDEX.md` | - | - | - | - |
 | `docs/adr/0000-template.md` | adr | [] | proposed \| accepted \| deprecated \| superseded by [NNNN](NNNN-title.md) | 55 |
 | `docs/adr/0001-four-layer-architecture.md` | adr | [] | accepted | 77 |
-| `docs/adr/0002-audit-hash-chain.md` | adr | [] | accepted | 91 |
+| `docs/adr/0002-audit-hash-chain.md` | adr | [] | accepted | 121 |
 | `docs/adr/0003-migration-coexistence.md` | adr | [] | accepted | 132 |
 | `docs/adr/0004-three-sacred-principles.md` | adr | [] | accepted | 104 |
 | `docs/adr/0005-internationalization-first.md` | adr | [] | accepted | 119 |
@@ -116,12 +116,14 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0041-split-session-into-its-own-crate.md` | adr | [convergio-cli, convergio-cli-session] | accepted | 200 |
 | `docs/adr/0042-wave-sequence-gate-parallel-safe.md` | adr | [convergio-durability, convergio-server, convergio-api, convergio-cli] | accepted | 262 |
 | `docs/adr/0043-api-id-and-payload-consistency.md` | adr | [convergio-server, convergio-api, convergio-mcp, convergio-cli] | accepted | 154 |
-| `docs/adr/README.md` | adr | - | - | 64 |
+| `docs/adr/0044-plan-execution-contract.md` | adr | [convergio-cli, convergio-coherence] | accepted | 110 |
+| `docs/adr/0045-per-host-realtime-context-push.md` | adr | [convergio-cli-session] | accepted | 113 |
+| `docs/adr/README.md` | adr | - | - | 66 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
-| `docs/agent-resume-packet.md` | - | - | - | 270 |
+| `docs/agent-resume-packet.md` | - | - | - | 301 |
 | `docs/agents/README.md` | agent-docs | - | - | 101 |
-| `docs/multi-agent-operating-model.md` | - | - | - | 424 |
+| `docs/multi-agent-operating-model.md` | - | - | - | 485 |
 | `docs/plans/2026-05-01-triage-pass.md` | plan | - | - | 75 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
 | `docs/plans/README.md` | plan | - | - | 31 |
@@ -144,6 +146,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/vision.md` | - | - | - | 426 |
 | `docs/wip-commit-template.md` | - | - | - | 98 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
+| `examples/skills/cvg-attach-cursor/README.md` | example | - | - | 57 |
+| `examples/skills/cvg-attach-cursor/rules.md` | - | - | - | 92 |
 | `examples/skills/cvg-attach/README.md` | example | - | - | 158 |
 | `examples/skills/cvg-attach/SKILL.md` | - | - | - | 87 |
 
