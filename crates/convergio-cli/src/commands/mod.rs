@@ -60,6 +60,7 @@ pub mod workspace;
 
 use anyhow::{Context, Result};
 use clap::ValueEnum;
+use convergio_i18n::Bundle;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
@@ -150,6 +151,38 @@ impl Client {
     }
 }
 
+/// `true` when CLI and daemon versions differ and a drift warning should be emitted.
+/// An empty `daemon_ver` (stub or unreachable) is treated as no-drift.
+pub(crate) fn should_warn_drift(cli_ver: &str, daemon_ver: &str) -> bool {
+    !daemon_ver.is_empty() && cli_ver != daemon_ver
+}
+
+/// Emit a one-line stderr warning when the CLI binary version differs from the
+/// daemon's running version. Suppressed by `CONVERGIO_NO_DRIFT_WARN=1`.
+/// Errors (daemon unreachable) are silently ignored — this is a best-effort check.
+pub async fn maybe_warn_drift(client: &Client, bundle: &Bundle) {
+    if std::env::var("CONVERGIO_NO_DRIFT_WARN").as_deref() == Ok("1") {
+        return;
+    }
+    let Ok(body) = client.get::<serde_json::Value>("/v1/health").await else {
+        return;
+    };
+    let daemon_ver = body
+        .get("running_version")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or("");
+    let cli_ver = env!("CARGO_PKG_VERSION");
+    if should_warn_drift(cli_ver, daemon_ver) {
+        eprintln!(
+            "{}",
+            bundle.t(
+                "cli-version-drift",
+                &[("cli", cli_ver), ("daemon", daemon_ver)]
+            )
+        );
+    }
+}
+
 async fn json_or_err<T: DeserializeOwned>(resp: reqwest::Response) -> Result<T> {
     let status = resp.status();
     let text = resp.text().await.context("reading response body")?;
@@ -157,4 +190,29 @@ async fn json_or_err<T: DeserializeOwned>(resp: reqwest::Response) -> Result<T> 
         anyhow::bail!("HTTP {status}: {text}");
     }
     serde_json::from_str(&text).with_context(|| format!("parsing JSON: {text}"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn no_drift_when_versions_match() {
+        assert!(!should_warn_drift("1.2.3", "1.2.3"));
+    }
+
+    #[test]
+    fn drift_when_cli_newer() {
+        assert!(should_warn_drift("1.3.0", "1.2.3"));
+    }
+
+    #[test]
+    fn drift_when_cli_older() {
+        assert!(should_warn_drift("1.2.3", "1.3.0"));
+    }
+
+    #[test]
+    fn no_drift_when_daemon_ver_empty() {
+        assert!(!should_warn_drift("1.2.3", ""));
+    }
 }

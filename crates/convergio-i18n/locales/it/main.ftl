@@ -15,6 +15,7 @@ daemon-version = Convergio { $version }
 health-ok = Il daemon è attivo. Versione: { $version }
 health-unreachable = Impossibile raggiungere il daemon su { $url }: { $reason }
 health-drift = ATTENZIONE disallineamento: il workspace è alla versione { $expected }, il daemon esegue { $running }. Esegui `cvg update`.
+cli-version-drift = avviso: CLI { $cli } diverge dal daemon { $daemon } — esegui `cvg update` per sincronizzare
 
 # ---------- CLI: update ----------
 update-rebuild-header = Ricostruzione di daemon, CLI e MCP in corso...

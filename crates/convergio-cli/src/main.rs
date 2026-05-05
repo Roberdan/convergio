@@ -220,6 +220,7 @@ async fn main() -> Result<()> {
     let locale = detect_locale(cli.lang.as_deref());
     let bundle = Bundle::new(locale).context("load CLI Fluent bundle")?;
     let client = commands::Client::new(cli.url);
+    commands::maybe_warn_drift(&client, &bundle).await;
     match cli.command {
         Command::Health => commands::health::run(&client, &bundle, cli.output).await,
         Command::Setup { sub } => commands::setup::run(&bundle, sub).await,
