@@ -22,10 +22,14 @@ use tracing::{debug, info, warn};
 /// Reaper configuration.
 #[derive(Debug, Clone)]
 pub struct ReaperConfig {
-    /// Heartbeat older than this releases the task.
+    /// Task heartbeat older than this releases the task.
     pub timeout: Duration,
     /// How often the loop ticks.
     pub tick_interval: Duration,
+    /// When true, the reaper also retires agents with stale heartbeats.
+    pub agent_reaper_enabled: bool,
+    /// Agent heartbeat older than this triggers retirement.
+    pub agent_threshold: Duration,
 }
 
 impl Default for ReaperConfig {
@@ -33,6 +37,8 @@ impl Default for ReaperConfig {
         Self {
             timeout: Duration::seconds(300),
             tick_interval: Duration::seconds(60),
+            agent_reaper_enabled: true,
+            agent_threshold: Duration::seconds(3600),
         }
     }
 }
@@ -61,7 +67,9 @@ pub fn spawn(durability: Arc<Durability>, config: ReaperConfig) -> ReaperHandle 
         loop {
             tokio::time::sleep(interval).await;
             match tick(&durability, &config).await {
-                Ok(n) if n > 0 => info!(reaped = n, "reaper tick"),
+                Ok(TickResult { tasks, agents }) if tasks > 0 || agents > 0 => {
+                    info!(tasks_reaped = tasks, agents_retired = agents, "reaper tick")
+                }
                 Ok(_) => debug!("reaper tick: nothing stale"),
                 Err(e) => warn!(error = %e, "reaper tick failed"),
             }
@@ -70,21 +78,47 @@ pub fn spawn(durability: Arc<Durability>, config: ReaperConfig) -> ReaperHandle 
     ReaperHandle { inner }
 }
 
-/// Run one tick. Returns the number of tasks released.
+/// Counts returned by one reaper tick.
+#[derive(Debug, Default)]
+pub struct TickResult {
+    /// Number of tasks moved back to `pending`.
+    pub tasks: usize,
+    /// Number of agents marked `terminated` due to stale heartbeat.
+    pub agents: usize,
+}
+
+/// Run one tick. Returns counts of tasks released and agents retired.
 ///
 /// Exposed for tests and for callers that want to drive the loop on
 /// their own schedule (e.g. a manual `cvg doctor reap`).
-pub async fn tick(durability: &Durability, config: &ReaperConfig) -> Result<usize> {
+pub async fn tick(durability: &Durability, config: &ReaperConfig) -> Result<TickResult> {
     let cutoff = Utc::now() - config.timeout;
     let stale = find_stale(durability, cutoff).await?;
 
-    let mut released = 0usize;
+    let mut tasks = 0usize;
     for (id, agent_id) in stale {
         if release_one(durability, &id, agent_id.as_deref(), &cutoff).await? {
-            released += 1;
+            tasks += 1;
         }
     }
-    Ok(released)
+
+    let agents = if config.agent_reaper_enabled {
+        let threshold = config.agent_threshold.num_seconds();
+        let result = durability.retire_stale_agents(threshold, false).await?;
+        let n = result.agents.iter().filter(|r| r.retired).count();
+        if n > 0 {
+            info!(
+                retired = n,
+                threshold_secs = threshold,
+                "agent reaper: retired stale agents"
+            );
+        }
+        n
+    } else {
+        0
+    };
+
+    Ok(TickResult { tasks, agents })
 }
 
 async fn find_stale(

@@ -1,7 +1,9 @@
 //! Audited agent registry facade operations.
 
 use crate::audit::EntityKind;
-use crate::store::{AgentHeartbeat, AgentRecord, AgentStore, NewAgent};
+use crate::store::{
+    AgentHeartbeat, AgentRecord, AgentStore, NewAgent, RetireStaleResult, StaleAgentReport,
+};
 use crate::{Durability, Result};
 use chrono::{Duration, Utc};
 use serde_json::json;
@@ -108,5 +110,66 @@ impl Durability {
             )
             .await?;
         Ok(agent)
+    }
+
+    /// Retire all agents whose last heartbeat is older than
+    /// `threshold_secs`. Writes one `agent.retired_stale` audit row
+    /// per agent retired. When `dry_run` is true the method only
+    /// reports which agents *would* be retired without touching the DB.
+    pub async fn retire_stale_agents(
+        &self,
+        threshold_secs: i64,
+        dry_run: bool,
+    ) -> Result<RetireStaleResult> {
+        let reports = self.agents().stale_agents(threshold_secs).await?;
+        let mut out = Vec::with_capacity(reports.len());
+        for report in reports {
+            let retired = if dry_run {
+                false
+            } else {
+                self.retire_one_stale(&report.agent_id, report.last_heartbeat_at)
+                    .await?
+            };
+            out.push(StaleAgentReport { retired, ..report });
+        }
+        Ok(RetireStaleResult {
+            threshold_seconds: threshold_secs,
+            applied: !dry_run,
+            agents: out,
+        })
+    }
+
+    async fn retire_one_stale(
+        &self,
+        agent_id: &str,
+        last_heartbeat_at: Option<chrono::DateTime<Utc>>,
+    ) -> Result<bool> {
+        let rows = sqlx::query(
+            "UPDATE agents SET status = 'terminated', current_task_id = NULL, \
+             updated_at = ? WHERE id = ? AND status NOT IN ('terminated', 'retired')",
+        )
+        .bind(Utc::now().to_rfc3339())
+        .bind(agent_id)
+        .execute(self.pool().inner())
+        .await?
+        .rows_affected();
+
+        if rows == 0 {
+            return Ok(false);
+        }
+
+        self.audit()
+            .append(
+                EntityKind::Agent,
+                agent_id,
+                "agent.retired_stale",
+                &json!({
+                    "agent_id": agent_id,
+                    "last_heartbeat_at": last_heartbeat_at.map(|t| t.to_rfc3339()),
+                }),
+                None,
+            )
+            .await?;
+        Ok(true)
     }
 }

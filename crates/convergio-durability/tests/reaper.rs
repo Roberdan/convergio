@@ -122,16 +122,18 @@ async fn reaps_tasks_with_stale_heartbeat() {
         .unwrap();
 
     // Tick with a 5-minute timeout — task is 1h stale, must be reaped.
-    let n = reaper::tick(
+    let result = reaper::tick(
         &dur,
         &ReaperConfig {
             timeout: Duration::seconds(300),
             tick_interval: Duration::seconds(60),
+            agent_reaper_enabled: false,
+            agent_threshold: Duration::seconds(3600),
         },
     )
     .await
     .unwrap();
-    assert_eq!(n, 1);
+    assert_eq!(result.tasks, 1);
 
     let after = dur.tasks().get(&task.id).await.unwrap();
     assert_eq!(after.status, TaskStatus::Pending);
@@ -175,16 +177,18 @@ async fn does_not_reap_fresh_tasks() {
         .unwrap();
     dur.tasks().heartbeat(&task.id).await.unwrap();
 
-    let n = reaper::tick(
+    let result = reaper::tick(
         &dur,
         &ReaperConfig {
             timeout: Duration::seconds(60),
             tick_interval: Duration::seconds(30),
+            agent_reaper_enabled: false,
+            agent_threshold: Duration::seconds(3600),
         },
     )
     .await
     .unwrap();
-    assert_eq!(n, 0);
+    assert_eq!(result.tasks, 0);
 
     let after = dur.tasks().get(&task.id).await.unwrap();
     assert_eq!(after.status, TaskStatus::InProgress);
@@ -230,16 +234,18 @@ async fn reaps_tasks_that_never_heartbeat() {
         .await
         .unwrap();
 
-    let n = reaper::tick(
+    let result = reaper::tick(
         &dur,
         &ReaperConfig {
             timeout: Duration::seconds(300),
             tick_interval: Duration::seconds(60),
+            agent_reaper_enabled: false,
+            agent_threshold: Duration::seconds(3600),
         },
     )
     .await
     .unwrap();
-    assert_eq!(n, 1);
+    assert_eq!(result.tasks, 1);
 
     let after = dur.tasks().get(&task.id).await.unwrap();
     assert_eq!(after.status, TaskStatus::Pending);
