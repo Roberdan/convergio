@@ -21,6 +21,7 @@
 //! Quit with `q`, refresh with `r`, change pane with `Tab`, scroll with
 //! `j` / `k`.
 
+pub mod agent_filter;
 pub mod bus_stream;
 pub mod client;
 pub mod client_gh;
@@ -161,6 +162,7 @@ async fn event_loop(
                                 }
                             }
                         },
+                        Action::ToggleHideExited => state.toggle_show_exited_agents(),
                         Action::Noop => {}
                     }
                 }
