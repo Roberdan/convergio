@@ -22,11 +22,12 @@ repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo_root"
 
 # Caps (per CONSTITUTION § Agent context budget)
-#   - 11_000 lines is the hard ceiling for "an agent can grok this in
+#   - 12_000 lines is the hard ceiling for "an agent can grok this in
 #     one 200k-context window with comfort margin for diff + thought".
-#     Bumped from 10_000 in 2026-05 once `convergio-durability` started
-#     bumping the limit. The shape of that crate (audit chain + plans +
-#     tasks + evidence + workspace + capabilities + crdt + gates) is
+#     Bumped: 10_000 → 11_000 (2026-05, initial durability growth).
+#             11_000 → 12_000 (2026-05, P0-3 agent-reaper retirement).
+#     The shape of that crate (audit chain + plans + tasks + evidence +
+#     workspace + capabilities + crdt + gates + agent-reaper) is
 #     intentional and a real split needs ADR work — track it under
 #     "durability split" rather than amputating features around the cap.
 #   - 5_000 lines is the ideal block size for nimble agent work.
@@ -34,7 +35,7 @@ cd "$repo_root"
 RS_HARD=300
 NON_RS_SOFT=500
 CRATE_SOFT=5000
-CRATE_HARD=11000
+CRATE_HARD=12000
 
 hard_fail=0
 soft_warn=0

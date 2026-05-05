@@ -103,6 +103,11 @@ async fn start(
     let reaper_config = ReaperConfig {
         timeout: Duration::seconds(parse_env_i64("CONVERGIO_REAPER_TIMEOUT_SECS", 300)),
         tick_interval: Duration::seconds(parse_env_i64("CONVERGIO_REAPER_TICK_SECS", 60)),
+        agent_reaper_enabled: parse_env_bool("CONVERGIO_AGENT_REAPER_ENABLED", true),
+        agent_threshold: Duration::seconds(parse_env_i64(
+            "CONVERGIO_AGENT_REAPER_THRESHOLD_SECS",
+            3600,
+        )),
     };
     let _reaper = reaper::spawn(durability.clone(), reaper_config);
 
@@ -220,6 +225,14 @@ fn parse_env_i64(key: &str, default: i64) -> i64 {
         .ok()
         .and_then(|s| s.parse::<i64>().ok())
         .unwrap_or(default)
+}
+
+fn parse_env_bool(key: &str, default: bool) -> bool {
+    match std::env::var(key).as_deref() {
+        Ok("0" | "false" | "no") => false,
+        Ok("1" | "true" | "yes") => true,
+        Ok(_) | Err(_) => default,
+    }
 }
 
 #[cfg(test)]
