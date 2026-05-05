@@ -53,6 +53,20 @@ pub struct GateContext {
     pub agent_id: Option<String>,
 }
 
+/// Declarative gate precondition (P3-2 — Palantir-inspired).
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+pub struct GatePrecondition {
+    /// Stable gate name (`Gate::name()`).
+    pub gate: &'static str,
+    /// Evidence kinds this gate requires before allowing the
+    /// transition (empty when the gate does not check evidence).
+    pub requires_evidence_kinds: Vec<&'static str>,
+    /// Task statuses for which this gate is active.
+    pub active_target_status: Vec<&'static str>,
+    /// Stable refusal reason codes the gate may emit.
+    pub refusal_reasons: Vec<&'static str>,
+}
+
 /// One gate.
 #[async_trait::async_trait]
 pub trait Gate: Send + Sync {
@@ -60,6 +74,15 @@ pub trait Gate: Send + Sync {
     fn name(&self) -> &'static str;
     /// Returns `Ok(())` to allow, `Err(GateRefused { ... })` to block.
     async fn check(&self, ctx: &GateContext) -> Result<()>;
+    /// Declarative precondition (P3-2). Default implementation
+    /// returns just the gate name; gates with meaningful inputs
+    /// override this.
+    fn describe(&self) -> GatePrecondition {
+        GatePrecondition {
+            gate: self.name(),
+            ..GatePrecondition::default()
+        }
+    }
 }
 
 /// Erased pipeline.
@@ -100,4 +123,12 @@ pub async fn run(pipeline: &Pipeline, ctx: &GateContext) -> Result<()> {
         gate.check(ctx).await?;
     }
     Ok(())
+}
+
+/// Collect the declarative precondition for every gate in a pipeline.
+/// Used by `GET /v1/gates/preconditions` to expose the catalog
+/// without forcing callers to deserialize the trait object set
+/// (P3-2 — Palantir-inspired declarative gate preconditions).
+pub fn describe_pipeline(pipeline: &Pipeline) -> Vec<GatePrecondition> {
+    pipeline.iter().map(|g| g.describe()).collect()
 }
