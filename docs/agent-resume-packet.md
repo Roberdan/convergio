@@ -67,6 +67,24 @@ cat docs/multi-agent-operating-model.md           # how swarms use Convergio
 
 Drill into a single ADR or plan only when the task demands it.
 
+### CLI/daemon version drift warning
+
+Every daemon-touching `cvg` invocation fires a fast best-effort
+`/v1/health` probe before the real subcommand runs, then prints a
+three-line warning to **stderr** (stdout stays clean for scripts) when
+the CLI's `CARGO_PKG_VERSION` does not match the daemon's
+`running_version`. Sample output:
+
+```
+WARN: convergio CLI is v0.3.11 but daemon at http://127.0.0.1:8420 is running v0.3.10
+WARN: run `cvg service restart` (or restart the daemon manually) to pick up the latest changes.
+WARN: suppress with CONVERGIO_NO_DRIFT_WARN=1
+```
+
+Escape hatches: export `CONVERGIO_NO_DRIFT_WARN=1` to silence the
+warning, or use one of the local-only subcommands (`cvg setup`,
+`cvg service ...`, `cvg about`) where the probe is skipped entirely.
+
 ## 3. Worktree discipline (CONSTITUTION § 15)
 
 If another agent might be operating on this repo at the same time,
