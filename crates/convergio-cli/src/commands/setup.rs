@@ -33,6 +33,10 @@ pub enum SetupCommand {
         #[arg(long)]
         force: bool,
     },
+    /// Verify install correctness (ADR-0044): daemon up, version match,
+    /// MCP registered, fleet bootstrapped, embed non-empty, loops running,
+    /// registry active. Exits non-zero on any FAIL check.
+    SelfCheck,
 }
 
 /// Supported agent hosts for generated snippets.
@@ -85,6 +89,7 @@ pub async fn run(
         SetupCommand::Init { force } => init(bundle, force),
         SetupCommand::Agent { host, force } => agent(bundle, host, force),
         SetupCommand::Fleet { force } => super::setup_fleet::run(client, output, force).await,
+        SetupCommand::SelfCheck => super::setup_self_check::run(client, bundle, output).await,
     }
 }
 

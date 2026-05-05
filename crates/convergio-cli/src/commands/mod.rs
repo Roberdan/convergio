@@ -50,6 +50,7 @@ pub mod setup;
 pub mod setup_fleet;
 mod setup_prompts;
 mod setup_repo_path;
+pub(crate) mod setup_self_check;
 pub mod solve;
 pub mod status;
 mod status_render;

@@ -84,6 +84,12 @@ setup-next-doctor = Poi: esegui `cvg doctor`
 setup-agent-created = Snippet adapter creati per { $host }: { $path }
 setup-agent-copy = Copia mcp.json nella configurazione MCP dell'agent host e prompt.txt nelle sue istruzioni.
 setup-agent-claude-extras = Extra per Claude Code: copia skill-cvg-attach/ in ~/.claude/skills/cvg-attach/ e fai merge di settings.json in ~/.claude/settings.json per registrare la sessione corrente al daemon locale al SessionStart. Vedi { $path }/README.txt per i passi completi.
+setup-self-check-header = Verifica di installazione Convergio (ADR-0044)
+setup-self-check-ok = OK   { $name }: { $message }
+setup-self-check-warn = ATTENZIONE { $name }: { $message }
+setup-self-check-fail = ERRORE { $name }: { $message }
+setup-self-check-summary-ok = Verifica completata con successo.
+setup-self-check-summary-fail = Verifica fallita — correggi i controlli ERRORE prima di iniziare un task.
 doctor-header = Diagnostica Convergio per { $url }
 doctor-ok = OK { $name }: { $message }
 doctor-warn = ATTENZIONE { $name }: { $message }
@@ -295,6 +301,12 @@ coherence-handshake-phase-6 = ritiro
 coherence-handshake-success = handshake completato in { $elapsed }ms (timeout era { $timeout }ms)
 coherence-handshake-fail = handshake fallito dopo { $elapsed }ms (timeout era { $timeout }ms)
 coherence-handshake-timeout = handshake scaduto dopo { $elapsed }ms (deadline { $timeout }ms)
+
+# ---------- CLI: coherence plan-execution (ADR-0044) ----------
+coherence-plan-execution-summary = Piano { $plan }… — { $closed } task chiusi, { $compliant } conformi, punteggio { $score }%
+coherence-plan-execution-plan-checks = Livello piano: registry={ $registry }  bus={ $bus }
+coherence-plan-execution-task-ok = OK   { $id }… { $title }
+coherence-plan-execution-task-fail = ERRORE { $id }… { $title } — mancanti: { $missing }
 
 # ---------- CLI: bus tail / list (P1.2) ----------
 bus-tail-following = In ascolto sul bus del piano { $plan } (Ctrl-C per uscire)

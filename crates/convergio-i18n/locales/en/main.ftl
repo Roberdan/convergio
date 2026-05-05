@@ -84,6 +84,12 @@ setup-next-doctor = Then: run `cvg doctor`
 setup-agent-created = Adapter snippets created for { $host }: { $path }
 setup-agent-copy = Copy mcp.json into the agent host MCP configuration and prompt.txt into its instructions.
 setup-agent-claude-extras = Claude Code extras: copy skill-cvg-attach/ into ~/.claude/skills/cvg-attach/ and merge settings.json into ~/.claude/settings.json so SessionStart registers this session with the local daemon. See { $path }/README.txt for the full steps.
+setup-self-check-header = Convergio install self-check (ADR-0044)
+setup-self-check-ok = OK   { $name }: { $message }
+setup-self-check-warn = WARN { $name }: { $message }
+setup-self-check-fail = FAIL { $name }: { $message }
+setup-self-check-summary-ok = Self-check passed.
+setup-self-check-summary-fail = Self-check failed — fix FAIL items before starting a task.
 doctor-header = Convergio doctor for { $url }
 doctor-ok = OK { $name }: { $message }
 doctor-warn = WARN { $name }: { $message }
@@ -295,6 +301,12 @@ coherence-handshake-phase-6 = retire
 coherence-handshake-success = handshake complete in { $elapsed }ms (timeout was { $timeout }ms)
 coherence-handshake-fail = handshake failed after { $elapsed }ms (timeout was { $timeout }ms)
 coherence-handshake-timeout = handshake timed out after { $elapsed }ms (deadline { $timeout }ms)
+
+# ---------- CLI: coherence plan-execution (ADR-0044) ----------
+coherence-plan-execution-summary = Plan { $plan }… — { $closed } closed task(s), { $compliant } compliant, score { $score }%
+coherence-plan-execution-plan-checks = Plan-level: registry={ $registry }  bus={ $bus }
+coherence-plan-execution-task-ok = OK   { $id }… { $title }
+coherence-plan-execution-task-fail = FAIL { $id }… { $title } — missing: { $missing }
 
 # ---------- CLI: bus tail / list (P1.2) ----------
 bus-tail-following = Following bus on plan { $plan } (Ctrl-C to exit)
