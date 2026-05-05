@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [Unreleased]
+
+### Breaking Changes
+
+* **mcp:** `heartbeat_agent` and `retire_agent` MCP actions now accept `id` as the
+  canonical field for the agent's own primary key; `agent_id` is a deprecated alias
+  that emits a `tracing::warn` and will be removed in 0.4.0 (ADR-0043, C2 fix).
+
+### Added
+
+* **mcp:** ADR-0043 — API consistency: `id` for entity-self, `<entity>_id` for FK refs,
+  `payload` for opaque JSON. Adds `resolve_agent_id` helper with one-release deprecation
+  window and 5 new unit tests.
+
 ## [0.3.11](https://github.com/Roberdan/convergio/compare/convergio-v0.3.10...convergio-v0.3.11) (2026-05-04)
 
 

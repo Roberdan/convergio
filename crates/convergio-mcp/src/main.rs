@@ -1,6 +1,8 @@
 //! `convergio-mcp` — stdio MCP bridge for the local daemon.
 
 mod actions;
+#[cfg(test)]
+mod actions_tests;
 mod bridge;
 mod bus_actions;
 #[cfg(test)]
