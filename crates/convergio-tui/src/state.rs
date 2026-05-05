@@ -128,14 +128,13 @@ pub struct AppState {
     /// that the overview pane carries).
     pub detail_tasks: Vec<TaskSummary>,
     /// Live SSE handle for the Bus pane (P1.3, ADR-0029 addendum).
-    /// `None` means the supervisor was never started — useful for
-    /// renderer tests that drive `messages` directly.
+    /// `None` = supervisor never started (renderer tests).
     #[doc(hidden)]
     pub bus_stream: Option<BusStreamHandle>,
-    /// Plan id the Bus pane subscription currently follows. Tracked
-    /// so we only call `set_plan` when the selection actually
-    /// changes between ticks.
+    /// Plan id the Bus pane subscription currently follows.
     pub bus_following: Option<String>,
+    /// P2-11: when `true`, exited rows are listed in the Agents pane.
+    pub show_exited_agents: bool,
 }
 
 /// Cursors for the four panes, addressable by [`Pane`].
@@ -241,6 +240,11 @@ impl AppState {
         merged.sort_by_key(|m| std::cmp::Reverse(m.seq));
         merged.truncate(crate::bus_stream::BUFFER_CAP);
         self.messages = merged;
+    }
+
+    /// Toggle visibility of exited agents in the Agents pane (P2-11).
+    pub fn toggle_show_exited_agents(&mut self) {
+        self.show_exited_agents = !self.show_exited_agents;
     }
 
     /// Active transport for the Bus pane footer hint.
