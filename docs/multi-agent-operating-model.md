@@ -346,6 +346,8 @@ Implemented:
 - gate refusals + durable `explain_last_refusal`;
 - hash-chained audit;
 - durable agent registry (spawn, heartbeat, retire, watcher reaper);
+- automatic retirement of stale agents (last heartbeat > 1h, configurable
+  via `CONVERGIO_AGENT_REAPER_THRESHOLD_SECS`) — no more manual cleanup;
 - task context packets;
 - plan-scoped bus + `system.*` topic family (ADR-0025) with `exclude_sender` filter (ADR-0024);
 - CRDT actor/op store and conflict listing;

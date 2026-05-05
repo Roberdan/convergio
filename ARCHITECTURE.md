@@ -240,8 +240,12 @@ coexist in the same local database file (ADR-0003).
 ## Background loops
 
 - **Reaper** — `convergio_durability::reaper::spawn`. Releases stale
-  `in_progress` tasks back to `pending` and writes `task.reaped` audit
-  rows.
+  `in_progress` tasks back to `pending` (writes `task.reaped`) and, in
+  the same tick, retires agents whose `last_heartbeat_at` is older than
+  `CONVERGIO_AGENT_REAPER_THRESHOLD_SECS` (default 1h). Each retirement
+  writes both `agent.retired` and a sibling `agent.retired_stale` audit
+  row. Setting the threshold to `0` disables the agent pass; task
+  reaping still runs.
 - **Watcher** — `convergio_lifecycle::watcher::spawn`. Polls tracked
   process rows and flips dead PIDs to `exited`. PID liveness probing is
   implemented with POSIX `kill -0`; on Windows the watcher intentionally
@@ -252,7 +256,9 @@ coexist in the same local database file (ADR-0003).
   override and test seam.
 
 Knobs: `CONVERGIO_REAPER_TICK_SECS`,
-`CONVERGIO_REAPER_TIMEOUT_SECS`, `CONVERGIO_WATCHER_TICK_SECS`, and
+`CONVERGIO_REAPER_TIMEOUT_SECS`,
+`CONVERGIO_AGENT_REAPER_THRESHOLD_SECS`,
+`CONVERGIO_WATCHER_TICK_SECS`, and
 `CONVERGIO_EXECUTOR_TICK_SECS`.
 
 ## Where to look

@@ -1,14 +1,9 @@
-//! Reaper loop.
-//!
-//! The reaper periodically scans `tasks` for rows in `in_progress`
-//! whose `last_heartbeat_at` is older than [`ReaperConfig::timeout`],
-//! moves them back to `pending`, clears `agent_id`, and writes one
-//! `task.reaped` audit row per release.
-//!
-//! There is **exactly one** of these per daemon. If you find yourself
-//! adding a second background loop in Layer 1, stop and consider
-//! whether it belongs in a Layer 4 crate instead — see
-//! [ARCHITECTURE.md](../../../ARCHITECTURE.md) § "Background loops".
+//! Reaper loop. Per tick: (a) releases stale `in_progress` tasks
+//! (`task.reaped`); (b) retires agents whose `last_heartbeat_at` is
+//! older than [`ReaperConfig::agent_threshold`] via
+//! [`Durability::retire_agent`] with a sibling `agent.retired_stale`
+//! audit row. `agent_threshold = 0` disables (b). One per daemon —
+//! see ARCHITECTURE.md § "Background loops".
 
 use crate::audit::{append_tx, EntityKind};
 use crate::error::Result;
@@ -22,10 +17,12 @@ use tracing::{debug, info, warn};
 /// Reaper configuration.
 #[derive(Debug, Clone)]
 pub struct ReaperConfig {
-    /// Heartbeat older than this releases the task.
+    /// Task heartbeat older than this releases the task.
     pub timeout: Duration,
-    /// How often the loop ticks.
+    /// Loop tick interval.
     pub tick_interval: Duration,
+    /// Agent heartbeat older than this retires the agent. Zero disables.
+    pub agent_threshold: Duration,
 }
 
 impl Default for ReaperConfig {
@@ -33,15 +30,15 @@ impl Default for ReaperConfig {
         Self {
             timeout: Duration::seconds(300),
             tick_interval: Duration::seconds(60),
+            agent_threshold: Duration::seconds(3600),
         }
     }
 }
 
-/// Spawned-loop handle. Drop the handle to abort the loop.
+/// Spawned-loop handle. Drop or call [`ReaperHandle::abort`] to stop.
 pub struct ReaperHandle {
     inner: JoinHandle<()>,
 }
-
 impl ReaperHandle {
     /// Abort the loop. Idempotent.
     pub fn abort(self) {
@@ -49,11 +46,7 @@ impl ReaperHandle {
     }
 }
 
-/// Spawn the reaper loop and return its handle.
-///
-/// The loop is fire-and-forget: errors during a tick are logged at
-/// `warn!` and do **not** kill the loop. Persistent issues should
-/// surface via metrics, not by silent loop death.
+/// Spawn the reaper loop. Tick errors are logged, never kill the loop.
 pub fn spawn(durability: Arc<Durability>, config: ReaperConfig) -> ReaperHandle {
     let inner = tokio::spawn(async move {
         info!(?config, "reaper started");
@@ -61,7 +54,9 @@ pub fn spawn(durability: Arc<Durability>, config: ReaperConfig) -> ReaperHandle 
         loop {
             tokio::time::sleep(interval).await;
             match tick(&durability, &config).await {
-                Ok(n) if n > 0 => info!(reaped = n, "reaper tick"),
+                Ok((t, a)) if t > 0 || a > 0 => {
+                    info!(tasks_reaped = t, agents_retired = a, "reaper tick")
+                }
                 Ok(_) => debug!("reaper tick: nothing stale"),
                 Err(e) => warn!(error = %e, "reaper tick failed"),
             }
@@ -70,21 +65,39 @@ pub fn spawn(durability: Arc<Durability>, config: ReaperConfig) -> ReaperHandle 
     ReaperHandle { inner }
 }
 
-/// Run one tick. Returns the number of tasks released.
-///
-/// Exposed for tests and for callers that want to drive the loop on
-/// their own schedule (e.g. a manual `cvg doctor reap`).
-pub async fn tick(durability: &Durability, config: &ReaperConfig) -> Result<usize> {
+/// Run one tick: returns `(tasks_released, agents_retired)`.
+pub async fn tick(durability: &Durability, config: &ReaperConfig) -> Result<(usize, usize)> {
     let cutoff = Utc::now() - config.timeout;
-    let stale = find_stale(durability, cutoff).await?;
-
     let mut released = 0usize;
-    for (id, agent_id) in stale {
+    for (id, agent_id) in find_stale(durability, cutoff).await? {
         if release_one(durability, &id, agent_id.as_deref(), &cutoff).await? {
             released += 1;
         }
     }
-    Ok(released)
+    let threshold = config.agent_threshold.num_seconds();
+    let mut retired = 0usize;
+    if threshold > 0 {
+        for entry in durability.agents().stale_agents(threshold).await? {
+            let record = durability.retire_agent(&entry.agent_id).await?;
+            durability
+                .audit()
+                .append(
+                    EntityKind::Agent,
+                    &record.id,
+                    "agent.retired_stale",
+                    &json!({
+                        "agent_id": record.id,
+                        "last_heartbeat_at": entry.last_heartbeat_at,
+                        "threshold_seconds": threshold,
+                        "reason": "stale_heartbeat",
+                    }),
+                    Some(&record.id),
+                )
+                .await?;
+            retired += 1;
+        }
+    }
+    Ok((released, retired))
 }
 
 async fn find_stale(

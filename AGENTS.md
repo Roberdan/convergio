@@ -196,7 +196,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 924 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 927 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
@@ -383,8 +383,13 @@ Every PR body MUST contain these 5 H2 sections (CI-enforced via
 Three loops run today, one per layer that needs one:
 
 - `Reaper` — `convergio_durability::reaper::spawn`. Default tick 60s,
-  default timeout 300s. Releases tasks whose agent stopped heart-beating
-  and writes one `task.reaped` audit row per release.
+  default task timeout 300s, default agent staleness threshold 3600s
+  (1h). Releases tasks whose agent stopped heart-beating (one
+  `task.reaped` audit row per release) and retires agents whose
+  `last_heartbeat_at` is older than the agent threshold (one
+  `agent.retired` plus one `agent.retired_stale` audit row per
+  retirement). Set the agent threshold to `0` to disable the agent
+  pass; task reaping still runs.
 - `Watcher` — `convergio_lifecycle::watcher::spawn`. Default tick 30s.
   Polls `running` rows in `agent_processes` and flips them to `exited`
   when the OS PID is no longer alive (POSIX `kill -0`).
@@ -393,6 +398,7 @@ Three loops run today, one per layer that needs one:
   template. `POST /v1/dispatch` remains as the manual one-shot seam.
 
 Knobs: `CONVERGIO_REAPER_TICK_SECS`, `CONVERGIO_REAPER_TIMEOUT_SECS`,
+`CONVERGIO_AGENT_REAPER_THRESHOLD_SECS`,
 `CONVERGIO_WATCHER_TICK_SECS`, `CONVERGIO_EXECUTOR_TICK_SECS`.
 
 **Do not document loops you have not actually implemented.** (We had

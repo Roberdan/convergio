@@ -103,6 +103,10 @@ async fn start(
     let reaper_config = ReaperConfig {
         timeout: Duration::seconds(parse_env_i64("CONVERGIO_REAPER_TIMEOUT_SECS", 300)),
         tick_interval: Duration::seconds(parse_env_i64("CONVERGIO_REAPER_TICK_SECS", 60)),
+        agent_threshold: Duration::seconds(parse_env_i64(
+            "CONVERGIO_AGENT_REAPER_THRESHOLD_SECS",
+            3600,
+        )),
     };
     let _reaper = reaper::spawn(durability.clone(), reaper_config);
 
