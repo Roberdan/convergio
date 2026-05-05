@@ -175,6 +175,31 @@ a Rust trait object table inside `convergio-cli/src/commands/docs.rs`.
 - **v0.4** candidate: promote the CI step from advisory to hard
   gate. Same evolution as `cvg coherence check`.
 
+## Drift policy
+
+Derived state (AUTO blocks + `docs/INDEX.md`) is regenerated **on
+demand** (developer or agent invokes `cvg docs regenerate` /
+`./scripts/generate-docs-index.sh` intentionally) and via a **nightly
+cron** on `main` (`.github/workflows/auto-blocks-drift.yml`). It is
+**not** regenerated per-PR.
+
+The original v0.4 plan promoted the CI gate from advisory to hard
+fail (PRs #57 / #60 / #63). That model produced an O(N²) cascade on
+serial merges: every PR carried freshly-regenerated AUTO blocks, and
+the second of any pair to merge hit stale auto-blocks against the
+post-merge `main`, failing CI. Retro 544e78cc P2-9 captured this:
+P0.5 added a lefthook `pre-push` band-aid (#178) for the same pain.
+Both the lefthook gate and the per-PR CI hard-fail are removed in
+favour of the cron-reconciled model:
+
+- Per-PR CI surfaces drift via the advisory `Docs drift (advisory)`
+  job (`continue-on-error: true`). Drift is visible without blocking.
+- The nightly cron regenerates and (eventually) opens a single
+  drift-PR. Reconciliation cost is O(1) per day, not O(N²) per merge.
+- This is the FIRST time Convergio explicitly accepts that committed
+  derived state may be momentarily stale at merge time. The gain
+  (eliminating the cascade) outweighs the cost (≤24h staleness).
+
 ## Links
 
 - ADR-0014 (Tier-3 code graph) — supplies the data for most generators.
@@ -182,3 +207,5 @@ a Rust trait object table inside `convergio-cli/src/commands/docs.rs`.
 - T1.16 / `docs/INDEX.md` — the precedent for committed-but-derived
   artefacts under a CI freshness gate.
 - PR W4a — the manual fix that motivated this ADR.
+- Retro 544e78cc P2-9 — the cascade analysis that motivated the
+  drift-policy update.
