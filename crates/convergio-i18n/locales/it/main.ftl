@@ -108,6 +108,13 @@ plan-list-header = { $count ->
     [one] Un piano:
    *[other] { $count } piani:
 }
+plan-list-line = #{ $number } { $title } [{ $status }]
+
+# ---------- CLI: piano run ----------
+plan-run-started = Esecuzione piano #{ $number }: { $title } ({ $pending } task in attesa)
+plan-run-task-submitted = [{ $wave }.{ $seq }] { $title } → submitted ✓
+plan-run-halted = Interrotto al task [{ $wave }.{ $seq }] { $title }: { $error }
+plan-run-complete = Piano #{ $number } completato: { $count } task sottomessi.
 
 # ---------- CLI: triage piano ----------
 plan-triage-empty = Nessun task obsoleto (pending/failed, non aggiornato da { $days } giorni).

@@ -71,11 +71,21 @@ impl Durability {
         AuditLog::new(self.pool.clone())
     }
 
-    /// Create a plan and write the audit row.
+    /// Create a plan, assign the next project-group number atomically, and write the audit row.
+    ///
+    /// Uses `BEGIN IMMEDIATE` so concurrent writers do not race the
+    /// `MAX(number)+1` → `INSERT` pair onto the same `(project, number)`.
     pub async fn create_plan(&self, input: NewPlan) -> Result<Plan> {
         let now = Utc::now();
+        let mut tx = self.pool.inner().begin().await?;
+        sqlx::query("ROLLBACK").execute(&mut *tx).await.ok();
+        sqlx::query("BEGIN IMMEDIATE").execute(&mut *tx).await?;
+
+        let number = PlanStore::next_number_in_tx(&mut tx, input.project.as_deref()).await?;
+
         let plan = Plan {
             id: Uuid::new_v4().to_string(),
+            number,
             title: input.title,
             description: input.description,
             project: input.project,
@@ -87,12 +97,13 @@ impl Durability {
             duration_ms: None,
         };
 
-        let mut tx = self.pool.inner().begin().await?;
         sqlx::query(
-            "INSERT INTO plans (id, title, description, project, status, created_at, updated_at) \
-             VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO plans \
+             (id, number, title, description, project, status, created_at, updated_at) \
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&plan.id)
+        .bind(plan.number)
         .bind(&plan.title)
         .bind(&plan.description)
         .bind(&plan.project)
@@ -108,6 +119,7 @@ impl Durability {
             "plan.created",
             &json!({
                 "plan_id": plan.id,
+                "number": plan.number,
                 "title": plan.title,
                 "project": plan.project,
             }),

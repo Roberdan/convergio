@@ -1,4 +1,4 @@
-//! `cvg plan ...` — create / list / get plans.
+//! `cvg plan ...` — create / list / get / show / run plans.
 
 use super::{Client, OutputMode};
 use anyhow::Result;
@@ -26,9 +26,14 @@ pub enum PlanCommand {
         #[arg(long, default_value_t = 50)]
         limit: i64,
     },
-    /// Get a plan by id.
+    /// Get a plan by id (UUID only). Prefer `show` for number or UUID.
     Get {
         /// UUID of the plan.
+        id: String,
+    },
+    /// Show a plan by number or UUID.
+    Show {
+        /// Plan number (integer) or UUID.
         id: String,
     },
     /// Rename a plan in place. Writes one `plan.renamed` audit row.
@@ -65,6 +70,18 @@ pub enum PlanCommand {
         /// Close all listed stale tasks after operator confirmation.
         #[arg(long)]
         auto_close: bool,
+    },
+    /// Run a plan's pending tasks sequentially (wave/seq order).
+    ///
+    /// Iterates pending tasks ordered by (wave, sequence). For each task:
+    /// claims it, transitions to submitted, publishes a bus announcement.
+    /// Halts with a non-zero exit code on the first failure.
+    Run {
+        /// Plan number (integer) or UUID.
+        id: String,
+        /// Agent id to record on task transitions.
+        #[arg(long, env = "CONVERGIO_AGENT_ID")]
+        agent_id: Option<String>,
     },
 }
 
@@ -136,7 +153,24 @@ pub async fn run(
                         println!("{}", bundle.t("plan-list-empty", &[]));
                     } else {
                         println!("{}", bundle.t_n("plan-list-header", count));
-                        println!("{}", serde_json::to_string_pretty(&plans)?);
+                        if let Some(arr) = plans.as_array() {
+                            for p in arr {
+                                let num = p.get("number").and_then(Value::as_i64).unwrap_or(0);
+                                let title = p.get("title").and_then(Value::as_str).unwrap_or("?");
+                                let status = p.get("status").and_then(Value::as_str).unwrap_or("?");
+                                println!(
+                                    "{}",
+                                    bundle.t(
+                                        "plan-list-line",
+                                        &[
+                                            ("number", &num.to_string()),
+                                            ("title", title),
+                                            ("status", status),
+                                        ]
+                                    )
+                                );
+                            }
+                        }
                     }
                 }
                 OutputMode::Json => {
@@ -197,28 +231,33 @@ pub async fn run(
                 }
             }
         }
-        PlanCommand::Get { id } => match client.get::<Value>(&format!("/v1/plans/{id}")).await {
-            Ok(plan) => match output {
-                OutputMode::Human | OutputMode::Json => {
-                    println!("{}", serde_json::to_string_pretty(&plan)?);
-                }
-                OutputMode::Plain => {
-                    if let Some(plan_id) = plan.get("id").and_then(Value::as_str) {
-                        println!("{plan_id}");
+        PlanCommand::Get { id } | PlanCommand::Show { id } => {
+            match client.get::<Value>(&format!("/v1/plans/{id}")).await {
+                Ok(plan) => match output {
+                    OutputMode::Human | OutputMode::Json => {
+                        println!("{}", serde_json::to_string_pretty(&plan)?);
                     }
+                    OutputMode::Plain => {
+                        if let Some(plan_id) = plan.get("id").and_then(Value::as_str) {
+                            println!("{plan_id}");
+                        }
+                    }
+                },
+                Err(e) => {
+                    eprintln!("{}", bundle.t("plan-not-found", &[("id", &id)]));
+                    return Err(e);
                 }
-            },
-            Err(e) => {
-                eprintln!("{}", bundle.t("plan-not-found", &[("id", &id)]));
-                return Err(e);
             }
-        },
+        }
         PlanCommand::Triage {
             id,
             stale_days,
             auto_close,
         } => {
             super::plan_triage::run(client, bundle, output, &id, stale_days, auto_close).await?;
+        }
+        PlanCommand::Run { id, agent_id } => {
+            super::plan_run::run(client, bundle, output, &id, agent_id.as_deref()).await?;
         }
     }
     Ok(())

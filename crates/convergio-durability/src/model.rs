@@ -48,6 +48,8 @@ impl PlanStatus {
 pub struct Plan {
     /// UUID v4.
     pub id: String,
+    /// Monotonic plan number within the project group (1-based, immutable).
+    pub number: i64,
     /// Short human title.
     pub title: String,
     /// Optional long description.
@@ -72,7 +74,7 @@ pub struct Plan {
     pub duration_ms: Option<i64>,
 }
 
-/// Input for [`crate::store::PlanStore::create`].
+/// Input for [`crate::Durability::create_plan`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NewPlan {
     /// Short human title.

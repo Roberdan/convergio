@@ -34,7 +34,7 @@
 //! init(&pool).await?;                 // run migrations
 //!
 //! let dur = Durability::new(pool);
-//! let plan = dur.plans().create(NewPlan {
+//! let plan = dur.create_plan(NewPlan {
 //!     title: "first plan".into(),
 //!     description: None,
 //!     project: None,
