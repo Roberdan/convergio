@@ -1,12 +1,15 @@
 //! `/v1/audit/verify` — recompute the chain.
+//! `/v1/audit/append` — agent-emitted custom audit rows (P2-2, ADR-0002 § Custom kinds).
 //! `/v1/audit/stream` — Server-Sent Events tail (P1.1).
+
+mod append;
 
 use crate::app::AppState;
 use crate::error::ApiError;
 use crate::sse::{poll_stream, StreamEvent};
 use axum::extract::{Query, State};
 use axum::response::IntoResponse;
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::{Json, Router};
 use convergio_durability::audit::{AuditEntry, VerifyReport};
 use serde::Deserialize;
@@ -20,6 +23,7 @@ pub fn router() -> Router<AppState> {
         .route("/v1/audit/refusals/latest", get(latest_refusal))
         .route("/v1/audit/events", get(events))
         .route("/v1/audit/stream", get(stream))
+        .route("/v1/audit/append", post(append::append))
 }
 
 #[derive(Deserialize)]
