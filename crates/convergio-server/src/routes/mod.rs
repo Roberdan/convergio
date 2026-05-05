@@ -21,5 +21,6 @@ pub mod solve;
 pub mod status;
 pub mod system_messages;
 pub mod tasks;
+pub mod telemetry;
 pub mod validate;
 pub mod workspace;

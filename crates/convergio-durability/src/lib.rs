@@ -53,6 +53,7 @@ pub mod gates;
 pub mod model;
 pub mod reaper;
 pub mod store;
+pub mod telemetry_collector;
 
 mod agent_facade;
 mod capability_facade;
@@ -78,6 +79,7 @@ pub use migrate::init;
 pub use model::{
     Evidence, NewPlan, NewTask, Plan, PlanStatus, RecentCompletedTask, Task, TaskStatus,
 };
+pub use store::TelemetryPoint;
 pub use store::{
     AgentAuditEntry, AgentHeartbeat, AgentLease, AgentPrLink, AgentRecord, AgentStore,
     AgentSummary, AppendOutcome, CrdtActor, CrdtCell, CrdtOp, CrdtStore, CurrentTaskMeta, NewAgent,

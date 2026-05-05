@@ -18,6 +18,7 @@ mod evidence;
 mod plan_pr_links;
 mod plans;
 mod tasks;
+pub(crate) mod telemetry_series;
 mod workspace;
 mod workspace_merge;
 mod workspace_merge_rows;
@@ -36,6 +37,7 @@ pub use evidence::EvidenceStore;
 pub use plan_pr_links::{NewPlanPrLink, PlanPrLinksStore};
 pub use plans::PlanStore;
 pub use tasks::TaskStore;
+pub use telemetry_series::{TelemetryPoint, TelemetrySeriesStore};
 pub use workspace::{
     NewWorkspaceLease, NewWorkspaceResource, WorkspaceLease, WorkspaceResource, WorkspaceStore,
 };
