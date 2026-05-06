@@ -4,11 +4,12 @@
 //! `/v1/plans/{id}/messages/tail`, `/v1/audit/verify`, plus `gh pr list` (skipped when
 //! `CONVERGIO_DASH_NO_GH=1`).
 
-use crate::client_gh::fetch_prs;
+use crate::client_gh::{fetch_prs_closed, fetch_prs_open};
+use crate::client_pr_cache::{cached_fetch, PrCacheCell};
 use anyhow::Result;
 use serde::Deserialize;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 pub use crate::plan_counts::PlanCounts;
 pub use crate::types::{AgentProcess, BusMessage, Plan, PrSummary, RegistryAgent, TaskSummary};
@@ -35,15 +36,6 @@ pub struct Snapshot {
     pub daemon_version: Option<String>,
 }
 
-/// PR data is cached for this long before the next `gh pr list`
-/// shell-out. The dashboard tick is 5s by default; 30s means the
-/// `gh` cost is amortised across ~6 refreshes without making the
-/// PR pane feel stale (PR state turns over much slower than tasks).
-const PR_CACHE_TTL: Duration = Duration::from_secs(30);
-
-/// Time-stamped cache entry for the PR list.
-type PrCacheCell = Arc<Mutex<Option<(Instant, Vec<PrSummary>)>>>;
-
 /// Read-only HTTP client. Cloneable.
 #[derive(Debug, Clone)]
 pub struct Client {
@@ -51,7 +43,8 @@ pub struct Client {
     inner: reqwest::Client,
     enable_gh: bool,
     github_slug: Option<String>,
-    pr_cache: PrCacheCell,
+    open_prs: PrCacheCell,
+    closed_prs: PrCacheCell,
 }
 
 impl Client {
@@ -66,8 +59,15 @@ impl Client {
                 .unwrap_or_else(|_| reqwest::Client::new()),
             enable_gh,
             github_slug: None,
-            pr_cache: Arc::new(Mutex::new(None)),
+            open_prs: Arc::new(Mutex::new(None)),
+            closed_prs: Arc::new(Mutex::new(None)),
         }
+    }
+
+    /// `true` when `gh pr list` shell-out is allowed. Disabled when
+    /// `CONVERGIO_DASH_NO_GH=1` is set.
+    pub fn gh_enabled(&self) -> bool {
+        self.enable_gh
     }
 
     /// Scope `gh pr list` to `owner/repo` instead of inheriting cwd.
@@ -78,19 +78,21 @@ impl Client {
         self
     }
 
-    /// One-shot fetch of every dataset. Sub-fetches fail soft —
-    /// partial data is more useful than blanking the dashboard.
+    /// Fetch every dataset *except* the PRs. Returns within ~50ms
+    /// even on a cold start because no shell-out runs here. The
+    /// dashboard event loop emits this snapshot first to populate
+    /// Plans / Tasks / Agents while `gh pr list` is still in
+    /// flight — the user no longer waits 1-3s for the slowest
+    /// part of the refresh.
     ///
-    /// Per-plan fetches (`tasks` + `messages/tail`) run in parallel
-    /// via `futures::future::join_all`; without this fan-out the
-    /// loop is N+1 and dashes with 40+ plans block for hundreds of
-    /// ms per refresh on loopback. Global fetches (registry,
-    /// processes, audit, health) run concurrently with the
-    /// per-plan fan-out via `tokio::join!`. The PRs `gh pr list`
-    /// shell-out also runs concurrently (it is the dominant cost,
-    /// ~600ms on a warm cache) and is additionally memoised for
-    /// [`PR_CACHE_TTL`] so most refreshes pay zero gh cost.
-    pub async fn snapshot(&self) -> Result<Snapshot> {
+    /// Per-plan fetches (`tasks` + `messages/tail`) run in
+    /// parallel via `futures::future::join_all`; without this
+    /// fan-out the loop is N+1 and dashes with 40+ plans block
+    /// for hundreds of ms per refresh on loopback. Global
+    /// fetches (registry, processes, audit, health) run
+    /// concurrently with the per-plan fan-out via
+    /// `tokio::join!`.
+    pub async fn snapshot_core(&self) -> Result<Snapshot> {
         let mut plans: Vec<Plan> = self
             .get_json("/v1/plans")
             .await
@@ -103,12 +105,10 @@ impl Client {
                 .iter()
                 .map(|id| self.fetch_plan_overview(id.clone())),
         );
-
         let global_fetches = self.fetch_globals();
-        let prs_future = self.fetch_prs_cached();
 
-        let (plan_results, (agents, agent_processes, audit_ok, daemon_version), prs) =
-            tokio::join!(plan_fetches, global_fetches, prs_future);
+        let (plan_results, (agents, agent_processes, audit_ok, daemon_version)) =
+            tokio::join!(plan_fetches, global_fetches);
 
         let mut tasks: Vec<TaskSummary> = Vec::new();
         let mut messages: Vec<BusMessage> = Vec::new();
@@ -127,51 +127,48 @@ impl Client {
             tasks,
             agents,
             agent_processes,
-            prs,
+            prs: Vec::new(),
             messages,
             audit_ok,
             daemon_version,
         })
     }
 
-    /// PR fetch with a [`PR_CACHE_TTL`] memo. Returns the cached
-    /// vector when fresh; otherwise shells out to `gh` (off the
-    /// blocking thread, see [`crate::client_gh::fetch_prs`]) and
-    /// updates the cache on success. A failed fetch keeps the
-    /// stale cache rather than blanking the PRs pane — partial
-    /// data beats no data.
-    async fn fetch_prs_cached(&self) -> Vec<PrSummary> {
-        if !self.enable_gh {
-            return Vec::new();
-        }
-        if let Some((stamped_at, cached)) = self.pr_cache_snapshot() {
-            if stamped_at.elapsed() < PR_CACHE_TTL {
-                return cached;
-            }
-        }
-        match fetch_prs(self.github_slug.as_deref()).await {
-            Ok(prs) => {
-                self.pr_cache_store(prs.clone());
-                prs
-            }
-            Err(_) => self.pr_cache_snapshot().map(|(_, v)| v).unwrap_or_default(),
-        }
+    /// Fetch open PRs with a 30s memo (see
+    /// [`crate::client_pr_cache::PR_CACHE_TTL`]). Fast (~0.5s
+    /// cold) — the PR pane's first paint after a cache miss.
+    pub async fn fetch_prs_open_cached(&self) -> Vec<PrSummary> {
+        cached_fetch(
+            self.enable_gh,
+            &self.open_prs,
+            fetch_prs_open(self.github_slug.as_deref()),
+        )
+        .await
     }
 
-    fn pr_cache_snapshot(&self) -> Option<(Instant, Vec<PrSummary>)> {
-        let guard = match self.pr_cache.lock() {
-            Ok(g) => g,
-            Err(p) => p.into_inner(),
-        };
-        guard.clone()
+    /// Fetch closed/merged PRs with the same memo. Slower (~1-3s
+    /// cold on busy repos) so it runs after the open list paints.
+    pub async fn fetch_prs_closed_cached(&self) -> Vec<PrSummary> {
+        cached_fetch(
+            self.enable_gh,
+            &self.closed_prs,
+            fetch_prs_closed(self.github_slug.as_deref()),
+        )
+        .await
     }
 
-    fn pr_cache_store(&self, prs: Vec<PrSummary>) {
-        let mut guard = match self.pr_cache.lock() {
-            Ok(g) => g,
-            Err(p) => p.into_inner(),
-        };
-        *guard = Some((Instant::now(), prs));
+    /// Backwards-compatible single-shot snapshot: core + open +
+    /// closed PRs in sequence. Kept for the
+    /// `Client`-driven test path and the `snapshot_bench`
+    /// example; the live dashboard uses `snapshot_core` plus the
+    /// progressive PR fetch in [`crate::run`].
+    pub async fn snapshot(&self) -> Result<Snapshot> {
+        let mut snap = self.snapshot_core().await?;
+        let (open, closed) =
+            tokio::join!(self.fetch_prs_open_cached(), self.fetch_prs_closed_cached(),);
+        snap.prs = open;
+        snap.prs.extend(closed);
+        Ok(snap)
     }
 
     async fn fetch_plan_overview(

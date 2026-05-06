@@ -218,6 +218,14 @@ impl AppState {
         self.show_exited_agents = !self.show_exited_agents;
     }
 
+    /// Replace the PR list without touching the rest of the state.
+    /// Lets the progressive-snapshot path emit PRs as soon as
+    /// `gh pr list` returns, without waiting for a full
+    /// [`AppState::apply_snapshot`].
+    pub fn apply_prs(&mut self, prs: Vec<PrSummary>) {
+        self.prs = prs;
+    }
+
     /// Active transport for the Bus pane footer hint.
     pub fn bus_transport(&self) -> BusTransport {
         self.bus_stream
