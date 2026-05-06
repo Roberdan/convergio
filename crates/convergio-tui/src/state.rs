@@ -5,9 +5,7 @@
 //! [`AppState::refresh`] which delegates to [`crate::client::Client`].
 
 use crate::bus_stream::{BusStreamHandle, Transport as BusTransport};
-use crate::client::{
-    AgentProcess, BusMessage, Client, Plan, PrSummary, RegistryAgent, TaskSummary,
-};
+use crate::client::{AgentProcess, BusMessage, Plan, PrSummary, RegistryAgent, TaskSummary};
 pub use crate::mode::{AppMode, DetailTarget, Scope};
 
 /// The panes rendered by the dashboard, in tab order.
@@ -168,33 +166,6 @@ pub fn version_drift(daemon: Option<&str>) -> Option<String> {
 }
 
 impl AppState {
-    /// Refresh every dataset. Failures roll up into
-    /// [`Connection::Disconnected`] and leave the previous data in
-    /// place — the dashboard never blanks itself on a transient
-    /// network error.
-    pub async fn refresh(&mut self, client: &Client) {
-        let snapshot = client.snapshot().await;
-        match snapshot {
-            Ok(s) => {
-                self.plans = s.plans;
-                self.tasks = s.tasks;
-                self.agents = s.agents;
-                self.agent_processes = s.agent_processes;
-                self.prs = s.prs;
-                self.messages = s.messages;
-                self.audit_ok = s.audit_ok;
-                self.daemon_version = s.daemon_version;
-                self.connection = Connection::Connected;
-                self.last_refresh = Some(chrono::Utc::now());
-            }
-            Err(_) => {
-                self.connection = Connection::Disconnected;
-            }
-        }
-        self.update_bus_subscription();
-        self.merge_live_bus();
-    }
-
     /// Re-point the Bus pane SSE subscription at the currently-scoped
     /// plan, falling back to the first plan if no scope is set. No-op
     /// when the live handle was never installed.

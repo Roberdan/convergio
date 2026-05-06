@@ -7,7 +7,8 @@
 use crate::client_gh::fetch_prs;
 use anyhow::Result;
 use serde::Deserialize;
-use std::time::Duration;
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 pub use crate::plan_counts::PlanCounts;
 pub use crate::types::{AgentProcess, BusMessage, Plan, PrSummary, RegistryAgent, TaskSummary};
@@ -34,6 +35,15 @@ pub struct Snapshot {
     pub daemon_version: Option<String>,
 }
 
+/// PR data is cached for this long before the next `gh pr list`
+/// shell-out. The dashboard tick is 5s by default; 30s means the
+/// `gh` cost is amortised across ~6 refreshes without making the
+/// PR pane feel stale (PR state turns over much slower than tasks).
+const PR_CACHE_TTL: Duration = Duration::from_secs(30);
+
+/// Time-stamped cache entry for the PR list.
+type PrCacheCell = Arc<Mutex<Option<(Instant, Vec<PrSummary>)>>>;
+
 /// Read-only HTTP client. Cloneable.
 #[derive(Debug, Clone)]
 pub struct Client {
@@ -41,6 +51,7 @@ pub struct Client {
     inner: reqwest::Client,
     enable_gh: bool,
     github_slug: Option<String>,
+    pr_cache: PrCacheCell,
 }
 
 impl Client {
@@ -55,6 +66,7 @@ impl Client {
                 .unwrap_or_else(|_| reqwest::Client::new()),
             enable_gh,
             github_slug: None,
+            pr_cache: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -75,8 +87,9 @@ impl Client {
     /// ms per refresh on loopback. Global fetches (registry,
     /// processes, audit, health) run concurrently with the
     /// per-plan fan-out via `tokio::join!`. The PRs `gh pr list`
-    /// shell-out is sequential because it blocks anyway and runs
-    /// after the parallel batch returns.
+    /// shell-out also runs concurrently (it is the dominant cost,
+    /// ~600ms on a warm cache) and is additionally memoised for
+    /// [`PR_CACHE_TTL`] so most refreshes pay zero gh cost.
     pub async fn snapshot(&self) -> Result<Snapshot> {
         let mut plans: Vec<Plan> = self
             .get_json("/v1/plans")
@@ -92,9 +105,10 @@ impl Client {
         );
 
         let global_fetches = self.fetch_globals();
+        let prs_future = self.fetch_prs_cached();
 
-        let (plan_results, (agents, agent_processes, audit_ok, daemon_version)) =
-            tokio::join!(plan_fetches, global_fetches);
+        let (plan_results, (agents, agent_processes, audit_ok, daemon_version), prs) =
+            tokio::join!(plan_fetches, global_fetches, prs_future);
 
         let mut tasks: Vec<TaskSummary> = Vec::new();
         let mut messages: Vec<BusMessage> = Vec::new();
@@ -108,12 +122,6 @@ impl Client {
         messages.sort_by_key(|m| std::cmp::Reverse(m.seq));
         messages.truncate(200);
 
-        let prs = if self.enable_gh {
-            fetch_prs(self.github_slug.as_deref()).unwrap_or_default()
-        } else {
-            Vec::new()
-        };
-
         Ok(Snapshot {
             plans,
             tasks,
@@ -124,6 +132,46 @@ impl Client {
             audit_ok,
             daemon_version,
         })
+    }
+
+    /// PR fetch with a [`PR_CACHE_TTL`] memo. Returns the cached
+    /// vector when fresh; otherwise shells out to `gh` (off the
+    /// blocking thread, see [`crate::client_gh::fetch_prs`]) and
+    /// updates the cache on success. A failed fetch keeps the
+    /// stale cache rather than blanking the PRs pane — partial
+    /// data beats no data.
+    async fn fetch_prs_cached(&self) -> Vec<PrSummary> {
+        if !self.enable_gh {
+            return Vec::new();
+        }
+        if let Some((stamped_at, cached)) = self.pr_cache_snapshot() {
+            if stamped_at.elapsed() < PR_CACHE_TTL {
+                return cached;
+            }
+        }
+        match fetch_prs(self.github_slug.as_deref()).await {
+            Ok(prs) => {
+                self.pr_cache_store(prs.clone());
+                prs
+            }
+            Err(_) => self.pr_cache_snapshot().map(|(_, v)| v).unwrap_or_default(),
+        }
+    }
+
+    fn pr_cache_snapshot(&self) -> Option<(Instant, Vec<PrSummary>)> {
+        let guard = match self.pr_cache.lock() {
+            Ok(g) => g,
+            Err(p) => p.into_inner(),
+        };
+        guard.clone()
+    }
+
+    fn pr_cache_store(&self, prs: Vec<PrSummary>) {
+        let mut guard = match self.pr_cache.lock() {
+            Ok(g) => g,
+            Err(p) => p.into_inner(),
+        };
+        *guard = Some((Instant::now(), prs));
     }
 
     async fn fetch_plan_overview(
