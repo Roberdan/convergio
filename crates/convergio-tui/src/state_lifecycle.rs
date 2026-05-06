@@ -22,6 +22,13 @@ impl AppState {
     /// client. Used by the async refresh path in [`crate::run`] so
     /// the event loop never blocks on the snapshot. Failed fetches
     /// keep the previous data and flip the connection indicator.
+    ///
+    /// The PR list is only overwritten when the snapshot carries a
+    /// non-empty vector. This protects the progressive-snapshot
+    /// path: `Client::snapshot_core` returns an empty `prs` field
+    /// because the gh shell-out runs separately, and we don't want
+    /// the cached PR list to flash to empty between the core
+    /// arrival and the first PR payload.
     pub fn apply_snapshot(&mut self, snapshot: anyhow::Result<Snapshot>) {
         match snapshot {
             Ok(s) => {
@@ -29,7 +36,9 @@ impl AppState {
                 self.tasks = s.tasks;
                 self.agents = s.agents;
                 self.agent_processes = s.agent_processes;
-                self.prs = s.prs;
+                if !s.prs.is_empty() {
+                    self.prs = s.prs;
+                }
                 self.messages = s.messages;
                 self.audit_ok = s.audit_ok;
                 self.daemon_version = s.daemon_version;

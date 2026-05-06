@@ -25,6 +25,7 @@ pub mod agent_filter;
 pub mod bus_stream;
 pub mod client;
 pub mod client_gh;
+pub mod client_pr_cache;
 pub mod header_banner;
 pub mod keymap;
 pub mod mode;
@@ -62,9 +63,24 @@ use std::io::{self, Stdout};
 use std::time::Duration;
 use tokio::sync::mpsc;
 
-use crate::client::{Client, Snapshot};
+use crate::client::{Client, PrSummary, Snapshot};
 use crate::keymap::{Action, KeyMap};
 use crate::state::{AppMode, AppState};
+
+/// One step of a progressive snapshot. The dashboard refresh emits
+/// these in order: `Core` first (no gh shell-out, ~50ms), then
+/// `Prs` once for the open list (~0.5s), then `Prs` again for
+/// open+closed combined (~1-3s on busy repos). Each event lets the
+/// UI repaint without waiting for the slowest part.
+#[derive(Debug)]
+pub enum SnapshotEvent {
+    /// Core dataset (plans, tasks, agents, messages, audit). PRs
+    /// arrive separately via [`SnapshotEvent::Prs`].
+    Core(Result<Snapshot>),
+    /// Updated PR list — replaces whatever was there. Sent twice
+    /// per refresh (open-only, then open+closed).
+    Prs(Vec<PrSummary>),
+}
 
 /// Tick interval bounds. Outside this band the dashboard is either
 /// hammering the daemon (too fast) or sleeping past usefulness (too
@@ -118,10 +134,11 @@ async fn event_loop(
     };
     let keymap = KeyMap;
 
-    // Snapshot results flow back through this channel. Capacity of 2
-    // keeps a stale-then-fresh pair in flight without ever blocking
-    // the producer; we are the single consumer.
-    let (snap_tx, mut snap_rx) = mpsc::channel::<Result<Snapshot>>(2);
+    // Snapshot events flow back through this channel. Capacity of
+    // 4 holds the worst-case in-flight set (Core + 2× Prs from one
+    // refresh, plus a margin for an overlapping tick) without ever
+    // blocking the producer; we are the single consumer.
+    let (snap_tx, mut snap_rx) = mpsc::channel::<SnapshotEvent>(4);
     let mut refresh_in_flight = false;
 
     // Kick the first refresh off the event loop so the skeleton frame
@@ -144,9 +161,18 @@ async fn event_loop(
             _ = interval.tick() => {
                 spawn_refresh(&client, &snap_tx, &mut refresh_in_flight);
             }
-            Some(snap) = snap_rx.recv() => {
-                refresh_in_flight = false;
-                state.apply_snapshot(snap);
+            Some(event) = snap_rx.recv() => {
+                match event {
+                    SnapshotEvent::Core(snap) => {
+                        // Free the in-flight slot as soon as the core
+                        // arrives; the trailing PR fetches keep
+                        // running but the next tick can already start
+                        // a fresh core fetch if the user pressed `r`.
+                        refresh_in_flight = false;
+                        state.apply_snapshot(snap);
+                    }
+                    SnapshotEvent::Prs(prs) => state.apply_prs(prs),
+                }
             }
             poll = poll_key() => {
                 if let Some(action) = poll? {
@@ -188,10 +214,19 @@ async fn event_loop(
     Ok(())
 }
 
-/// Spawn the snapshot fetch off the event loop. `in_flight` debounces
-/// concurrent refreshes — the periodic tick and a manual `r` arriving
-/// inside the same gh shell-out window must not stack.
-fn spawn_refresh(client: &Client, tx: &mpsc::Sender<Result<Snapshot>>, in_flight: &mut bool) {
+/// Spawn the progressive snapshot fetch off the event loop.
+///
+/// Emits three events on `tx` so the dashboard can repaint in
+/// stages instead of waiting for the slowest fetch:
+///
+/// 1. [`SnapshotEvent::Core`] — every dataset except PRs (~50ms
+///    on a warm pool). Frees `in_flight` so the next tick can
+///    overlap the trailing PR fetches.
+/// 2. [`SnapshotEvent::Prs`] with open PRs only (~0.5s).
+/// 3. [`SnapshotEvent::Prs`] with open + closed combined
+///    (~1-3s on busy repos with `statusCheckRollup`-driven API
+///    fan-out). Skipped when `gh` is disabled.
+fn spawn_refresh(client: &Client, tx: &mpsc::Sender<SnapshotEvent>, in_flight: &mut bool) {
     if *in_flight {
         return;
     }
@@ -199,8 +234,21 @@ fn spawn_refresh(client: &Client, tx: &mpsc::Sender<Result<Snapshot>>, in_flight
     let client = client.clone();
     let tx = tx.clone();
     tokio::spawn(async move {
-        let snap = client.snapshot().await;
-        let _ = tx.send(snap).await;
+        let snap = client.snapshot_core().await;
+        if tx.send(SnapshotEvent::Core(snap)).await.is_err() {
+            return;
+        }
+        if !client.gh_enabled() {
+            return;
+        }
+        let open = client.fetch_prs_open_cached().await;
+        if tx.send(SnapshotEvent::Prs(open.clone())).await.is_err() {
+            return;
+        }
+        let closed = client.fetch_prs_closed_cached().await;
+        let mut combined = open;
+        combined.extend(closed);
+        let _ = tx.send(SnapshotEvent::Prs(combined)).await;
     });
 }
 
