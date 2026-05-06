@@ -33,6 +33,7 @@ pub mod plan_counts;
 pub mod render;
 pub mod scope;
 pub mod state;
+pub mod state_lifecycle;
 pub mod theme;
 pub mod tick;
 pub mod types;
@@ -50,7 +51,7 @@ pub mod panes {
 }
 
 use anyhow::{Context, Result};
-use crossterm::event::{self, DisableMouseCapture, EnableMouseCapture, Event};
+use crossterm::event::{self, Event};
 use crossterm::execute;
 use crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
@@ -59,8 +60,9 @@ use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 use std::io::{self, Stdout};
 use std::time::Duration;
+use tokio::sync::mpsc;
 
-use crate::client::Client;
+use crate::client::{Client, Snapshot};
 use crate::keymap::{Action, KeyMap};
 use crate::state::{AppMode, AppState};
 
@@ -88,19 +90,17 @@ pub async fn run(daemon_url: &str, tick_secs: u64, github_slug: Option<String>) 
 fn setup_terminal() -> Result<Terminal<CrosstermBackend<Stdout>>> {
     enable_raw_mode().context("enable raw mode")?;
     let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture).context("enter alt screen")?;
+    // Mouse capture deliberately not enabled — no mouse handler exists,
+    // and capturing mouse events stole the terminal's native scroll
+    // while spamming the input poll with `Noop`-translated events.
+    execute!(stdout, EnterAlternateScreen).context("enter alt screen")?;
     let backend = CrosstermBackend::new(stdout);
     Terminal::new(backend).context("ratatui terminal")
 }
 
 fn restore_terminal(term: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<()> {
     disable_raw_mode().ok();
-    execute!(
-        term.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )
-    .ok();
+    execute!(term.backend_mut(), LeaveAlternateScreen).ok();
     term.show_cursor().ok();
     Ok(())
 }
@@ -117,7 +117,17 @@ async fn event_loop(
         ..AppState::default()
     };
     let keymap = KeyMap;
-    state.refresh(&client).await;
+
+    // Snapshot results flow back through this channel. Capacity of 2
+    // keeps a stale-then-fresh pair in flight without ever blocking
+    // the producer; we are the single consumer.
+    let (snap_tx, mut snap_rx) = mpsc::channel::<Result<Snapshot>>(2);
+    let mut refresh_in_flight = false;
+
+    // Kick the first refresh off the event loop so the skeleton frame
+    // renders immediately. Previously `state.refresh().await` here
+    // blocked the first paint behind a ~1s `gh pr list`.
+    spawn_refresh(&client, &snap_tx, &mut refresh_in_flight);
 
     let mut interval = tokio::time::interval(Duration::from_secs(tick_secs));
     interval.tick().await; // first tick fires immediately; consume it
@@ -132,13 +142,19 @@ async fn event_loop(
 
         tokio::select! {
             _ = interval.tick() => {
-                state.refresh(&client).await;
+                spawn_refresh(&client, &snap_tx, &mut refresh_in_flight);
+            }
+            Some(snap) = snap_rx.recv() => {
+                refresh_in_flight = false;
+                state.apply_snapshot(snap);
             }
             poll = poll_key() => {
                 if let Some(action) = poll? {
                     match keymap.translate(action) {
                         Action::Quit => break,
-                        Action::RefreshNow => state.refresh(&client).await,
+                        Action::RefreshNow => {
+                            spawn_refresh(&client, &snap_tx, &mut refresh_in_flight);
+                        }
                         Action::PaneNext => state.focus_next(),
                         Action::PanePrev => state.focus_prev(),
                         Action::RowDown => state.row_down(),
@@ -172,12 +188,30 @@ async fn event_loop(
     Ok(())
 }
 
+/// Spawn the snapshot fetch off the event loop. `in_flight` debounces
+/// concurrent refreshes — the periodic tick and a manual `r` arriving
+/// inside the same gh shell-out window must not stack.
+fn spawn_refresh(client: &Client, tx: &mpsc::Sender<Result<Snapshot>>, in_flight: &mut bool) {
+    if *in_flight {
+        return;
+    }
+    *in_flight = true;
+    let client = client.clone();
+    let tx = tx.clone();
+    tokio::spawn(async move {
+        let snap = client.snapshot().await;
+        let _ = tx.send(snap).await;
+    });
+}
+
 /// Non-blocking key polling. Returns `None` when the available event
 /// is not a key press (e.g. mouse, resize), so the caller's `select!`
-/// can keep cycling without busy-waiting.
+/// can keep cycling without busy-waiting. Poll window kept short
+/// (50ms) so keystrokes feel snappy — at this granularity the cost
+/// is one cheap `spawn_blocking` round-trip per cycle.
 async fn poll_key() -> Result<Option<event::KeyEvent>> {
     tokio::task::spawn_blocking(|| -> Result<Option<event::KeyEvent>> {
-        if event::poll(Duration::from_millis(200)).context("poll")? {
+        if event::poll(Duration::from_millis(50)).context("poll")? {
             if let Event::Key(k) = event::read().context("read")? {
                 return Ok(Some(k));
             }

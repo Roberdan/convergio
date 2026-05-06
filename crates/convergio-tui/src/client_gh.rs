@@ -7,21 +7,31 @@
 
 use crate::client::PrSummary;
 use anyhow::Result;
-use std::process::Command;
+use tokio::process::Command;
+
+/// How many PRs we ask `gh` for. The dashboard previously requested
+/// 100, which routinely cost ~1s and blocked the (then-synchronous)
+/// refresh. 50 still covers the active queue with margin and keeps
+/// `gh` under ~600ms in our measurements.
+const PR_LIMIT: &str = "50";
 
 /// Run `gh pr list` and parse the JSON. When `slug` is `Some`, the
 /// query is scoped to that `owner/repo` (`gh pr list -R <slug>`) so
 /// the dashboard works from any cwd. When `None`, gh inherits cwd —
 /// original behaviour, kept for shells run inside a repo with no
 /// workspace `Cargo.toml`.
-pub fn fetch_prs(slug: Option<&str>) -> Result<Vec<PrSummary>> {
+///
+/// Async because the pre-1s shell-out used to block the dashboard's
+/// event loop; with `tokio::process::Command` it cooperates with the
+/// rest of the snapshot's `tokio::join!` fan-out.
+pub async fn fetch_prs(slug: Option<&str>) -> Result<Vec<PrSummary>> {
     let mut args: Vec<String> = vec![
         "pr".into(),
         "list".into(),
         "--state".into(),
         "all".into(),
         "--limit".into(),
-        "100".into(),
+        PR_LIMIT.into(),
         "--json".into(),
         "number,title,headRefName,state,statusCheckRollup,additions,deletions,changedFiles,createdAt,updatedAt,closedAt,mergedAt,body".into(),
     ];
@@ -29,7 +39,7 @@ pub fn fetch_prs(slug: Option<&str>) -> Result<Vec<PrSummary>> {
         args.push("-R".into());
         args.push(s.to_string());
     }
-    let out = Command::new("gh").args(&args).output();
+    let out = Command::new("gh").args(&args).output().await;
     let out = match out {
         Ok(o) if o.status.success() => o,
         _ => return Ok(Vec::new()),
