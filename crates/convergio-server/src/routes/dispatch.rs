@@ -8,7 +8,7 @@ use crate::error::ApiError;
 use axum::extract::State;
 use axum::routing::post;
 use axum::{Json, Router};
-use convergio_executor::{Executor, SpawnTemplate};
+use convergio_executor::{Executor, RunnerDefaults, SpawnTemplate};
 use serde_json::{json, Value};
 
 /// Mount the dispatch route.
@@ -21,7 +21,8 @@ async fn dispatch(State(state): State<AppState>) -> Result<Json<Value>, ApiError
         (*state.durability).clone(),
         (*state.supervisor).clone(),
         SpawnTemplate::default(),
-    );
+    )
+    .with_defaults(RunnerDefaults::from_env());
     let n = exec.tick().await.map_err(map_exec)?;
     Ok(Json(json!({"dispatched": n})))
 }
