@@ -6,6 +6,7 @@
 
 use convergio_runner::{PermissionProfile, RunnerKind};
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 /// Template the executor uses for tasks that opt out of runner-based
 /// dispatch. ADR-0034 introduced per-task `runner_kind` / `profile`
@@ -51,5 +52,108 @@ impl Default for RunnerDefaults {
             profile: PermissionProfile::Standard,
             daemon_url: "http://127.0.0.1:8420".into(),
         }
+    }
+}
+
+impl RunnerDefaults {
+    /// Read defaults from the environment, falling back to
+    /// [`RunnerDefaults::default`] for any value not provided.
+    ///
+    /// Recognised variables:
+    /// - `CONVERGIO_RUNNER_DEFAULT` — wire format `<vendor>:<model>`.
+    ///   Examples: `claude:sonnet`, `claude:opus`, `copilot:gpt-5.2`,
+    ///   `copilot:claude-opus`. Invalid strings log a warning and the
+    ///   compiled-in default is used.
+    /// - `CONVERGIO_RUNNER_PROFILE` — `standard` (default),
+    ///   `restricted`, `unrestricted`.
+    /// - `CONVERGIO_DAEMON_URL` — base URL the spawned agent calls
+    ///   back to; defaults to `http://127.0.0.1:8420`.
+    pub fn from_env() -> Self {
+        let mut out = Self::default();
+        if let Ok(raw) = std::env::var("CONVERGIO_RUNNER_DEFAULT") {
+            match RunnerKind::from_str(raw.trim()) {
+                Ok(k) => out.kind = k,
+                Err(e) => tracing::warn!(
+                    raw = %raw,
+                    error = %e,
+                    "CONVERGIO_RUNNER_DEFAULT not parseable; using compiled-in default"
+                ),
+            }
+        }
+        if let Ok(raw) = std::env::var("CONVERGIO_RUNNER_PROFILE") {
+            match PermissionProfile::from_str(raw.trim()) {
+                Ok(p) => out.profile = p,
+                Err(e) => tracing::warn!(
+                    raw = %raw,
+                    error = %e,
+                    "CONVERGIO_RUNNER_PROFILE not parseable; using compiled-in default"
+                ),
+            }
+        }
+        if let Ok(url) = std::env::var("CONVERGIO_DAEMON_URL") {
+            if !url.trim().is_empty() {
+                out.daemon_url = url;
+            }
+        }
+        out
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Mutex;
+
+    // Env vars are process-global; serialise the cases that touch
+    // them so they don't race when `cargo test` parallelises.
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
+
+    fn clear_env() {
+        for k in [
+            "CONVERGIO_RUNNER_DEFAULT",
+            "CONVERGIO_RUNNER_PROFILE",
+            "CONVERGIO_DAEMON_URL",
+        ] {
+            std::env::remove_var(k);
+        }
+    }
+
+    #[test]
+    fn from_env_falls_back_to_default_when_unset() {
+        let _g = ENV_LOCK.lock().unwrap();
+        clear_env();
+        let d = RunnerDefaults::from_env();
+        assert_eq!(d.kind.to_string(), "claude:sonnet");
+        assert!(matches!(d.profile, PermissionProfile::Standard));
+    }
+
+    #[test]
+    fn from_env_picks_copilot_when_requested() {
+        let _g = ENV_LOCK.lock().unwrap();
+        clear_env();
+        std::env::set_var("CONVERGIO_RUNNER_DEFAULT", "copilot:gpt-5.2");
+        let d = RunnerDefaults::from_env();
+        clear_env();
+        assert_eq!(d.kind.to_string(), "copilot:gpt-5.2");
+    }
+
+    #[test]
+    fn from_env_invalid_runner_keeps_default() {
+        let _g = ENV_LOCK.lock().unwrap();
+        clear_env();
+        std::env::set_var("CONVERGIO_RUNNER_DEFAULT", "garbage-no-colon");
+        let d = RunnerDefaults::from_env();
+        clear_env();
+        assert_eq!(d.kind.to_string(), "claude:sonnet");
+    }
+
+    #[test]
+    fn from_env_overrides_daemon_url() {
+        let _g = ENV_LOCK.lock().unwrap();
+        clear_env();
+        std::env::set_var("CONVERGIO_DAEMON_URL", "http://10.0.0.1:9000");
+        let d = RunnerDefaults::from_env();
+        clear_env();
+        assert_eq!(d.daemon_url, "http://10.0.0.1:9000");
     }
 }
