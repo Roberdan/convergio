@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.14](https://github.com/Roberdan/convergio/compare/convergio-v0.3.13...convergio-v0.3.14) (2026-05-07)
+
+
+### Features
+
+* **executor:** RunnerDefaults::from_env for CONVERGIO_RUNNER_DEFAULT ([23ba293](https://github.com/Roberdan/convergio/commit/23ba2931960b6f9d1b043048b7ab69d9928bbb04))
+* **executor:** RunnerDefaults::from_env for CONVERGIO_RUNNER_DEFAULT ([559b6e3](https://github.com/Roberdan/convergio/commit/559b6e33d83702172eb6999e06963b7a86ac73da))
+
 ## [0.3.13](https://github.com/Roberdan/convergio/compare/convergio-v0.3.12...convergio-v0.3.13) (2026-05-05)
 
 

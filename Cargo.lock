@@ -602,7 +602,7 @@ checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 
 [[package]]
 name = "convergio-api"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "schemars",
  "serde",
@@ -611,11 +611,11 @@ dependencies = [
 
 [[package]]
 name = "convergio-brand"
-version = "0.3.13"
+version = "0.3.14"
 
 [[package]]
 name = "convergio-bus"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "chrono",
  "convergio-db",
@@ -631,7 +631,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-cli"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -662,7 +662,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-cli-plan-run"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "anyhow",
  "convergio-i18n",
@@ -675,7 +675,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-cli-pr"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "anyhow",
  "clap",
@@ -688,7 +688,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-cli-session"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "anyhow",
  "axum",
@@ -705,7 +705,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-coherence"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "anyhow",
  "axum",
@@ -733,7 +733,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-db"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "sqlx",
  "tempfile",
@@ -745,7 +745,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-durability"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "async-trait",
  "chrono",
@@ -766,7 +766,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-embed"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "chrono",
  "convergio-db",
@@ -785,7 +785,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-executor"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "chrono",
  "convergio-db",
@@ -805,7 +805,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-fleet"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "chrono",
  "convergio-db",
@@ -824,7 +824,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-graph"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "anyhow",
  "cargo_metadata",
@@ -845,7 +845,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-i18n"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "fluent-bundle",
  "serde",
@@ -856,7 +856,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-lifecycle"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "chrono",
  "convergio-bus",
@@ -874,7 +874,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-mcp"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "anyhow",
  "axum",
@@ -891,7 +891,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-parse-multi"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "convergio-graph",
  "thiserror 1.0.69",
@@ -903,7 +903,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-planner"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "convergio-db",
  "convergio-durability",
@@ -917,7 +917,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-runner"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "anyhow",
  "chrono",
@@ -934,7 +934,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-server"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "axum",
  "chrono",
@@ -976,7 +976,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-thor"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "convergio-db",
  "convergio-durability",
@@ -990,7 +990,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-tui"
-version = "0.3.13"
+version = "0.3.14"
 dependencies = [
  "anyhow",
  "chrono",
@@ -3653,9 +3653,9 @@ dependencies = [
 
 [[package]]
 name = "rmcp"
-version = "1.5.0"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67d69668de0b0ccd9cc435f700f3b39a7861863cf37a15e1f304ea78688a4826"
+checksum = "e12ca9067b5ebfbd5b3fcdc4acfceb81aa7d5ab2a879dff7cb75d22434276aad"
 dependencies = [
  "async-trait",
  "chrono",
@@ -3674,9 +3674,9 @@ dependencies = [
 
 [[package]]
 name = "rmcp-macros"
-version = "1.5.0"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48fdc01c81097b0aed18633e676e269fefa3a78ec1df56b4fe597c1241b92025"
+checksum = "7caa6743cc0888e433105fe1bc551a7f607940b126a37bc97b478e86064627eb"
 dependencies = [
  "darling 0.23.0",
  "proc-macro2",
