@@ -35,6 +35,13 @@ pub enum PermissionProfile {
     /// Bypass everything. For a sealed sandbox only — never for
     /// the operator's main checkout.
     Sandbox,
+    /// Wide-open shell allow-list (`shell(*)`) — kept under the
+    /// daemon's deny-list (rm, sudo, push to main, force-push,
+    /// reset --hard). Use when the operator trusts the agent and
+    /// `Standard`'s prefix-only matchers are too tight (e.g. the
+    /// vendor CLI wraps `git --no-pager …` so `shell(git:status*)`
+    /// doesn't match).
+    Unrestricted,
 }
 
 impl PermissionProfile {
@@ -44,6 +51,7 @@ impl PermissionProfile {
             PermissionProfile::Standard => "standard",
             PermissionProfile::ReadOnly => "read_only",
             PermissionProfile::Sandbox => "sandbox",
+            PermissionProfile::Unrestricted => "unrestricted",
         }
     }
 
@@ -76,6 +84,12 @@ impl PermissionProfile {
             ),
             PermissionProfile::ReadOnly => Some("Read Glob Grep TodoWrite"),
             PermissionProfile::Sandbox => None,
+            // Same shape as Sandbox — Claude has no granular wildcard
+            // beyond `--dangerously-skip-permissions`. The daemon's
+            // deny-list still applies via the Bash tool's command
+            // filter on Copilot side; on Claude it is the operator's
+            // worktree boundary that contains blast radius.
+            PermissionProfile::Unrestricted => None,
         }
     }
 
@@ -88,6 +102,9 @@ impl PermissionProfile {
             PermissionProfile::Standard => "acceptEdits",
             PermissionProfile::ReadOnly => "default",
             PermissionProfile::Sandbox => "bypassPermissions",
+            // Same as Sandbox at the Claude flag level — see
+            // [`Self::claude_allowed_tools`] for the rationale.
+            PermissionProfile::Unrestricted => "bypassPermissions",
         }
     }
 
@@ -122,6 +139,12 @@ impl PermissionProfile {
             ],
             PermissionProfile::ReadOnly => vec!["shell(rg:*)", "shell(ls*)", "shell(cat*)"],
             PermissionProfile::Sandbox => vec![],
+            // Wildcard `shell(*)` covers everything the deny-list
+            // doesn't already block. Use when the prefix-matchers
+            // in `Standard` are too narrow for the vendor CLI's
+            // command shape (e.g. `git --no-pager status` is *not*
+            // matched by `shell(git:status*)`).
+            PermissionProfile::Unrestricted => vec!["write", "shell(*)"],
         }
     }
 
@@ -147,6 +170,7 @@ impl FromStr for PermissionProfile {
             "standard" => Ok(PermissionProfile::Standard),
             "read_only" | "read-only" | "readonly" => Ok(PermissionProfile::ReadOnly),
             "sandbox" => Ok(PermissionProfile::Sandbox),
+            "unrestricted" => Ok(PermissionProfile::Unrestricted),
             other => Err(format!("unknown profile `{other}`")),
         }
     }
@@ -209,9 +233,32 @@ mod tests {
             PermissionProfile::Standard,
             PermissionProfile::ReadOnly,
             PermissionProfile::Sandbox,
+            PermissionProfile::Unrestricted,
         ] {
             assert_eq!(PermissionProfile::from_str(p.tag()).unwrap(), p);
         }
         assert!(PermissionProfile::from_str("nonsense").is_err());
+    }
+
+    #[test]
+    fn unrestricted_uses_wildcard_shell_and_keeps_deny_list() {
+        let allow = PermissionProfile::Unrestricted.copilot_allow_tools();
+        assert!(allow.contains(&"shell(*)"));
+        assert!(allow.contains(&"write"));
+        // The deny list is profile-independent — destructive commands
+        // stay blocked even under `Unrestricted`.
+        let deny = PermissionProfile::Unrestricted.copilot_deny_tools();
+        assert!(deny.iter().any(|t| t.contains("rm:")));
+        assert!(deny.iter().any(|t| t.contains("push origin main")));
+    }
+
+    #[test]
+    fn unrestricted_drops_claude_allow_list_for_bypass_mode() {
+        // Claude exposes no shell wildcard short of bypassPermissions.
+        assert_eq!(PermissionProfile::Unrestricted.claude_allowed_tools(), None);
+        assert_eq!(
+            PermissionProfile::Unrestricted.claude_permission_mode(),
+            "bypassPermissions"
+        );
     }
 }
