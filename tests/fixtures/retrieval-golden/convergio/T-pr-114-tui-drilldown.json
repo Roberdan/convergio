@@ -12,8 +12,8 @@
     "crates/convergio-tui/src/panes/detail.rs"
   ],
   "rationale": "Mode model + state hold the drill stack; keymap binds the keys; render dispatches; detail pane is the new view; plan_counts owns the status sort.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-02",
   "schema_version": 1
 }

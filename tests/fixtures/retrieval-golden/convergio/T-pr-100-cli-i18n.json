@@ -1,7 +1,7 @@
 {
   "task_id": "T-pr-100-cli-i18n",
   "repo": "convergio",
-  "title": "harden cvg update i18n — coverage test and missing keys",
+  "title": "harden cvg update i18n \u2014 coverage test and missing keys",
   "task_body": "cvg update was emitting raw English in places that should localise. Add a coverage test that asserts every visible string flows through the Fluent bundle, fix the missing keys in en/it, and route update_run through the bundle.",
   "expected_files": [
     "crates/convergio-cli/src/commands/update_run.rs",
@@ -11,8 +11,8 @@
     "crates/convergio-i18n/tests/coverage.rs"
   ],
   "rationale": "update_run is the offender; the cli_update test validates strings; en/it Fluent bundles gain the missing keys; the i18n coverage test enforces the rule.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-04-30",
   "schema_version": 1
 }

@@ -9,9 +9,9 @@
     "AGENTS.md",
     "README.md"
   ],
-  "rationale": "New ADR plus the index; AGENTS.md and README.md absorb the cleanup.",
-  "curator": "auto-pr-derived",
-  "curated_at": "2026-05-04",
+  "rationale": "Historically-failed retrieval case: coherence sweeps touch multiple verifiers; task wording is broad while file names are specific (routes/adrs/agents). New ADR plus the index; AGENTS.md and README.md absorb the cleanup.",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-03",
   "schema_version": 1
 }
