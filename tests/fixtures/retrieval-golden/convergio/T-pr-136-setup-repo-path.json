@@ -8,9 +8,9 @@
     "crates/convergio-cli/src/commands/setup_repo_path.rs",
     "crates/convergio-cli/tests/cli_smoke.rs"
   ],
-  "rationale": "Setup logic + the test that proves the backfill path.",
-  "curator": "auto-pr-derived",
-  "curated_at": "2026-05-04",
+  "rationale": "Historically-failed retrieval case: setup/paths issues involve platform-specific resolution code and env var handling that doesn't match the user-facing wording. Setup logic + the test that proves the backfill path.",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-03",
   "schema_version": 1
 }

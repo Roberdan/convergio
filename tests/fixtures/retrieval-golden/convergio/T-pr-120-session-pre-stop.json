@@ -4,15 +4,16 @@
   "title": "real worktree + friction-log checks for cvg session pre-stop",
   "task_body": "cvg session pre-stop should refuse to end a session that left worktrees without an open PR or friction-log entries pointing at unfinished work. Add real checks behind a session_checks module so each gate stands alone.",
   "expected_files": [
-    "crates/convergio-cli/src/commands/session_pre_stop.rs",
-    "crates/convergio-cli/src/commands/session_checks/mod.rs",
-    "crates/convergio-cli/src/commands/session_checks/friction_missing.rs",
-    "crates/convergio-cli/src/commands/session_checks/worktree_no_pr.rs",
-    "crates/convergio-cli/src/commands/mod.rs"
+    "crates/convergio-cli-session/src/pre_stop.rs",
+    "crates/convergio-cli-session/src/pre_stop_run.rs",
+    "crates/convergio-cli-session/src/checks/mod.rs",
+    "crates/convergio-cli-session/src/checks/friction_missing.rs",
+    "crates/convergio-cli-session/src/checks/worktree_no_pr.rs",
+    "crates/convergio-cli-session/src/session.rs"
   ],
-  "rationale": "session_pre_stop drives the checks; the per-check helpers live in their own module; the parent commands/mod.rs registers the new subtree.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "rationale": "Historically-failed retrieval case: \"pre-stop\" is CLI jargon; the implementation lives in the extracted convergio-cli-session crate. pre_stop + pre_stop_run orchestrate; checks/* holds per-check logic; session.rs wires the subcommand.",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-02",
   "schema_version": 1
 }

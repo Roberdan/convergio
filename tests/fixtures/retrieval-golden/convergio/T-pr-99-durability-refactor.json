@@ -14,8 +14,8 @@
     "crates/convergio-durability/src/store/workspace_merge_rows.rs"
   ],
   "rationale": "Pure refactor: every file in store/ that landed in the diff is one slice of the split.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-04-30",
   "schema_version": 1
 }

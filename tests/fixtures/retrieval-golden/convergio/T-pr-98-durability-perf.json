@@ -1,7 +1,7 @@
 {
   "task_id": "T-pr-98-durability-perf",
   "repo": "convergio",
-  "title": "reaper performance — index task lookups for the 60s tick",
+  "title": "reaper performance \u2014 index task lookups for the 60s tick",
   "task_body": "The reaper loop scans tasks every 60 seconds. With a few thousand tasks the table scan dominated. Add an index migration on the columns the reaper filters by, and add a regression test that times the reaper sweep.",
   "expected_files": [
     "crates/convergio-durability/migrations/0008_task_reaper_indexes.sql",
@@ -9,8 +9,8 @@
     "crates/convergio-durability/tests/reaper.rs"
   ],
   "rationale": "Migration adds the indexes; reaper.rs's query may be tweaked to hit them; the test asserts the new perf shape.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-04-29",
   "schema_version": 1
 }

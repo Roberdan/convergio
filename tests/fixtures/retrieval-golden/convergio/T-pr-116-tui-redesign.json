@@ -1,7 +1,7 @@
 {
   "task_id": "T-pr-116-tui-redesign",
   "repo": "convergio",
-  "title": "TUI redesign — accessible palette + scoped master/detail filtering",
+  "title": "TUI redesign \u2014 accessible palette + scoped master/detail filtering",
   "task_body": "Rebuild the TUI dashboard around a master/detail layout with a scope picker (plans / agents / tasks / PRs) and a colour palette that survives mono / no-color. Each pane gets its own renderer; the theme module owns the palette.",
   "expected_files": [
     "crates/convergio-tui/src/lib.rs",
@@ -15,8 +15,8 @@
     "crates/convergio-tui/src/panes/tasks.rs"
   ],
   "rationale": "lib.rs ties the new shape together; render.rs draws; scope.rs is the picker; theme.rs centralises colour; one pane file per kind.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-02",
   "schema_version": 1
 }

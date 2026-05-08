@@ -8,8 +8,8 @@
     "crates/convergio-cli/src/commands/agent_spawn.rs"
   ],
   "rationale": "The runner does the streaming; the CLI command consumes it.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-03",
   "schema_version": 1
 }
