@@ -1,19 +1,19 @@
 ---
 id: 0038
-status: proposed
+status: accepted
 date: 2026-05-03
 topics: [layer-1, retrieval, graph, context, fleet, multi-repo, semantic, embeddings]
 related_adrs: [0003, 0004, 0014, 0015, 0029, 0030, 0034]
 touches_crates: [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api]
 introduces_crates: [convergio-fleet, convergio-parse-multi, convergio-embed]
-last_validated: 2026-05-03
+last_validated: 2026-05-08
 implemented_in: []
 authors: [Roberto D'Angelo]
 ---
 
 # 0038. Fleet retrieval & cross-repo graph (semantic + multi-language)
 
-- Status: **proposed** (RFC, awaiting validation via F1 prototype)
+- Status: **accepted** (F1 go/no-go: GO; see § 14 / § 15.7.2)
 - Date: 2026-05-03
 - Deciders: Roberto D'Angelo, Convergio core
 - Tags: layer-1, retrieval, graph, fleet, multi-repo, semantic
