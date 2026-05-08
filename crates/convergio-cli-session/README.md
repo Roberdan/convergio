@@ -5,7 +5,7 @@ Session lifecycle commands for Convergio — the `cvg session` suite
 embeddable from skills, runners, and future MCP bridges without
 shelling out to `cvg`.
 
-Two subcommands ship today:
+Primary subcommands:
 
 - `cvg session resume` — cold-start brief: daemon health, audit
   chain, active plan, next-priority pending tasks, open PRs, and
@@ -13,6 +13,13 @@ Two subcommands ship today:
 - `cvg session pre-stop` — end-of-session safety net (PRD-001 §
   Artefact 4): walks a registry of cheap checks and refuses to
   detach when one finds something unless `--force` is passed.
+
+Hook wiring subcommands (host SessionStart / PreToolUse):
+
+- `cvg session register-and-poll` — register + heartbeat + poll inbox
+  on every active plan.
+- `cvg session heartbeat-since-last-turn` — best-effort, throttled
+  heartbeat for “still alive” telemetry.
 
 Render the API:
 

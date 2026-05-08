@@ -5,7 +5,8 @@ For repo-wide rules see [../../AGENTS.md](../../AGENTS.md).
 ## Responsibility
 
 Session lifecycle commands for Convergio — the `cvg session` suite.
-Two subcommands ship today:
+
+Primary subcommands:
 
 - `session::SessionCommand::Resume` — print a cold-start brief
   (daemon health, audit chain, active plan, top pending tasks, open
@@ -13,6 +14,13 @@ Two subcommands ship today:
 - `session::SessionCommand::PreStop` — end-of-session safety net
   (PRD-001 § Artefact 4): walks a registry of pre-detach checks and
   refuses to detach when findings are present unless `--force`.
+
+Hook wiring subcommands (host SessionStart / PreToolUse):
+
+- `session::SessionCommand::RegisterAndPoll` — register + heartbeat +
+  poll each active plan inbox.
+- `session::SessionCommand::HeartbeatSinceLastTurn` — best-effort,
+  throttled heartbeat for “still alive” telemetry.
 
 Public entry points: [`run`] and [`SessionCommand`].
 
