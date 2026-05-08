@@ -7,8 +7,9 @@ For methodology behind the recall gate see
 [../../docs/spec/fleet-retrieval-golden-methodology.md](../../docs/spec/fleet-retrieval-golden-methodology.md).
 
 This crate owns embeddings persistence + the [`Embedder`] trait. It
-does **not** bundle a model — F1-α ships only a deterministic test
-embedder. The real `fastembed-rs`-backed model arrives in F1-β.
+does **not** bundle a model by default — the `fastembed` feature adds
+real `fastembed-rs`-backed embedders that download into
+`~/.convergio/v3/models/` on first use.
 
 ## Invariants
 

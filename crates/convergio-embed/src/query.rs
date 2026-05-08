@@ -25,7 +25,12 @@ pub async fn semantic_search(
     if query.trim().is_empty() || limit == 0 {
         return Ok(Vec::new());
     }
+
+    // FR-3.9 graceful degradation is implemented by the daemon
+    // orchestrator: when the embedder fails (model unavailable, OOM),
+    // callers should fall back to structural-only retrieval.
     let q = embedder.embed(query).map_err(map_embedder_error)?;
+
     store
         .nearest_brute_force(&q, embedder.model_id(), limit)
         .await
@@ -39,6 +44,7 @@ fn map_embedder_error(e: EmbedderError) -> EmbedError {
 mod tests {
     use super::*;
     use crate::embedder::testing::DeterministicTestEmbedder;
+    use crate::embedder::EmbedderError;
     use crate::ingest::{ingest, IngestNode};
     use convergio_db::Pool;
     use tempfile::tempdir;
@@ -103,5 +109,32 @@ mod tests {
         assert_eq!(hits.len(), 3);
         assert_eq!(hits[0].node_id, "n-gamma");
         assert!((hits[0].score - 1.0).abs() < 1e-5);
+    }
+
+    struct FailingEmbedder;
+
+    impl Embedder for FailingEmbedder {
+        fn dim(&self) -> usize {
+            384
+        }
+
+        fn model_id(&self) -> &str {
+            "failing-embedder"
+        }
+
+        fn embed(&self, _text: &str) -> Result<Vec<f32>, EmbedderError> {
+            Err(EmbedderError::ModelLoad("download failed".into()))
+        }
+    }
+
+    #[tokio::test]
+    async fn embedder_failure_surfaces_as_embedder_failed() {
+        let (pool, _dir) = boot().await;
+        let store = EmbedStore::new(pool);
+        let e = FailingEmbedder;
+        let err = semantic_search(&store, &e, "query", 10)
+            .await
+            .expect_err("expected semantic_search to surface embedder failure");
+        assert!(matches!(err, EmbedError::EmbedderFailed(_)));
     }
 }

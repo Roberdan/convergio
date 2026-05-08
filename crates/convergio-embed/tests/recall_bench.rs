@@ -155,9 +155,17 @@ async fn recall_bench_substring_vs_hybrid() {
         substring_ms_total += s.elapsed().as_millis();
 
         let s = std::time::Instant::now();
-        let semantic = semantic_search(&store, embedder.as_ref(), &query, 25)
-            .await
-            .expect("semantic_search");
+        let semantic = match semantic_search(&store, embedder.as_ref(), &query, 25).await {
+            Ok(v) => v,
+            Err(convergio_embed::EmbedError::EmbedderFailed(msg)) => {
+                eprintln!(
+                    "warning: semantic degraded to structural-only (model={}) : {msg}",
+                    embedder.model_id()
+                );
+                Vec::new()
+            }
+            Err(e) => panic!("semantic_search failed: {e}"),
+        };
         semantic_ms_total += s.elapsed().as_millis();
         let semantic_ids: Vec<String> = semantic.iter().map(|n| n.node_id.clone()).collect();
 
@@ -193,6 +201,20 @@ fn make_embedder() -> Box<dyn Embedder> {
     match model.as_str() {
         #[cfg(feature = "fastembed")]
         "multilingual-e5-small" => {
+            let cache =
+                std::path::PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| ".".into()))
+                    .join(".convergio/v3/models");
+            Box::new(convergio_embed::MultilingualE5Embedder::new(cache))
+        }
+        #[cfg(feature = "fastembed")]
+        "bge-m3" => {
+            let cache =
+                std::path::PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| ".".into()))
+                    .join(".convergio/v3/models");
+            Box::new(convergio_embed::BgeM3Embedder::new(cache))
+        }
+        #[cfg(feature = "fastembed")]
+        "bge-m3-small" | "bge-m3-small-int8" => {
             let cache =
                 std::path::PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| ".".into()))
                     .join(".convergio/v3/models");
