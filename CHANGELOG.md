@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.18](https://github.com/Roberdan/convergio/compare/convergio-v0.3.17...convergio-v0.3.18) (2026-05-08)
+
+
+### Features
+
+* **embed:** embeddings migration + vec0 bootstrap ([4fe8c2c](https://github.com/Roberdan/convergio/commit/4fe8c2cd513b1bf3f7e6561e6f6e9832e4a49052))
+
 ## [0.3.17](https://github.com/Roberdan/convergio/compare/convergio-v0.3.16...convergio-v0.3.17) (2026-05-08)
 
 
