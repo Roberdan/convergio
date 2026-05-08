@@ -2,7 +2,6 @@
 
 use convergio_api::{Action, ActionCatalog, HelpRequest, HelpTopic, SCHEMA_VERSION};
 use serde_json::{json, Value};
-
 pub(crate) fn response(request: &HelpRequest) -> Value {
     match request.topic {
         HelpTopic::Quickstart => json!({
@@ -39,7 +38,8 @@ pub(crate) fn response(request: &HelpRequest) -> Value {
             "next": "fix_add_evidence_retry_submit",
         }),
         HelpTopic::Setup => json!({
-            "install": "scripts/install-local.sh",
+            "install": "scripts/install.sh",
+            "install_from_source": "scripts/install-local.sh",
             "setup": "cvg setup",
             "start": "convergio start",
             "doctor": "cvg doctor --json",

@@ -6,7 +6,7 @@ repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo_dir"
 
 identity="${APPLE_SIGNING_IDENTITY:-}"
-artifact_dir="${1:-dist/convergio-darwin-arm64}"
+artifact_dir="${1:-dist/convergio-macos-arm64}"
 
 if [ -z "$identity" ]; then
   identity=$(security find-identity -v -p codesigning \

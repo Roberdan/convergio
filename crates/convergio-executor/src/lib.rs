@@ -49,7 +49,11 @@
 mod defaults;
 mod error;
 mod executor;
+mod heartbeat;
+mod run_loop;
+pub mod worktree;
 
 pub use defaults::{RunnerDefaults, SpawnTemplate};
 pub use error::{ExecutorError, Result};
-pub use executor::{spawn_loop, Executor, ExecutorHandle};
+pub use executor::Executor;
+pub use run_loop::{spawn_loop, ExecutorHandle};

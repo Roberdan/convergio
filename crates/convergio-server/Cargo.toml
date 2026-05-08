@@ -33,6 +33,7 @@ convergio-lifecycle = { workspace = true }
 convergio-planner = { workspace = true }
 convergio-thor = { workspace = true }
 convergio-executor = { workspace = true }
+convergio-runner = { workspace = true }
 convergio-graph = { workspace = true }
 convergio-embed = { workspace = true }
 convergio-fleet = { workspace = true }

@@ -175,10 +175,50 @@ for the gaps the next release will close.
 
 ## Quickstart
 
-```bash
-sh scripts/install-local.sh
-cvg setup
+### Install (recommended)
 
+Prebuilt binaries (supported today: macOS arm64, Linux x86_64):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Roberdan/convergio/main/scripts/install.sh | sh
+```
+
+The installer verifies the downloaded release tarball against the release
+`SHA256SUMS` file and installs binaries into `~/.local/bin` by default.
+Override with `--dir <path>` or `CONVERGIO_INSTALL_DIR=/some/bin`.
+
+Install a specific release tag:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Roberdan/convergio/main/scripts/install.sh | sh -s -- --tag <tag>
+```
+
+See installer options:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Roberdan/convergio/main/scripts/install.sh | sh -s -- --help
+```
+
+If you prefer not piping to `sh`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Roberdan/convergio/main/scripts/install.sh \
+  -o /tmp/convergio-install.sh
+sh /tmp/convergio-install.sh
+```
+
+From source (requires Rust):
+
+```bash
+git clone https://github.com/Roberdan/convergio
+cd convergio
+sh scripts/install-local.sh
+```
+
+### Run
+
+```bash
+cvg setup
 convergio start
 ```
 
@@ -208,9 +248,11 @@ Agent hosts that support MCP should connect the stdio command
 `convergio-mcp`; it exposes only `convergio.help` and `convergio.act`.
 See `docs/agents/README.md` for host-specific setup snippets.
 
-Release artifacts can be built locally with `scripts/package-local.sh`
-and signed/notarized on macOS with `scripts/sign-macos-local.sh`; see
-`docs/release.md`.
+More:
+
+- `docs/setup.md` — install + local setup
+- `docs/troubleshooting.md` — common pitfalls
+- `docs/demo.md` — demo recording + replay
 
 Defaults:
 
@@ -228,7 +270,7 @@ convergio start --db sqlite:///tmp/convergio.db?mode=rwc
 ## Manual local loop
 
 ```bash
-cvg plan create "ship one clean task" --project convergio-local
+cvg plan create "ship one clean task" --project demo
 cvg status
 cvg task list <plan_id>
 cvg task transition <task_id> in-progress --agent-id local-agent
@@ -372,6 +414,9 @@ E2E workflows.
 
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - layers, API and request lifecycle
 - [CONSTITUTION.md](./CONSTITUTION.md) - non-negotiable rules
+- [docs/setup.md](./docs/setup.md) - install + local setup
+- [docs/troubleshooting.md](./docs/troubleshooting.md) - common pitfalls
+- [docs/demo.md](./docs/demo.md) - demo recording + replay
 - [docs/vision.md](./docs/vision.md) - product vision and positioning
 - [docs/multi-agent-operating-model.md](./docs/multi-agent-operating-model.md) - how multiple agents coordinate through one daemon
 - [ROADMAP.md](./ROADMAP.md) - focused local-first roadmap

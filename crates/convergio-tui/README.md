@@ -80,15 +80,22 @@ Read [`AGENTS.md`](./AGENTS.md) before editing.
 
 `convergio-tui` is a library crate consumed by `convergio-cli`. It
 ships inside the `cvg` binary — there is no separate `cvg-dash`
-executable. Install via:
+executable.
+
+Install (recommended, prebuilt):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Roberdan/convergio/main/scripts/install.sh | sh
+```
+
+Or build from source (from the repo root):
 
 ```bash
 sh scripts/install-local.sh
 ```
 
-The same script that installs `convergio` (daemon), `cvg` (client),
-and `convergio-mcp` (MCP bridge) also installs the TUI as part of
-`cvg`.
+Both install `convergio` (daemon), `cvg` (client), and `convergio-mcp`
+(MCP bridge). The TUI ships inside `cvg`.
 
 ## Status
 

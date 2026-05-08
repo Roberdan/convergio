@@ -93,7 +93,7 @@ pub async fn tick(supervisor: &Supervisor) -> Result<usize> {
 /// `kill -0 <pid>`. Returns true if the process exists (or we lack
 /// permission to signal it, which still implies it exists).
 #[cfg(unix)]
-fn is_alive(pid: i64) -> bool {
+pub fn is_alive(pid: i64) -> bool {
     use nix::errno::Errno;
     use nix::sys::signal::kill;
     use nix::unistd::Pid;
@@ -111,10 +111,10 @@ fn is_alive(pid: i64) -> bool {
     }
 }
 
+/// Non-unix fallback. Windows path: not in MVP scope. Returns true so
+/// we don't accidentally flip everything to exited on Windows.
 #[cfg(not(unix))]
-fn is_alive(_pid: i64) -> bool {
-    // Windows path: not in MVP scope. Fall back to "still running" so
-    // we don't accidentally flip everything to exited on Windows.
+pub fn is_alive(_pid: i64) -> bool {
     true
 }
 

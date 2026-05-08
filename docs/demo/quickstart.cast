@@ -1,0 +1,5 @@
+{"version":3,"term":{"cols":120,"rows":80,"type":"xterm-color"},"timestamp":1778219403,"command":"cvg demo","env":{"SHELL":"/bin/zsh"}}
+[0.145, "o", "Convergio local demo\r\n1. Creating a task that should be refused by the gates...\r\n"]
+[0.186, "o", "Gate refused dirty task as expected: HTTP 409 Conflict: {\"error\":{\"code\":\"gate_refused\",\"message\":\"no_debt: debt markers found in evidence: code#todo_marker\"}}\r\n2. Creating a clean plan that should validate...\r\n"]
+[10.701, "o", "Clean plan id: 67d96f3c-8d7f-4b6a-9ffc-6350ae6eff45\r\nClean task id: a724a883-cdbe-4bc5-a78f-597f8bbfbe2c\r\nThor verdict:\r\n{\r\n  \"verdict\": \"pass\"\r\n}\r\nAudit verification:\r\n{\r\n  \"broken_at\": null,\r\n  \"checked\": 42099,\r\n  \"ok\": true\r\n}\r\n"]
+[0.011, "x", "0"]

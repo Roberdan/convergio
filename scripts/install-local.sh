@@ -5,25 +5,37 @@ export LC_ALL=C   # locale-stable sort/awk/grep across macOS / Linux CI (T1.19 /
 repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo_dir"
 
-cargo install --force --path crates/convergio-server
-cargo install --force --path crates/convergio-cli
-cargo install --force --path crates/convergio-mcp
+fail() {
+  echo "error: $*" >&2
+  exit 1
+}
 
-sync_shadowed_binary() {
+need() {
+  command -v "$1" >/dev/null 2>&1 || fail "missing required command: $1"
+}
+
+need cargo
+need git
+
+cargo install --force --locked --path crates/convergio-server
+cargo install --force --locked --path crates/convergio-cli
+cargo install --force --locked --path crates/convergio-mcp
+
+warn_shadowed() {
   name="$1"
-  cargo_bin="$HOME/.cargo/bin/$name"
-  first_bin=$(command -v "$name" 2>/dev/null || true)
-  if [ -n "$first_bin" ] && [ "$first_bin" != "$cargo_bin" ] && [ -w "$(dirname "$first_bin")" ]; then
-    cp "$first_bin" "$first_bin.bak"
-    tmp="$first_bin.tmp.$$"
-    cp "$cargo_bin" "$tmp"
-    mv "$tmp" "$first_bin"
+  expected="$HOME/.cargo/bin/$name"
+  actual_path=$(command -v "$name" 2>/dev/null || true)
+  if [ -n "$actual_path" ] && [ "$actual_path" != "$expected" ]; then
+    cat >&2 <<WARN
+WARN: '$name' on PATH is '$actual_path', but Cargo installed '$expected'.
+      Fix by putting '$HOME/.cargo/bin' earlier in PATH.
+WARN
   fi
 }
 
-sync_shadowed_binary convergio
-sync_shadowed_binary cvg
-sync_shadowed_binary convergio-mcp
+warn_shadowed convergio
+warn_shadowed cvg
+warn_shadowed convergio-mcp
 
 # Install Git hooks so the file-size guard, fmt/clippy gates, and
 # commitlint run on every commit. Without this every fresh clone
@@ -56,6 +68,19 @@ WARN: lefthook not on PATH — Git hooks NOT installed.
 
 HINT
 fi
+
+case ":$PATH:" in
+  *":$HOME/.cargo/bin:"*) ;;
+  *)
+    cat <<'PATHHINT' >&2
+
+WARN: ~/.cargo/bin is not on PATH — shells won't find `cvg` / `convergio`.
+      Add this to your shell config (bash/zsh):
+        export PATH="$HOME/.cargo/bin:$PATH"
+
+PATHHINT
+    ;;
+esac
 
 cat <<'MSG'
 

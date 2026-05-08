@@ -16,7 +16,8 @@ use convergio_executor::{
 };
 use convergio_lifecycle::watcher::{self, WatcherConfig};
 use convergio_lifecycle::Supervisor;
-use convergio_server::{router, AppState};
+use convergio_runner::RunnerRegistry;
+use convergio_server::{resolve_repo_path, router, AppState};
 use std::io::{self, IsTerminal};
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -125,14 +126,35 @@ async fn start(
         runner_profile = ?runner_defaults.profile,
         "executor runner defaults"
     );
-    let executor = Arc::new(
-        Executor::new(
-            (*durability).clone(),
-            (*supervisor).clone(),
-            SpawnTemplate::default(),
-        )
-        .with_defaults(runner_defaults),
-    );
+
+    let registry = RunnerRegistry::load_default().unwrap_or_else(|e| {
+        tracing::warn!(error = %e, "failed to load runner registry; custom vendors disabled");
+        RunnerRegistry::empty()
+    });
+
+    let repo_path = resolve_repo_path();
+    if let Some(p) = &repo_path {
+        tracing::info!(repo_path = %p.display(), "resolved repo path for worktrees");
+    } else {
+        tracing::warn!(
+            "repo path unresolved; tasks that require runner-based dispatch may be refused"
+        );
+    }
+
+    let mut exec = Executor::new(
+        (*durability).clone(),
+        (*supervisor).clone(),
+        SpawnTemplate::default(),
+    )
+    .with_defaults(runner_defaults)
+    .with_graph((*graph).clone())
+    .with_registry(registry);
+
+    if let Some(p) = repo_path {
+        exec = exec.with_repo_path(p);
+    }
+
+    let executor = Arc::new(exec);
     let executor_tick = Duration::seconds(parse_env_i64("CONVERGIO_EXECUTOR_TICK_SECS", 30));
     let _executor_loop = executor_spawn_loop(executor, executor_tick);
 

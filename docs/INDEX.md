@@ -24,7 +24,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 158 |
-| `README.md` | entry | - | - | 383 |
+| `README.md` | entry | - | - | 428 |
 | `ROADMAP.md` | roadmap | - | - | 479 |
 | `SECURITY.md` | governance | - | - | 57 |
 | `STATUS.md` | - | - | - | 40 |
@@ -71,7 +71,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 22 |
 | `crates/convergio-tui/AGENTS.md` | crate-rules | - | - | 113 |
-| `crates/convergio-tui/README.md` | crate-readme | - | - | 98 |
+| `crates/convergio-tui/README.md` | crate-readme | - | - | 105 |
 | `docs/AGENTS.md` | - | - | - | 63 |
 | `docs/INDEX.md` | - | - | - | - |
 | `docs/adr/0000-template.md` | adr | [] | proposed \| accepted \| deprecated \| superseded by [NNNN](NNNN-title.md) | 55 |
@@ -126,6 +126,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
 | `docs/agents/README.md` | agent-docs | - | - | 101 |
+| `docs/demo.md` | demo | - | - | 58 |
 | `docs/multi-agent-operating-model.md` | - | - | - | 485 |
 | `docs/plans/2026-05-01-triage-pass.md` | plan | - | - | 75 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
@@ -136,19 +137,20 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
 | `docs/plans/v0.2-friction-log.md` | plan | - | - | 188 |
 | `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
-| `docs/release.md` | - | - | - | 106 |
+| `docs/release.md` | release | - | living | 77 |
 | `docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |
 | `docs/reviews/PRD-001-pre-PR-review-v1.md` | - | - | - | 114 |
-| `docs/setup.md` | - | - | - | 102 |
+| `docs/setup.md` | setup | - | - | 151 |
 | `docs/spec/README.md` | spec | - | - | 10 |
 | `docs/spec/f2-13-measurement.md` | spec | - | - | 89 |
 | `docs/spec/fleet-retrieval-cross-repo-graph.md` | spec | - | - | 697 |
 | `docs/spec/fleet-retrieval-golden-methodology.md` | spec | - | - | 264 |
 | `docs/spec/v3-durability-layer.md` | spec | - | - | 145 |
 | `docs/templates/adversarial-challenge.md` | - | - | - | 139 |
+| `docs/troubleshooting.md` | troubleshooting | - | - | 152 |
 | `docs/vision.md` | - | - | - | 426 |
 | `docs/wip-commit-template.md` | - | - | - | 98 |
-| `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
+| `examples/claude-skill-quickstart/README.md` | example | - | - | 143 |
 | `examples/skills/cvg-attach-cursor/README.md` | example | - | - | 57 |
 | `examples/skills/cvg-attach-cursor/rules.md` | - | - | - | 92 |
 | `examples/skills/cvg-attach/README.md` | example | - | - | 158 |

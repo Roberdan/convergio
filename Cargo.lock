@@ -952,6 +952,7 @@ dependencies = [
  "convergio-i18n",
  "convergio-lifecycle",
  "convergio-planner",
+ "convergio-runner",
  "convergio-thor",
  "ed25519-dalek",
  "flate2",

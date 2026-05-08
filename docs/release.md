@@ -1,96 +1,71 @@
-# Release, signing, and notarization
+---
+topic: release
+status: living
+---
 
-This repo can produce local release artifacts without requiring a hosted
-service. macOS signing and notarization use Apple credentials from the
-developer's machine or CI secrets; credentials must never be committed.
+# Release artifacts
 
-## Current local macOS state
-
-On this development Mac, the one-time notarization setup has already
-been completed:
-
-| Item | Value |
-|------|-------|
-| Team ID | `93T3LG4NPG` |
-| Signing identity | `Developer ID Application: Fight The Stroke Foundation (93T3LG4NPG)` |
-| notarytool profile | `convergio-notary` |
-| Last accepted submission | `b18cbba7-ce78-4a45-a8fa-278746070145` |
-| Last notarized artifact | `dist/convergio-darwin-arm64-signed.zip` |
-| Last artifact SHA-256 | `ea578f808e35918178477e94e894fa78c580d2e2de8e2adbd0dd64038425e79b` |
-| Public repository | `https://github.com/Roberdan/convergio-local` |
-| Public release | `https://github.com/Roberdan/convergio-local/releases/tag/v0.1.0` |
-
-The temporary Desktop setup helper can be deleted after the profile is
-created because `notarytool` stores the credential in the macOS Keychain.
-
-## Normal local release flow
-
-After code changes, build, package, sign, and notarize with:
-
-```bash
-sh scripts/package-local.sh
-APPLE_NOTARY_PROFILE=convergio-notary sh scripts/sign-macos-local.sh
-```
-
-This produces:
-
-| File | Purpose |
-|------|---------|
-| `dist/convergio-darwin-arm64.tar.gz` | unsigned local tarball |
-| `dist/convergio-darwin-arm64-signed.zip` | signed and notarized macOS zip |
-| `dist/convergio-darwin-arm64-signed.zip.sha256` | checksum |
-
-Verify the result:
-
-```bash
-for bin in dist/convergio-darwin-arm64/bin/convergio \
-  dist/convergio-darwin-arm64/bin/cvg \
-  dist/convergio-darwin-arm64/bin/convergio-mcp; do
-  codesign --verify --strict --verbose=2 "$bin"
-done
-
-xcrun notarytool log <submission-id> --keychain-profile convergio-notary
-```
-
-## One-time notarization setup
-
-Only repeat this if the Keychain profile is missing, expired, or created
-for the wrong Apple ID:
-
-```bash
-xcrun notarytool store-credentials convergio-notary \
-  --apple-id "<apple-id-in-team>" \
-  --team-id "93T3LG4NPG"
-```
-
-Use an Apple **app-specific password**, not the normal iCloud password
-and not a 2FA code. The Apple ID must belong to the developer team.
+Convergio publishes prebuilt local binaries as GitHub Release assets. These are meant for **single-user local** installs.
 
 ## CI release workflow
 
-`.github/workflows/release.yml` runs fmt, clippy, tests, `cargo deny`,
-and `cargo audit` before building unsigned Linux and macOS tarballs on
-release tags. Each release artifact is paired with an SPDX JSON SBOM,
-SHA-256 checksums, and a GitHub build-provenance attestation created with
-OIDC. These checks do not require repository secrets.
+On release tags, `.github/workflows/release.yml` runs policy checks and then builds release artifacts for:
 
-To notarize in CI later, add GitHub secrets for either:
+- `linux-x86_64`
+- `macos-arm64`
 
-| Secret | Meaning |
-|--------|---------|
-| `APPLE_API_KEY_PATH` or `.p8` content secret | App Store Connect API key |
-| `APPLE_API_KEY_ID` | API key ID |
-| `APPLE_API_ISSUER_ID` | issuer UUID |
-| `APPLE_SIGNING_CERTIFICATE_P12` | Developer ID Application certificate |
-| `APPLE_SIGNING_CERTIFICATE_PASSWORD` | certificate password |
+For each platform it uploads to the GitHub Release:
 
-Do not fake signing or notarization in CI. If credentials are absent,
-publish unsigned artifacts and label them as unsigned.
+- `convergio-<platform>.tar.gz`
+- `convergio-<platform>.spdx.json` (SBOM)
+- `convergio-<platform>.SHA256SUMS`
 
-## Local supply-chain checks
+It also emits GitHub build-provenance attestations.
 
-Local development does not require supply-chain tools unless you want to
-preflight CI. Optional commands:
+## Local packaging (same layout)
+
+To produce a local tarball with the same directory layout as CI:
+
+```bash
+sh scripts/package-local.sh
+```
+
+This writes:
+
+- `dist/convergio-<platform>.tar.gz`
+- `dist/convergio-<platform>.SHA256SUMS` (best-effort; CI publishes a fuller checksum set)
+
+## macOS signing and notarization (optional)
+
+macOS signing/notarization require real Apple credentials and must not be faked in the repo.
+
+On a Mac with a **Developer ID Application** certificate installed:
+
+```bash
+sh scripts/package-local.sh
+sh scripts/sign-macos-local.sh
+```
+
+To notarize, provide either a notarytool keychain profile:
+
+```bash
+APPLE_NOTARY_PROFILE=convergio-notary sh scripts/sign-macos-local.sh
+```
+
+or App Store Connect API key variables:
+
+```bash
+APPLE_API_KEY_PATH=/path/AuthKey_XXXX.p8 \
+APPLE_API_KEY_ID=XXXX \
+APPLE_API_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+sh scripts/sign-macos-local.sh
+```
+
+CI can be extended later to notarize by adding the corresponding GitHub secrets. If credentials are absent, publish **unsigned** artifacts and label them as such.
+
+## Local supply-chain checks (optional)
+
+Optional preflight for CI parity:
 
 ```bash
 cargo install cargo-deny --locked
@@ -99,8 +74,4 @@ cargo deny --locked check advisories bans licenses sources
 cargo audit
 ```
 
-`deny.toml` owns dependency source, license, ban, and RustSec advisory
-policy. `.cargo/audit.toml` makes `cargo audit` fail on vulnerabilities,
-unsound/unmaintained informational advisories, and yanked crates. SBOMs and
-GitHub provenance are release workflow outputs; they are not a substitute
-for future capability package signatures.
+`deny.toml` owns dependency source, license, ban, and RustSec advisory policy. `.cargo/audit.toml` configures failure policy for `cargo audit`.

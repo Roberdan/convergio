@@ -1,10 +1,56 @@
+---
+topic: setup
+---
+
 # Local setup
 
 Convergio v3 is a single-user local daemon. It needs no account, no
 Postgres, and no external service.
 
+## Install
+
+### Prebuilt binaries (recommended)
+
+Supported today: macOS arm64 and Linux x86_64.
+
 ```bash
+curl -fsSL https://raw.githubusercontent.com/Roberdan/convergio/main/scripts/install.sh | sh
+```
+
+By default this installs into `~/.local/bin`. Override with `--dir <path>` or
+`CONVERGIO_INSTALL_DIR=/path`.
+
+Install a specific release tag:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Roberdan/convergio/main/scripts/install.sh | sh -s -- --tag <tag>
+```
+
+See installer options:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Roberdan/convergio/main/scripts/install.sh | sh -s -- --help
+```
+
+If you prefer not piping to `sh`, download then run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Roberdan/convergio/main/scripts/install.sh \
+  -o /tmp/convergio-install.sh
+sh /tmp/convergio-install.sh
+```
+
+### From source (Rust)
+
+```bash
+git clone https://github.com/Roberdan/convergio
+cd convergio
 sh scripts/install-local.sh
+```
+
+## Run
+
+```bash
 cvg setup
 convergio start
 ```
@@ -13,8 +59,11 @@ In another terminal:
 
 ```bash
 cvg doctor
+cvg health
 cvg demo
 ```
+
+If you get stuck, see [troubleshooting.md](./troubleshooting.md).
 
 To install the daemon as a user-level service:
 

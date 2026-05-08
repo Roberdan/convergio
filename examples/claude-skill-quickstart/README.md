@@ -31,15 +31,27 @@ agent says "done" --> human believes   agent says "done" --> Convergio gates
 
 ## Prerequisites
 
-- A running Convergio daemon at `http://127.0.0.1:8420`. From the
-  repo root:
+- A running Convergio daemon at `http://127.0.0.1:8420`.
+
+  Install (recommended, prebuilt):
+
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/Roberdan/convergio/main/scripts/install.sh | sh
+  ```
+
+  Or build from source (from the repo root):
 
   ```bash
   sh scripts/install-local.sh
+  ```
+
+  Then run:
+
+  ```bash
   cvg setup
   cvg service install
   cvg service start
-  cvg health    # should print ok=true, service=convergio, version=0.1.x
+  cvg health
   ```
 
 - `jq` (for the demo scripts to read JSON). On macOS:

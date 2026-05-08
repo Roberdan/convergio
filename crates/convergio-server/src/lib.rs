@@ -11,8 +11,10 @@
 mod app;
 mod capability_install;
 mod error;
+mod repo_path;
 mod routes;
 mod sse;
 
 pub use app::{router, AppState};
 pub use error::ApiError;
+pub use repo_path::resolve_repo_path;

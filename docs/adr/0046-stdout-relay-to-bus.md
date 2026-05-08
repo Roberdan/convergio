@@ -8,7 +8,7 @@ touches_crates: [convergio-lifecycle, convergio-server]
 last_validated: 2026-05-05
 ---
 
-# ADR-0046 — Sub-agent stdout relay to the plan bus
+# 0046. Sub-agent stdout relay to the plan bus
 
 ## Status
 

@@ -107,7 +107,7 @@ the CLI's `CARGO_PKG_VERSION` does not match the daemon's
 `running_version`. Sample output:
 
 ```
-WARN: convergio CLI is v0.3.11 but daemon at http://127.0.0.1:8420 is running v0.3.10
+WARN: convergio CLI is vX.Y.Z but daemon at http://127.0.0.1:8420 is running vA.B.C
 WARN: run `cvg service restart` (or restart the daemon manually) to pick up the latest changes.
 WARN: suppress with CONVERGIO_NO_DRIFT_WARN=1
 ```

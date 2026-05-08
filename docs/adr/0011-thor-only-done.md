@@ -27,7 +27,7 @@ In v0.1.0 the durability layer accepted any `target` on
 could therefore execute, in order:
 
 ```
-cvg task transition <id> in_progress --agent-id rogue
+cvg task transition <id> in-progress --agent-id rogue
 # attach evidence the agent itself crafted
 cvg task transition <id> submitted   --agent-id rogue
 cvg task transition <id> done        --agent-id rogue

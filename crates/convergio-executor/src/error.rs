@@ -17,6 +17,13 @@ pub enum ExecutorError {
     /// `runner_kind` or missing vendor CLI).
     #[error(transparent)]
     Runner(#[from] convergio_runner::RunnerError),
+
+    /// Worktree preparation failed (`git worktree add` non-zero,
+    /// repo path missing, etc.). Fails the dispatch on purpose —
+    /// spawning into the operator's main checkout is the bug we
+    /// added this layer to prevent.
+    #[error("worktree: {0}")]
+    Worktree(String),
 }
 
 /// Convenience alias.
