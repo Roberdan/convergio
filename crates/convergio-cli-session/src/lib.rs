@@ -2,7 +2,9 @@
 //!
 //! This crate hosts the `cvg session` suite extracted from
 //! `convergio-cli` per ADR-0041 to honour the per-crate hard cap
-//! (CONSTITUTION § 13). The two subcommands are:
+//! (CONSTITUTION § 13).
+//!
+//! Primary subcommands:
 //!
 //! - [`session::SessionCommand::Resume`] — print a cold-start brief
 //!   (daemon health, audit chain, the active plan, top pending
@@ -11,6 +13,13 @@
 //!   net (PRD-001 § Artefact 4): walks a registry of cheap checks
 //!   and refuses to detach when findings are present unless
 //!   `--force` is supplied.
+//!
+//! Hook wiring subcommands (host SessionStart / PreToolUse):
+//!
+//! - [`session::SessionCommand::RegisterAndPoll`] — register +
+//!   heartbeat + poll inbox on every active plan.
+//! - [`session::SessionCommand::HeartbeatSinceLastTurn`] —
+//!   best-effort, throttled heartbeat.
 //!
 //! The verifiers and renderer are agent-callable from any binary
 //! that adds `convergio-cli-session` to its `Cargo.toml` — skills
