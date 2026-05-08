@@ -56,6 +56,12 @@ sqlx = { version = "0.8", default-features = false, features = [
     "uuid",
 ] }
 
+# sqlite-vec virtual table extension (ADR-0038, §5.2.3)
+# NOTE: crates.io tarball needs a small build define patch; see
+# `[patch.crates-io]` at the bottom of this file.
+sqlite-vec = "0.1.10-alpha.3"
+libsqlite3-sys = "0.30.1"
+
 # CLI
 clap = { version = "4", features = ["derive", "env"] }
 
@@ -101,8 +107,8 @@ walkdir = "2"
 ratatui = "0.29"
 crossterm = "0.28"
 
-# Tier-3 semantic embeddings (ADR-0038, F1-β)
-# Pulls in `ort` (ONNX Runtime) prebuilt binaries and `tokenizers`.
+# Tier-3 semantic embeddings (ADR-0038, F1)
+# `fastembed` pulls in `ort` (ONNX Runtime) prebuilt binaries + tokenizers.
 # Heavy dep — kept behind the `fastembed` feature on convergio-embed.
 fastembed = "5"
 
@@ -147,3 +153,6 @@ opt-level = 3
 lto = "thin"
 codegen-units = 1
 strip = "symbols"
+
+[patch.crates-io]
+sqlite-vec = { path = "vendor/sqlite-vec" }
