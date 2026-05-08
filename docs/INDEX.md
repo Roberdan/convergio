@@ -20,7 +20,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `.github/pull_request_template.md` | - | - | - | 64 |
 | `AGENTS.md` | agent-rules | - | - | 409 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
-| `CHANGELOG.md` | release | - | - | 955 |
+| `CHANGELOG.md` | release | - | - | 976 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 158 |
@@ -112,7 +112,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0035-runner-registry-toml.md` | adr | [convergio-runner, convergio-executor, convergio-cli] | accepted | 100 |
 | `docs/adr/0036-opus-backed-planner.md` | adr | [convergio-planner, convergio-server] | accepted | 101 |
 | `docs/adr/0037-brand-kit-and-claim.md` | adr | [convergio-brand, convergio-cli, convergio-tui, convergio-server, convergio-i18n] | accepted | 91 |
-| `docs/adr/0038-fleet-retrieval-cross-repo-graph.md` | adr | [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api] | proposed | 1158 |
+| `docs/adr/0038-fleet-retrieval-cross-repo-graph.md` | adr | [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api] | accepted | 1159 |
 | `docs/adr/0039-doc-coherence-sweep.md` | adr | [convergio-cli, convergio-coherence, convergio-server, convergio-durability, convergio-graph] | accepted | 259 |
 | `docs/adr/0040-split-coherence-into-its-own-crate.md` | adr | [convergio-cli, convergio-coherence] | accepted | 186 |
 | `docs/adr/0041-split-session-into-its-own-crate.md` | adr | [convergio-cli, convergio-cli-session] | accepted | 200 |
@@ -121,7 +121,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0044-plan-execution-contract.md` | adr | [convergio-cli, convergio-coherence] | accepted | 110 |
 | `docs/adr/0045-per-host-realtime-context-push.md` | adr | [convergio-cli-session] | accepted | 113 |
 | `docs/adr/0046-stdout-relay-to-bus.md` | adr | [convergio-lifecycle, convergio-server] | accepted | 77 |
-| `docs/adr/README.md` | adr | - | - | 67 |
+| `docs/adr/README.md` | adr | - | - | 21 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
