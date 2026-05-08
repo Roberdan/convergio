@@ -351,7 +351,7 @@ CREATE TABLE graph_node_embeddings (
     PRIMARY KEY (repo, node_id, model)
 );
 
--- sqlite-vec virtual table (loaded as extension)
+-- sqlite-vec virtual table (loaded as auto-extension)
 CREATE VIRTUAL TABLE graph_vec_index USING vec0(
     embedding float[384]
 );
