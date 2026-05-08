@@ -4,7 +4,7 @@
 use crate::audit::{append_tx, AuditLog, EntityKind};
 use crate::error::Result;
 use crate::gates::{self, Pipeline};
-use crate::model::{Evidence, NewPlan, NewTask, Plan, PlanStatus, Task, TaskStatus};
+use crate::model::{NewPlan, NewTask, Plan, PlanStatus, Task, TaskStatus};
 use crate::store::{
     CrdtStore, EvidenceStore, PlanPrLinksStore, PlanStore, TaskStore, WorkspaceStore,
 };
@@ -204,91 +204,5 @@ impl Durability {
         .await?;
         tx.commit().await?;
         Ok(task)
-    }
-
-    /// Attach evidence to a task and write the audit row.
-    pub async fn attach_evidence(
-        &self,
-        task_id: &str,
-        kind: &str,
-        payload: serde_json::Value,
-        exit_code: Option<i64>,
-    ) -> Result<Evidence> {
-        // Confirm task exists.
-        self.tasks().get(task_id).await?;
-        let evidence = Evidence {
-            id: Uuid::new_v4().to_string(),
-            task_id: task_id.to_string(),
-            kind: kind.to_string(),
-            payload,
-            exit_code,
-            created_at: Utc::now(),
-        };
-
-        let mut tx = self.pool.inner().begin().await?;
-        sqlx::query(
-            "INSERT INTO evidence (id, task_id, kind, payload, exit_code, created_at) \
-             VALUES (?, ?, ?, ?, ?, ?)",
-        )
-        .bind(&evidence.id)
-        .bind(&evidence.task_id)
-        .bind(&evidence.kind)
-        .bind(serde_json::to_string(&evidence.payload)?)
-        .bind(evidence.exit_code)
-        .bind(evidence.created_at.to_rfc3339())
-        .execute(&mut *tx)
-        .await?;
-        append_tx(
-            &mut tx,
-            EntityKind::Evidence,
-            &evidence.id,
-            "evidence.attached",
-            &json!({
-                "evidence_id": evidence.id,
-                "task_id": task_id,
-                "kind": kind,
-                "exit_code": exit_code,
-            }),
-            None,
-        )
-        .await?;
-        tx.commit().await?;
-        Ok(evidence)
-    }
-
-    /// Remove evidence by id and write the audit row. Returns the
-    /// row that was deleted so callers can echo it back. The audit
-    /// payload preserves enough context (`task_id`, `kind`) to make
-    /// the deletion forensically reconstructible.
-    pub async fn remove_evidence(&self, evidence_id: &str) -> Result<Evidence> {
-        let evidence = self.evidence().get(evidence_id).await?;
-
-        let mut tx = self.pool.inner().begin().await?;
-        let res = sqlx::query("DELETE FROM evidence WHERE id = ?")
-            .bind(&evidence.id)
-            .execute(&mut *tx)
-            .await?;
-        if res.rows_affected() == 0 {
-            return Err(crate::error::DurabilityError::NotFound {
-                entity: "evidence",
-                id: evidence_id.to_string(),
-            });
-        }
-        append_tx(
-            &mut tx,
-            EntityKind::Evidence,
-            &evidence.id,
-            "evidence.removed",
-            &json!({
-                "evidence_id": evidence.id,
-                "task_id": evidence.task_id,
-                "kind": evidence.kind,
-                "exit_code": evidence.exit_code,
-            }),
-            None,
-        )
-        .await?;
-        tx.commit().await?;
-        Ok(evidence)
     }
 }

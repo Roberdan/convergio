@@ -161,6 +161,8 @@ fn agent(bundle: &Bundle, host: AgentHost, force: bool) -> Result<()> {
         write_snippet(&skill_dir.join("SKILL.md"), claude_skill_md(), force)?;
         write_snippet(&skill_dir.join("cvg-attach.sh"), claude_skill_sh(), force)?;
         write_snippet(&dir.join("settings.json"), claude_settings_json(), force)?;
+
+        super::setup_claude_extras::write_opus_overnight_adapter(&home, force)?;
     }
 
     println!(
@@ -186,11 +188,18 @@ fn agent(bundle: &Bundle, host: AgentHost, force: bool) -> Result<()> {
     Ok(())
 }
 
-fn write_snippet(path: &std::path::Path, content: &str, force: bool) -> Result<()> {
+pub(super) fn write_snippet(path: &std::path::Path, content: &str, force: bool) -> Result<()> {
     if path.exists() && !force {
         return Ok(());
     }
-    fs::write(path, content).with_context(|| format!("write {}", path.display()))
+    fs::write(path, content).with_context(|| format!("write {}", path.display()))?;
+    #[cfg(unix)]
+    if path.extension().and_then(|s| s.to_str()) == Some("sh") {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(path, std::fs::Permissions::from_mode(0o755))
+            .with_context(|| format!("chmod +x {}", path.display()))?;
+    }
+    Ok(())
 }
 
 fn convergio_home() -> Result<PathBuf> {

@@ -11,6 +11,10 @@ use std::time::Duration;
 use tempfile::tempdir;
 
 async fn fresh_with(template: SpawnTemplate) -> (Executor, Durability, tempfile::TempDir) {
+    // Tests must be hermetic: the executor has an env var switch that
+    // forces runner-based spawn. CI/dev shells may set it.
+    std::env::remove_var("CONVERGIO_EXECUTOR_USE_RUNNER");
+
     let dir = tempdir().unwrap();
     let url = format!("sqlite://{}/state.db", dir.path().display());
     let pool = Pool::connect(&url).await.unwrap();

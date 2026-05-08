@@ -102,6 +102,41 @@ fn agent_lines(state: &AppState, id: &str) -> Vec<Line<'static>> {
             "last_heartbeat",
             a.last_heartbeat_at.as_deref().unwrap_or("—"),
         ));
+
+        if let Some(u) = a.metadata.get("usage").and_then(|v| v.as_object()) {
+            out.push(Line::raw(""));
+            out.push(section_heading("Usage"));
+            let calls = u
+                .get("calls")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(0)
+                .to_string();
+            let in_tok = u
+                .get("total_input_tokens")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(0)
+                .to_string();
+            let out_tok = u
+                .get("total_output_tokens")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(0)
+                .to_string();
+            let cost = u
+                .get("total_cost_usd")
+                .and_then(|v| v.as_f64())
+                .map(|c| format!("{c:.4}"))
+                .unwrap_or_else(|| "—".into());
+            let model = u
+                .get("last_model")
+                .and_then(|v| v.as_str())
+                .unwrap_or("—")
+                .to_string();
+            out.push(kv("calls", &calls));
+            out.push(kv("input_tokens", &in_tok));
+            out.push(kv("output_tokens", &out_tok));
+            out.push(kv("cost_usd", &cost));
+            out.push(kv("last_model", &model));
+        }
     }
     out.push(Line::raw(""));
     let owned: Vec<&TaskSummary> = state

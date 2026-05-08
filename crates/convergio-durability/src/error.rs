@@ -140,6 +140,13 @@ pub enum DurabilityError {
         reason: String,
     },
 
+    /// Evidence payload is invalid.
+    #[error("invalid evidence: {reason}")]
+    InvalidEvidence {
+        /// Validation failure reason.
+        reason: String,
+    },
+
     /// Agent registry input is invalid.
     #[error("invalid agent: {reason}")]
     InvalidAgent {

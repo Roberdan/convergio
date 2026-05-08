@@ -24,11 +24,7 @@ pub(crate) fn response(request: &HelpRequest) -> Value {
         }),
         HelpTopic::Actions => json!(ActionCatalog::current()),
         HelpTopic::Action => action_help(request.action),
-        HelpTopic::EvidenceSchema => json!({
-            "evidence_required": "each task lists required evidence kinds",
-            "payload": "JSON object; include concise command/output facts, not huge logs",
-            "exit_code": "0 for successful command evidence; omit when not applicable",
-        }),
+        HelpTopic::EvidenceSchema => crate::help_evidence::schema(),
         HelpTopic::GateRefusal => json!({
             "flow": [
                 "read code/message/data from gate_refused response",

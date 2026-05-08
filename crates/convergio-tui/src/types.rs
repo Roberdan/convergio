@@ -1,6 +1,7 @@
 //! Wire/data types rendered by the dashboard.
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 /// Plan summary, matching the daemon's `/v1/plans` response shape.
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
@@ -89,6 +90,9 @@ pub struct RegistryAgent {
     /// Optional current task id.
     #[serde(default)]
     pub current_task_id: Option<String>,
+    /// Free-form metadata.
+    #[serde(default)]
+    pub metadata: Value,
     /// Last heartbeat (RFC3339), if any.
     #[serde(default)]
     pub last_heartbeat_at: Option<String>,

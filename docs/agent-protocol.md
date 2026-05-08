@@ -71,6 +71,32 @@ workspace actions:
 `convergio.act` is not a raw HTTP proxy. New behavior must be added as a
 new typed action so agent prompts stay small and stable.
 
+## Evidence kinds
+
+Evidence is a free-form pair: `kind` (string) + `payload` (JSON object).
+
+### `usage` — token telemetry
+
+Evidence kind `usage` is reserved for **token and cost telemetry** emitted by runner adapters (for example `~/.convergio/adapters/opus-overnight/run.sh`) or by `cvg agent spawn` when it can extract usage from Claude Code `--output-format stream-json` stdout.
+
+Payload contract (JSON object):
+
+- `input_tokens`: integer (>= 0)
+- `output_tokens`: integer (>= 0)
+- `model`: string (runner/model label; e.g. `opus`, `claude-opus-overnight`)
+- `cost_usd`: number or null (when the runner cannot surface cost)
+
+Example:
+
+```bash
+cvg evidence add <task_id> --kind usage \
+  --payload '{"input_tokens":123,"output_tokens":456,"model":"opus","cost_usd":0.0123}'
+```
+
+Daemon behavior: on attach, Convergio aggregates `usage` evidence into the
+durable agent registry metadata at `agents.metadata.usage` (totals + `by_model`)
+so dashboards can render token/cost summaries without scanning all evidence rows.
+
 ## Task context packets
 
 Use `get_task_context` immediately after claiming a task and whenever a
@@ -111,3 +137,4 @@ future capabilities follow the same `<capability>.<verb>` naming rule.
 `explain_last_refusal` reads the latest durable `task.refused` audit row
 when the daemon is reachable, so an agent can recover context even after
 the MCP bridge restarts.
+

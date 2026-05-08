@@ -163,6 +163,11 @@ impl IntoResponse for ApiError {
                     "invalid_workspace_lease",
                     e.to_string(),
                 ),
+                DurabilityError::InvalidEvidence { .. } => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "invalid_evidence",
+                    e.to_string(),
+                ),
                 DurabilityError::InvalidAgent { .. } => (
                     StatusCode::UNPROCESSABLE_ENTITY,
                     "invalid_agent",

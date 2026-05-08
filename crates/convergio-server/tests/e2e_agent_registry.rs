@@ -93,3 +93,90 @@ async fn agent_registry_round_trip_is_audited() {
         .unwrap();
     assert_eq!(audit["ok"], true);
 }
+
+#[tokio::test]
+async fn usage_evidence_aggregates_into_agent_metadata() {
+    let (base, _dir) = boot().await;
+    let client = reqwest::Client::new();
+
+    let _agent: Value = client
+        .post(format!("{base}/v1/agent-registry/agents"))
+        .json(&json!({
+            "id": "agent-u",
+            "kind": "claude",
+            "name": "usage test",
+            "host": "terminal",
+            "capabilities": ["code"],
+            "metadata": {}
+        }))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    let plan: Value = client
+        .post(format!("{base}/v1/plans"))
+        .json(&json!({"title": "usage plan"}))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let plan_id = plan["id"].as_str().unwrap();
+
+    let task: Value = client
+        .post(format!("{base}/v1/plans/{plan_id}/tasks"))
+        .json(&json!({"title": "usage task", "evidence_required": []}))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let task_id = task["id"].as_str().unwrap();
+
+    let _task: Value = client
+        .post(format!("{base}/v1/tasks/{task_id}/transition"))
+        .json(&json!({"target": "in_progress", "agent_id": "agent-u"}))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    let _evidence: Value = client
+        .post(format!("{base}/v1/tasks/{task_id}/evidence"))
+        .json(&json!({
+            "kind": "usage",
+            "payload": {
+                "input_tokens": 11,
+                "output_tokens": 22,
+                "model": "claude-opus-4",
+                "cost_usd": 0.0123
+            }
+        }))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    let agent: Value = client
+        .get(format!("{base}/v1/agent-registry/agents/agent-u"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    assert_eq!(agent["metadata"]["usage"]["calls"], 1);
+    assert_eq!(agent["metadata"]["usage"]["total_input_tokens"], 11);
+    assert_eq!(agent["metadata"]["usage"]["total_output_tokens"], 22);
+    assert_eq!(agent["metadata"]["usage"]["last_model"], "claude-opus-4");
+}

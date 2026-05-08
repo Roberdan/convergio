@@ -93,7 +93,7 @@ pub fn build(inputs: &PromptInputs<'_>) -> String {
     s.push_str("- Move the task to `submitted` with `cvg task transition <task_id> submitted --agent-id <agent>`.\n");
     s.push_str("- Never push to `main`. Never bypass commit hooks. Never amend a public commit.\n");
     s.push_str("- If you cannot finish, leave the task in `in_progress` and stop. The reaper releases stale claims.\n");
-    s.push_str("- Heartbeat every 60s with `cvg agent` (idempotent).\n");
+    s.push_str("- Heartbeat every 60s with `cvg task heartbeat <task_id>` (idempotent).\n");
     s.push('\n');
     s.push_str("Begin now.\n");
 

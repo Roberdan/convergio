@@ -7,6 +7,7 @@
 //! Convergio never sees the API key (ADR-0032).
 
 use super::agent_spawn_heartbeat::{register_agent, HeartbeatGuard};
+use super::agent_spawn_usage::{self, UsageSlot};
 use super::agent_spawn_wire::TaskWire;
 use super::{Client, OutputMode};
 use anyhow::{anyhow, Context as _, Result};
@@ -18,6 +19,7 @@ use serde_json::Value;
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::sync::{Arc, Mutex};
 use std::thread;
 
 /// All operator-controlled flags from `cvg agent spawn`. Bundling
@@ -131,14 +133,23 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
     // long-running session is observable. Each line is forwarded as
     // it arrives — for `claude --output-format stream-json` that means
     // one JSON event per turn, which the operator can `jq` on.
-    let stdout_handle = child
-        .stdout
-        .take()
-        .map(|s| thread::spawn(move || forward_lines(s, "stdout")));
+    let usage_slot: Option<UsageSlot> = if kind.vendor == "claude" {
+        Some(Arc::new(Mutex::new(None)))
+    } else {
+        None
+    };
+    let model_fallback = kind.model.clone();
+
+    let stdout_handle = child.stdout.take().map(|s| {
+        let usage = usage_slot.clone();
+        let model = model_fallback.clone();
+        thread::spawn(move || forward_lines(s, "stdout", usage, &model))
+    });
     let stderr_handle = child
         .stderr
         .take()
-        .map(|s| thread::spawn(move || forward_lines(s, "stderr")));
+        .map(|s| thread::spawn(move || forward_lines(s, "stderr", None, "")));
+
     let status = child.wait().context("wait for vendor CLI to exit")?;
     if let Some(h) = stdout_handle {
         let _ = h.join();
@@ -146,6 +157,16 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
     if let Some(h) = stderr_handle {
         let _ = h.join();
     }
+
+    // Usage telemetry is best-effort: never fail the spawn command
+    // because the adapter couldn't parse or attach usage evidence.
+    if let Some(slot) = usage_slot {
+        let usage = { slot.lock().unwrap_or_else(|e| e.into_inner()).clone() };
+        if let Some(usage) = usage {
+            agent_spawn_usage::post_usage_evidence_best_effort(client, &task.id, usage).await;
+        }
+    }
+
     let final_status = if status.success() {
         "idle"
     } else {
@@ -161,12 +182,22 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
     Ok(())
 }
 
-fn forward_lines<R: std::io::Read>(reader: R, channel: &'static str) {
+fn forward_lines<R: std::io::Read>(
+    reader: R,
+    channel: &'static str,
+    usage: Option<UsageSlot>,
+    model_fallback: &str,
+) {
     let buf = BufReader::new(reader);
     for line in buf.lines().map_while(std::result::Result::ok) {
         match channel {
             "stderr" => eprintln!("{line}"),
-            _ => println!("{line}"),
+            _ => {
+                println!("{line}");
+                if let Some(slot) = usage.as_ref() {
+                    agent_spawn_usage::observe_claude_stdout_line(slot, &line, model_fallback);
+                }
+            }
         }
     }
 }

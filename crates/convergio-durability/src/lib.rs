@@ -60,11 +60,14 @@ mod capability_facade;
 mod crdt_facade;
 mod facade;
 mod facade_admin;
+mod facade_evidence;
 mod facade_plan_transitions;
 mod facade_retry;
 mod facade_telemetry;
 mod facade_transitions;
 mod migrate;
+mod usage;
+mod usage_telemetry;
 mod workspace_facade;
 
 pub use capability_signature::{

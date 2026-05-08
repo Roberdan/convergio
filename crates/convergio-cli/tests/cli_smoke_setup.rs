@@ -26,6 +26,10 @@ fn setup_agent_claude_emits_skill_and_settings() {
     assert!(dir.join("settings.json").is_file());
     assert!(dir.join("skill-cvg-attach/SKILL.md").is_file());
     assert!(dir.join("skill-cvg-attach/cvg-attach.sh").is_file());
+    assert!(home
+        .path()
+        .join(".convergio/adapters/opus-overnight/run.sh")
+        .is_file());
     let settings = std::fs::read_to_string(dir.join("settings.json")).unwrap();
     assert!(settings.contains("SessionStart"));
     assert!(settings.contains("cvg-attach.sh"));
