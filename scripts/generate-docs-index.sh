@@ -33,7 +33,9 @@ cd "$repo_root"
 
 mode="${1:-write}"
 out="docs/INDEX.md"
-tmp=$(mktemp /tmp/convergio-docs-index.XXXXXX.md)
+# macOS `mktemp` requires the X template to be at the very end of the path;
+# keep the `.md` suffix out of the template for portability.
+tmp=$(mktemp /tmp/convergio-docs-index.XXXXXX)
 trap 'rm -f "$tmp"' EXIT
 
 # Collect every Markdown file we want to index. (Portable: macOS
