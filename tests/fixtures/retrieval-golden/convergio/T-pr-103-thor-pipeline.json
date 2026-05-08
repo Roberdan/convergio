@@ -1,7 +1,7 @@
 {
   "task_id": "T-pr-103-thor-pipeline",
   "repo": "convergio",
-  "title": "harden the Thor validator pipeline — ordered gate stages with audit",
+  "title": "harden the Thor validator pipeline \u2014 ordered gate stages with audit",
   "task_body": "Thor (Layer 4 validator) needs an ordered pipeline of gate stages so refusals are explainable and reproducible. Carve out a pipeline module, route the orchestration there, add a hardening test that enumerates every gate stage in a deterministic order.",
   "expected_files": [
     "crates/convergio-thor/src/pipeline.rs",
@@ -11,8 +11,8 @@
     "crates/convergio-thor/tests/pipeline_hardening.rs"
   ],
   "rationale": "New pipeline module + the thor.rs orchestrator that consumes it; lib.rs re-exports; the hardening test enumerates stages.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-04-30",
   "schema_version": 1
 }

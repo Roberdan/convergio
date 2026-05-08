@@ -2,8 +2,7 @@
 
 use crate::defaults::{RunnerDefaults, SpawnTemplate};
 use crate::error::{ExecutorError, Result};
-use crate::worktree;
-use chrono::Duration;
+use crate::{heartbeat, worktree};
 use convergio_durability::{Durability, TaskStatus};
 use convergio_lifecycle::{SpawnSpec, Supervisor};
 use convergio_runner::{
@@ -11,9 +10,7 @@ use convergio_runner::{
 };
 use std::path::PathBuf;
 use std::str::FromStr;
-use std::sync::Arc;
-use tokio::task::JoinHandle;
-use tracing::{debug, info, warn};
+use tracing::info;
 
 /// Executor handle.
 #[derive(Clone)]
@@ -81,14 +78,42 @@ impl Executor {
 
     /// Run one dispatch round. Returns the number of tasks moved to
     /// `in_progress`.
+    ///
+    /// Respects `CONVERGIO_EXECUTOR_MAX_PARALLEL` (default unlimited):
+    /// when set, the dispatcher caps concurrent in-flight tasks at
+    /// that value. Without it the previous behaviour stands — a tick
+    /// dispatches every wave-ready pending task, which on a fresh
+    /// daemon with 50+ pending was enough to put the laptop into
+    /// load-300 territory.
     pub async fn tick(&self) -> Result<usize> {
         let pending = self.find_dispatchable().await?;
+        let cap = std::env::var("CONVERGIO_EXECUTOR_MAX_PARALLEL")
+            .ok()
+            .and_then(|s| s.parse::<usize>().ok());
+        let budget = match cap {
+            Some(max) => {
+                let in_flight = self.count_in_progress().await?;
+                max.saturating_sub(in_flight)
+            }
+            None => pending.len(),
+        };
+        if budget == 0 {
+            return Ok(0);
+        }
         let mut dispatched = 0usize;
-        for (task_id, plan_id) in pending {
+        for (task_id, plan_id) in pending.into_iter().take(budget) {
             self.dispatch_one(&task_id, &plan_id).await?;
             dispatched += 1;
         }
         Ok(dispatched)
+    }
+
+    async fn count_in_progress(&self) -> Result<usize> {
+        let row: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tasks WHERE status = 'in_progress'")
+            .fetch_one(self.durability.pool().inner())
+            .await
+            .map_err(convergio_durability::DurabilityError::from)?;
+        Ok(row.0 as usize)
     }
 
     async fn find_dispatchable(&self) -> Result<Vec<(String, String)>> {
@@ -217,7 +242,7 @@ impl Executor {
             .iter()
             .map(|a| a.to_string_lossy().into_owned())
             .collect();
-        Ok(self
+        let proc = self
             .supervisor
             .spawn(SpawnSpec {
                 kind: kind.to_string(),
@@ -229,7 +254,19 @@ impl Executor {
                 cwd: Some(prepared.cwd),
                 stdin_payload: Some(prepared.stdin_prompt),
             })
-            .await?)
+            .await?;
+        // Vendor CLIs in non-interactive mode don't tick the
+        // task heartbeat themselves; the sidecar does it for them
+        // and removes the worktree on terminal exit.
+        if let Some(pid) = proc.pid {
+            heartbeat::spawn(
+                self.durability.clone(),
+                self.repo_path.clone(),
+                task.id.clone(),
+                pid,
+            );
+        }
+        Ok(proc)
     }
 
     async fn fetch_graph_context(&self, task_id: &str, seed: &str) -> Option<String> {
@@ -248,41 +285,4 @@ fn build_graph_seed(task: &convergio_durability::Task) -> String {
         Some(d) if !d.is_empty() => format!("{}\n\n{}", task.title, d),
         _ => task.title.clone(),
     }
-}
-
-/// Spawned-loop handle. Drop the handle to abort.
-pub struct ExecutorHandle {
-    inner: JoinHandle<()>,
-}
-
-impl ExecutorHandle {
-    /// Abort the loop. Idempotent.
-    pub fn abort(&self) {
-        self.inner.abort();
-    }
-}
-
-/// Spawn the executor loop. Errors during a tick are logged at
-/// `warn!` and do not kill the loop.
-pub fn spawn_loop(executor: Arc<Executor>, tick_interval: Duration) -> ExecutorHandle {
-    let inner = tokio::spawn(async move {
-        info!(
-            tick_secs = tick_interval.num_seconds(),
-            "executor loop started"
-        );
-        let interval = tokio_duration(tick_interval);
-        loop {
-            tokio::time::sleep(interval).await;
-            match executor.tick().await {
-                Ok(n) if n > 0 => info!(dispatched = n, "executor tick"),
-                Ok(_) => debug!("executor tick: nothing pending"),
-                Err(e) => warn!(error = %e, "executor tick failed"),
-            }
-        }
-    });
-    ExecutorHandle { inner }
-}
-
-fn tokio_duration(d: Duration) -> std::time::Duration {
-    std::time::Duration::from_millis(d.num_milliseconds().max(1) as u64)
 }

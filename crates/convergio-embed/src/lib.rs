@@ -45,36 +45,59 @@
 //! ```
 
 #![forbid(unsafe_code)]
+#![deny(missing_docs)]
 
 mod codec;
 
+/// Corpus helpers for building [`IngestNode`] inputs from the filesystem.
 pub mod corpus;
+/// The [`Embedder`] trait and reference test embedder implementations.
 pub mod embedder;
+/// Error types and the crate-wide [`Result`] alias.
 pub mod error;
+/// Hybrid fusion utilities (RRF / linear blend) for structural + semantic retrieval.
 pub mod hybrid;
+/// Ingest pipeline: embed text and persist vectors in the store.
 pub mod ingest;
+/// Migration runner for the embed store tables.
 pub mod migrate;
+/// Semantic query helpers over the embedding store.
 pub mod query;
+/// Selective embedding policy (`EmbedPolicy` / `EmbedTarget`).
 pub mod select;
+/// Canonical source text builder + SHA-256 hashing (`SourceText`).
 pub mod source;
+/// SQLite-backed embedding persistence (`EmbedStore`).
 pub mod store;
 
+/// `fastembed-rs`-backed real-model embedder implementations (feature-gated).
 #[cfg(feature = "fastembed")]
 pub mod fastembed_impl;
 
+/// Re-export: filesystem corpus collector + defaults.
 pub use corpus::{collect_files, DEFAULT_MAX_LINES, SOURCE_EXTENSIONS};
+/// Re-export: embedder trait + embedder-level errors.
 pub use embedder::{Embedder, EmbedderError};
+/// Re-export: crate error types.
 pub use error::{EmbedError, Result};
+/// Re-export: hybrid fusion types and functions.
 pub use hybrid::{
     linear_blend_fuse, rrf_fuse, MatchSource, RetrievalHit, ScoreComponents, DEFAULT_LINEAR_ALPHA,
     DEFAULT_RRF_K,
 };
+/// Re-export: ingest entry points + report types.
 pub use ingest::{ingest, ingest_one, IngestNode, IngestReport};
+/// Re-export: migration runner.
 pub use migrate::init;
+/// Re-export: semantic-only search helper.
 pub use query::semantic_search;
+/// Re-export: embedding selection policy.
 pub use select::{EmbedPolicy, EmbedTarget};
+/// Re-export: canonical source text + hash wrapper.
 pub use source::SourceText;
+/// Re-export: store handle + row/hit types.
 pub use store::{EmbedStore, EmbeddingRow, Neighbor};
 
+/// Re-export: `fastembed` real-model embedder (feature-gated).
 #[cfg(feature = "fastembed")]
 pub use fastembed_impl::MultilingualE5Embedder;

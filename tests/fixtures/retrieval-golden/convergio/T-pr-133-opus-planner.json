@@ -14,8 +14,8 @@
     "crates/convergio-server/tests/e2e_planner_capability.rs"
   ],
   "rationale": "opus.rs owns the new path; heuristic stays as fallback; schema describes the LLM output; planner.rs orchestrates; lib re-exports; tests pin behavior.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-03",
   "schema_version": 1
 }

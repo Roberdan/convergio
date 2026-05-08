@@ -1,7 +1,7 @@
 {
   "task_id": "T-pr-105-tui-dashboard",
   "repo": "convergio",
-  "title": "introduce cvg dash — TUI dashboard crate (ADR-0029)",
+  "title": "introduce cvg dash \u2014 TUI dashboard crate (ADR-0029)",
   "task_body": "Carve out a convergio-tui crate that hosts the htop-style 4-pane dashboard (plans / agents / tasks / PRs). Wire cvg dash through the CLI to launch it. Initial palette + render loop + crate skeleton plus the new ADR.",
   "expected_files": [
     "crates/convergio-tui/Cargo.toml",
@@ -13,8 +13,8 @@
     "docs/adr/0029-tui-dashboard-crate-separation.md"
   ],
   "rationale": "New crate + workspace member entry in root Cargo.toml; lib.rs is the entry; dash.rs is the CLI shell; ADR records the carve-out.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-01",
   "schema_version": 1
 }
