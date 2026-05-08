@@ -49,6 +49,7 @@
 mod defaults;
 mod error;
 mod executor;
+pub mod worktree;
 
 pub use defaults::{RunnerDefaults, SpawnTemplate};
 pub use error::{ExecutorError, Result};
