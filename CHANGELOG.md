@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.17](https://github.com/Roberdan/convergio/compare/convergio-v0.3.16...convergio-v0.3.17) (2026-05-08)
+
+
+### Features
+
+* **embed:** enforce public docs ([ea48c55](https://github.com/Roberdan/convergio/commit/ea48c555d519d9963aa0f69f4621613b829484ad))
+* **executor:** heartbeat sidecar + max-parallel + cargohome ignore ([6408dc6](https://github.com/Roberdan/convergio/commit/6408dc6e6a10708d340635f2d79f823337320255))
+* **executor:** heartbeat sidecar + max-parallel + cargohome ignore ([a6ef7db](https://github.com/Roberdan/convergio/commit/a6ef7db48402897dde875f85cd42f01329b7f687))
+
 ## [0.3.16](https://github.com/Roberdan/convergio/compare/convergio-v0.3.15...convergio-v0.3.16) (2026-05-08)
 
 
