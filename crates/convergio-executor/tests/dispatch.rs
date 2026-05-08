@@ -11,6 +11,10 @@ use std::time::Duration;
 use tempfile::tempdir;
 
 async fn fresh_with(template: SpawnTemplate) -> (Executor, Durability, tempfile::TempDir) {
+    // Tests should not depend on operator env; this flag forces the
+    // runner-based spawn path (bypassing the legacy SpawnTemplate seam).
+    std::env::remove_var("CONVERGIO_EXECUTOR_USE_RUNNER");
+
     let dir = tempdir().unwrap();
     let url = format!("sqlite://{}/state.db", dir.path().display());
     let pool = Pool::connect(&url).await.unwrap();
@@ -188,9 +192,40 @@ async fn tick_leaves_task_pending_when_spawn_fails() {
         kind: "missing".into(),
     })
     .await;
-    let planner = Planner::new(dur.clone()).with_mode(PlannerMode::Heuristic);
-    let plan_id = planner.solve("spawn-failure").await.unwrap();
-    let task = dur.tasks().list_by_plan(&plan_id).await.unwrap().remove(0);
+    assert!(
+        std::env::var("CONVERGIO_EXECUTOR_USE_RUNNER").is_err(),
+        "test must control CONVERGIO_EXECUTOR_USE_RUNNER"
+    );
+
+    // The planner may set `runner_kind`, which would bypass the legacy
+    // `SpawnTemplate` path. Create a task with `runner_kind: None` to
+    // exercise the spawn-failure seam deterministically.
+    let plan = dur
+        .create_plan(convergio_durability::NewPlan {
+            title: "p".into(),
+            description: None,
+            project: None,
+        })
+        .await
+        .unwrap();
+    let task = dur
+        .create_task(
+            &plan.id,
+            convergio_durability::NewTask {
+                wave: 1,
+                sequence: 1,
+                title: "spawn-failure".into(),
+                description: None,
+                evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
+            },
+        )
+        .await
+        .unwrap();
+    let fetched = dur.tasks().get(&task.id).await.unwrap();
+    assert!(fetched.runner_kind.is_none(), "runner_kind must be NULL");
 
     let err = exec.tick().await.unwrap_err();
     assert!(matches!(
