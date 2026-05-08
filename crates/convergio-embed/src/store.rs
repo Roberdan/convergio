@@ -1,10 +1,11 @@
 //! SQLite persistence for embeddings.
 //!
-//! Schema in `migrations/0700_embeddings.sql`. F1-α uses pure-Rust
-//! brute-force cosine for nearest-neighbor — `sqlite-vec`'s `vec0`
-//! virtual table arrives in F1-β alongside the extension load path.
-//! The [`EmbedStore`] signature is stable across the swap so callers
-//! do not change.
+//! Schema in `migrations/0700_embeddings.sql`.
+//!
+//! The storage layer is stable across retrieval engines: today we use
+//! pure-Rust brute-force cosine for nearest-neighbor; a future change
+//! can swap the query path to `sqlite-vec`'s `vec0` (via
+//! `graph_vec_index`) without forcing callers to change.
 
 use crate::codec::{blob_to_floats, cosine, floats_to_blob, norm};
 use crate::error::Result;

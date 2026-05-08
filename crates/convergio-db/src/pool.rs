@@ -7,7 +7,12 @@
 use crate::error::{DbError, Result};
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use sqlx::SqlitePool;
-use std::{path::Path, str::FromStr, time::Duration};
+use std::{
+    path::Path,
+    str::FromStr,
+    sync::{Once, OnceLock},
+    time::Duration,
+};
 use tracing::info;
 
 /// The database backend currently in use.
@@ -34,6 +39,9 @@ impl Pool {
     pub async fn connect(url: &str) -> Result<Self> {
         let backend = detect_backend(url)?;
         ensure_sqlite_parent(url)?;
+        // Register sqlite-vec (`vec0`) so `CREATE VIRTUAL TABLE ... USING vec0`
+        // migrations can run at daemon start (ADR-0038 § 5.2.3).
+        register_sqlite_vec_auto_extension()?;
         // WAL + busy_timeout: lets concurrent writers serialize through
         // the write-ahead log instead of returning SQLITE_BUSY under
         // contention. Tracks F35 (CI flake on
@@ -93,6 +101,36 @@ fn ensure_sqlite_parent(url: &str) -> Result<()> {
     Ok(())
 }
 
+extern "C" {
+    #[link_name = "sqlite3_vec_init"]
+    fn sqlite3_vec_init_entrypoint(
+        db: *mut libsqlite3_sys::sqlite3,
+        pz_err_msg: *mut *mut std::os::raw::c_char,
+        api: *const libsqlite3_sys::sqlite3_api_routines,
+    ) -> std::os::raw::c_int;
+}
+
+fn register_sqlite_vec_auto_extension() -> Result<()> {
+    static ONCE: Once = Once::new();
+    static RC: OnceLock<i32> = OnceLock::new();
+
+    ONCE.call_once(|| {
+        // Ensure the `sqlite-vec` crate is linked, so the `sqlite_vec0`
+        // object code (and `sqlite3_vec_init`) is present in this process.
+        let _ = sqlite_vec::sqlite3_vec_init as *const ();
+
+        // SAFETY: Registers a process-wide auto-extension; guarded by `Once`.
+        let rc =
+            unsafe { libsqlite3_sys::sqlite3_auto_extension(Some(sqlite3_vec_init_entrypoint)) };
+        let _ = RC.set(rc);
+    });
+
+    match RC.get().copied().unwrap_or(libsqlite3_sys::SQLITE_OK) {
+        rc if rc == libsqlite3_sys::SQLITE_OK => Ok(()),
+        rc => Err(DbError::SqliteVecAutoExtension(rc)),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -117,5 +155,16 @@ mod tests {
         let pool = Pool::connect(&url).await.unwrap();
         assert_eq!(pool.backend(), Backend::Sqlite);
         assert!(path.exists());
+
+        let version: String = sqlx::query_scalar("SELECT vec_version()")
+            .fetch_one(pool.inner())
+            .await
+            .unwrap();
+        assert!(version.starts_with('v'));
+
+        sqlx::query("CREATE VIRTUAL TABLE t USING vec0(embedding float[384]);")
+            .execute(pool.inner())
+            .await
+            .unwrap();
     }
 }

@@ -28,9 +28,10 @@ embedder. The real `fastembed-rs`-backed model arrives in F1-β.
   single source of truth for which node categories get embedded;
   callers must not bypass it.
 - **Migration range 700-799** reserved by ADR-0003.
-- **Pure-Rust brute-force KNN in F1-α.** `sqlite-vec` virtual table +
-  extension load arrive in F1-β; the [`EmbedStore`] signature stays
-  stable across the swap so callers do not change.
+- **Pure-Rust brute-force KNN (for now).** The `graph_vec_index` vec0
+  virtual table is created by migration 0700, but queries still use
+  brute-force cosine today; F1-β swaps the KNN implementation to
+  `sqlite-vec` while keeping [`EmbedStore`]’s signature stable.
 
 ## Module layout
 

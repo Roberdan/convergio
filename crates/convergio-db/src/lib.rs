@@ -24,7 +24,10 @@
 //! # }
 //! ```
 
-#![forbid(unsafe_code)]
+// NOTE: Most Convergio crates forbid `unsafe_code`. `convergio-db` is the
+// one exception because SQLite extension registration (`sqlite3_auto_extension`)
+// requires a tiny, well-contained FFI call.
+#![deny(unsafe_op_in_unsafe_fn)]
 
 mod error;
 mod pool;
