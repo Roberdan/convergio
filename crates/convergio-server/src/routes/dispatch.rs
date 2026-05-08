@@ -17,12 +17,15 @@ pub fn router() -> Router<AppState> {
 }
 
 async fn dispatch(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
-    let exec = Executor::new(
+    let mut exec = Executor::new(
         (*state.durability).clone(),
         (*state.supervisor).clone(),
         SpawnTemplate::default(),
     )
     .with_defaults(RunnerDefaults::from_env());
+    if let Some(p) = std::env::var_os("CONVERGIO_REPO_PATH") {
+        exec = exec.with_repo_path(std::path::PathBuf::from(p));
+    }
     let n = exec.tick().await.map_err(map_exec)?;
     Ok(Json(json!({"dispatched": n})))
 }
@@ -34,6 +37,10 @@ fn map_exec(e: convergio_executor::ExecutorError) -> ApiError {
         convergio_executor::ExecutorError::Runner(r) => ApiError::BadRequest {
             code: "runner_error",
             message: r.to_string(),
+        },
+        convergio_executor::ExecutorError::Worktree(msg) => ApiError::BadRequest {
+            code: "worktree_error",
+            message: msg,
         },
     }
 }

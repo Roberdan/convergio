@@ -1,19 +1,19 @@
 ---
 id: 0038
-status: proposed
+status: accepted
 date: 2026-05-03
 topics: [layer-1, retrieval, graph, context, fleet, multi-repo, semantic, embeddings]
 related_adrs: [0003, 0004, 0014, 0015, 0029, 0030, 0034]
 touches_crates: [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api]
 introduces_crates: [convergio-fleet, convergio-parse-multi, convergio-embed]
-last_validated: 2026-05-03
+last_validated: 2026-05-08
 implemented_in: []
 authors: [Roberto D'Angelo]
 ---
 
 # 0038. Fleet retrieval & cross-repo graph (semantic + multi-language)
 
-- Status: **proposed** (RFC, awaiting validation via F1 prototype)
+- Status: **accepted** (F1 go/no-go: GO; see § 14 / § 15.7.2)
 - Date: 2026-05-03
 - Deciders: Roberto D'Angelo, Convergio core
 - Tags: layer-1, retrieval, graph, fleet, multi-repo, semantic
@@ -858,6 +858,7 @@ These do not block F1. They block F2 design lock.
 | 2026-05-04 | F1 retrospective (10-fixture proxy) | Hybrid retrieval lifts recall@10 by +7.9 pp absolute; mechanics validated. |
 | 2026-05-04 | F1 retrospective (30-fixture curated, supersedes proxy) | **Hybrid recall@10 = 0.473 vs substring 0.341 — lift +13.2 pp absolute (+39% rel) on 30 hand-derived fixtures. F1 go/no-go target was +15 pp; result is just under (within fixture-selection noise). F2 GO.** See § 15.7. |
 | 2026-05-04 | F2 retrospective | **F2 deliverables complete. Pipeline shipped end-to-end across Rust+TS+Python: parse-multi (PR #130-#134), fleet crate (#135-#138), repo dimension (#139-#140), similarity batch + duplicates classifier (#141-#162), cross-language fixtures (#163), fleet-scope recall bench + 60 new tests (#167), e2e measurement harness (#172), --alpha linear blend (#174). Workspace tests 524 → 843+ green. Authoritative real-model FP measurement deferred to operator workstation (only 1 of 3 fleet repos checked out locally). F3 GO conditional on operator-side run of e2e_f2_13_measure with real downstream repos.** See § 15.8. |
+| 2026-05-08 | F1-10 go/no-go gate | (Daemon plan/title still references this program as “ADR-0035” due to pre-renumbering; the in-repo ADR id is 0038 per F0-2.) Gate criteria recorded: hybrid recall@10 lift ≥ +0.15 abs, p95 < 1 s, storage < 50 MB, incremental rebuild < 30 s. Measured: lift +0.132 (NEAR), p95 ~10 ms, storage ~0.75 MB, rebuild ~0.1 s. **Verdict: GO to F2.** See § 15.7.2. |
 
 ---
 

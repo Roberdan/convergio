@@ -120,19 +120,30 @@ async fn start(
     let _watcher = watcher::spawn((*supervisor).clone(), watcher_config);
 
     let runner_defaults = RunnerDefaults::from_env();
+    let repo_path = std::env::var_os("CONVERGIO_REPO_PATH").map(std::path::PathBuf::from);
     tracing::info!(
         runner_kind = %runner_defaults.kind,
         runner_profile = ?runner_defaults.profile,
+        repo_path = ?repo_path,
         "executor runner defaults"
     );
-    let executor = Arc::new(
-        Executor::new(
-            (*durability).clone(),
-            (*supervisor).clone(),
-            SpawnTemplate::default(),
-        )
-        .with_defaults(runner_defaults),
-    );
+    if repo_path.is_none() {
+        tracing::warn!(
+            "CONVERGIO_REPO_PATH unset — runner-based dispatch will refuse to spawn (each task \
+             requires a pre-created git worktree under <repo>/.claude/worktrees). The legacy \
+             /bin/echo template still works."
+        );
+    }
+    let mut exec = Executor::new(
+        (*durability).clone(),
+        (*supervisor).clone(),
+        SpawnTemplate::default(),
+    )
+    .with_defaults(runner_defaults);
+    if let Some(p) = repo_path {
+        exec = exec.with_repo_path(p);
+    }
+    let executor = Arc::new(exec);
     let executor_tick = Duration::seconds(parse_env_i64("CONVERGIO_EXECUTOR_TICK_SECS", 30));
     let _executor_loop = executor_spawn_loop(executor, executor_tick);
 

@@ -14,8 +14,8 @@
     "crates/convergio-cli/src/main.rs"
   ],
   "rationale": "Three new modules in convergio-embed; daemon wiring touches AppState + main + routes; CLI gains a new subcommand module + main.rs registration.",
-  "curator": "auto-pr-derived",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-03",
   "schema_version": 1
 }

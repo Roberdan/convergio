@@ -8,8 +8,8 @@
     "crates/convergio-mcp/src/help.rs"
   ],
   "rationale": "The api-side test is the new check; mcp::help carries the help text it now must match.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-04-30",
   "schema_version": 1
 }

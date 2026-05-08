@@ -1,7 +1,7 @@
 {
   "task_id": "T-pr-112-plan-transition",
   "repo": "convergio",
-  "title": "plan-level transitions (open → submitted → done)",
+  "title": "plan-level transitions (open \u2192 submitted \u2192 done)",
   "task_body": "Plans gain their own transition state, separate from the per-task FSM. The durability facade exposes plan transitions; the server route handles HTTP; the CLI command surfaces the verbs; i18n strings localise the user feedback. End-to-end test proves the wire path.",
   "expected_files": [
     "crates/convergio-durability/src/facade_plan_transitions.rs",
@@ -14,9 +14,9 @@
     "crates/convergio-i18n/locales/it/main.ftl",
     "crates/convergio-server/tests/e2e_plan_transition.rs"
   ],
-  "rationale": "facade_plan_transitions owns the state machine; error and lib re-export; server route + error map HTTP; CLI surfaces; i18n localises feedback strings; e2e validates.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "rationale": "Historically-failed retrieval case: query talks about plan/task lifecycle, but the key code paths are spread across durability + server routes; filenames rarely contain the surface words. facade_plan_transitions owns the state machine; error and lib re-export; server route + error map HTTP; CLI surfaces; i18n localises feedback strings; e2e validates.",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-01",
   "schema_version": 1
 }

@@ -15,8 +15,8 @@
     "crates/convergio-server/src/app.rs"
   ],
   "rationale": "New crate plus the Cargo manifest; trait + storage + selectors + source-hash live in their own modules; the migration owns the schema; the route + AppState wire it into the daemon.",
-  "curator": "auto-pr-derived",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-03",
   "schema_version": 1
 }

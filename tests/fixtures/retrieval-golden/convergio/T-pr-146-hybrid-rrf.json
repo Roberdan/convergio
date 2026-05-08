@@ -11,8 +11,8 @@
     "crates/convergio-server/tests/e2e_graph.rs"
   ],
   "rationale": "New module owns RRF + types; lib.rs re-exports; the graph route gains the optional fusion; CLI gains the flag; the cross-layer e2e exercises the full path.",
-  "curator": "auto-pr-derived",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-03",
   "schema_version": 1
 }

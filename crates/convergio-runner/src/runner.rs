@@ -182,6 +182,19 @@ impl Runner for CopilotRunner {
             PermissionProfile::Sandbox => {
                 args.push("--allow-all".into());
             }
+            PermissionProfile::Unrestricted => {
+                // `--allow-all` disables every gate Copilot's own
+                // sandbox enforces (the equivalent of `--yolo`'s
+                // historic intent). `shell(*)` alone is not enough:
+                // Copilot CLI still routes core git invocations
+                // through PermissionService and denies them when
+                // only `--allow-tool` is set. Pair with `--add-dir`
+                // so file writes inside the agent's worktree go
+                // through. Daemon-side deny-list still applies.
+                args.push("--allow-all".into());
+                args.push("--add-dir".into());
+                args.push(ctx.cwd.as_os_str().to_owned());
+            }
             other => {
                 for pat in other.copilot_allow_tools() {
                     args.push("--allow-tool".into());

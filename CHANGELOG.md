@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.17](https://github.com/Roberdan/convergio/compare/convergio-v0.3.16...convergio-v0.3.17) (2026-05-08)
+
+
+### Features
+
+* **embed:** enforce public docs ([ea48c55](https://github.com/Roberdan/convergio/commit/ea48c555d519d9963aa0f69f4621613b829484ad))
+* **executor:** heartbeat sidecar + max-parallel + cargohome ignore ([6408dc6](https://github.com/Roberdan/convergio/commit/6408dc6e6a10708d340635f2d79f823337320255))
+* **executor:** heartbeat sidecar + max-parallel + cargohome ignore ([a6ef7db](https://github.com/Roberdan/convergio/commit/a6ef7db48402897dde875f85cd42f01329b7f687))
+
+## [0.3.16](https://github.com/Roberdan/convergio/compare/convergio-v0.3.15...convergio-v0.3.16) (2026-05-08)
+
+
+### Features
+
+* **executor:** pre-create worktree before runner spawn ([67c4eec](https://github.com/Roberdan/convergio/commit/67c4eeca0f2751170a4f4622a3ea762848994563))
+* **executor:** pre-create worktree before runner spawn ([b51c875](https://github.com/Roberdan/convergio/commit/b51c875e9b889ea82463b729186052f9d6447001))
+
+
+### Bug Fixes
+
+* **ci:** enforce friction ids in commit messages ([badae9b](https://github.com/Roberdan/convergio/commit/badae9b1e456b7f2a982bc192499b54df722169b))
+* **ci:** enforce friction ids in commit messages ([5eeddbd](https://github.com/Roberdan/convergio/commit/5eeddbdf2c7f52ed3facefb8fdc7ea16ccb1d3c1))
+* **runner:** Unrestricted profile must use --allow-all on Copilot ([2231b29](https://github.com/Roberdan/convergio/commit/2231b29a15b05c0922abc34944f7f10fd419432d))
+
+
+### Documentation
+
+* **docs:** Mark ADR-0038 accepted ([ac1f448](https://github.com/Roberdan/convergio/commit/ac1f4488258f209acc318cb198658b36e5d7ef2a))
+* **docs:** Record F1-10 go/no-go gate in ADR-0038 ([2822e58](https://github.com/Roberdan/convergio/commit/2822e589445fb1dc1e4ccafc6fb1e929be3e2851))
+
 ## [0.3.15](https://github.com/Roberdan/convergio/compare/convergio-v0.3.14...convergio-v0.3.15) (2026-05-07)
 
 
