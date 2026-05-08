@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Needed for friction-log checks that diff/scan commit history.
+          fetch-depth: 0
 
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@stable

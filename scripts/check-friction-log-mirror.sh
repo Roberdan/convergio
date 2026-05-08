@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
-# Reject PRs that add a new actionable F## row to the friction log
-# without a matching entry in the "Daemon task mirror" section
-# (closes F40 — keep one source of truth for outstanding work).
+# Reject PRs that either:
+#   (A) reference a friction id (F##) in commit messages without a
+#       corresponding row in the friction log (closes F37 future fix), or
+#   (B) add a new actionable F## row to the friction log without a
+#       matching entry in the "Daemon task mirror" section
+#       (closes F40 — keep one source of truth for outstanding work).
 #
 # Logic:
-#   1. Find rows added vs `origin/main` to docs/plans/v0.2-friction-log.md
-#      that match `^| F[0-9]+ |` and whose status cell is NOT
-#      "accepted" — i.e. actionable rows.
-#   2. For each such F##, require a row in the "Daemon task mirror"
-#      table referencing both the F## label and a UUIDv4.
-#   3. Exit 1 with a focused diagnostic when any are missing.
-#
-# Skip when the file itself is unchanged (most PRs).
+#   A. Scan `git log <base>..HEAD --pretty=%B` for `\bF[0-9]+\b`.
+#      For each referenced F##, require a `| F## |` row in
+#      docs/plans/v0.2-friction-log.md.
+#   B. If the friction log file changes in this branch, find newly-added
+#      actionable rows and require each to have a daemon mirror row that
+#      includes both the F## label and a UUIDv4.
 #
 # Exit codes:
 #   0  clean (or N/A)
-#   1  one or more new F## rows lack a daemon mirror row
+#   1  one or more checks failed
 #   2  malformed inputs (no friction log file present)
 
 set -euo pipefail
@@ -32,17 +33,62 @@ if [ ! -f "$LOG_PATH" ]; then
   exit 2
 fi
 
-# Resolve base ref; if origin/main is unreachable (shallow clones in
-# some CI configurations), fall back to HEAD~1.
+# Resolve base ref. We *fail closed* if it's missing: otherwise a shallow
+# checkout could silently scan only a suffix of commits and let older PR
+# commits reference missing friction IDs.
 if ! git rev-parse --verify "$BASE_REF" >/dev/null 2>&1; then
-  BASE_REF=$(git rev-parse HEAD~1 2>/dev/null || echo "")
+  echo "base ref not found: $BASE_REF" >&2
+  echo "Fix: ensure the checkout fetched the base branch (e.g. actions/checkout fetch-depth: 0)," >&2
+  echo "or rerun with BASE_REF=<ref> that exists locally." >&2
+  exit 2
 fi
 
-if [ -z "$BASE_REF" ]; then
-  echo "no base ref to diff against — skipping friction-log mirror check"
-  exit 0
+extract_f_ids() {
+  # Extract every `\bF[0-9]+\b` from stdin.
+  # Implemented in awk for portability: BSD grep lacks `\b` and GNU-only
+  # `\<`/`\>` word-boundary operators.
+  #
+  # Regex \b uses [A-Za-z0-9_] as "word" chars; treat `_` as a word char
+  # so we don't match e.g. `FOO_F37`.
+  awk '
+    {
+      s = $0
+      while (match(s, /F[0-9]+/)) {
+        pre = (RSTART == 1) ? "" : substr(s, RSTART - 1, 1)
+        post = substr(s, RSTART + RLENGTH, 1)
+        if ((pre == "" || pre !~ /[[:alnum:]_]/) && (post == "" || post !~ /[[:alnum:]_]/)) {
+          print substr(s, RSTART, RLENGTH)
+        }
+        s = substr(s, RSTART + RLENGTH)
+      }
+    }
+  '
+}
+
+# A) Commit messages must not reference missing friction-log rows.
+log_text=$(git log "$BASE_REF"..HEAD --pretty=%B 2>/dev/null || true)
+mentioned=$(printf "%s\n" "$log_text" | extract_f_ids | sort -u)
+if [ -n "$mentioned" ]; then
+  logged=$(awk '/^\| F[0-9]+ \|/ { print $2 }' "$LOG_PATH" | sort -u)
+  missing_from_log=$(comm -23 <(printf "%s\n" "$mentioned") <(printf "%s\n" "$logged") 2>/dev/null || true)
+
+  if [ -n "$missing_from_log" ]; then
+    echo "FAIL: commit messages reference friction IDs missing from $LOG_PATH:" >&2
+    while IFS= read -r m; do
+      [ -z "$m" ] && continue
+      echo "  - $m" >&2
+    done <<< "$missing_from_log"
+    echo >&2
+    echo "Fix: add a row for each missing F## to the friction log (at minimum the Summary table)." >&2
+    exit 1
+  fi
+
+  echo "OK: commit messages reference only logged F## ids"
 fi
 
+# B) New actionable friction-log rows must be mirrored in the daemon.
+#    Only relevant when the file itself changed in this branch.
+#
 # 1) Lines added to the friction log file in this branch.
 #    To distinguish a *new* F## row from a *status update* on an
 #    existing one, we keep only labels present in `+` lines but
