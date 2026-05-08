@@ -2,13 +2,14 @@
   "task_id": "T-pr-134-readme-positioning",
   "repo": "convergio",
   "title": "rewrite README positioning to lead with 'leash for AI agents'",
-  "task_body": "The README opening drifted into feature lists. Rewrite the top section so the product positioning — Convergio is the leash for AI agents — is the first thing a reader sees, with the technical details below.",
+  "task_body": "The README opening drifted into feature lists. Rewrite the top section so the product positioning \u2014 Convergio is the leash for AI agents \u2014 is the first thing a reader sees, with the technical details below.",
   "expected_files": [
-    "README.md"
+    "README.md",
+    "AGENTS.md"
   ],
-  "rationale": "Single-file rewrite of the README's positioning section.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "rationale": "Historically-failed retrieval case: product/positioning copy changes frequently retrieve the wrong docs because many markdown files share overlapping tokens. README is the edited surface; AGENTS.md anchors the canonical one-paragraph positioning + constraints.",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-03",
   "schema_version": 1
 }

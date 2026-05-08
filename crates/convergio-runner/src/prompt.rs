@@ -87,8 +87,8 @@ pub fn build(inputs: &PromptInputs<'_>) -> String {
         "- Daemon URL: `{}`. All state changes via `cvg` against this URL.\n",
         inputs.daemon_url
     ));
-    s.push_str("- Work in a fresh worktree under `.claude/worktrees/<branch>/`.\n");
-    s.push_str("- Open exactly one PR. Body must include `Tracks: T<task_id>`.\n");
+    s.push_str("- You are already in a dedicated git worktree at the current cwd, on a fresh `agent/<task7>` branch off `main`. Do NOT `git checkout`, do NOT `git worktree add`, do NOT `cd` elsewhere — the daemon set this up for you and any deviation risks the operator's main checkout.\n");
+    s.push_str("- Make changes here, `git add` + `git commit` as you would normally. `git push -u origin HEAD` when ready, then `gh pr create` against `main`. Body must include `Tracks: T<task_id>`.\n");
     s.push_str("- Attach evidence with `cvg evidence add <task_id> --kind <k> --payload '{...}'` for every required kind before transitioning.\n");
     s.push_str("- Move the task to `submitted` with `cvg task transition <task_id> submitted --agent-id <agent>`.\n");
     s.push_str("- Never push to `main`. Never bypass commit hooks. Never amend a public commit.\n");

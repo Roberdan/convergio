@@ -9,9 +9,9 @@
     "crates/convergio-cli/src/commands/agent_spawn.rs",
     "docs/adr/0033-runner-permission-profiles.md"
   ],
-  "rationale": "Profile types live in the runner crate; CLI surfaces them on agent spawn; the ADR records the swap from --dangerously-skip-permissions.",
-  "curator": "auto-pr-derived",
-  "curated_at": "2026-05-04",
+  "rationale": "Historically-failed retrieval case: permissions/roles vocabulary is higher-level than the struct/module names that implement it. Profile types live in the runner crate; CLI surfaces them on agent spawn; the ADR records the swap from --dangerously-skip-permissions.",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-03",
   "schema_version": 1
 }

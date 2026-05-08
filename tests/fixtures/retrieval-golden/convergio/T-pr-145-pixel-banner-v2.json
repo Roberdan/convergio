@@ -1,16 +1,16 @@
 {
   "task_id": "T-pr-145-pixel-banner-v2",
   "repo": "convergio",
-  "title": "second pass on the pixel banner — bigger wordmark in the TUI header",
+  "title": "second pass on the pixel banner \u2014 bigger wordmark in the TUI header",
   "task_body": "The first pixel banner shipped a small wordmark. The TUI header looks better with a roomier mark; rework the brand asset to a bigger pixel grid and update the TUI header to consume it.",
   "expected_files": [
-    "crates/convergio-brand/src/wordmark_big.rs",
-    "crates/convergio-tui/src/header_banner.rs",
-    "crates/convergio-tui/src/header_banner_big.rs"
+    "crates/convergio-brand/src/banner.rs",
+    "crates/convergio-brand/src/palette.rs",
+    "crates/convergio-tui/src/header_banner.rs"
   ],
-  "rationale": "New brand asset module ships the bigger wordmark; the TUI header gains the matching renderer plus a switching shim.",
-  "curator": "claude-derived-from-pr",
-  "curated_at": "2026-05-04",
+  "rationale": "Historically-failed retrieval case: brand/banner work is mostly asset + palette plumbing; filenames rarely match the natural-language description. banner.rs renders the wordmark/lockup; palette.rs provides the gradient; the TUI header consumes the renderer.",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-03",
   "schema_version": 1
 }

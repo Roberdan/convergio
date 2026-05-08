@@ -41,3 +41,13 @@ Thumbs.db
 # Each agent gets its own worktree under .claude/worktrees/<branch>/
 # so they do not race on a shared checkout (CONSTITUTION § 15).
 .claude/worktrees/
+
+# Per-agent cargo cache. Agents that set CARGO_HOME=<cwd>/.cargohome
+# end up dumping the entire crates.io cache inside their worktree
+# (8000+ files). The worktree itself is in `.gitignore` from the main
+# repo perspective, but inside the worktree git tracks `.gitignore`
+# at the worktree root — so the cache must be excluded explicitly
+# or it shows up in `git status` and makes 8330-file dirty trees
+# the operator can't tell apart from real edits.
+.cargohome/
+**/.cargohome/

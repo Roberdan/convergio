@@ -12,8 +12,8 @@
     ".github/workflows/ci.yml"
   ],
   "rationale": "New module ships the real embedder; crate manifest gains the optional dep + feature; root Cargo.toml exposes fastembed in workspace.dependencies; deny.toml widens the license/dedup allowlists; ci.yml gains the clippy-with-feature step.",
-  "curator": "auto-pr-derived",
-  "curated_at": "2026-05-04",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-03",
   "schema_version": 1
 }

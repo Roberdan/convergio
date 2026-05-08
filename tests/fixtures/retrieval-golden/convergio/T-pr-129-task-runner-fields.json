@@ -5,14 +5,14 @@
   "task_body": "Add runner_kind, profile, and max_budget_usd columns on the tasks table so the planner can route mechanical work to claude:sonnet or copilot and reasoning-heavy work to claude:opus. Thread the fields through Task / NewTask / store / facade / planner / cvg task create. Branch the executor's dispatch path on runner_kind.",
   "expected_files": [
     "crates/convergio-durability/migrations/0011_task_runner_fields.sql",
-    "crates/convergio-durability/src/store.rs",
+    "crates/convergio-durability/src/store/tasks.rs",
     "crates/convergio-executor/src/lib.rs",
     "crates/convergio-cli/src/commands/task.rs",
     "docs/adr/0034-per-task-runner-fields.md"
   ],
-  "rationale": "Schema change ships in the migration; durability store + executor read the new fields; the CLI exposes them on cvg task create; the ADR documents the decision.",
-  "curator": "auto-pr-derived",
-  "curated_at": "2026-05-04",
+  "rationale": "Schema change ships in the migration; durability store/tasks + executor read the new fields; the CLI exposes them on cvg task create; the ADR documents the decision.",
+  "curator": "roberto",
+  "curated_at": "2026-05-08",
   "task_completed_at": "2026-05-03",
   "schema_version": 1
 }
