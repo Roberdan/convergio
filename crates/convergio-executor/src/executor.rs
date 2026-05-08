@@ -1,13 +1,15 @@
 //! `Executor::tick` — one-shot dispatch round.
 
 use crate::defaults::{RunnerDefaults, SpawnTemplate};
-use crate::error::Result;
+use crate::error::{ExecutorError, Result};
+use crate::worktree;
 use chrono::Duration;
 use convergio_durability::{Durability, TaskStatus};
 use convergio_lifecycle::{SpawnSpec, Supervisor};
 use convergio_runner::{
     for_kind_with_registry, PermissionProfile, RunnerKind, RunnerRegistry, SpawnContext,
 };
+use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::task::JoinHandle;
@@ -22,6 +24,7 @@ pub struct Executor {
     defaults: RunnerDefaults,
     graph: Option<convergio_graph::Store>,
     registry: std::sync::Arc<RunnerRegistry>,
+    repo_path: Option<PathBuf>,
 }
 
 impl Executor {
@@ -36,7 +39,20 @@ impl Executor {
             defaults: RunnerDefaults::default(),
             graph: None,
             registry: std::sync::Arc::new(RunnerRegistry::empty()),
+            repo_path: None,
         }
+    }
+
+    /// Set the operator's repo root. Required for runner-based
+    /// dispatch — the executor pre-creates a git worktree under
+    /// `<repo_path>/.claude/worktrees/agent-<task7>` so the agent
+    /// never gets `cwd = main checkout`. Without it, the runner
+    /// path refuses to spawn (better than the historical bug
+    /// where an agent ran `git checkout` on the operator's main
+    /// working tree).
+    pub fn with_repo_path(mut self, repo_path: PathBuf) -> Self {
+        self.repo_path = Some(repo_path);
+        self
     }
 
     /// Override the daemon-wide runner defaults (`runner_kind`,
@@ -170,7 +186,19 @@ impl Executor {
         let agent_id = format!("{}-{}", kind.vendor, task.id.get(..7).unwrap_or(&task.id));
         let seed = build_graph_seed(task);
         let graph_context = self.fetch_graph_context(&task.id, &seed).await;
-        let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+        let repo_path = self.repo_path.as_ref().ok_or_else(|| {
+            ExecutorError::Worktree(
+                "CONVERGIO_REPO_PATH not configured — refusing to spawn runner with cwd=daemon's \
+                 cwd; that bug wiped the operator's main checkout last time"
+                    .into(),
+            )
+        })?;
+        let cwd = worktree::prepare(repo_path, &task.id)?;
+        info!(
+            task_id = %task.id,
+            cwd = %cwd.display(),
+            "prepared agent worktree"
+        );
         let ctx = SpawnContext {
             task,
             plan_id,
