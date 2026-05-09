@@ -155,7 +155,7 @@ async fn triage_excludes_done_tasks() {
     // Close the task post-hoc to move it to `done`
     client
         .post(format!("{base}/v1/tasks/{task_id}/close-post-hoc"))
-        .json(&json!({"reason": "shipped"}))
+        .json(&json!({"reason": "shipped in PR #1"}))
         .send()
         .await
         .unwrap();
@@ -170,6 +170,44 @@ async fn triage_excludes_done_tasks() {
         .await
         .unwrap();
     assert!(stale.as_array().unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn close_post_hoc_requires_shipping_artifact_reference() {
+    let (base, _dir) = boot().await;
+    let client = reqwest::Client::new();
+
+    let plan: Value = client
+        .post(format!("{base}/v1/plans"))
+        .json(&json!({"title": "post-hoc reason artifact"}))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let plan_id = plan["id"].as_str().unwrap();
+
+    let task: Value = client
+        .post(format!("{base}/v1/plans/{plan_id}/tasks"))
+        .json(&json!({"title": "t", "wave": 1, "sequence": 1}))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let task_id = task["id"].as_str().unwrap();
+
+    let resp = client
+        .post(format!("{base}/v1/tasks/{task_id}/close-post-hoc"))
+        .json(&json!({"reason": "shipped"}))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(resp.status().as_u16(), 422);
+    let body: Value = resp.json().await.unwrap();
+    assert_eq!(body["error"]["code"], "post_hoc_reason_missing_artifact");
 }
 
 #[tokio::test]

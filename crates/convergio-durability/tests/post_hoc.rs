@@ -7,7 +7,9 @@
 //! 2. Failed → done works (the typical triage path).
 //! 3. Empty / whitespace reason refused with
 //!    `DurabilityError::PostHocReasonMissing`.
-//! 4. Already-done task refused with `DurabilityError::AlreadyDone`
+//! 4. Non-empty reason that does not reference a shipping artifact is
+//!    refused with `DurabilityError::PostHocReasonMissingArtifact`.
+//! 5. Already-done task refused with `DurabilityError::AlreadyDone`
 //!    (idempotency guard — no duplicate audit rows).
 
 use convergio_db::Pool;
@@ -89,10 +91,22 @@ async fn failed_closes_to_done() {
         .unwrap();
 
     let task = dur
-        .close_task_post_hoc(&task_id, "obsolete; superseded by F44", None)
+        .close_task_post_hoc(&task_id, "shipped in PR #44 (supersedes F44)", None)
         .await
         .unwrap();
     assert!(matches!(task.status, TaskStatus::Done));
+}
+
+#[tokio::test]
+async fn reason_without_shipping_artifact_rejected() {
+    let (dur, _dir) = fresh().await;
+    let task_id = make_task(&dur, "p2b").await;
+
+    let err = dur
+        .close_task_post_hoc(&task_id, "obsolete; superseded by F44", None)
+        .await
+        .unwrap_err();
+    assert!(matches!(err, DurabilityError::PostHocReasonMissingArtifact));
 }
 
 #[tokio::test]
@@ -113,12 +127,12 @@ async fn empty_reason_rejected() {
 async fn already_done_is_refused_idempotency_guard() {
     let (dur, _dir) = fresh().await;
     let task_id = make_task(&dur, "p4").await;
-    dur.close_task_post_hoc(&task_id, "first close", None)
+    dur.close_task_post_hoc(&task_id, "shipped in PR #1", None)
         .await
         .unwrap();
 
     let err = dur
-        .close_task_post_hoc(&task_id, "second close", None)
+        .close_task_post_hoc(&task_id, "shipped in PR #2", None)
         .await
         .unwrap_err();
     assert!(matches!(err, DurabilityError::AlreadyDone { .. }));

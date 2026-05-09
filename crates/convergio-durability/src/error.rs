@@ -57,6 +57,15 @@ pub enum DurabilityError {
     #[error("post-hoc close requires a non-empty reason")]
     PostHocReasonMissing,
 
+    /// `close_task_post_hoc` was called with a reason that does not
+    /// reference a shipping artifact (e.g. PR number, commit SHA, or
+    /// release tag / link). Post-hoc close is an operator escape hatch
+    /// and must remain auditable.
+    #[error(
+        "post-hoc close reason must reference a shipping artifact (PR, commit SHA, or release tag)"
+    )]
+    PostHocReasonMissingArtifact,
+
     /// `close_task_post_hoc` was called on an already-`done` task.
     /// Idempotency guard: re-closing would write a duplicate audit
     /// row with a contradictory `from` value.

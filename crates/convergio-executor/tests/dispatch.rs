@@ -11,9 +11,10 @@ use std::time::Duration;
 use tempfile::tempdir;
 
 async fn fresh_with(template: SpawnTemplate) -> (Executor, Durability, tempfile::TempDir) {
-    // Tests should not depend on operator env; this flag forces the
-    // runner-based spawn path (bypassing the legacy SpawnTemplate seam).
+    // Tests should not depend on operator env; pin any knobs that can
+    // change dispatch behavior.
     std::env::remove_var("CONVERGIO_EXECUTOR_USE_RUNNER");
+    std::env::remove_var("CONVERGIO_EXECUTOR_MAX_PARALLEL");
 
     let dir = tempdir().unwrap();
     let url = format!("sqlite://{}/state.db", dir.path().display());

@@ -15,10 +15,12 @@ use convergio_db::Pool;
 use serde_json::{json, Value};
 
 async fn boot() -> (String, Pool, tempfile::TempDir) {
-    // Force the deterministic line-split planner so the E2E does
-    // not invoke the operator's local `claude -p --model opus`
-    // (ADR-0036) — that would charge real tokens on each run.
+    // Tests must not depend on operator env. Pin planner and executor
+    // knobs so the E2E stays deterministic and offline.
     std::env::set_var("CONVERGIO_PLANNER_MODE", "heuristic");
+    std::env::remove_var("CONVERGIO_EXECUTOR_USE_RUNNER");
+    std::env::remove_var("CONVERGIO_EXECUTOR_MAX_PARALLEL");
+    std::env::remove_var("CONVERGIO_REPO_PATH");
     common_boot().await
 }
 

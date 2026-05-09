@@ -157,9 +157,11 @@ propose `submitted`; Thor disposes `done`.
 exists for triage of tasks whose work shipped outside the
 daemon's evidence flow (e.g. before the `Tracks: <uuid>`
 convention was adopted). The route requires a non-empty
-`reason`, refuses already-`done` tasks for idempotency, and
-writes a `task.closed_post_hoc` audit row. It is not an agent
-surface — agents must still walk `submitted → validate`.
+`reason` that references a shipping artifact (e.g. PR number,
+commit SHA, or release tag/link), refuses already-`done` tasks
+for idempotency, and writes a `task.closed_post_hoc` audit row.
+It is not an agent surface — agents must still walk
+`submitted → validate`.
 
 ## 7. Audit log is append-only and hash-chained
 

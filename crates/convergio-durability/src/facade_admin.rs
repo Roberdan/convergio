@@ -17,7 +17,9 @@ use crate::error::{DurabilityError, Result};
 use crate::facade::Durability;
 use crate::model::{Plan, Task, TaskStatus};
 use chrono::Utc;
+use regex::Regex;
 use serde_json::json;
+use std::sync::OnceLock;
 
 impl Durability {
     /// Close a task `post hoc`: move it directly to `done` because
@@ -33,6 +35,9 @@ impl Durability {
     /// Errors:
     /// - [`DurabilityError::PostHocReasonMissing`] if `reason` is
     ///   empty or whitespace.
+    /// - [`DurabilityError::PostHocReasonMissingArtifact`] if `reason`
+    ///   does not reference a shipping artifact (PR number, commit SHA,
+    ///   or release tag/link).
     /// - [`DurabilityError::AlreadyDone`] if the task is already
     ///   `done` (idempotency guard).
     pub async fn close_task_post_hoc(
@@ -44,6 +49,9 @@ impl Durability {
         let trimmed = reason.trim();
         if trimmed.is_empty() {
             return Err(DurabilityError::PostHocReasonMissing);
+        }
+        if !reason_references_shipping_artifact(trimmed) {
+            return Err(DurabilityError::PostHocReasonMissingArtifact);
         }
         let task = self.tasks().get(task_id).await?;
         if matches!(task.status, TaskStatus::Done) {
@@ -128,4 +136,69 @@ impl Durability {
         tx.commit().await?;
         self.plans().get(plan_id).await
     }
+}
+
+fn reason_references_shipping_artifact(reason: &str) -> bool {
+    let s = reason.trim();
+    if s.is_empty() {
+        return false;
+    }
+
+    let lc = s.to_ascii_lowercase();
+    if (lc.contains("http://") || lc.contains("https://"))
+        && (lc.contains("/pull/") || lc.contains("/commit/") || lc.contains("/releases/"))
+    {
+        return true;
+    }
+
+    fn matches(lock: &'static OnceLock<Option<Regex>>, pat: &'static str, s: &str) -> bool {
+        match lock.get_or_init(|| Regex::new(pat).ok()).as_ref() {
+            Some(re) => re.is_match(s),
+            None => false,
+        }
+    }
+
+    static PR_REF: OnceLock<Option<Regex>> = OnceLock::new();
+    if matches(&PR_REF, r"(?i)\b(pr|pull\s+request)\s*#?\s*\d+\b", s) {
+        return true;
+    }
+
+    static MERGE_REF: OnceLock<Option<Regex>> = OnceLock::new();
+    if matches(
+        &MERGE_REF,
+        r"(?i)\b(merge|merged|ship|shipped|land|landed|backport|backported|cherry-?pick(?:ed)?)\b.*#\s*\d+\b",
+        s,
+    ) {
+        return true;
+    }
+
+    static PR_URL: OnceLock<Option<Regex>> = OnceLock::new();
+    if matches(&PR_URL, r"(?i)https?://\S+/pull/\d+\b", s) {
+        return true;
+    }
+
+    static COMMIT_URL: OnceLock<Option<Regex>> = OnceLock::new();
+    if matches(&COMMIT_URL, r"(?i)https?://\S+/commit/[0-9a-f]{7,40}\b", s) {
+        return true;
+    }
+
+    static COMMIT_SHA: OnceLock<Option<Regex>> = OnceLock::new();
+    if matches(
+        &COMMIT_SHA,
+        r"(?i)\b(commit|sha|hash)\b[^0-9a-fA-F]*[0-9a-fA-F]{7,40}\b",
+        s,
+    ) {
+        return true;
+    }
+
+    static SEMVER_TAG: OnceLock<Option<Regex>> = OnceLock::new();
+    if matches(
+        &SEMVER_TAG,
+        r"(?i)\bv?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?\b",
+        s,
+    ) {
+        return true;
+    }
+
+    false
 }
