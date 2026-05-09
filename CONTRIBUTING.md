@@ -9,8 +9,8 @@ before writing code.
 ```bash
 git clone https://github.com/Roberdan/convergio
 cd convergio
-cargo build --workspace
-cargo test --workspace
+cargo check-crate convergio-cli
+cargo test-crate convergio-api
 ```
 
 The toolchain is pinned in `rust-toolchain.toml`. Lefthook installs git
@@ -30,25 +30,38 @@ export RUSTC_WRAPPER="$(command -v sccache)"
 export SCCACHE_CACHE_SIZE=20G
 ```
 
+For large local checkouts, keep build artifacts outside the repo by
+setting `CARGO_TARGET_DIR` in your shell profile:
+
+```bash
+export CARGO_TARGET_DIR="$HOME/.cache/cargo-target/convergio"
+```
+
 ## Workflow
 
 1. Branch off `main`. Use a worktree if you'll have parallel work:
    `git worktree add ../convergio-feature -b feat/short-name main`.
 2. Implement + test.
-3. Run the local CI bundle before pushing:
+3. Iterate with crate-scoped commands, for example:
+   ```bash
+   cargo check-crate convergio-server
+   cargo test-crate convergio-durability
+   cargo clippy -p convergio-cli --all-targets -- -D warnings
+   ```
+4. Run the local CI bundle before pushing:
    ```bash
    cargo fmt --all -- --check
    RUSTFLAGS="-Dwarnings" cargo clippy --workspace --all-targets -- -D warnings
    RUSTFLAGS="-Dwarnings" cargo test --workspace
    ```
-4. Commit using conventional commits with a crate scope
+5. Commit using conventional commits with a crate scope
    (see `commitlint.config.js`):
    ```
    feat(durability): add audit hash chain
    fix(server): return 409 on gate refusal
    docs(repo): expand AGENTS.md request lifecycle section
    ```
-5. Open a PR. Fill out all sections of the PR template — Problem,
+6. Open a PR. Fill out all sections of the PR template — Problem,
    Why, What changed, Validation, Impact, **Files touched**. CI
    rejects PRs that don't.
 
