@@ -21,6 +21,8 @@ pub struct PreparedCommand {
     /// Working directory the agent runs in. Always a Convergio
     /// worktree under `.claude/worktrees/<branch>/`.
     pub cwd: PathBuf,
+    /// Extra environment variables for the vendor CLI process.
+    pub env: Vec<(String, String)>,
     /// Prompt fed to the CLI on stdin.
     pub stdin_prompt: String,
 }
@@ -31,6 +33,9 @@ impl PreparedCommand {
     pub fn into_std_command(self) -> (Command, String) {
         let mut cmd = Command::new(&self.program);
         cmd.args(&self.args);
+        for (key, value) in &self.env {
+            cmd.env(key, value);
+        }
         cmd.current_dir(&self.cwd);
         cmd.stdin(Stdio::piped());
         cmd.stdout(Stdio::piped());
@@ -49,6 +54,7 @@ mod tests {
             program: OsString::from("/usr/bin/echo"),
             args: vec![OsString::from("-n"), OsString::from("hello")],
             cwd: PathBuf::from("/tmp"),
+            env: vec![("EXAMPLE".into(), "1".into())],
             stdin_prompt: "ignored by echo".into(),
         };
         let (cmd, prompt) = pc.into_std_command();

@@ -68,10 +68,10 @@
       "languages": ["rust"],
       "initializationOptions": {
         "cargo": {
-          "allFeatures": true
+          "allFeatures": false
         },
         "checkOnSave": {
-          "command": "clippy"
+          "enable": false
         }
       }
     }

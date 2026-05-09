@@ -4,6 +4,7 @@
 //! returns a [`PreparedCommand`]. The actual subprocess lifecycle
 //! (spawn, supervise, reap) is the executor's concern.
 
+use crate::cargo_env;
 use crate::command::PreparedCommand;
 use crate::error::{Result, RunnerError};
 use crate::kind::{Family, RunnerKind};
@@ -143,6 +144,7 @@ impl Runner for ClaudeRunner {
             program: OsString::from("claude"),
             args,
             cwd: PathBuf::from(ctx.cwd),
+            env: cargo_env::env_for(ctx.cwd),
             stdin_prompt: prompt,
         })
     }
@@ -212,6 +214,7 @@ impl Runner for CopilotRunner {
             program: OsString::from("copilot"),
             args,
             cwd: PathBuf::from(ctx.cwd),
+            env: cargo_env::env_for(ctx.cwd),
             stdin_prompt: prompt,
         })
     }

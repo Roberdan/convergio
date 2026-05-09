@@ -36,6 +36,7 @@
 
 #![forbid(unsafe_code)]
 
+mod cargo_env;
 mod command;
 mod error;
 mod kind;
