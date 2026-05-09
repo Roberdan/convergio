@@ -57,6 +57,14 @@ pub enum DurabilityError {
     #[error("post-hoc close requires a non-empty reason")]
     PostHocReasonMissing,
 
+    /// `close_task_post_hoc` was called with a reason that does not meet
+    /// the provenance rules (ADR-0026; hardened by F62).
+    #[error("invalid post-hoc close reason: {reason}")]
+    PostHocReasonInvalid {
+        /// Validation failure explanation.
+        reason: String,
+    },
+
     /// `close_task_post_hoc` was called on an already-`done` task.
     /// Idempotency guard: re-closing would write a duplicate audit
     /// row with a contradictory `from` value.

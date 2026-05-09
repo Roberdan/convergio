@@ -65,6 +65,7 @@ mod facade_retry;
 mod facade_telemetry;
 mod facade_transitions;
 mod migrate;
+mod post_hoc_reason;
 mod workspace_facade;
 
 pub use capability_signature::{

@@ -41,16 +41,18 @@ impl Durability {
         reason: &str,
         agent_id: Option<&str>,
     ) -> Result<Task> {
-        let trimmed = reason.trim();
-        if trimmed.is_empty() {
-            return Err(DurabilityError::PostHocReasonMissing);
-        }
         let task = self.tasks().get(task_id).await?;
         if matches!(task.status, TaskStatus::Done) {
             return Err(DurabilityError::AlreadyDone {
                 id: task_id.to_string(),
             });
         }
+
+        let trimmed = reason.trim();
+        if trimmed.is_empty() {
+            return Err(DurabilityError::PostHocReasonMissing);
+        }
+        crate::post_hoc_reason::validate_post_hoc_reason(trimmed)?;
         let mut tx = self.pool().inner().begin().await?;
         let now_dt = Utc::now();
         let now = now_dt.to_rfc3339();

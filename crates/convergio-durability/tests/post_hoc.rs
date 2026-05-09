@@ -110,10 +110,47 @@ async fn empty_reason_rejected() {
 }
 
 #[tokio::test]
+async fn reason_without_verifiable_anchor_rejected() {
+    let (dur, _dir) = fresh().await;
+    let task_id = make_task(&dur, "p3b").await;
+
+    let err = dur
+        .close_task_post_hoc(&task_id, "obsolete", None)
+        .await
+        .unwrap_err();
+    assert!(matches!(err, DurabilityError::PostHocReasonInvalid { .. }));
+}
+
+#[tokio::test]
+async fn multiline_reason_rejected() {
+    let (dur, _dir) = fresh().await;
+    let task_id = make_task(&dur, "p3c").await;
+
+    let err = dur
+        .close_task_post_hoc(&task_id, "shipped in PR #71\nmore", None)
+        .await
+        .unwrap_err();
+    assert!(matches!(err, DurabilityError::PostHocReasonInvalid { .. }));
+}
+
+#[tokio::test]
+async fn too_long_reason_rejected_even_with_anchor() {
+    let (dur, _dir) = fresh().await;
+    let task_id = make_task(&dur, "p3d").await;
+
+    let long = format!("shipped in PR #71 {}", "a".repeat(500));
+    let err = dur
+        .close_task_post_hoc(&task_id, &long, None)
+        .await
+        .unwrap_err();
+    assert!(matches!(err, DurabilityError::PostHocReasonInvalid { .. }));
+}
+
+#[tokio::test]
 async fn already_done_is_refused_idempotency_guard() {
     let (dur, _dir) = fresh().await;
     let task_id = make_task(&dur, "p4").await;
-    dur.close_task_post_hoc(&task_id, "first close", None)
+    dur.close_task_post_hoc(&task_id, "shipped in PR #71", None)
         .await
         .unwrap();
 

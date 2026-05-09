@@ -222,7 +222,7 @@ async fn close_post_hoc_writes_timing_cache() {
 
     state
         .durability
-        .close_task_post_hoc(&task.id, "merged in #999 outside the daemon", None)
+        .close_task_post_hoc(&task.id, "merged in PR #999 outside the daemon", None)
         .await
         .unwrap();
 

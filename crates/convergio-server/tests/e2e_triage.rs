@@ -155,7 +155,7 @@ async fn triage_excludes_done_tasks() {
     // Close the task post-hoc to move it to `done`
     client
         .post(format!("{base}/v1/tasks/{task_id}/close-post-hoc"))
-        .json(&json!({"reason": "shipped"}))
+        .json(&json!({"reason": "shipped in PR #1"}))
         .send()
         .await
         .unwrap();
