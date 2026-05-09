@@ -37,6 +37,11 @@ setting `CARGO_TARGET_DIR` in your shell profile:
 export CARGO_TARGET_DIR="$HOME/.cache/cargo-target/convergio"
 ```
 
+Spawned Convergio agents default to a shared repo-local target at
+`.claude/cargo-target` instead of one `target/` per worktree. Override
+that with `CONVERGIO_AGENT_CARGO_TARGET_DIR` if you prefer a global
+machine cache.
+
 ## Workflow
 
 1. Branch off `main`. Use a worktree if you'll have parallel work:

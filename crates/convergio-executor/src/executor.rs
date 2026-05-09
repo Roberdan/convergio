@@ -248,7 +248,7 @@ impl Executor {
                 kind: kind.to_string(),
                 command: prepared.program.to_string_lossy().into_owned(),
                 args,
-                env: vec![],
+                env: prepared.env,
                 plan_id: Some(plan_id.to_string()),
                 task_id: Some(task.id.clone()),
                 cwd: Some(prepared.cwd),

@@ -5,6 +5,7 @@
 //! `CopilotRunner`: pure preparation, no spawn, no network. The
 //! argv shape comes from a [`RunnerSpec`] supplied by the registry.
 
+use crate::cargo_env;
 use crate::command::PreparedCommand;
 use crate::error::{Result, RunnerError};
 use crate::prompt::{self, PromptInputs};
@@ -88,6 +89,7 @@ impl Runner for ConfigRunner {
             program: OsString::from(&self.spec.cli),
             args,
             cwd: PathBuf::from(ctx.cwd),
+            env: cargo_env::env_for(ctx.cwd),
             stdin_prompt: prompt,
         })
     }

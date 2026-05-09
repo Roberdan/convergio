@@ -214,6 +214,12 @@ export RUSTC_WRAPPER="$(command -v sccache)"
 export SCCACHE_CACHE_SIZE=20G
 ```
 
+Spawned Convergio agents inherit a shared target directory by default:
+`<repo>/.claude/cargo-target`. Override with
+`CONVERGIO_AGENT_CARGO_TARGET_DIR` when a machine-wide cache is
+preferred. Never put per-worktree `target/` or `.cargohome/` caches
+under `.claude/worktrees/agent-*`.
+
 ## Test
 
 The authoritative pre-push check (matches CI):
