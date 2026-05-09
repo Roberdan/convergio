@@ -1,7 +1,7 @@
 //! `PlanStatusGate` — refuses task transitions when the owning plan is
 //! not in a state that accepts work.
 
-use super::{Gate, GateContext, GatePrecondition};
+use super::{Gate, GateContext, GateEvidenceInput, GatePrecondition};
 use crate::error::{DurabilityError, Result};
 use crate::model::{PlanStatus, TaskStatus};
 
@@ -47,7 +47,7 @@ impl Gate for PlanStatusGate {
     fn describe(&self) -> GatePrecondition {
         GatePrecondition {
             gate: "plan_status",
-            requires_evidence_kinds: vec![],
+            evidence: GateEvidenceInput::None,
             active_target_status: vec!["in_progress", "submitted"],
             refusal_reasons: vec!["plan_not_found", "plan_is_cancelled", "plan_is_completed"],
         }

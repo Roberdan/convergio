@@ -34,6 +34,7 @@ async fn preconditions() -> Json<PreconditionsResponse> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use convergio_durability::gates::GateEvidenceInput;
 
     #[tokio::test]
     async fn preconditions_response_lists_every_default_gate() {
@@ -41,19 +42,20 @@ mod tests {
         assert!(!resp.0.preconditions.is_empty());
         let names: Vec<&str> = resp.0.preconditions.iter().map(|p| p.gate).collect();
         // The 9 gates from default_pipeline appear in stable order.
-        for expected in [
-            "plan_status",
-            "evidence",
-            "crdt_conflict",
-            "no_debt",
-            "no_stub",
-            "wire_check",
-            "no_secrets",
-            "zero_warnings",
-            "wave_sequence",
-        ] {
-            assert!(names.contains(&expected), "missing {expected}");
-        }
+        assert_eq!(
+            names,
+            vec![
+                "plan_status",
+                "evidence",
+                "crdt_conflict",
+                "no_debt",
+                "no_stub",
+                "wire_check",
+                "no_secrets",
+                "zero_warnings",
+                "wave_sequence",
+            ]
+        );
     }
 
     #[tokio::test]
@@ -73,5 +75,6 @@ mod tests {
             .find(|p| p.gate == "evidence")
             .expect("evidence present");
         assert_eq!(ev.active_target_status, vec!["submitted", "done"]);
+        assert!(matches!(ev.evidence, GateEvidenceInput::TaskRequiredKinds));
     }
 }

@@ -65,7 +65,7 @@
 //! every operator whose cwd is not the repo root, including CI
 //! environments running the daemon from a packaged binary.
 
-use super::{Gate, GateContext};
+use super::{Gate, GateContext, GateEvidenceInput, GatePrecondition};
 use crate::error::{DurabilityError, Result};
 use crate::model::TaskStatus;
 use crate::store::EvidenceStore;
@@ -162,6 +162,17 @@ impl Gate for WireCheckGate {
                 gate: "wire_check",
                 reason: missing.join("; "),
             })
+        }
+    }
+
+    fn describe(&self) -> GatePrecondition {
+        GatePrecondition {
+            gate: "wire_check",
+            evidence: GateEvidenceInput::SpecificKinds {
+                kinds: vec!["wire_check"],
+            },
+            active_target_status: vec!["submitted", "done"],
+            refusal_reasons: vec!["route_not_mounted", "cli_path_not_found"],
         }
     }
 }

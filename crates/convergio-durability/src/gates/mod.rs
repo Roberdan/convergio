@@ -54,17 +54,40 @@ pub struct GateContext {
 }
 
 /// Declarative gate precondition (P3-2 — Palantir-inspired).
-#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+///
+/// Exposed via `GET /v1/gates/preconditions` so external tools (MCP,
+/// dashboards, wrappers) can discover what a gate *consults* and when it
+/// is active, without re-implementing the gate logic.
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct GatePrecondition {
     /// Stable gate name (`Gate::name()`).
     pub gate: &'static str,
-    /// Evidence kinds this gate requires before allowing the
-    /// transition (empty when the gate does not check evidence).
-    pub requires_evidence_kinds: Vec<&'static str>,
-    /// Task statuses for which this gate is active.
+    /// Evidence this gate consults (if any).
+    #[serde(default)]
+    pub evidence: GateEvidenceInput,
+    /// Task statuses for which this gate is active (target status).
     pub active_target_status: Vec<&'static str>,
     /// Stable refusal reason codes the gate may emit.
     pub refusal_reasons: Vec<&'static str>,
+}
+
+/// Evidence inputs a gate consults (P3-2).
+#[derive(Debug, Clone, Default, serde::Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum GateEvidenceInput {
+    /// Gate does not consult task evidence.
+    #[default]
+    None,
+    /// Gate consults the per-task `task.evidence_required` list and
+    /// refuses if any required kind is missing.
+    TaskRequiredKinds,
+    /// Gate consults evidence rows of these kinds (if present).
+    SpecificKinds {
+        /// Evidence kind strings (e.g. `"wire_check"`).
+        kinds: Vec<&'static str>,
+    },
+    /// Gate consults evidence payloads across all kinds.
+    AllKinds,
 }
 
 /// One gate.
@@ -74,9 +97,8 @@ pub trait Gate: Send + Sync {
     fn name(&self) -> &'static str;
     /// Returns `Ok(())` to allow, `Err(GateRefused { ... })` to block.
     async fn check(&self, ctx: &GateContext) -> Result<()>;
-    /// Declarative precondition (P3-2). Default implementation
-    /// returns just the gate name; gates with meaningful inputs
-    /// override this.
+    /// Declarative precondition (P3-2). Default implementation returns
+    /// just the gate name; gates with meaningful inputs override this.
     fn describe(&self) -> GatePrecondition {
         GatePrecondition {
             gate: self.name(),

@@ -29,7 +29,7 @@
 //! Other evidence kinds are ignored — they may legitimately contain
 //! free-form text.
 
-use super::{Gate, GateContext};
+use super::{Gate, GateContext, GateEvidenceInput, GatePrecondition};
 use crate::error::{DurabilityError, Result};
 use crate::model::{Evidence, TaskStatus};
 use crate::store::EvidenceStore;
@@ -73,6 +73,17 @@ impl Gate for ZeroWarningsGate {
                 gate: "zero_warnings",
                 reason: format!("non-clean quality signal: {}", violations.join(", ")),
             })
+        }
+    }
+
+    fn describe(&self) -> GatePrecondition {
+        GatePrecondition {
+            gate: "zero_warnings",
+            evidence: GateEvidenceInput::SpecificKinds {
+                kinds: QUALITY_KINDS.to_vec(),
+            },
+            active_target_status: vec!["submitted", "done"],
+            refusal_reasons: vec!["nonzero_exit", "warnings", "errors", "failures"],
         }
     }
 }

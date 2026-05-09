@@ -5,7 +5,10 @@
 //! cannot hide behind a passing E2E.
 
 use convergio_db::Pool;
-use convergio_durability::gates::{EvidenceGate, Gate, GateContext, PlanStatusGate};
+use convergio_durability::gates::{
+    default_pipeline, describe_pipeline, EvidenceGate, Gate, GateContext, GateEvidenceInput,
+    PlanStatusGate,
+};
 use convergio_durability::{
     init, Durability, DurabilityError, NewPlan, NewTask, PlanStatus, TaskStatus,
 };
@@ -228,4 +231,62 @@ async fn evidence_gate_no_op_for_in_progress_target() {
         .check(&ctx(&dur, task, TaskStatus::InProgress))
         .await
         .unwrap();
+}
+
+#[test]
+fn precondition_catalog_describes_every_default_gate() {
+    let pipeline = default_pipeline();
+    let preconditions = describe_pipeline(&pipeline);
+    assert_eq!(
+        preconditions.len(),
+        9,
+        "default pipeline should stay 9 gates"
+    );
+
+    let names: Vec<&str> = preconditions.iter().map(|p| p.gate).collect();
+    assert_eq!(
+        names,
+        vec![
+            "plan_status",
+            "evidence",
+            "crdt_conflict",
+            "no_debt",
+            "no_stub",
+            "wire_check",
+            "no_secrets",
+            "zero_warnings",
+            "wave_sequence",
+        ]
+    );
+
+    for p in &preconditions {
+        assert!(
+            !p.active_target_status.is_empty(),
+            "{}: active_target_status should be non-empty",
+            p.gate
+        );
+        assert!(
+            !p.refusal_reasons.is_empty(),
+            "{}: refusal_reasons should be non-empty",
+            p.gate
+        );
+    }
+
+    let evidence = preconditions
+        .iter()
+        .find(|p| p.gate == "evidence")
+        .expect("evidence gate described");
+    assert!(matches!(
+        evidence.evidence,
+        GateEvidenceInput::TaskRequiredKinds
+    ));
+
+    let wire = preconditions
+        .iter()
+        .find(|p| p.gate == "wire_check")
+        .expect("wire_check gate described");
+    assert!(matches!(
+        wire.evidence,
+        GateEvidenceInput::SpecificKinds { .. }
+    ));
 }

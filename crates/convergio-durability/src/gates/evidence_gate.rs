@@ -1,7 +1,7 @@
 //! `EvidenceGate` — refuses `submitted`/`done` transitions when the
 //! task's `evidence_required` set is not fully covered.
 
-use super::{Gate, GateContext, GatePrecondition};
+use super::{Gate, GateContext, GateEvidenceInput, GatePrecondition};
 use crate::error::{DurabilityError, Result};
 use crate::model::TaskStatus;
 use crate::store::EvidenceStore;
@@ -46,11 +46,8 @@ impl Gate for EvidenceGate {
     fn describe(&self) -> GatePrecondition {
         GatePrecondition {
             gate: "evidence",
-            // Per-task evidence kinds are dynamic; agents must read
-            // task.evidence_required at runtime. The default here
-            // signals "this gate consumes evidence" without claiming
-            // a static list.
-            requires_evidence_kinds: vec![],
+            // Dynamic: required kinds come from `task.evidence_required`.
+            evidence: GateEvidenceInput::TaskRequiredKinds,
             active_target_status: vec!["submitted", "done"],
             refusal_reasons: vec!["missing_evidence_kind"],
         }
