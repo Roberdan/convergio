@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'echo \"=== Convergio session bootstrap ===\"; cargo run --quiet -p convergio-cli -- session register-and-poll --agent-id \"claude-code-${USER}\" --kind claude --output human || true; if [ \"${CONVERGIO_NO_AUTO_RESUME:-0}\" != \"1\" ]; then echo; echo \"=== Convergio session resume (live state) ===\"; cargo run --quiet -p convergio-cli -- session resume --output plain || true; fi'"
+            "command": "bash -c 'echo \"=== Convergio session bootstrap ===\"; cvg session register-and-poll --agent-id \"claude-code-${USER}\" --kind claude --output human || true; if [ \"${CONVERGIO_NO_AUTO_RESUME:-0}\" != \"1\" ]; then echo; echo \"=== Convergio session resume (live state) ===\"; cvg session resume --output plain || true; fi'"
           }
         ]
       }
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cargo run --quiet -p convergio-cli -- session heartbeat-since-last-turn --agent-id \"claude-code-${USER}\" >/dev/null 2>&1 &"
+            "command": "cvg session heartbeat-since-last-turn --agent-id \"claude-code-${USER}\" >/dev/null 2>&1 &"
           }
         ]
       }
@@ -56,7 +56,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cargo run --quiet -p convergio-cli -- session pre-stop --agent-id \"claude-code-${USER}\" || true"
+            "command": "cvg session pre-stop --agent-id \"claude-code-${USER}\" || true"
           }
         ]
       }
