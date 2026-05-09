@@ -52,7 +52,13 @@ pub fn worktree_path(repo_root: &Path, task_id: &str) -> PathBuf {
 /// of `repo_root` we return it unchanged. If only the branch
 /// exists we re-add a fresh worktree on it. Errors fail the
 /// dispatch — better than spawning into the main checkout.
+///
+/// Before any filesystem mutation we run [`crate::guards::enforce`]
+/// so a runaway dispatcher cannot fill the disk with parallel
+/// worktrees (incident 2026-05-08, see post-mortem in
+/// `docs/incidents/`).
 pub fn prepare(repo_root: &Path, task_id: &str) -> Result<PathBuf> {
+    crate::guards::enforce(repo_root)?;
     let path = worktree_path(repo_root, task_id);
     if path.exists() {
         // The reaper or a previous tick already prepared this
