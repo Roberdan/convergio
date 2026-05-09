@@ -49,6 +49,7 @@
 mod defaults;
 mod error;
 mod executor;
+pub mod guards;
 mod heartbeat;
 mod run_loop;
 pub mod worktree;
