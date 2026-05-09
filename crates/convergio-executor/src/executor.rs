@@ -10,7 +10,7 @@ use convergio_runner::{
 };
 use std::path::PathBuf;
 use std::str::FromStr;
-use tracing::info;
+use tracing::{info, warn};
 
 /// Executor handle.
 #[derive(Clone)]
@@ -79,12 +79,9 @@ impl Executor {
     /// Run one dispatch round. Returns the number of tasks moved to
     /// `in_progress`.
     ///
-    /// Respects `CONVERGIO_EXECUTOR_MAX_PARALLEL` (default unlimited):
-    /// when set, the dispatcher caps concurrent in-flight tasks at
-    /// that value. Without it the previous behaviour stands — a tick
-    /// dispatches every wave-ready pending task, which on a fresh
-    /// daemon with 50+ pending was enough to put the laptop into
-    /// load-300 territory.
+    /// Best-effort: logs per-task errors and keeps going; returns `Err` only when nothing dispatches.
+    ///
+    /// Respects `CONVERGIO_EXECUTOR_MAX_PARALLEL` (default unlimited) by capping concurrent in-flight tasks.
     pub async fn tick(&self) -> Result<usize> {
         let pending = self.find_dispatchable().await?;
         let cap = std::env::var("CONVERGIO_EXECUTOR_MAX_PARALLEL")
@@ -101,9 +98,22 @@ impl Executor {
             return Ok(0);
         }
         let mut dispatched = 0usize;
+        let mut first_err: Option<ExecutorError> = None;
         for (task_id, plan_id) in pending.into_iter().take(budget) {
-            self.dispatch_one(&task_id, &plan_id).await?;
-            dispatched += 1;
+            match self.dispatch_one(&task_id, &plan_id).await {
+                Ok(()) => dispatched += 1,
+                Err(e) => {
+                    warn!(task_id = %task_id, plan_id = %plan_id, error = %e, "dispatch failed");
+                    if first_err.is_none() {
+                        first_err = Some(e);
+                    }
+                }
+            }
+        }
+        if dispatched == 0 {
+            if let Some(e) = first_err {
+                return Err(e);
+            }
         }
         Ok(dispatched)
     }
