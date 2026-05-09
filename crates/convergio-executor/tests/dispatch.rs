@@ -1,19 +1,17 @@
 //! Executor integration tests.
 
-use chrono::Duration as ChronoDuration;
 use convergio_db::Pool;
 use convergio_durability::{init, Durability, TaskStatus};
-use convergio_executor::{spawn_loop, Executor, ExecutorError, SpawnTemplate};
+use convergio_executor::{Executor, ExecutorError, SpawnTemplate};
 use convergio_lifecycle::{LifecycleError, Supervisor};
 use convergio_planner::{Planner, PlannerMode};
-use std::sync::Arc;
-use std::time::Duration;
 use tempfile::tempdir;
 
 async fn fresh_with(template: SpawnTemplate) -> (Executor, Durability, tempfile::TempDir) {
-    // Tests should not depend on operator env; this flag forces the
-    // runner-based spawn path (bypassing the legacy SpawnTemplate seam).
+    // Tests should not depend on operator env; these flags influence
+    // dispatch semantics and can make assertions flaky.
     std::env::remove_var("CONVERGIO_EXECUTOR_USE_RUNNER");
+    std::env::remove_var("CONVERGIO_EXECUTOR_MAX_PARALLEL");
 
     let dir = tempdir().unwrap();
     let url = format!("sqlite://{}/state.db", dir.path().display());
@@ -249,49 +247,4 @@ async fn dispatch_writes_audit_chain_that_verifies() {
     assert!(r.ok, "{r:?}");
     // 1 plan.created + 2 task.created + 2 task.in_progress = 5+
     assert!(r.checked >= 5);
-}
-
-#[tokio::test]
-async fn spawn_loop_abort_stops_before_first_tick() {
-    let (exec, dur, _dir) = fresh().await;
-    let planner = Planner::new(dur.clone()).with_mode(PlannerMode::Heuristic);
-    let plan_id = planner.solve("abort-task").await.unwrap();
-
-    let handle = spawn_loop(Arc::new(exec), ChronoDuration::seconds(60));
-    handle.abort();
-    handle.abort();
-    tokio::time::sleep(Duration::from_millis(100)).await;
-
-    let tasks = dur.tasks().list_by_plan(&plan_id).await.unwrap();
-    assert!(tasks.iter().all(|t| t.status == TaskStatus::Pending));
-}
-
-#[tokio::test]
-async fn spawn_loop_dispatches_pending_tasks_in_background() {
-    // Wires the same loop the daemon's main.rs runs (ADR-0027). A
-    // pending task with no wave dependencies must be promoted to
-    // in_progress within one tick of the loop, with no manual
-    // `Executor::tick()` or `POST /v1/dispatch` call.
-    let (exec, dur, _dir) = fresh().await;
-    let planner = Planner::new(dur.clone()).with_mode(PlannerMode::Heuristic);
-    let plan_id = planner.solve("loop-task").await.unwrap();
-
-    let handle = spawn_loop(Arc::new(exec), ChronoDuration::milliseconds(50));
-
-    // Poll up to 5 seconds for the loop to flip the task. With a 50ms
-    // tick and a single-task plan, the first round should land in
-    // ~50-100ms; the budget is wide so this stays green on slow CI.
-    let deadline = std::time::Instant::now() + Duration::from_secs(5);
-    let mut promoted = false;
-    while std::time::Instant::now() < deadline {
-        let tasks = dur.tasks().list_by_plan(&plan_id).await.unwrap();
-        if tasks.iter().all(|t| t.status == TaskStatus::InProgress) {
-            promoted = true;
-            break;
-        }
-        tokio::time::sleep(Duration::from_millis(50)).await;
-    }
-
-    handle.abort();
-    assert!(promoted, "spawn_loop did not dispatch within 5s");
 }

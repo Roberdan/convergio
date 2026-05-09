@@ -118,11 +118,15 @@ impl Executor {
 
     async fn find_dispatchable(&self) -> Result<Vec<(String, String)>> {
         // Pending tasks whose wave is "ready" — no earlier-wave task
-        // is still open in the same plan.
+        // is still open in the same plan. Skip tasks whose plan is
+        // already terminal (`cancelled`/`completed`) so one dead plan
+        // can't block dispatch for others (PlanStatusGate).
         let rows = sqlx::query_as::<_, (String, String, i64)>(
             "SELECT t.id, t.plan_id, t.wave \
              FROM tasks t \
+             JOIN plans p ON p.id = t.plan_id \
              WHERE t.status = 'pending' \
+               AND p.status NOT IN ('cancelled', 'completed') \
                AND NOT EXISTS ( \
                    SELECT 1 FROM tasks t2 \
                    WHERE t2.plan_id = t.plan_id \

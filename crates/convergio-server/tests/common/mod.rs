@@ -28,6 +28,11 @@ use tokio::net::TcpListener;
 /// rm-rf'd by Drop.
 #[allow(dead_code)]
 pub async fn boot() -> (String, Pool, TempDir) {
+    // E2E tests must not depend on operator env — these flags change
+    // dispatch semantics and can make assertions flaky.
+    std::env::remove_var("CONVERGIO_EXECUTOR_USE_RUNNER");
+    std::env::remove_var("CONVERGIO_EXECUTOR_MAX_PARALLEL");
+
     let dir = tempdir().expect("tempdir");
     let db_path = dir.path().join("state.db");
     let url = format!("sqlite://{}", db_path.display());
