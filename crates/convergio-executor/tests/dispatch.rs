@@ -3,17 +3,18 @@
 use chrono::Duration as ChronoDuration;
 use convergio_db::Pool;
 use convergio_durability::{init, Durability, TaskStatus};
-use convergio_executor::{spawn_loop, Executor, ExecutorError, SpawnTemplate};
-use convergio_lifecycle::{LifecycleError, Supervisor};
+use convergio_executor::{spawn_loop, Executor, SpawnTemplate};
+use convergio_lifecycle::Supervisor;
 use convergio_planner::{Planner, PlannerMode};
 use std::sync::Arc;
 use std::time::Duration;
 use tempfile::tempdir;
 
 async fn fresh_with(template: SpawnTemplate) -> (Executor, Durability, tempfile::TempDir) {
-    // Tests should not depend on operator env; this flag forces the
-    // runner-based spawn path (bypassing the legacy SpawnTemplate seam).
+    // Tests should not depend on operator env; clear the flag that forces
+    // runner-based spawn. With `runner_kind: None` tasks take the legacy seam.
     std::env::remove_var("CONVERGIO_EXECUTOR_USE_RUNNER");
+    std::env::remove_var("CONVERGIO_EXECUTOR_MAX_PARALLEL");
 
     let dir = tempdir().unwrap();
     let url = format!("sqlite://{}/state.db", dir.path().display());
@@ -227,11 +228,9 @@ async fn tick_leaves_task_pending_when_spawn_fails() {
     let fetched = dur.tasks().get(&task.id).await.unwrap();
     assert!(fetched.runner_kind.is_none(), "runner_kind must be NULL");
 
-    let err = exec.tick().await.unwrap_err();
-    assert!(matches!(
-        err,
-        ExecutorError::Lifecycle(LifecycleError::SpawnFailed(_))
-    ));
+    let n = exec.tick().await.unwrap();
+    assert_eq!(n, 0);
+
     let after = dur.tasks().get(&task.id).await.unwrap();
     assert_eq!(after.status, TaskStatus::Pending);
     assert!(after.agent_id.is_none());

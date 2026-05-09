@@ -10,7 +10,7 @@ use convergio_runner::{
 };
 use std::path::PathBuf;
 use std::str::FromStr;
-use tracing::info;
+use tracing::{info, warn};
 
 /// Executor handle.
 #[derive(Clone)]
@@ -101,9 +101,21 @@ impl Executor {
             return Ok(0);
         }
         let mut dispatched = 0usize;
-        for (task_id, plan_id) in pending.into_iter().take(budget) {
-            self.dispatch_one(&task_id, &plan_id).await?;
-            dispatched += 1;
+        for (task_id, plan_id) in pending {
+            if dispatched >= budget {
+                break;
+            }
+            match self.dispatch_one(&task_id, &plan_id).await {
+                Ok(()) => {
+                    dispatched += 1;
+                }
+                Err(e) => warn!(
+                    task_id = %task_id,
+                    plan_id = %plan_id,
+                    error = %e,
+                    "executor dispatch failed; skipping task"
+                ),
+            }
         }
         Ok(dispatched)
     }
