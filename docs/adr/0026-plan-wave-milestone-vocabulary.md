@@ -182,9 +182,9 @@ collide.
   ADR-0011 alongside Thor's `complete_validated_tasks`. We
   must guard against operators using it as a generic "I'm
   bored, close it" button. Mitigation: the `reason` field is
-  mandatory and surfaces in the audit log; future `cvg plan
-  triage` can require a regex (e.g. mention a PR or commit hash)
-  before allowing the close.
+  mandatory, surfaced in the audit log, and validated against a
+  provenance regex (must mention a verifiable anchor like a PR,
+  commit hash, task UUID, ADR, or friction id).
 
 ### Neutral
 
