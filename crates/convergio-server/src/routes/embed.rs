@@ -50,17 +50,31 @@ async fn stats(
 
 async fn warm(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
     let started = std::time::Instant::now();
-    let v = state
-        .embedder
-        .embed("convergio")
-        .map_err(|e| ApiError::Internal(format!("warm failed: {e}")))?;
-    let ms = started.elapsed().as_millis() as u64;
-    Ok(Json(json!({
-        "ok": true,
-        "model": state.embedder.model_id(),
-        "dim": v.len(),
-        "ms": ms,
-    })))
+    match state.embedder.embed("convergio") {
+        Ok(v) => {
+            let ms = started.elapsed().as_millis() as u64;
+            Ok(Json(json!({
+                "ok": true,
+                "model": state.embedder.model_id(),
+                "dim": v.len(),
+                "ms": ms,
+            })))
+        }
+        Err(e) => {
+            // Best-effort warm: do not 500 the daemon just because the
+            // model download failed. Callers can treat this as a hint to
+            // run structural-only retrieval.
+            tracing::warn!(model = state.embedder.model_id(), error = %e, "embed warm failed");
+            let ms = started.elapsed().as_millis() as u64;
+            Ok(Json(json!({
+                "ok": false,
+                "model": state.embedder.model_id(),
+                "dim": state.embedder.dim(),
+                "ms": ms,
+                "error": e.to_string(),
+            })))
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -138,15 +152,23 @@ async fn for_task(
 ) -> Result<Json<Value>, ApiError> {
     let limit = body.top_k.unwrap_or(25).clamp(1, 100);
     let started = std::time::Instant::now();
-    let hits = semantic_search(&state.embed, state.embedder.as_ref(), &body.query, limit)
-        .await
-        .map_err(|e| ApiError::Internal(format!("semantic search failed: {e}")))?;
+    let (hits, degraded, error_msg) =
+        match semantic_search(&state.embed, state.embedder.as_ref(), &body.query, limit).await {
+            Ok(v) => (v, false, None),
+            Err(convergio_embed::EmbedError::EmbedderFailed(msg)) => {
+                tracing::warn!(error = %msg, "semantic search degraded; returning empty hits");
+                (Vec::new(), true, Some(msg))
+            }
+            Err(e) => return Err(ApiError::Internal(format!("semantic search failed: {e}"))),
+        };
     let ms = started.elapsed().as_millis() as u64;
     Ok(Json(json!({
-        "ok": true,
+        "ok": !degraded,
+        "degraded": degraded,
         "model": state.embedder.model_id(),
         "ms": ms,
         "hits": hits.iter().map(neighbor_json).collect::<Vec<_>>(),
+        "error": error_msg,
     })))
 }
 

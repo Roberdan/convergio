@@ -22,6 +22,9 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tracing_subscriber::{fmt, EnvFilter};
 
+mod embedder_setup;
+use embedder_setup::make_embedder;
+
 #[derive(Parser)]
 #[command(name = "convergio", version, about = "Local Convergio daemon", long_about = None)]
 struct Cli {
@@ -205,47 +208,6 @@ fn play_boot_banner() {
     let mut handle = stdout.lock();
     let mut sleeper = boot::RealSleeper;
     let _ = boot::play(&mut handle, &mut sleeper, theme);
-}
-
-/// Construct the daemon's embedder based on `CONVERGIO_EMBED_MODEL`.
-///
-/// - Unset / `deterministic-test` (default): `DeterministicTestEmbedder`
-///   with the canonical 384-dim shape (matches the real-model dim
-///   so a swap doesn't break stored vectors).
-/// - `multilingual-e5-small` (only when built with
-///   `--features fastembed`): real ONNX via `fastembed-rs`. Falls
-///   back to the test embedder with a `WARN` log when the binary
-///   was built without the feature.
-///
-/// FR-3.9 graceful degradation: an unknown value also falls back to
-/// the test embedder, never crashes the daemon.
-fn make_embedder() -> Arc<dyn convergio_embed::Embedder> {
-    let model = std::env::var("CONVERGIO_EMBED_MODEL").unwrap_or_default();
-    match model.as_str() {
-        "" | "deterministic-test" => {
-            tracing::info!("embedder: deterministic-test (no model loaded)");
-            Arc::new(convergio_embed::embedder::testing::DeterministicTestEmbedder::new(384))
-        }
-        #[cfg(feature = "fastembed")]
-        "multilingual-e5-small" => {
-            let cache = home_models_dir();
-            tracing::info!(?cache, "embedder: multilingual-e5-small (fastembed-rs)");
-            Arc::new(convergio_embed::MultilingualE5Embedder::new(cache))
-        }
-        other => {
-            tracing::warn!(
-                model = other,
-                "unknown CONVERGIO_EMBED_MODEL; falling back to deterministic-test"
-            );
-            Arc::new(convergio_embed::embedder::testing::DeterministicTestEmbedder::new(384))
-        }
-    }
-}
-
-#[cfg(feature = "fastembed")]
-fn home_models_dir() -> std::path::PathBuf {
-    let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
-    std::path::Path::new(&home).join(".convergio/v3/models")
 }
 
 fn parse_env_i64(key: &str, default: i64) -> i64 {

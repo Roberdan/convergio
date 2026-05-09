@@ -3,10 +3,10 @@
 //! Embeddings storage and pluggable embedder trait for Convergio's
 //! Tier-3 retrieval (ADR-0038, F1).
 //!
-//! This crate is the **storage and policy** seam. It does not bundle
-//! a model — F1-α ships only [`embedder::testing::DeterministicTestEmbedder`];
-//! a real `fastembed-rs`-backed implementation lands in F1-β alongside
-//! the `sqlite-vec` virtual-table swap.
+//! This crate is the **storage and policy** seam. By default it ships
+//! only [`embedder::testing::DeterministicTestEmbedder`]. Enable the
+//! `fastembed` feature for real ONNX models via `fastembed-rs`, which
+//! are downloaded lazily into `~/.convergio/v3/models/`.
 //!
 //! ## Architecture
 //!
@@ -100,4 +100,4 @@ pub use store::{EmbedStore, EmbeddingRow, Neighbor};
 
 /// Re-export: `fastembed` real-model embedder (feature-gated).
 #[cfg(feature = "fastembed")]
-pub use fastembed_impl::MultilingualE5Embedder;
+pub use fastembed_impl::{BgeM3Embedder, MultilingualE5Embedder};

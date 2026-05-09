@@ -179,10 +179,21 @@ async fn build_hybrid_section(
     // descending (the existing relevance heuristic). The RRF input
     // is a list of file-path ids in rank order.
     let structural_ids: Vec<&str> = pack.files.iter().map(|f| f.path.as_str()).collect();
-    let semantic_neighbors =
-        semantic_search(&state.embed, state.embedder.as_ref(), query_text, top_k)
-            .await
-            .map_err(|e| ApiError::Internal(format!("semantic search: {e}")))?;
+    let semantic_neighbors = match semantic_search(
+        &state.embed,
+        state.embedder.as_ref(),
+        query_text,
+        top_k,
+    )
+    .await
+    {
+        Ok(v) => v,
+        Err(convergio_embed::EmbedError::EmbedderFailed(msg)) => {
+            tracing::warn!(error = %msg, "semantic unavailable; falling back to structural-only");
+            Vec::new()
+        }
+        Err(e) => return Err(ApiError::Internal(format!("semantic search: {e}"))),
+    };
     let semantic_ids: Vec<&str> = semantic_neighbors
         .iter()
         .map(|n| n.node_id.as_str())

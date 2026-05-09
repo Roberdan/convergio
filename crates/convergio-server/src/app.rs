@@ -26,9 +26,9 @@ pub struct AppState {
     pub embed: Arc<EmbedStore>,
     /// Embedder used by the daemon for ingest + semantic queries.
     /// The default at startup is `DeterministicTestEmbedder` (no
-    /// network); set `CONVERGIO_EMBED_MODEL=multilingual-e5-small`
-    /// (and build with `--features fastembed`) to swap in the real
-    /// ONNX model. ADR-0038 § F1-β.
+    /// network); set `CONVERGIO_EMBED_MODEL=bge-m3-small-int8` (or
+    /// `multilingual-e5-small`) and build with `--features fastembed`
+    /// to swap in the real ONNX embedder.
     pub embedder: Arc<dyn Embedder>,
     /// Fleet repo registry (ADR-0038, F2-6).
     pub fleet: Arc<FleetStore>,

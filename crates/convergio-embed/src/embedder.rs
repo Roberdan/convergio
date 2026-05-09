@@ -1,9 +1,9 @@
 //! Pluggable embedder.
 //!
 //! An [`Embedder`] turns text into a fixed-dimension vector. The trait
-//! is the seam between this crate and the actual model — F1-α ships
-//! only [`testing::DeterministicTestEmbedder`]; a real
-//! `fastembed-rs`-backed implementation lands in F1-β.
+//! is the seam between this crate and the actual model. By default
+//! Convergio ships only [`testing::DeterministicTestEmbedder`]; enable
+//! the `fastembed` feature for real ONNX models via `fastembed-rs`.
 
 use sha2::{Digest, Sha256};
 use thiserror::Error;
