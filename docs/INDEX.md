@@ -18,12 +18,12 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 409 |
+| `AGENTS.md` | agent-rules | - | - | 448 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
-| `CHANGELOG.md` | release | - | - | 992 |
+| `CHANGELOG.md` | release | - | - | 1023 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
-| `CONTRIBUTING.md` | governance | - | - | 158 |
+| `CONTRIBUTING.md` | governance | - | - | 176 |
 | `README.md` | entry | - | - | 383 |
 | `ROADMAP.md` | roadmap | - | - | 479 |
 | `SECURITY.md` | governance | - | - | 57 |
@@ -49,9 +49,9 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-db/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-db/README.md` | crate-readme | - | - | 26 |
 | `crates/convergio-durability/AGENTS.md` | crate-rules | - | - | 85 |
-| `crates/convergio-embed/AGENTS.md` | crate-rules | - | - | 66 |
+| `crates/convergio-embed/AGENTS.md` | crate-rules | - | - | 67 |
 | `crates/convergio-executor/AGENTS.md` | crate-rules | - | - | 26 |
-| `crates/convergio-executor/README.md` | crate-readme | - | - | 7 |
+| `crates/convergio-executor/README.md` | crate-readme | - | - | 10 |
 | `crates/convergio-fleet/AGENTS.md` | crate-rules | - | - | 77 |
 | `crates/convergio-fleet/CLAUDE.md` | crate-rules | - | - | 3 |
 | `crates/convergio-graph/AGENTS.md` | crate-rules | - | - | 57 |
@@ -126,6 +126,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/agent-protocol.md` | - | - | - | 113 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
 | `docs/agents/README.md` | agent-docs | - | - | 101 |
+| `docs/incidents/2026-05-08-dirty-state-postmortem.md` | - | - | - | 230 |
 | `docs/multi-agent-operating-model.md` | - | - | - | 485 |
 | `docs/plans/2026-05-01-triage-pass.md` | plan | - | - | 75 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |
