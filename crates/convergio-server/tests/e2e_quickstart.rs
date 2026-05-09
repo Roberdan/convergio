@@ -19,6 +19,12 @@ async fn boot() -> (String, Pool, tempfile::TempDir) {
     // not invoke the operator's local `claude -p --model opus`
     // (ADR-0036) — that would charge real tokens on each run.
     std::env::set_var("CONVERGIO_PLANNER_MODE", "heuristic");
+
+    // Tests must not depend on operator env; these flags change
+    // dispatch behavior and would make the assertions flaky.
+    std::env::remove_var("CONVERGIO_EXECUTOR_USE_RUNNER");
+    std::env::remove_var("CONVERGIO_EXECUTOR_MAX_PARALLEL");
+
     common_boot().await
 }
 

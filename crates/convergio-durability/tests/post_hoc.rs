@@ -7,7 +7,9 @@
 //! 2. Failed → done works (the typical triage path).
 //! 3. Empty / whitespace reason refused with
 //!    `DurabilityError::PostHocReasonMissing`.
-//! 4. Already-done task refused with `DurabilityError::AlreadyDone`
+//! 4. Reason without an artifact reference is refused with
+//!    `DurabilityError::PostHocReasonMissingArtifactRef`.
+//! 5. Already-done task refused with `DurabilityError::AlreadyDone`
 //!    (idempotency guard — no duplicate audit rows).
 
 use convergio_db::Pool;
@@ -110,15 +112,30 @@ async fn empty_reason_rejected() {
 }
 
 #[tokio::test]
+async fn reason_without_artifact_reference_rejected() {
+    let (dur, _dir) = fresh().await;
+    let task_id = make_task(&dur, "p4").await;
+
+    let err = dur
+        .close_task_post_hoc(&task_id, "shipped", None)
+        .await
+        .unwrap_err();
+    assert!(matches!(
+        err,
+        DurabilityError::PostHocReasonMissingArtifactRef
+    ));
+}
+
+#[tokio::test]
 async fn already_done_is_refused_idempotency_guard() {
     let (dur, _dir) = fresh().await;
     let task_id = make_task(&dur, "p4").await;
-    dur.close_task_post_hoc(&task_id, "first close", None)
+    dur.close_task_post_hoc(&task_id, "first close (PR #1)", None)
         .await
         .unwrap();
 
     let err = dur
-        .close_task_post_hoc(&task_id, "second close", None)
+        .close_task_post_hoc(&task_id, "second close (PR #2)", None)
         .await
         .unwrap_err();
     assert!(matches!(err, DurabilityError::AlreadyDone { .. }));

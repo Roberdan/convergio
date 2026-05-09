@@ -34,7 +34,7 @@ pub async fn run(
                     print_task_line(bundle, task);
                 }
                 if auto_close {
-                    close_stale(client, bundle, &arr, &count_str, stale_days).await?;
+                    close_stale(client, bundle, id, &arr, &count_str, stale_days).await?;
                 }
             }
         }
@@ -78,6 +78,7 @@ fn print_task_line(bundle: &Bundle, task: &Value) {
 async fn close_stale(
     client: &Client,
     bundle: &Bundle,
+    plan_id: &str,
     arr: &[Value],
     count_str: &str,
     stale_days: i64,
@@ -97,7 +98,8 @@ async fn close_stale(
             if tid.is_empty() {
                 continue;
             }
-            let reason = format!("auto-closed by triage: stale for {stale_days} days");
+            let reason =
+                format!("auto-closed by triage (plan {plan_id}): stale for {stale_days} days",);
             client
                 .post::<_, Value>(
                     &format!("/v1/tasks/{tid}/close-post-hoc"),

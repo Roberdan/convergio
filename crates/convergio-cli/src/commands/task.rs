@@ -90,7 +90,7 @@ pub enum TaskCommand {
     ClosePostHoc {
         /// Task id.
         task_id: String,
-        /// Reason for the post-hoc close (required, non-empty).
+        /// Reason for the post-hoc close (required; must include an artifact reference like PR/commit/URL/F##/UUID).
         #[arg(long)]
         reason: String,
         /// Agent id to record on the audit row (optional).

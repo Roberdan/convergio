@@ -157,7 +157,7 @@ propose `submitted`; Thor disposes `done`.
 exists for triage of tasks whose work shipped outside the
 daemon's evidence flow (e.g. before the `Tracks: <uuid>`
 convention was adopted). The route requires a non-empty
-`reason`, refuses already-`done` tasks for idempotency, and
+`reason` **that includes an artifact reference** (PR/commit/URL/F##/UUID), refuses already-`done` tasks for idempotency, and
 writes a `task.closed_post_hoc` audit row. It is not an agent
 surface — agents must still walk `submitted → validate`.
 

@@ -17,7 +17,42 @@ use crate::error::{DurabilityError, Result};
 use crate::facade::Durability;
 use crate::model::{Plan, Task, TaskStatus};
 use chrono::Utc;
+use regex::Regex;
 use serde_json::json;
+use std::sync::OnceLock;
+
+fn post_hoc_reason_has_artifact_ref(reason: &str) -> bool {
+    static RE: OnceLock<Regex> = OnceLock::new();
+    let re = RE.get_or_init(|| {
+        Regex::new(
+            r"(?ix)
+            # GitHub PR / issue shorthand
+            \b(?:pr|pull\s*request|issue)\s*\#?\s*\d+\b
+            |
+            # GitHub URLs (pull/123, issues/123, commit/<sha>)
+            https?://\S+/(?:pull|issues)/\d+\b
+            |
+            https?://\S+/commit/[0-9a-f]{7,40}\b
+            |
+            # Commit-ish references
+            \b(?:commit|sha)\s*(?::|\#)?\s*[0-9a-f]{7,40}\b
+            |
+            \b[0-9a-f]{7,40}\b
+            |
+            # UUIDs (task/plan/agent ids)
+            \b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b
+            |
+            # Convergio internal artifact tags
+            \bF\d+\b
+            |
+            \bADR-\d+\b
+            ",
+        )
+        .unwrap_or_else(|e| panic!("post-hoc reason artifact regex invalid: {e}"))
+    });
+
+    re.is_match(reason)
+}
 
 impl Durability {
     /// Close a task `post hoc`: move it directly to `done` because
@@ -33,6 +68,9 @@ impl Durability {
     /// Errors:
     /// - [`DurabilityError::PostHocReasonMissing`] if `reason` is
     ///   empty or whitespace.
+    /// - [`DurabilityError::PostHocReasonMissingArtifactRef`] if
+    ///   `reason` does not contain any concrete artifact reference
+    ///   (PR/commit/URL/F##/UUID/...).
     /// - [`DurabilityError::AlreadyDone`] if the task is already
     ///   `done` (idempotency guard).
     pub async fn close_task_post_hoc(
@@ -44,6 +82,9 @@ impl Durability {
         let trimmed = reason.trim();
         if trimmed.is_empty() {
             return Err(DurabilityError::PostHocReasonMissing);
+        }
+        if !post_hoc_reason_has_artifact_ref(trimmed) {
+            return Err(DurabilityError::PostHocReasonMissingArtifactRef);
         }
         let task = self.tasks().get(task_id).await?;
         if matches!(task.status, TaskStatus::Done) {

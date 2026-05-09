@@ -140,6 +140,11 @@ impl IntoResponse for ApiError {
                     "post_hoc_reason_missing",
                     e.to_string(),
                 ),
+                DurabilityError::PostHocReasonMissingArtifactRef => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "post_hoc_reason_missing_artifact_ref",
+                    e.to_string(),
+                ),
                 DurabilityError::AlreadyDone { .. } => {
                     (StatusCode::CONFLICT, "already_done", e.to_string())
                 }
