@@ -169,7 +169,7 @@ in-process lives in `crates/convergio-server/tests/`.
 ## Build & run
 
 ```bash
-# build everything
+# build everything (use mainly for final validation / CI parity)
 cargo build --workspace
 
 # run the local daemon
@@ -179,6 +179,39 @@ cargo run -p convergio-server -- start
 # CLI
 cargo run -p convergio-cli -- health
 cargo run -p convergio-cli -- plan create "my plan"
+```
+
+## Workspace resource policy
+
+This is a large Rust workspace. Claude Code, GitHub Copilot CLI, and
+other local agents must default to crate-scoped Cargo commands while
+iterating, then run the full workspace checks only when the task needs
+cross-crate validation or before handing off final code.
+
+Preferred iteration commands:
+
+```bash
+cargo check-crate convergio-server
+cargo test-crate convergio-durability
+cargo clippy -p convergio-cli --all-targets -- -D warnings
+```
+
+Use targeted cleanup before deleting the whole workspace cache:
+
+```bash
+cargo clean-crate convergio-server
+cargo clean --profile dev
+cargo clean
+```
+
+Keep machine-local cache policy out of the repo. Operators who want a
+shared or bounded cache should set it in their shell/profile, not in
+committed config:
+
+```bash
+export CARGO_TARGET_DIR="$HOME/.cache/cargo-target/convergio"
+export RUSTC_WRAPPER="$(command -v sccache)"
+export SCCACHE_CACHE_SIZE=20G
 ```
 
 ## Test
