@@ -61,7 +61,6 @@ skip = [
     { crate = "redox_syscall@0.5.18", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "thiserror@1.0.69", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "thiserror-impl@1.0.69", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
-    { crate = "windows-sys@0.52.0", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "wit-bindgen@0.51.0", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     # Brought in transitively by ratatui 0.29 + crossterm 0.28 (cvg dash, ADR-0029).
     { crate = "linux-raw-sys@0.4.15", reason = "transitive duplicate via ratatui/crossterm; ratchet when upstreams converge" },
@@ -82,6 +81,18 @@ skip = [
     { crate = "nom@7.1.3", reason = "via fastembed/tokenizers" },
     { crate = "pastey@0.1.1", reason = "via fastembed/ort macros" },
     { crate = "r-efi@5.3.0", reason = "via fastembed/getrandom older path" },
+]
+
+# Skip the entire windows-sys dependency tree when checking for duplicates.
+# windows-sys (and its windows-targets / windows_<arch>_<env> children) is
+# routinely pulled in at multiple major versions by mixed-vintage transitive
+# dependencies (clap-stack pulls 0.60+, fastembed/dirs pull 0.52, walkdir
+# still uses 0.48). The Microsoft maintainers publish each major in parallel
+# rather than yanking older releases, so this duplication is the steady
+# state, not something to ratchet down. Triggered by dependabot bumps to
+# tokio (#244) and tower-http (#246).
+skip-tree = [
+    { crate = "windows-sys", reason = "windows-* family is split across multiple parallel-published majors; duplication is permanent" },
 ]
 
 [sources]
