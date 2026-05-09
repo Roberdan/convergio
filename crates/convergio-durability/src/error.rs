@@ -15,10 +15,12 @@ pub enum DurabilityError {
     },
 
     /// A gate refused the requested transition.
-    #[error("gate refused: {gate}: {reason}")]
+    #[error("gate refused: {gate}#{reason_code}: {reason}")]
     GateRefused {
         /// Name of the refusing gate.
         gate: &'static str,
+        /// Stable refusal reason code (see `GET /v1/gates/preconditions`).
+        reason_code: &'static str,
         /// Human-readable reason — included in API responses.
         reason: String,
     },

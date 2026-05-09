@@ -38,6 +38,7 @@ impl Gate for EvidenceGate {
         } else {
             Err(DurabilityError::GateRefused {
                 gate: "evidence",
+                reason_code: "missing_evidence_kind",
                 reason: format!("missing evidence kinds: {}", missing.join(", ")),
             })
         }

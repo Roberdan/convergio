@@ -24,6 +24,7 @@ impl Gate for PlanStatusGate {
         let Some((status,)) = row else {
             return Err(DurabilityError::GateRefused {
                 gate: "plan_status",
+                reason_code: "plan_not_found",
                 reason: format!("plan {} not found", ctx.task.plan_id),
             });
         };
@@ -37,6 +38,11 @@ impl Gate for PlanStatusGate {
         {
             return Err(DurabilityError::GateRefused {
                 gate: "plan_status",
+                reason_code: if matches!(plan_status, PlanStatus::Cancelled) {
+                    "plan_is_cancelled"
+                } else {
+                    "plan_is_completed"
+                },
                 reason: format!("plan is {}", plan_status.as_str()),
             });
         }

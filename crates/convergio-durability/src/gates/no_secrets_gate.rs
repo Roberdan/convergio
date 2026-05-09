@@ -1,6 +1,6 @@
 //! `NoSecretsGate` — refuses evidence that appears to contain secrets.
 
-use super::{Gate, GateContext};
+use super::{Gate, GateContext, GatePrecondition};
 use crate::error::{DurabilityError, Result};
 use crate::model::TaskStatus;
 use crate::store::EvidenceStore;
@@ -95,11 +95,21 @@ impl Gate for NoSecretsGate {
             violations.dedup();
             Err(DurabilityError::GateRefused {
                 gate: "no_secrets",
+                reason_code: "secrets_found",
                 reason: format!(
                     "secret-like values found in evidence: {}",
                     violations.join(", ")
                 ),
             })
+        }
+    }
+
+    fn describe(&self) -> GatePrecondition {
+        GatePrecondition {
+            gate: "no_secrets",
+            requires_evidence_kinds: vec!["*"],
+            active_target_status: vec!["submitted", "done"],
+            refusal_reasons: vec!["secrets_found"],
         }
     }
 }

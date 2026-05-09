@@ -58,8 +58,11 @@ pub struct GateContext {
 pub struct GatePrecondition {
     /// Stable gate name (`Gate::name()`).
     pub gate: &'static str,
-    /// Evidence kinds this gate requires before allowing the
-    /// transition (empty when the gate does not check evidence).
+    /// Evidence kinds this gate may inspect while evaluating the
+    /// transition (empty when the gate does not read evidence).
+    ///
+    /// Conventions:
+    /// - `"*"` means "may read any evidence kind".
     pub requires_evidence_kinds: Vec<&'static str>,
     /// Task statuses for which this gate is active.
     pub active_target_status: Vec<&'static str>,

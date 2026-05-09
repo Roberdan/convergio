@@ -42,6 +42,7 @@ impl Gate for WaveSequenceGate {
         if row.0 > 0 {
             Err(DurabilityError::GateRefused {
                 gate: "wave_sequence",
+                reason_code: "earlier_wave_tasks_still_open",
                 reason: format!("{} task(s) in earlier waves still open", row.0),
             })
         } else {

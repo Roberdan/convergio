@@ -121,10 +121,14 @@ impl IntoResponse for ApiError {
                 DurabilityError::NotFound { .. } => {
                     (StatusCode::NOT_FOUND, "not_found", e.to_string())
                 }
-                DurabilityError::GateRefused { gate, reason } => (
+                DurabilityError::GateRefused {
+                    gate,
+                    reason_code,
+                    reason,
+                } => (
                     StatusCode::CONFLICT,
                     "gate_refused",
-                    format!("{gate}: {reason}"),
+                    format!("{gate}#{reason_code}: {reason}"),
                 ),
                 DurabilityError::DoneNotByThor => {
                     (StatusCode::FORBIDDEN, "done_not_by_thor", e.to_string())
@@ -239,12 +243,19 @@ impl IntoResponse for ApiError {
             ApiError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, "internal", msg.clone()),
         };
 
-        let body = json!({
+        let mut body = json!({
             "error": {
                 "code": code,
                 "message": message,
             }
         });
+        if let ApiError::Durability(DurabilityError::GateRefused {
+            gate, reason_code, ..
+        }) = &self
+        {
+            body["error"]["gate"] = json!(gate);
+            body["error"]["reason_code"] = json!(reason_code);
+        }
         (status, Json(body)).into_response()
     }
 }

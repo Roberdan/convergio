@@ -20,7 +20,7 @@
 //! (load from `convergio-debt-rules.toml`, etc). The MVP ships
 //! defaults only; custom config is a future-session feature.
 
-use super::{Gate, GateContext};
+use super::{Gate, GateContext, GatePrecondition};
 use crate::error::{DurabilityError, Result};
 use crate::model::TaskStatus;
 use crate::store::EvidenceStore;
@@ -172,8 +172,18 @@ impl Gate for NoDebtGate {
             violations.dedup();
             Err(DurabilityError::GateRefused {
                 gate: "no_debt",
+                reason_code: "debt_markers_found",
                 reason: format!("debt markers found in evidence: {}", violations.join(", ")),
             })
+        }
+    }
+
+    fn describe(&self) -> GatePrecondition {
+        GatePrecondition {
+            gate: "no_debt",
+            requires_evidence_kinds: vec!["*"],
+            active_target_status: vec!["submitted", "done"],
+            refusal_reasons: vec!["debt_markers_found"],
         }
     }
 }

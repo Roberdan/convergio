@@ -77,7 +77,7 @@ async fn unresolved_task_crdt_conflict_blocks_submit() {
 
     assert!(matches!(
         err,
-        DurabilityError::GateRefused { gate, reason }
+        DurabilityError::GateRefused { gate, reason, .. }
             if gate == "crdt_conflict" && reason.contains("title")
     ));
 }

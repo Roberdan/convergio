@@ -44,8 +44,13 @@ impl Durability {
             agent_id: agent_id.map(str::to_string),
         };
         if let Err(e) = gates::run(self.pipeline(), &ctx).await {
-            if let DurabilityError::GateRefused { gate, reason } = &e {
-                self.record_gate_refusal(&task, target, agent_id, gate, reason)
+            if let DurabilityError::GateRefused {
+                gate,
+                reason_code,
+                reason,
+            } = &e
+            {
+                self.record_gate_refusal(&task, target, agent_id, gate, reason_code, reason)
                     .await?;
             }
             return Err(e);
@@ -264,13 +269,13 @@ impl Durability {
             .await?;
         Ok(())
     }
-
     pub(crate) async fn record_gate_refusal(
         &self,
         task: &Task,
         target: TaskStatus,
         agent_id: Option<&str>,
         gate: &str,
+        reason_code: &str,
         reason: &str,
     ) -> Result<()> {
         self.audit()
@@ -283,6 +288,7 @@ impl Durability {
                     "from": task.status.as_str(),
                     "to": target.as_str(),
                     "gate": gate,
+                    "reason_code": reason_code,
                     "reason": reason,
                     "agent_id": agent_id,
                 }),
