@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.19](https://github.com/Roberdan/convergio/compare/convergio-v0.3.18...convergio-v0.3.19) (2026-05-09)
+
+
+### Features
+
+* **durability:** harden post-hoc close reason validation ([d1a36e3](https://github.com/Roberdan/convergio/commit/d1a36e32a4eacecc570f4fc59f07a78297fb44eb))
+* **durability:** harden post-hoc close reason validation ([78380a9](https://github.com/Roberdan/convergio/commit/78380a927e4dea6e19c4920dfdc3e137107dd896))
+* **embed:** fastembed bge-m3-small alias ([fef02c6](https://github.com/Roberdan/convergio/commit/fef02c65f05860d72ca57611d9d21ebcf5ee7841))
+* **embed:** fastembed bge-m3-small alias ([0116286](https://github.com/Roberdan/convergio/commit/0116286d04cb0f6a1ee22d519af9fa6654b2c145))
+* **executor:** hard guard rails for runaway dispatch ([b0fc667](https://github.com/Roberdan/convergio/commit/b0fc6675da87edb4560914fb8c2f42434f5ff616))
+* **executor:** hard guard rails for runaway dispatch ([7c59866](https://github.com/Roberdan/convergio/commit/7c598668bcb51016115f8ee909334549dbbe7541))
+
+
+### Bug Fixes
+
+* **deps:** skip-tree windows-sys family in cargo deny ([cef2e3e](https://github.com/Roberdan/convergio/commit/cef2e3e8c178fda365ca0dd6ea41d4ad6d8889c0))
+* **deps:** skip-tree windows-sys family in cargo deny ([4920c27](https://github.com/Roberdan/convergio/commit/4920c27aa70629e7a395a78cd2c601ce04cb301c))
+* **executor:** make tick resilient ([f9d9235](https://github.com/Roberdan/convergio/commit/f9d9235a428f90f138a6189b57810495b342bf47))
+* **executor:** make tick resilient ([0e35217](https://github.com/Roberdan/convergio/commit/0e3521721a5e5f4373ab0d7cb9d0cce7f8d6fea8))
+* **repo:** use cvg binary in .claude hooks instead of cargo run ([d52a439](https://github.com/Roberdan/convergio/commit/d52a4393bcf925c59e0fed9f57e35bbbcb2a5f77))
+* **repo:** use installed cvg binary in .claude hooks instead of cargo run ([defec0a](https://github.com/Roberdan/convergio/commit/defec0adc1387a7b9113e98c8848395c68135b3d))
+* **runner:** share cargo target across agent worktrees ([e436923](https://github.com/Roberdan/convergio/commit/e4369238d4897fd7d5896b671903e15c1a9a5e76))
+* **runner:** share cargo target across agent worktrees ([a009943](https://github.com/Roberdan/convergio/commit/a009943a63b61a42702aa1bc55bdb2e817d69a7d))
+* **server:** extract make_embedder into module to honour 300-line cap ([e6e7eb5](https://github.com/Roberdan/convergio/commit/e6e7eb508c0593e9d9c0fa16a33ac0fe05b8a1eb))
+
+
+### Documentation
+
+* **repo:** document crate-scoped cargo workflow ([5478f29](https://github.com/Roberdan/convergio/commit/5478f299d74e74657e255c4455cffb7eb2b202a5))
+* **repo:** document crate-scoped cargo workflow ([02c32ee](https://github.com/Roberdan/convergio/commit/02c32eeb5fbad944312e136ce551b225340282bd))
+
 ## [0.3.18](https://github.com/Roberdan/convergio/compare/convergio-v0.3.17...convergio-v0.3.18) (2026-05-08)
 
 
