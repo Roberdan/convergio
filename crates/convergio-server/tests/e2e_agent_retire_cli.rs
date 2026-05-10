@@ -99,7 +99,7 @@ async fn heartbeat_with_retired_status_returns_clearer_422() {
         .json()
         .await
         .unwrap();
-    assert_eq!(retired["status"], "terminated");
+    assert_eq!(retired["status"], "retired");
 }
 
 #[tokio::test]
