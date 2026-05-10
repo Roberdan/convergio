@@ -17,6 +17,7 @@ pub mod graph;
 pub mod health;
 pub mod messages;
 pub mod plans;
+pub mod pr_links;
 pub mod solve;
 pub mod status;
 pub mod system_messages;

@@ -16,6 +16,7 @@ pub mod pr_parse;
 pub mod pr_render;
 pub mod pr_sync;
 pub mod pr_sync_parse;
+pub mod pr_who;
 
 pub use pr::{run, PrCommand};
 
