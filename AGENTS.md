@@ -395,6 +395,21 @@ For the full HTTP surface, drive `cvg` (typed) or `curl` (raw):
   `GET /v1/graph/for-task/:id`, `GET /v1/graph/drift`,
   `GET /v1/graph/cluster/:crate_name`
 - Embeddings (ADR-0038, F1 in flight): `GET /v1/embed/stats`
+- Action surface (ADR-0047): `GET /v1/api/actions` returns the
+  generated `actions.json` (name + capability + summary for every
+  daemon action). Same bytes are exposed over MCP via
+  `convergio.help --topic actions` so MCP clients and HTTP clients
+  see byte-identical catalogs.
+- Gate preconditions (P3-2): `GET /v1/gates/preconditions` lists
+  every gate with its `requires_evidence_kinds`,
+  `active_target_status`, and stable `refusal_reasons`. Use this to
+  introspect "what does this gate need from me?" before submitting,
+  instead of bouncing off `gate_refused` with HTTP 409.
+- Compensating actions (ADR-0048): `GET /v1/audit/events/:seq/compensate`
+  returns the compensating action body for an audit event, and
+  records the application as a fresh audit row when applied. Returns
+  404 when the underlying action has no defined inverse (e.g. the
+  audit log itself is append-only).
 
 Useful CLI verbs an agent will reach for early:
 
@@ -407,6 +422,16 @@ Useful CLI verbs an agent will reach for early:
 - `cvg graph build` then `cvg graph for-task <task_id>` — Tier-3
   context-pack scoped to a task (ADR-0014).
 - `cvg pr stack` — local PR queue dashboard with conflict matrix.
+- `cvg actions list [--capability X] [--output json|human]` — calls
+  `GET /v1/api/actions`; the operator-facing twin of the MCP
+  `convergio.help --topic actions` discovery loop.
+- `cvg gates show [--gate Y]` — calls `GET /v1/gates/preconditions`;
+  use this when you want to know what evidence a transition needs
+  before paying the cost of a refused submit.
+- `cvg audit compensate <seq> [--apply]` — calls
+  `GET /v1/audit/events/:seq/compensate`. Default is dry-run (prints
+  the compensating action body); `--apply` actually executes it and
+  records the application as a fresh audit row.
 
 ## Pull requests
 
