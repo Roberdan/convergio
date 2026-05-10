@@ -2,10 +2,10 @@
 name: cvg-spawn
 version: 1.0.0
 description: |
-  Wrap Claude Code subagent briefs with auto-register + heartbeat
-  boilerplate so background agents stay visible in the Convergio
-  daemon. Use this when invoking the Task tool for code-mutating work
-  in this repo.
+  Wrap spawned-worker briefs (subagent or background agent) with
+  auto-register + heartbeat boilerplate so they stay visible in the
+  Convergio daemon. Use this when invoking the Task tool for
+  code-mutating work in this repo.
 allowed-tools:
   - Bash
 triggers:
@@ -14,15 +14,15 @@ triggers:
 preamble-tier: 4
 ---
 
-# /cvg-spawn — wrap a subagent brief with Convergio auto-register
+# /cvg-spawn — wrap a spawned worker brief with Convergio auto-register
 
 ## Why this skill exists
 
-Claude Code subagents (the ones launched via the parent's `Task`
-tool) run in a different harness from the top-level session. The
-`SessionStart` hook in `.claude/settings.json` therefore does not
-fire for them — they would silently disappear from the daemon's
-agent registry, which means:
+Claude Code spawned helpers (subagents *and* background agents launched
+via the parent's `Task` tool) run in a different harness from the
+top-level session. The `SessionStart` hook in `.claude/settings.json`
+therefore does not fire for them — they would silently disappear from
+the daemon's agent registry, which means:
 
 - `cvg agent list` cannot see them.
 - The TUI dashboard cannot colour-code them.
@@ -31,53 +31,56 @@ agent registry, which means:
 
 `/cvg-spawn` solves this by emitting the canonical 3-step lifecycle
 wrapper (register → work → retire) plus a heartbeat reminder. The
-parent agent prepends the rendered block to every subagent brief
+parent agent prepends the rendered block to every spawned-worker brief
 that contains code-mutating work in this repository.
 
 ## When to invoke
 
 The parent (top-level) agent should invoke `/cvg-spawn` immediately
 **before** calling the `Task` tool, then paste the rendered block
-into the head of the subagent's brief.
+into the head of the spawned worker's brief.
 
-You do not need to invoke `/cvg-spawn` for read-only subagents
-(pure search, single-shot question answering). Invoke it whenever
-the subagent will edit files, run tests, push branches, or open
-PRs.
+You do not need to invoke `/cvg-spawn` for read-only helpers (pure
+search, single-shot question answering). Invoke it whenever the spawned
+worker will edit files, run tests, push branches, or open PRs.
 
 ## What this skill renders
 
-The skill produces three deterministic outputs:
+The skill produces three deterministic outputs (and is safe to re-run: agent registration is an upsert):
 
 1. A unique `subagent_id` of the form
    `subagent-${TASK_DESC_SLUG}-${HEX8}` where:
    - `TASK_DESC_SLUG` = first 24 chars of the task description,
      lower-cased, spaces replaced with `-`, non-alnum stripped.
    - `HEX8` = 8 random hex chars (`openssl rand -hex 4`).
-2. A bash block to prepend to the subagent brief:
-   - line 1: `SUBAGENT_ID="subagent-<slug>-<hex8>"`
-   - line 2: **budget pre-check** — `./scripts/check-context-budget.sh`
-     aborts the subagent if any crate is over the per-crate hard cap
-     (P1-6 / finding E5). Pick a smaller task or refactor first.
-   - line 3: register POST to `/v1/agent-registry/agents` with
-     `kind=subagent`.
-   - line 4: heartbeat POST to
+2. A bash block to prepend to the spawned-worker brief:
+   - line 1: `SUBAGENT_ID="subagent-<slug>-<hex8>"` (or `subagent-bg-...` in background mode)
+   - line 2: `CVG_SPAWN_MODE="subagent"|"background"`
+   - line 3: **budget pre-check** — `./scripts/check-context-budget.sh`
+     refuses only on hard caps (exit 1). Soft warnings (exit 2) are advisory.
+   - line 4: register POST to `/v1/agent-registry/agents` with
+     `kind=subagent` and `metadata.spawn_mode`.
+   - line 5: heartbeat POST to
      `/v1/agent-registry/agents/${SUBAGENT_ID}/heartbeat`.
-   - line 5: `# heartbeat every 5 min while working`
-   - line 6: **budget mid-flight reminder** — re-run
-     `check-context-budget.sh` every ~200 LOC so the subagent does
+   - line 6: `# heartbeat every 5 min` (subagent) or `# heartbeat every 60 s` (background)
+   - line 7: **budget mid-flight reminder** — re-run
+     `check-context-budget.sh` every ~200 LOC so the worker does
      not push past cap on push.
-   - line 7: `# ... do work ...`
-   - line 8: retire POST to
+   - line 8: `# ... do work ...`
+   - line 9: retire POST to
      `/v1/agent-registry/agents/${SUBAGENT_ID}/retire`.
 3. A one-line confirmation summary the parent prints back to the
-   user before launching the subagent:
-   `Subagent <id> will be registered as kind=subagent`.
+   user before launching the helper:
+   `Subagent <id> will be registered as kind=subagent (mode=...)`.
 
 ## Execution
 
 ```bash
+# default (subagent)
 bash "$(dirname "$0")/cvg-spawn.sh" <task-description>
+
+# background helper spawned via Task tool background mode
+bash "$(dirname "$0")/cvg-spawn.sh" --mode background <task-description>
 ```
 
 `<task-description>` is the short human-readable label the parent
@@ -92,13 +95,13 @@ random bytes — that is the only deterministic seam.
 
 | Stream | Content |
 |---|---|
-| stdout | The 6-line bash block (no leading blank line) followed by the one-line summary on its own line |
+| stdout | The wrapper bash block (no leading blank line) followed by the one-line summary on its own line |
 | stderr | Empty on success; one-line error on bad usage |
-| exit | `0` on success, `2` on missing argument |
+| exit | `0` on success, `2` on missing argument or invalid `--mode` |
 
 The skill performs **no network I/O**. It only renders text. The
-register / heartbeat / retire calls fire when the subagent actually
-runs the rendered block.
+register / heartbeat / retire calls fire when the spawned worker
+actually runs the rendered block.
 
 ## Why kind=subagent
 
@@ -123,6 +126,6 @@ under "Subagent lifecycle".
 
 `/cvg-attach` registers the **top-level** Claude Code session at
 session start (the SessionStart hook calls it). `/cvg-spawn`
-generates a wrapper for **subagents** spawned mid-session via the
-Task tool. The two skills do not overlap — they cover the two
-distinct harnesses in which Claude Code can run.
+generates a wrapper for **spawned helpers** (subagents and background
+agents) launched mid-session via the Task tool. The two skills do not
+overlap — they cover the distinct harnesses in which Claude Code can run.
