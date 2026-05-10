@@ -67,7 +67,7 @@ fn string_of(v: &Value, key: &str) -> String {
 
 pub(super) fn gh_merge(pr: u64) -> Result<()> {
     let out = Command::new("gh")
-        .args(["pr", "merge", &pr.to_string(), "--merge"])
+        .args(["pr", "merge", &pr.to_string(), "--merge", "--delete-branch"])
         .output()
         .context("spawn gh")?;
     if !out.status.success() {
@@ -124,20 +124,15 @@ pub(super) fn remove_worktree(head_ref: &str) -> Result<Option<PathBuf>> {
         return Ok(None);
     };
     let path_str = path.to_string_lossy().to_string();
-    let attempt = Command::new("git")
-        .args(["worktree", "remove", &path_str])
+    let force = Command::new("git")
+        .args(["worktree", "remove", "--force", &path_str])
         .output()?;
-    if !attempt.status.success() {
-        let force = Command::new("git")
-            .args(["worktree", "remove", "--force", &path_str])
-            .output()?;
-        if !force.status.success() {
-            anyhow::bail!(
-                "could not remove worktree {}: {}",
-                path.display(),
-                String::from_utf8_lossy(&force.stderr)
-            );
-        }
+    if !force.status.success() {
+        anyhow::bail!(
+            "could not remove worktree {}: {}",
+            path.display(),
+            String::from_utf8_lossy(&force.stderr)
+        );
     }
     Ok(Some(path))
 }
@@ -150,13 +145,7 @@ pub(super) fn delete_local_branch(head_ref: &str) -> Result<bool> {
     Ok(out.status.success())
 }
 
-pub(super) fn delete_remote_branch(head_ref: &str) -> Result<bool> {
-    let out = Command::new("git")
-        .args(["push", "origin", "--delete", head_ref])
-        .output()
-        .context("spawn git push --delete")?;
-    Ok(out.status.success())
-}
+// Remote branch deletion is handled by `gh pr merge --delete-branch`.
 
 #[cfg(test)]
 mod tests {
