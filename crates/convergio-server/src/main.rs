@@ -23,6 +23,7 @@ use std::sync::Arc;
 use tracing_subscriber::{fmt, EnvFilter};
 
 mod embedder_setup;
+mod pid_lock;
 use embedder_setup::make_embedder;
 
 #[derive(Parser)]
@@ -84,7 +85,7 @@ async fn start(
     let db_url = db.unwrap_or_else(default_sqlite_url);
     let bind = bind.unwrap_or(SocketAddr::from(([127, 0, 0, 1], 8420)));
     ensure_local_bind(bind, allow_non_local_bind)?;
-    write_pid_file()?;
+    pid_lock::claim()?;
 
     play_boot_banner();
 
@@ -189,14 +190,6 @@ fn ensure_local_bind(
 fn default_sqlite_url() -> String {
     let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
     format!("sqlite://{home}/.convergio/v3/state.db?mode=rwc")
-}
-
-fn write_pid_file() -> Result<(), Box<dyn std::error::Error>> {
-    let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
-    let dir = std::path::Path::new(&home).join(".convergio");
-    std::fs::create_dir_all(&dir)?;
-    std::fs::write(dir.join("daemon.pid"), std::process::id().to_string())?;
-    Ok(())
 }
 
 fn play_boot_banner() {
