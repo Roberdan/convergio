@@ -47,6 +47,20 @@ pre-commit:
         fi
         exit 0
 
+pre-push:
+  parallel: true
+  commands:
+    docs-auto-blocks:
+      # Block pushes that would introduce drift in `<!-- BEGIN AUTO:... -->` blocks.
+      glob: "**/*"
+      run: cvg docs regenerate --root . --check
+      fail_text: "stale AUTO blocks — run `cvg docs regenerate --root .` and commit"
+    docs-index:
+      # Tier-1 retrieval entry point (CONSTITUTION § 16): keep docs/INDEX.md fresh.
+      glob: "**/*"
+      run: ./scripts/generate-docs-index.sh --check
+      fail_text: "docs/INDEX.md is stale — run `./scripts/generate-docs-index.sh` and commit"
+
 commit-msg:
   commands:
     commitlint:
