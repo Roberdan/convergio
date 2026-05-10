@@ -7,8 +7,7 @@
 //! `POST /v1/audit/append`: per-task `evidence.added` rows.
 
 use super::pr_merge_io::{
-    delete_local_branch, delete_remote_branch, fetch_pr_view, gh_merge, is_auto_block_conflict,
-    remove_worktree, PrView,
+    delete_local_branch, fetch_pr_view, gh_merge, is_auto_block_conflict, remove_worktree, PrView,
 };
 use super::pr_sync_parse::parse_tracks_lines;
 use super::{Client, OutputMode};
@@ -80,7 +79,10 @@ pub async fn run(client: &Client, output: OutputMode, args: MergeArgs) -> Result
     }
 
     match gh_merge(args.pr) {
-        Ok(()) => report.merged = true,
+        Ok(()) => {
+            report.merged = true;
+            report.remote_branch_deleted = true; // handled by `gh pr merge --delete-branch`
+        }
         Err(e) if is_auto_block_conflict(&e) => {
             anyhow::bail!(
                 "merge refused on conflict; check out `{}`, run \
@@ -98,7 +100,6 @@ pub async fn run(client: &Client, output: OutputMode, args: MergeArgs) -> Result
             Err(e) => report.notes.push(format!("worktree cleanup: {e}")),
         }
         report.local_branch_deleted = delete_local_branch(&pr_view.head_ref).unwrap_or(false);
-        report.remote_branch_deleted = delete_remote_branch(&pr_view.head_ref).unwrap_or(false);
     }
 
     if let Some(agent_id) = &args.retire_agent {
