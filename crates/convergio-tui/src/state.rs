@@ -118,6 +118,9 @@ pub struct AppState {
     pub cursor: PaneCursors,
     /// Active UI mode (Overview vs drill-down).
     pub mode: AppMode,
+    /// Vertical scroll offset for the Detail panel. Reset when entering
+    /// or leaving [`AppMode::Detail`].
+    pub detail_scroll: u16,
     /// Cross-pane drill-down filter. Defaults to [`Scope::All`].
     pub scope: Scope,
     /// Cached task list for the plan currently being drilled into.
