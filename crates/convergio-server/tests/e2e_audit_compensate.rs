@@ -145,6 +145,7 @@ async fn compensate_reverts_thor_completed_task_to_submitted() {
         .and_then(|ev| ev["seq"].as_i64())
         .expect("expected to find task.completed_by_thor event");
 
+    // Dry-run: compute the compensating action without applying it.
     let resp: Value = client
         .get(format!("{base}/v1/audit/events/{seq}/compensate"))
         .send()
@@ -155,6 +156,31 @@ async fn compensate_reverts_thor_completed_task_to_submitted() {
         .unwrap();
     assert_eq!(resp["source_seq"], seq);
     assert_eq!(resp["source_transition"], "task.completed_by_thor");
+    assert_eq!(resp["applied"], false);
+
+    let task_after: Value = client
+        .get(format!("{base}/v1/tasks/{task_id}"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(task_after["status"], "done");
+
+    // Apply: execute the compensation.
+    let resp: Value = client
+        .get(format!(
+            "{base}/v1/audit/events/{seq}/compensate?apply=true"
+        ))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(resp["source_seq"], seq);
+    assert_eq!(resp["applied"], true);
 
     let task_after: Value = client
         .get(format!("{base}/v1/tasks/{task_id}"))

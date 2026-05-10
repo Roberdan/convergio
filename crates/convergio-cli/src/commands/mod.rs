@@ -1,6 +1,7 @@
 //! CLI subcommand modules — one file per top-level command.
 
 pub mod about;
+pub mod actions;
 pub mod agent;
 mod agent_format;
 mod agent_list;
@@ -38,6 +39,7 @@ pub mod fleet;
 pub(crate) mod fleet_build;
 pub(crate) mod fleet_duplicates;
 pub(crate) mod fleet_patterns;
+pub mod gates;
 pub mod graph;
 mod graph_render;
 pub mod health;

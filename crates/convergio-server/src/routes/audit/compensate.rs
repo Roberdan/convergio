@@ -2,11 +2,19 @@
 
 use crate::app::AppState;
 use crate::error::ApiError;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::Json;
 use convergio_durability::audit::Action as AuditAction;
 use convergio_durability::DurabilityError;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Deserialize)]
+pub(super) struct CompensateQuery {
+    /// When true, apply the computed compensating action.
+    /// Defaults to false (dry-run).
+    #[serde(default)]
+    pub apply: bool,
+}
 
 #[derive(Debug, Serialize)]
 pub(super) struct CompensateResponse {
@@ -14,13 +22,16 @@ pub(super) struct CompensateResponse {
     pub source_seq: i64,
     /// Original audit transition kind.
     pub source_transition: String,
-    /// Compensating action that was applied.
+    /// Compensating action that would be (or was) applied.
     pub compensating_action: AuditAction,
+    /// Whether the compensating action was applied.
+    pub applied: bool,
 }
 
 pub(super) async fn compensate(
     State(state): State<AppState>,
     Path(seq): Path<i64>,
+    Query(q): Query<CompensateQuery>,
 ) -> Result<Json<CompensateResponse>, ApiError> {
     let entry =
         state
@@ -49,12 +60,15 @@ pub(super) async fn compensate(
         });
     };
 
-    apply_compensation(&state, seq, &comp).await?;
+    if q.apply {
+        apply_compensation(&state, seq, &comp).await?;
+    }
 
     Ok(Json(CompensateResponse {
         source_seq: seq,
         source_transition,
         compensating_action: comp,
+        applied: q.apply,
     }))
 }
 

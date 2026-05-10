@@ -104,6 +104,16 @@ pub(crate) enum Command {
         #[command(subcommand)]
         sub: commands::capability::CapabilityCommand,
     },
+    /// Discoverable action type registry (read-only).
+    Actions {
+        #[command(subcommand)]
+        sub: commands::actions::ActionsCommand,
+    },
+    /// Discoverable gate precondition catalog (read-only).
+    Gates {
+        #[command(subcommand)]
+        sub: commands::gates::GatesCommand,
+    },
     /// Local cross-document coherence checks (ADR frontmatter, workspace).
     Coherence {
         #[command(subcommand)]
