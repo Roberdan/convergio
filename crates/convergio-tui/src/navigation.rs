@@ -18,12 +18,20 @@ impl AppState {
 
     /// Cursor down within the focused pane.
     pub fn row_down(&mut self) {
+        if matches!(self.mode, AppMode::Detail(_)) {
+            self.detail_scroll = self.detail_scroll.saturating_add(1);
+            return;
+        }
         let len = self.focused_len();
         self.focused_cursor_mut().down(len, 8);
     }
 
     /// Cursor up within the focused pane.
     pub fn row_up(&mut self) {
+        if matches!(self.mode, AppMode::Detail(_)) {
+            self.detail_scroll = self.detail_scroll.saturating_sub(1);
+            return;
+        }
         self.focused_cursor_mut().up();
     }
 
@@ -132,6 +140,7 @@ impl AppState {
         } else {
             self.detail_tasks.clear();
         }
+        self.detail_scroll = 0;
         self.mode = AppMode::Detail(target);
     }
 
@@ -139,6 +148,7 @@ impl AppState {
     pub fn back_to_overview(&mut self) {
         self.mode = AppMode::Overview;
         self.detail_tasks.clear();
+        self.detail_scroll = 0;
     }
 
     fn focused_len(&self) -> usize {
@@ -177,5 +187,56 @@ impl AppState {
         self.cursor.prs.offset = 0;
         self.cursor.bus.selected = 0;
         self.cursor.bus.offset = 0;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::client::Plan;
+
+    fn plan(id: &str) -> Plan {
+        Plan {
+            id: id.into(),
+            title: id.into(),
+            status: "active".into(),
+            created_at: "2026-05-02T18:00:00Z".into(),
+            updated_at: "2026-05-02T18:00:00Z".into(),
+            ..Plan::default()
+        }
+    }
+
+    #[test]
+    fn row_down_moves_cursor_in_overview_mode() {
+        let mut s = AppState {
+            plans: vec![plan("p1"), plan("p2")],
+            ..AppState::default()
+        };
+        assert!(matches!(s.mode, AppMode::Overview));
+        s.focus = Pane::Plans;
+        s.row_down();
+        assert_eq!(s.cursor.plans.selected, 1);
+        assert_eq!(s.detail_scroll, 0);
+    }
+
+    #[test]
+    fn row_down_and_up_scroll_detail_mode_instead_of_cursor() {
+        let mut s = AppState {
+            plans: vec![plan("p1")],
+            mode: AppMode::Detail(DetailTarget::Plan {
+                id: "p1".into(),
+                title: "p1".into(),
+            }),
+            ..AppState::default()
+        };
+        s.focus = Pane::Plans;
+        assert_eq!(s.detail_scroll, 0);
+        s.row_down();
+        assert_eq!(s.detail_scroll, 1);
+        assert_eq!(s.cursor.plans.selected, 0);
+        s.row_up();
+        assert_eq!(s.detail_scroll, 0);
+        s.row_up();
+        assert_eq!(s.detail_scroll, 0, "scroll should saturate at 0");
     }
 }

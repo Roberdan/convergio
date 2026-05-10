@@ -41,7 +41,11 @@ pub fn render(f: &mut Frame, area: Rect, state: &AppState, target: &DetailTarget
         ),
     };
     let block = pane_block(&title, true);
-    f.render_widget(Paragraph::new(lines).block(block), area);
+    let inner_h = area.height.saturating_sub(2) as usize;
+    let max_scroll = lines.len().saturating_sub(inner_h);
+    let max_scroll_u16 = (max_scroll.min(u16::MAX as usize)) as u16;
+    let scroll = state.detail_scroll.min(max_scroll_u16);
+    f.render_widget(Paragraph::new(lines).block(block).scroll((scroll, 0)), area);
 }
 
 fn plan_lines(state: &AppState, id: &str, title: &str) -> Vec<Line<'static>> {
