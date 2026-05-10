@@ -71,6 +71,24 @@ workspace actions:
 `convergio.act` is not a raw HTTP proxy. New behavior must be added as a
 new typed action so agent prompts stay small and stable.
 
+## Evidence kinds
+
+Evidence payloads are small JSON objects, keyed by `kind`. Convergio does not
+require a global enum: each task declares the evidence kinds it expects.
+
+Token telemetry uses `kind = "usage"` with payload:
+
+```json
+{
+  "input_tokens": 123,
+  "output_tokens": 456,
+  "model": "claude:opus",
+  "cost_usd": 0.12
+}
+```
+
+`cost_usd` may be `null` when the runner cannot report cost.
+
 ## Task context packets
 
 Use `get_task_context` immediately after claiming a task and whenever a

@@ -184,6 +184,11 @@ impl IntoResponse for ApiError {
                     "invalid_capability",
                     e.to_string(),
                 ),
+                DurabilityError::InvalidEvidence { .. } => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "invalid_evidence",
+                    e.to_string(),
+                ),
                 DurabilityError::WorkspacePatchRefused { .. } => (
                     StatusCode::CONFLICT,
                     "workspace_patch_refused",

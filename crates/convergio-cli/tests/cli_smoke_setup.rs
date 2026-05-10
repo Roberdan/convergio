@@ -32,6 +32,28 @@ fn setup_agent_claude_emits_skill_and_settings() {
 }
 
 #[test]
+fn setup_agent_opus_overnight_emits_run_sh() {
+    let home = tempfile::tempdir().expect("temp home");
+    cvg()
+        .env("HOME", home.path())
+        .args(["setup", "agent", "opus-overnight"])
+        .assert()
+        .success();
+    let dir = home.path().join(".convergio/adapters/opus-overnight");
+    let run = dir.join("run.sh");
+    assert!(run.is_file(), "run.sh should be created");
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let meta = std::fs::metadata(&run).unwrap();
+        assert!(
+            meta.permissions().mode() & 0o111 != 0,
+            "run.sh should be executable"
+        );
+    }
+}
+
+#[test]
 fn setup_agent_copilot_does_not_emit_claude_extras() {
     let home = tempfile::tempdir().expect("temp home");
     cvg()
@@ -56,6 +78,7 @@ fn setup_agent_copilot_does_not_emit_claude_extras() {
 fn setup_agent_prompt_txt_contains_register_and_poll_for_every_host() {
     let cases: &[(&str, &str)] = &[
         ("claude", "claude-code-${USER}"),
+        ("opus-overnight", "claude-opus-overnight-${USER}-${PID}"),
         ("copilot-local", "copilot-local-${USER}-${PID}"),
         ("copilot-cloud", "copilot-cloud-${REPO_FULL_NAME}-${RUN_ID}"),
         ("cursor", "cursor-${USER}-${WORKSPACE}"),

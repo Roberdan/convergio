@@ -44,6 +44,8 @@ pub enum SetupCommand {
 pub enum AgentHost {
     /// Claude Desktop / Claude Code compatible MCP config.
     Claude,
+    /// Opus overnight wrapper (shell adapter that runs `cvg agent spawn`).
+    OpusOvernight,
     /// GitHub Copilot local IDE integrations.
     CopilotLocal,
     /// GitHub Copilot cloud agent repository hint.
@@ -66,6 +68,7 @@ impl AgentHost {
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Claude => "claude",
+            Self::OpusOvernight => "opus-overnight",
             Self::CopilotLocal => "copilot-local",
             Self::CopilotCloud => "copilot-cloud",
             Self::Cursor => "cursor",
@@ -148,7 +151,11 @@ fn agent(bundle: &Bundle, host: AgentHost, force: bool) -> Result<()> {
 
     write_snippet(&dir.join("mcp.json"), &mcp_snippet(host), force)?;
     super::setup_agent_prompt::write_prompt(&dir.join("prompt.txt"), host, force)?;
-    write_snippet(&dir.join("README.txt"), &readme_snippet(host), force)?;
+    write_snippet(
+        &dir.join("README.txt"),
+        &super::setup_readme::readme_snippet(host),
+        force,
+    )?;
 
     if matches!(host, AgentHost::Claude) {
         let skill_dir = dir.join("skill-cvg-attach");
@@ -157,6 +164,12 @@ fn agent(bundle: &Bundle, host: AgentHost, force: bool) -> Result<()> {
         write_snippet(&skill_dir.join("SKILL.md"), claude_skill_md(), force)?;
         write_snippet(&skill_dir.join("cvg-attach.sh"), claude_skill_sh(), force)?;
         write_snippet(&dir.join("settings.json"), claude_settings_json(), force)?;
+    }
+
+    if matches!(host, AgentHost::OpusOvernight) {
+        let path = dir.join("run.sh");
+        write_snippet(&path, super::setup_scripts::opus_overnight_run_sh(), force)?;
+        super::setup_scripts::make_executable(&path)?;
     }
 
     println!(
@@ -244,29 +257,6 @@ fn mcp_snippet(host: AgentHost) -> String {
     format!(
         "{{\n  \"mcpServers\": {{\n    \"{name}\": {{\n      \"type\": \"stdio\",\n      \"command\": \"convergio-mcp\",\n      \"args\": [\"--url\", \"{DEFAULT_URL}\"]\n    }}\n  }}\n}}\n"
     )
-}
-
-fn readme_snippet(host: AgentHost) -> String {
-    let base = format!(
-        "Convergio adapter: {host}\n\n\
-         1. Ensure `convergio start` is running.\n\
-         2. Add mcp.json to the host's MCP configuration.\n\
-         3. Add prompt.txt to the agent's custom instructions.\n\
-         4. Run `cvg doctor --json` if the agent cannot connect.\n",
-        host = host.as_str()
-    );
-    if matches!(host, AgentHost::Claude) {
-        format!(
-            "{base}\n\
-             Extras for Claude Code (PRD-001 / Wave 0b):\n\
-             5. Copy skill-cvg-attach/ into ~/.claude/skills/cvg-attach/.\n\
-             6. Make cvg-attach.sh executable: chmod +x ~/.claude/skills/cvg-attach/cvg-attach.sh.\n\
-             7. Merge settings.json into ~/.claude/settings.json (or the per-repo .claude/settings.json) to wire the SessionStart hook.\n\
-             8. Verify with `cvg status --agents` after starting a new session.\n"
-        )
-    } else {
-        base
-    }
 }
 
 fn claude_skill_md() -> &'static str {

@@ -1,7 +1,9 @@
 //! Agent registry tests.
 
 use convergio_db::Pool;
-use convergio_durability::{init, AgentHeartbeat, Durability, DurabilityError, NewAgent};
+use convergio_durability::{
+    init, AgentHeartbeat, Durability, DurabilityError, NewAgent, NewPlan, NewTask, TaskStatus,
+};
 use serde_json::json;
 use tempfile::TempDir;
 
@@ -108,6 +110,89 @@ async fn register_accepts_subagent_kind() {
         .await
         .expect("kind 'subagent' must be accepted");
     assert_eq!(agent.kind, "subagent");
+}
+
+#[tokio::test]
+async fn register_merges_metadata_instead_of_overwriting() {
+    let (dur, _dir) = fresh().await;
+    let mut a = new_agent("agent-a");
+    a.metadata = json!({"usage": {"input_tokens": 10, "output_tokens": 20, "cost_usd": 0.5}});
+    dur.register_agent(a).await.unwrap();
+
+    let mut b = new_agent("agent-a");
+    b.metadata = json!({"runner": "claude-shell-wrapper"});
+    let agent = dur.register_agent(b).await.unwrap();
+    assert_eq!(agent.metadata["runner"], "claude-shell-wrapper");
+    assert_eq!(agent.metadata["usage"]["input_tokens"], 10);
+    assert_eq!(agent.metadata["usage"]["output_tokens"], 20);
+}
+
+#[tokio::test]
+async fn usage_evidence_aggregates_into_agent_metadata() {
+    let (dur, _dir) = fresh().await;
+    dur.register_agent(new_agent("agent-a")).await.unwrap();
+
+    let plan = dur
+        .create_plan(NewPlan {
+            title: "p".into(),
+            description: None,
+            project: None,
+        })
+        .await
+        .unwrap();
+    let task = dur
+        .create_task(
+            &plan.id,
+            NewTask {
+                wave: 1,
+                sequence: 1,
+                title: "t".into(),
+                description: None,
+                evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
+            },
+        )
+        .await
+        .unwrap();
+
+    dur.transition_task(&task.id, TaskStatus::InProgress, Some("agent-a"))
+        .await
+        .unwrap();
+
+    dur.attach_evidence(
+        &task.id,
+        "usage",
+        json!({
+            "input_tokens": 5,
+            "output_tokens": 7,
+            "model": "claude:opus",
+            "cost_usd": 0.01
+        }),
+        None,
+    )
+    .await
+    .unwrap();
+
+    dur.attach_evidence(
+        &task.id,
+        "usage",
+        json!({
+            "input_tokens": 2,
+            "output_tokens": 3,
+            "model": "claude:opus",
+            "cost_usd": null
+        }),
+        None,
+    )
+    .await
+    .unwrap();
+
+    let agent = dur.agents().get("agent-a").await.unwrap();
+    assert_eq!(agent.metadata["usage"]["input_tokens"], 7);
+    assert_eq!(agent.metadata["usage"]["output_tokens"], 10);
+    assert_eq!(agent.metadata["usage"]["cost_usd"], 0.01);
 }
 
 #[tokio::test]
