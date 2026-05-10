@@ -42,7 +42,7 @@ impl Gate for WaveSequenceGate {
         if row.0 > 0 {
             Err(DurabilityError::GateRefused {
                 gate: "wave_sequence",
-                reason: format!("{} task(s) in earlier waves still open", row.0),
+                reason: format!("earlier_wave_tasks_still_open: {}", row.0),
             })
         } else {
             Ok(())
@@ -51,10 +51,11 @@ impl Gate for WaveSequenceGate {
 
     fn describe(&self) -> GatePrecondition {
         GatePrecondition {
-            gate: "wave_sequence",
-            requires_evidence_kinds: vec![],
-            active_target_status: vec!["in_progress"],
-            refusal_reasons: vec!["earlier_wave_tasks_still_open"],
+            gate: "wave_sequence".into(),
+            reads_evidence_kinds: vec![],
+            enforces_task_evidence_required: false,
+            active_target_status: vec!["in_progress".into()],
+            refusal_reasons: vec!["earlier_wave_tasks_still_open".into()],
         }
     }
 }

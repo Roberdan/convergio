@@ -1,6 +1,6 @@
 //! `CrdtConflictGate` — unresolved CRDT conflicts block task completion.
 
-use super::{Gate, GateContext};
+use super::{Gate, GateContext, GatePrecondition};
 use crate::error::{DurabilityError, Result};
 use crate::model::TaskStatus;
 use crate::store::CrdtStore;
@@ -33,7 +33,17 @@ impl Gate for CrdtConflictGate {
             .join(", ");
         Err(DurabilityError::GateRefused {
             gate: "crdt_conflict",
-            reason: format!("unresolved CRDT conflicts on fields: {fields}"),
+            reason: format!("unresolved_crdt_conflict: {fields}"),
         })
+    }
+
+    fn describe(&self) -> GatePrecondition {
+        GatePrecondition {
+            gate: "crdt_conflict".into(),
+            reads_evidence_kinds: vec![],
+            enforces_task_evidence_required: false,
+            active_target_status: vec!["submitted".into(), "done".into()],
+            refusal_reasons: vec!["unresolved_crdt_conflict".into()],
+        }
     }
 }

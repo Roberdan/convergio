@@ -38,21 +38,18 @@ impl Gate for EvidenceGate {
         } else {
             Err(DurabilityError::GateRefused {
                 gate: "evidence",
-                reason: format!("missing evidence kinds: {}", missing.join(", ")),
+                reason: format!("missing_evidence_kind: {}", missing.join(", ")),
             })
         }
     }
 
     fn describe(&self) -> GatePrecondition {
         GatePrecondition {
-            gate: "evidence",
-            // Per-task evidence kinds are dynamic; agents must read
-            // task.evidence_required at runtime. The default here
-            // signals "this gate consumes evidence" without claiming
-            // a static list.
-            requires_evidence_kinds: vec![],
-            active_target_status: vec!["submitted", "done"],
-            refusal_reasons: vec!["missing_evidence_kind"],
+            gate: "evidence".into(),
+            reads_evidence_kinds: vec![],
+            enforces_task_evidence_required: true,
+            active_target_status: vec!["submitted".into(), "done".into()],
+            refusal_reasons: vec!["missing_evidence_kind".into()],
         }
     }
 }
