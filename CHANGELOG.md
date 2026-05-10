@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.20](https://github.com/Roberdan/convergio/compare/convergio-v0.3.19...convergio-v0.3.20) (2026-05-10)
+
+
+### Documentation
+
+* **repo:** document dispatch guard-rail env vars ([b1dd361](https://github.com/Roberdan/convergio/commit/b1dd361978d913bd893f67eb5467ed6d9b09e9d5))
+* **repo:** document dispatch guard-rail env vars ([d241081](https://github.com/Roberdan/convergio/commit/d2410811a6b0efd964d1227c111fce953dd3d904))
+
 ## [0.3.19](https://github.com/Roberdan/convergio/compare/convergio-v0.3.18...convergio-v0.3.19) (2026-05-09)
 
 
