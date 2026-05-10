@@ -5,7 +5,7 @@ use crate::store::agent_rows::{AgentRow, AGENT_SELECT};
 use crate::store::agent_validation::{validate_agent_id, validate_agent_kind, validate_status};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{json, Value};
 
 /// Agent registration input.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -88,24 +88,41 @@ impl AgentStore {
         validate_agent_id(&input.id)?;
         validate_agent_kind(&input.kind)?;
         let now = Utc::now().to_rfc3339();
-        sqlx::query(
-            "INSERT INTO agents \
-             (id, kind, name, host, status, capabilities, current_task_id, metadata, created_at, updated_at) \
-             VALUES (?, ?, ?, ?, 'idle', ?, NULL, ?, ?, ?) \
-             ON CONFLICT(id) DO UPDATE SET kind = excluded.kind, name = excluded.name, \
-             host = excluded.host, capabilities = excluded.capabilities, \
-             metadata = excluded.metadata, status = 'idle', updated_at = excluded.updated_at",
-        )
-        .bind(&input.id)
-        .bind(&input.kind)
-        .bind(&input.name)
-        .bind(&input.host)
-        .bind(serde_json::to_string(&input.capabilities)?)
-        .bind(serde_json::to_string(&input.metadata)?)
-        .bind(&now)
-        .bind(&now)
-        .execute(self.pool.inner())
-        .await?;
+        let existing = self.get(&input.id).await.ok();
+        let metadata = merge_metadata(existing.as_ref().map(|a| &a.metadata), &input.metadata);
+
+        if existing.is_some() {
+            sqlx::query(
+                "UPDATE agents SET kind = ?, name = ?, host = ?, capabilities = ?, metadata = ?, \
+                 status = 'idle', updated_at = ? WHERE id = ?",
+            )
+            .bind(&input.kind)
+            .bind(&input.name)
+            .bind(&input.host)
+            .bind(serde_json::to_string(&input.capabilities)?)
+            .bind(serde_json::to_string(&metadata)?)
+            .bind(&now)
+            .bind(&input.id)
+            .execute(self.pool.inner())
+            .await?;
+        } else {
+            sqlx::query(
+                "INSERT INTO agents \
+                 (id, kind, name, host, status, capabilities, current_task_id, metadata, created_at, updated_at) \
+                 VALUES (?, ?, ?, ?, 'idle', ?, NULL, ?, ?, ?)",
+            )
+            .bind(&input.id)
+            .bind(&input.kind)
+            .bind(&input.name)
+            .bind(&input.host)
+            .bind(serde_json::to_string(&input.capabilities)?)
+            .bind(serde_json::to_string(&metadata)?)
+            .bind(&now)
+            .bind(&now)
+            .execute(self.pool.inner())
+            .await?;
+        }
+
         self.get(&input.id).await
     }
 
@@ -207,5 +224,26 @@ impl AgentStore {
 }
 
 fn default_metadata() -> Value {
-    serde_json::json!({})
+    json!({})
+}
+
+fn merge_metadata(existing: Option<&Value>, incoming: &Value) -> Value {
+    let mut base = existing.cloned().unwrap_or_else(|| json!({}));
+    deep_merge(&mut base, incoming);
+    base
+}
+
+fn deep_merge(target: &mut Value, incoming: &Value) {
+    let (Some(a), Some(b)) = (target.as_object_mut(), incoming.as_object()) else {
+        *target = incoming.clone();
+        return;
+    };
+    for (k, v) in b {
+        match (a.get_mut(k), v) {
+            (Some(existing), Value::Object(_)) => deep_merge(existing, v),
+            _ => {
+                a.insert(k.clone(), v.clone());
+            }
+        }
+    }
 }

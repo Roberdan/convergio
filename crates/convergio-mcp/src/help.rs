@@ -35,6 +35,17 @@ pub(crate) fn response(request: &HelpRequest) -> Value {
             "evidence_required": "each task lists required evidence kinds",
             "payload": "JSON object; include concise command/output facts, not huge logs",
             "exit_code": "0 for successful command evidence; omit when not applicable",
+            "kinds": {
+                "usage": {
+                    "payload": {
+                        "input_tokens": "integer",
+                        "output_tokens": "integer",
+                        "model": "string",
+                        "cost_usd": "number|null"
+                    },
+                    "note": "telemetry evidence; often posted by runner adapters"
+                }
+            }
         }),
         HelpTopic::GateRefusal => json!({
             "flow": [

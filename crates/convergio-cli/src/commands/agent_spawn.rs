@@ -16,6 +16,10 @@ use convergio_runner::{
 };
 use serde_json::Value;
 use std::io::{BufRead, BufReader, Write};
+
+use super::agent_spawn_usage::{
+    attach_usage_evidence, observe_claude_stream_json_line, usage_payload, UsageObservation,
+};
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::thread;
@@ -131,21 +135,39 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
     // long-running session is observable. Each line is forwarded as
     // it arrives — for `claude --output-format stream-json` that means
     // one JSON event per turn, which the operator can `jq` on.
-    let stdout_handle = child
-        .stdout
-        .take()
-        .map(|s| thread::spawn(move || forward_lines(s, "stdout")));
+    let capture_usage = kind.vendor == "claude";
+    let capture_usage_in = capture_usage;
+    let stdout_handle = child.stdout.take().map(|s| {
+        thread::spawn(move || {
+            let mut obs = UsageObservation::default();
+            forward_lines_with_observer(s, "stdout", |line| {
+                if capture_usage_in {
+                    observe_claude_stream_json_line(line, &mut obs);
+                }
+            });
+            obs
+        })
+    });
     let stderr_handle = child
         .stderr
         .take()
         .map(|s| thread::spawn(move || forward_lines(s, "stderr")));
+
     let status = child.wait().context("wait for vendor CLI to exit")?;
-    if let Some(h) = stdout_handle {
-        let _ = h.join();
-    }
+    let usage_obs = stdout_handle.and_then(|h| h.join().ok());
     if let Some(h) = stderr_handle {
         let _ = h.join();
     }
+    if capture_usage {
+        if let Some(obs) = usage_obs.as_ref() {
+            if let Some(payload) = usage_payload(&kind, obs) {
+                if let Err(e) = attach_usage_evidence(client, &task.id, payload).await {
+                    eprintln!("warning: failed to attach usage evidence: {e}");
+                }
+            }
+        }
+    }
+
     let final_status = if status.success() {
         "idle"
     } else {
@@ -162,8 +184,17 @@ pub async fn run(client: &Client, output: OutputMode, args: SpawnArgs) -> Result
 }
 
 fn forward_lines<R: std::io::Read>(reader: R, channel: &'static str) {
+    forward_lines_with_observer(reader, channel, |_| {});
+}
+
+fn forward_lines_with_observer<R: std::io::Read>(
+    reader: R,
+    channel: &'static str,
+    mut observe: impl FnMut(&str),
+) {
     let buf = BufReader::new(reader);
     for line in buf.lines().map_while(std::result::Result::ok) {
+        observe(&line);
         match channel {
             "stderr" => eprintln!("{line}"),
             _ => println!("{line}"),

@@ -63,7 +63,14 @@ pub fn step_zero_snippet(host: AgentHost) -> String {
 }
 
 fn working_loop_snippet() -> &'static str {
-    "## Working loop\n\n\
+    "## Convergio protocol\n\n\
+     - All state changes go through `cvg` / `convergio.act` (the daemon owns the audit chain).\n\
+     - Evidence is typed by `kind` with a small JSON payload.\n\
+     - Token telemetry uses `kind=usage` with payload:\n\
+       `{\"input_tokens\": 123, \"output_tokens\": 456, \"model\": \"claude:opus\", \"cost_usd\": 0.12}`\n\
+       (`cost_usd` may be null).\n\
+\n\
+     ## Working loop\n\n\
      Use Convergio as the local source of truth. Call convergio.help once. \
      Use convergio.act for task lifecycle and evidence. If a gate refuses \
      work, fix the reason, attach new evidence, and retry submit_task. \
@@ -80,6 +87,7 @@ fn working_loop_snippet() -> &'static str {
 pub fn agent_id_placeholder(host: AgentHost) -> &'static str {
     match host {
         AgentHost::Claude => "claude-code-${USER}",
+        AgentHost::OpusOvernight => "claude-opus-overnight-${USER}-${PID}",
         AgentHost::CopilotLocal => "copilot-local-${USER}-${PID}",
         AgentHost::CopilotCloud => "copilot-cloud-${REPO_FULL_NAME}-${RUN_ID}",
         AgentHost::Cursor => "cursor-${USER}-${WORKSPACE}",
@@ -96,6 +104,7 @@ mod tests {
 
     const ALL_HOSTS: &[AgentHost] = &[
         AgentHost::Claude,
+        AgentHost::OpusOvernight,
         AgentHost::CopilotLocal,
         AgentHost::CopilotCloud,
         AgentHost::Cursor,
