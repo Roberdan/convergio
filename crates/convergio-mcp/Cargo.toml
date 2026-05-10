@@ -30,3 +30,12 @@ tokio = { workspace = true }
 
 [dev-dependencies]
 axum = { workspace = true }
+convergio-server = { workspace = true }
+convergio-db = { workspace = true }
+convergio-durability = { workspace = true }
+convergio-bus = { workspace = true }
+convergio-lifecycle = { workspace = true }
+convergio-graph = { workspace = true }
+convergio-embed = { workspace = true }
+convergio-fleet = { workspace = true }
+tempfile = { workspace = true }

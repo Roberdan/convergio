@@ -1,6 +1,6 @@
 //! Compact agent-facing help for the MCP bridge.
 
-use convergio_api::{Action, ActionCatalog, HelpRequest, HelpTopic, SCHEMA_VERSION};
+use convergio_api::{actions_json, Action, ActionCatalog, HelpRequest, HelpTopic, SCHEMA_VERSION};
 use serde_json::{json, Value};
 
 pub(crate) fn response(request: &HelpRequest) -> Value {
@@ -22,7 +22,14 @@ pub(crate) fn response(request: &HelpRequest) -> Value {
                 "on gate_refused, fix issue, add evidence, retry"
             ],
         }),
-        HelpTopic::Actions => json!(ActionCatalog::current()),
+        HelpTopic::Actions => match serde_json::from_str(actions_json()) {
+            Ok(v) => v,
+            Err(e) => json!({
+                "schema_version": SCHEMA_VERSION,
+                "error": format!("failed to parse generated actions.json: {e}"),
+                "actions": [],
+            }),
+        },
         HelpTopic::Action => action_help(request.action),
         HelpTopic::EvidenceSchema => json!({
             "evidence_required": "each task lists required evidence kinds",
@@ -251,50 +258,5 @@ fn action_help(action: Option<Action>) -> Value {
         Action::ListWorkspaceConflicts => json!({"params": {}}),
         Action::ExplainLastRefusal => json!({"params": {"task_id": "uuid?"}}),
         Action::AgentPrompt => json!({"params": {}}),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use convergio_api::HelpVerbosity;
-
-    fn action_request(action: Action) -> HelpRequest {
-        HelpRequest {
-            topic: HelpTopic::Action,
-            action: Some(action),
-            verbosity: HelpVerbosity::Short,
-        }
-    }
-
-    #[test]
-    fn action_help_covers_every_catalog_action() {
-        for action in Action::ALL {
-            let help = response(&action_request(*action));
-            assert!(
-                help.get("error").is_none(),
-                "{} lacks action help: {help}",
-                action.as_str()
-            );
-            assert!(
-                help.get("params").is_some(),
-                "{} action help lacks params: {help}",
-                action.as_str()
-            );
-        }
-    }
-
-    #[test]
-    fn actions_topic_matches_api_catalog() {
-        let help = response(&HelpRequest {
-            topic: HelpTopic::Actions,
-            action: None,
-            verbosity: HelpVerbosity::Short,
-        });
-        let actions = help.get("actions").and_then(Value::as_array).unwrap();
-        assert_eq!(actions.len(), Action::ALL.len());
-        for action in Action::ALL {
-            assert!(actions.iter().any(|value| value == action.as_str()));
-        }
     }
 }

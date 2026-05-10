@@ -236,7 +236,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 1011 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 1059 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
@@ -274,6 +274,7 @@ The full top-level CLI surface is also auto-regenerated:
 - `cvg solve`
 - `cvg status`
 - `cvg task`
+- `cvg task-templates`
 - `cvg update`
 - `cvg validate`
 - `cvg workspace`

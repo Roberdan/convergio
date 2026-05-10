@@ -130,6 +130,9 @@ impl Bridge {
         description = "Read Convergio agent protocol help."
     )]
     async fn help(&self, Parameters(params): Parameters<HelpParams>) -> String {
+        if params.topic == HelpTopic::Actions {
+            return convergio_api::actions_json().to_string();
+        }
         serde_json::to_string(&help::response(&HelpRequest::from(params)))
             .unwrap_or_else(|e| fallback_error(format!("failed to serialize help response: {e}")))
     }
@@ -164,6 +167,16 @@ fn default_help_verbosity() -> HelpVerbosity {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use axum::Router;
+    use convergio_bus::Bus;
+    use convergio_db::Pool;
+    use convergio_durability::{init, Durability};
+    use convergio_lifecycle::Supervisor;
+    use convergio_server::{router, AppState};
+    use std::net::SocketAddr;
+    use std::sync::Arc;
+    use tempfile::{tempdir, TempDir};
+    use tokio::net::TcpListener;
 
     #[test]
     fn exposes_exact_two_tools() {
@@ -171,5 +184,71 @@ mod tests {
         let tools = bridge.tool_router.list_all();
         let names: Vec<String> = tools.into_iter().map(|t| t.name.to_string()).collect();
         assert_eq!(names, vec!["convergio.act", "convergio.help"]);
+    }
+
+    #[tokio::test]
+    async fn help_actions_matches_http_actions_byte_for_byte() {
+        let (base_url, _dir) = boot_daemon().await;
+        let bridge = Bridge::new(base_url.clone());
+
+        let mcp = bridge
+            .help(Parameters(HelpParams {
+                topic: HelpTopic::Actions,
+                action: None,
+                verbosity: HelpVerbosity::Short,
+            }))
+            .await;
+
+        let http = bridge
+            .client
+            .get(format!("{base_url}/v1/api/actions"))
+            .send()
+            .await
+            .expect("GET /v1/api/actions")
+            .bytes()
+            .await
+            .expect("actions bytes");
+
+        assert_eq!(mcp.as_bytes(), http.as_ref());
+    }
+
+    async fn boot_daemon() -> (String, TempDir) {
+        std::env::remove_var("CONVERGIO_EXECUTOR_USE_RUNNER");
+        std::env::remove_var("CONVERGIO_EXECUTOR_MAX_PARALLEL");
+        std::env::remove_var("CONVERGIO_REPO_PATH");
+
+        let dir = tempdir().expect("tempdir");
+        let db_path = dir.path().join("state.db");
+        let url = format!("sqlite://{}", db_path.display());
+        let pool = Pool::connect(&url).await.expect("pool connect");
+        init(&pool).await.expect("durability init");
+        convergio_bus::init(&pool).await.expect("bus init");
+        convergio_lifecycle::init(&pool)
+            .await
+            .expect("lifecycle init");
+
+        let state = AppState {
+            durability: Arc::new(Durability::new(pool.clone())),
+            bus: Arc::new(Bus::new(pool.clone())),
+            supervisor: Arc::new(Supervisor::new(pool.clone())),
+            graph: Arc::new(convergio_graph::Store::new(pool.clone())),
+            embed: Arc::new(convergio_embed::EmbedStore::new(pool.clone())),
+            embedder: Arc::new(
+                convergio_embed::embedder::testing::DeterministicTestEmbedder::new(8),
+            ),
+            fleet: Arc::new(convergio_fleet::FleetStore::new(pool.clone())),
+            audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
+        };
+        let app: Router = router(state);
+
+        let listener = TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], 0)))
+            .await
+            .expect("bind");
+        let addr = listener.local_addr().expect("local_addr");
+        tokio::spawn(async move {
+            axum::serve(listener, app).await.ok();
+        });
+
+        (format!("http://{addr}"), dir)
     }
 }
