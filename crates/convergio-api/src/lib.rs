@@ -7,8 +7,10 @@
 #![forbid(unsafe_code)]
 
 mod action;
+mod gates;
 
 pub use action::Action;
+pub use gates::{GatePrecondition, GatePreconditionsCatalog, GATE_PRECONDITIONS_SCHEMA_VERSION};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

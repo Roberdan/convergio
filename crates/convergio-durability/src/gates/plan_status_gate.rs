@@ -24,7 +24,7 @@ impl Gate for PlanStatusGate {
         let Some((status,)) = row else {
             return Err(DurabilityError::GateRefused {
                 gate: "plan_status",
-                reason: format!("plan {} not found", ctx.task.plan_id),
+                reason: "plan_not_found".into(),
             });
         };
 
@@ -35,9 +35,14 @@ impl Gate for PlanStatusGate {
                 TaskStatus::InProgress | TaskStatus::Submitted
             )
         {
+            let code = match plan_status {
+                PlanStatus::Cancelled => "plan_is_cancelled",
+                PlanStatus::Completed => "plan_is_completed",
+                _ => "plan_status_invalid",
+            };
             return Err(DurabilityError::GateRefused {
                 gate: "plan_status",
-                reason: format!("plan is {}", plan_status.as_str()),
+                reason: code.into(),
             });
         }
 
@@ -46,10 +51,15 @@ impl Gate for PlanStatusGate {
 
     fn describe(&self) -> GatePrecondition {
         GatePrecondition {
-            gate: "plan_status",
-            requires_evidence_kinds: vec![],
-            active_target_status: vec!["in_progress", "submitted"],
-            refusal_reasons: vec!["plan_not_found", "plan_is_cancelled", "plan_is_completed"],
+            gate: "plan_status".into(),
+            reads_evidence_kinds: vec![],
+            enforces_task_evidence_required: false,
+            active_target_status: vec!["in_progress".into(), "submitted".into()],
+            refusal_reasons: vec![
+                "plan_not_found".into(),
+                "plan_is_cancelled".into(),
+                "plan_is_completed".into(),
+            ],
         }
     }
 }

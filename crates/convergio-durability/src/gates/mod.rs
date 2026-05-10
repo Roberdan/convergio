@@ -35,6 +35,8 @@ pub use wave_sequence_gate::WaveSequenceGate;
 pub use wire_check_gate::WireCheckGate;
 pub use zero_warnings_gate::ZeroWarningsGate;
 
+pub use convergio_api::GatePrecondition;
+
 use crate::error::Result;
 use crate::model::{Task, TaskStatus};
 use convergio_db::Pool;
@@ -53,20 +55,6 @@ pub struct GateContext {
     pub agent_id: Option<String>,
 }
 
-/// Declarative gate precondition (P3-2 — Palantir-inspired).
-#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
-pub struct GatePrecondition {
-    /// Stable gate name (`Gate::name()`).
-    pub gate: &'static str,
-    /// Evidence kinds this gate requires before allowing the
-    /// transition (empty when the gate does not check evidence).
-    pub requires_evidence_kinds: Vec<&'static str>,
-    /// Task statuses for which this gate is active.
-    pub active_target_status: Vec<&'static str>,
-    /// Stable refusal reason codes the gate may emit.
-    pub refusal_reasons: Vec<&'static str>,
-}
-
 /// One gate.
 #[async_trait::async_trait]
 pub trait Gate: Send + Sync {
@@ -79,7 +67,7 @@ pub trait Gate: Send + Sync {
     /// override this.
     fn describe(&self) -> GatePrecondition {
         GatePrecondition {
-            gate: self.name(),
+            gate: self.name().to_string(),
             ..GatePrecondition::default()
         }
     }

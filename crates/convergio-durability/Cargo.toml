@@ -15,6 +15,7 @@ categories = ["database", "asynchronous"]
 workspace = true
 
 [dependencies]
+convergio-api = { workspace = true }
 convergio-db = { workspace = true }
 
 sqlx = { workspace = true }

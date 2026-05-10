@@ -9,24 +9,18 @@
 use crate::app::AppState;
 use axum::routing::get;
 use axum::{Json, Router};
-use convergio_durability::gates::{default_pipeline, describe_pipeline, GatePrecondition};
-use serde::Serialize;
-
-#[derive(Serialize)]
-struct PreconditionsResponse {
-    schema_version: &'static str,
-    preconditions: Vec<GatePrecondition>,
-}
+use convergio_api::GatePreconditionsCatalog;
+use convergio_durability::gates::{default_pipeline, describe_pipeline};
 
 /// Mount the route.
 pub fn router() -> Router<AppState> {
     Router::new().route("/v1/gates/preconditions", get(preconditions))
 }
 
-async fn preconditions() -> Json<PreconditionsResponse> {
+async fn preconditions() -> Json<GatePreconditionsCatalog> {
     let pipeline = default_pipeline();
-    Json(PreconditionsResponse {
-        schema_version: convergio_api::SCHEMA_VERSION,
+    Json(GatePreconditionsCatalog {
+        schema_version: convergio_api::GATE_PRECONDITIONS_SCHEMA_VERSION.to_string(),
         preconditions: describe_pipeline(&pipeline),
     })
 }
@@ -38,8 +32,17 @@ mod tests {
     #[tokio::test]
     async fn preconditions_response_lists_every_default_gate() {
         let resp = preconditions().await;
+        assert_eq!(
+            resp.0.schema_version,
+            convergio_api::GATE_PRECONDITIONS_SCHEMA_VERSION
+        );
         assert!(!resp.0.preconditions.is_empty());
-        let names: Vec<&str> = resp.0.preconditions.iter().map(|p| p.gate).collect();
+        let names: Vec<&str> = resp
+            .0
+            .preconditions
+            .iter()
+            .map(|p| p.gate.as_str())
+            .collect();
         // The 9 gates from default_pipeline appear in stable order.
         for expected in [
             "plan_status",
@@ -65,13 +68,20 @@ mod tests {
             .iter()
             .find(|p| p.gate == "plan_status")
             .expect("plan_status present");
-        assert!(plan.refusal_reasons.contains(&"plan_is_cancelled"));
+        assert!(plan
+            .refusal_reasons
+            .iter()
+            .any(|r| r == "plan_is_cancelled"));
         let ev = resp
             .0
             .preconditions
             .iter()
             .find(|p| p.gate == "evidence")
             .expect("evidence present");
-        assert_eq!(ev.active_target_status, vec!["submitted", "done"]);
+        assert_eq!(
+            ev.active_target_status,
+            vec!["submitted".to_string(), "done".to_string()]
+        );
+        assert!(ev.enforces_task_evidence_required);
     }
 }

@@ -20,7 +20,7 @@
 //! handles the polite-stub case where the agent at least *admits*
 //! the work is incomplete.
 
-use super::{Gate, GateContext};
+use super::{Gate, GateContext, GatePrecondition};
 use crate::error::{DurabilityError, Result};
 use crate::model::TaskStatus;
 use crate::store::EvidenceStore;
@@ -169,11 +169,18 @@ impl Gate for NoStubGate {
             violations.dedup();
             Err(DurabilityError::GateRefused {
                 gate: "no_stub",
-                reason: format!(
-                    "scaffolding markers found in evidence: {}",
-                    violations.join(", ")
-                ),
+                reason: format!("scaffolding_marker_found: {}", violations.join(", ")),
             })
+        }
+    }
+
+    fn describe(&self) -> GatePrecondition {
+        GatePrecondition {
+            gate: "no_stub".into(),
+            reads_evidence_kinds: vec!["*".into()],
+            enforces_task_evidence_required: false,
+            active_target_status: vec!["submitted".into(), "done".into()],
+            refusal_reasons: vec!["scaffolding_marker_found".into()],
         }
     }
 }
