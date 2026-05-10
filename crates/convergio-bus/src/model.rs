@@ -28,6 +28,19 @@ pub struct Message {
     pub created_at: DateTime<Utc>,
 }
 
+/// Last bus-topic activity for a given agent.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentLastTopic {
+    /// Plan that owns this message; `None` for `system.*` topics.
+    pub plan_id: Option<String>,
+    /// Topic name.
+    pub topic: String,
+    /// Activity kind: `sent` or `consumed`.
+    pub kind: String,
+    /// Timestamp of the activity.
+    pub at: DateTime<Utc>,
+}
+
 /// Per-topic summary returned by [`crate::Bus::topics`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TopicSummary {

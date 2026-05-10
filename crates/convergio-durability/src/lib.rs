@@ -83,8 +83,8 @@ pub use model::{
 pub use store::TelemetryPoint;
 pub use store::{
     AgentAuditEntry, AgentHeartbeat, AgentLease, AgentPrLink, AgentRecord, AgentStore,
-    AgentSummary, AppendOutcome, CrdtActor, CrdtCell, CrdtOp, CrdtStore, CurrentTaskMeta, NewAgent,
-    NewCrdtOp, RetireStaleResult, StaleAgentReport,
+    AgentSummary, AppendOutcome, ClaimedTask, ClaimedTasks, CrdtActor, CrdtCell, CrdtOp, CrdtStore,
+    CurrentTaskMeta, NewAgent, NewCrdtOp, RetireStaleResult, StaleAgentReport,
 };
 pub use store::{Capability, CapabilityStore, NewCapability};
 pub use store::{MergeOutcome, MergeQueueItem};

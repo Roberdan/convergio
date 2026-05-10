@@ -22,6 +22,27 @@ pub struct AgentSummary {
     pub last_audit_at: Option<DateTime<Utc>>,
 }
 
+/// One task currently claimed by an agent.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
+pub struct ClaimedTask {
+    pub id: String,
+    pub title: String,
+    pub status: String,
+    pub plan_id: String,
+    pub plan_title: String,
+    pub started_at: Option<DateTime<Utc>>,
+    pub updated_at: DateTime<Utc>,
+}
+
+/// Claimed-task roll-up: total count + sampled rows.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
+pub struct ClaimedTasks {
+    pub count: i64,
+    pub tasks: Vec<ClaimedTask>,
+}
+
 /// Active workspace lease (show view).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]

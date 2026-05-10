@@ -61,11 +61,11 @@ async fn agent_reaper_retires_stale_agents() {
 
     assert_eq!(result.agents, 2);
 
-    // Both agents must now be terminated.
+    // Both agents must now be retired.
     let a1 = dur.agents().get("stale-agent-1").await.unwrap();
     let a2 = dur.agents().get("stale-agent-2").await.unwrap();
-    assert_eq!(a1.status, "terminated");
-    assert_eq!(a2.status, "terminated");
+    assert_eq!(a1.status, "retired");
+    assert_eq!(a2.status, "retired");
 
     // Audit chain must include agent.retired_stale and still verify clean.
     let report = dur.audit().verify(None, None).await.unwrap();
@@ -114,7 +114,7 @@ async fn agent_reaper_skips_fresh_agents() {
 
     assert_eq!(result.agents, 0);
     let agent = dur.agents().get("fresh-agent").await.unwrap();
-    assert_ne!(agent.status, "terminated");
+    assert_ne!(agent.status, "retired");
 }
 
 #[tokio::test]
@@ -146,7 +146,7 @@ async fn agent_reaper_disabled_does_not_retire_stale_agents() {
     assert_eq!(result.agents, 0);
     // Agent must still be alive.
     let agent = dur.agents().get("would-be-stale").await.unwrap();
-    assert_ne!(agent.status, "terminated");
+    assert_ne!(agent.status, "retired");
 }
 
 #[tokio::test]
@@ -170,5 +170,5 @@ async fn retire_stale_agents_dry_run_does_not_mutate() {
 
     // Agent must still be alive.
     let agent = dur.agents().get("dry-run-agent").await.unwrap();
-    assert_ne!(agent.status, "terminated");
+    assert_ne!(agent.status, "retired");
 }

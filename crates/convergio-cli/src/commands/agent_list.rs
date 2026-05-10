@@ -17,7 +17,7 @@ use serde_json::Value;
 /// Column profile chosen via `--columns`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
 pub enum ColumnProfile {
-    /// Default: ID, KIND, STATUS, LAST_HB, TASK, BRANCH.
+    /// Default: ID, KIND, STATUS, LAST_HB, CLAIMED, LAST_TOPIC, TASK, BRANCH.
     Default,
     /// Default + CAPABILITIES, LEASES, LAST_AUDIT.
     Extended,
@@ -44,7 +44,7 @@ impl Default for ListArgs {
     }
 }
 
-/// Minimal mirror of the daemon's `AgentSummary` payload — keeps
+/// Minimal mirror of the daemon's agent summary payload — keeps
 /// the CLI loosely coupled to the Rust struct shape and forgiving
 /// of additional fields.
 #[derive(Debug, Deserialize)]
@@ -68,6 +68,30 @@ struct Summary {
     last_audit_kind: Option<String>,
     #[serde(default)]
     last_audit_at: Option<DateTime<Utc>>,
+
+    #[serde(default)]
+    claimed_tasks: ClaimedTasks,
+    #[serde(default)]
+    last_topic: Option<LastTopic>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct ClaimedTasks {
+    #[serde(default)]
+    count: i64,
+    #[serde(default)]
+    tasks: Vec<ClaimedTask>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ClaimedTask {
+    title: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct LastTopic {
+    topic: String,
+    at: DateTime<Utc>,
 }
 
 /// Entry point.
@@ -190,21 +214,25 @@ fn render_human(
 fn print_header(bundle: &Bundle, profile: ColumnProfile) {
     if matches!(profile, ColumnProfile::Default) {
         println!(
-            "{:<28} {:<10} {:<11} {:<10} {:<40} {:<24}",
+            "{:<28} {:<10} {:<11} {:<10} {:<7} {:<20} {:<36} {:<24}",
             bundle.t("agent-list-col-id", &[]),
             bundle.t("agent-list-col-kind", &[]),
             bundle.t("agent-list-col-status", &[]),
             bundle.t("agent-list-col-last-hb", &[]),
+            bundle.t("agent-list-col-claimed", &[]),
+            bundle.t("agent-list-col-last-topic", &[]),
             bundle.t("agent-list-col-task", &[]),
             bundle.t("agent-list-col-branch", &[]),
         );
     } else {
         println!(
-            "{:<28} {:<10} {:<11} {:<10} {:<32} {:<20} {:<24} {:<8} {:<22}",
+            "{:<28} {:<10} {:<11} {:<10} {:<7} {:<18} {:<30} {:<20} {:<24} {:<8} {:<22}",
             bundle.t("agent-list-col-id", &[]),
             bundle.t("agent-list-col-kind", &[]),
             bundle.t("agent-list-col-status", &[]),
             bundle.t("agent-list-col-last-hb", &[]),
+            bundle.t("agent-list-col-claimed", &[]),
+            bundle.t("agent-list-col-last-topic", &[]),
             bundle.t("agent-list-col-task", &[]),
             bundle.t("agent-list-col-branch", &[]),
             bundle.t("agent-list-col-capabilities", &[]),
@@ -219,19 +247,33 @@ fn print_row(s: &Summary, profile: ColumnProfile, now: &DateTime<Utc>) {
     let kind = s.kind.clone();
     let status = color_status(&s.status);
     let hb = relative_ago_opt(s.last_heartbeat_at.as_ref(), now);
-    let task = s
+    let mut task = s
         .current_task_title
         .clone()
+        .or_else(|| s.claimed_tasks.tasks.first().map(|t| t.title.clone()))
         .or_else(|| s.current_task_id.clone())
         .map(|t| truncate(&t, 38))
         .unwrap_or_else(|| "-".into());
+    if s.claimed_tasks.count > 1 {
+        task = truncate(&format!("{task} (+{})", s.claimed_tasks.count - 1), 38);
+    }
     let branch = s
         .recent_branch
         .clone()
         .map(|b| truncate(&b, 22))
         .unwrap_or_else(|| "-".into());
+    let claimed = format!("{}", s.claimed_tasks.count);
+    let topic = match &s.last_topic {
+        Some(t) => {
+            let age = relative(&t.at, now);
+            truncate(&format!("{} {age}", t.topic), 18)
+        }
+        None => "-".into(),
+    };
     if matches!(profile, ColumnProfile::Default) {
-        println!("{id:<36} {kind:<10} {status:<20} {hb:<10} {task:<40} {branch:<24}");
+        println!(
+            "{id:<36} {kind:<10} {status:<20} {hb:<10} {claimed:<7} {topic:<20} {task:<36} {branch:<24}"
+        );
     } else {
         let caps = truncate(&s.capabilities.join(","), 18);
         let leases = format!("{}", s.active_leases);
@@ -244,8 +286,8 @@ fn print_row(s: &Summary, profile: ColumnProfile, now: &DateTime<Utc>) {
             None => "-".into(),
         };
         println!(
-            "{id:<36} {kind:<10} {status:<20} {hb:<10} {:<32} {branch:<20} {caps:<24} {leases:<8} {audit:<22}",
-            truncate(&task, 30)
+            "{id:<36} {kind:<10} {status:<20} {hb:<10} {claimed:<7} {topic:<18} {:<30} {branch:<20} {caps:<24} {leases:<8} {audit:<22}",
+            truncate(&task, 28)
         );
     }
 }

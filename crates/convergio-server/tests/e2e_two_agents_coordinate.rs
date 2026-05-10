@@ -187,7 +187,7 @@ async fn one_agent_retiring_does_not_affect_the_other() {
         "beta must keep its status when alpha retires"
     );
 
-    // Alpha's record persists but is marked terminated.
+    // Alpha's record persists but is marked retired.
     let alpha: Value = client
         .get(format!("{base}/v1/agent-registry/agents/claude-code-alpha"))
         .send()
@@ -196,5 +196,5 @@ async fn one_agent_retiring_does_not_affect_the_other() {
         .json()
         .await
         .unwrap();
-    assert_eq!(alpha["status"], "terminated");
+    assert_eq!(alpha["status"], "retired");
 }

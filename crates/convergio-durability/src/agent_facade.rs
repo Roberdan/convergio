@@ -145,7 +145,7 @@ impl Durability {
         last_heartbeat_at: Option<chrono::DateTime<Utc>>,
     ) -> Result<bool> {
         let rows = sqlx::query(
-            "UPDATE agents SET status = 'terminated', current_task_id = NULL, \
+            "UPDATE agents SET status = 'retired', current_task_id = NULL, \
              updated_at = ? WHERE id = ? AND status NOT IN ('terminated', 'retired')",
         )
         .bind(Utc::now().to_rfc3339())

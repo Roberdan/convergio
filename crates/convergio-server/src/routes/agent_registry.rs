@@ -14,9 +14,10 @@ use axum::extract::{Path, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use chrono::{DateTime, Utc};
+use convergio_bus::AgentLastTopic;
 use convergio_durability::{
-    AgentAuditEntry, AgentHeartbeat, AgentLease, AgentPrLink, AgentRecord, AgentSummary, NewAgent,
-    RetireStaleResult,
+    AgentAuditEntry, AgentHeartbeat, AgentLease, AgentPrLink, AgentRecord, AgentSummary,
+    ClaimedTasks, NewAgent, RetireStaleResult,
 };
 use serde::{Deserialize, Serialize};
 
@@ -28,12 +29,26 @@ use serde::{Deserialize, Serialize};
 pub struct AgentDetails {
     #[serde(flatten)]
     pub summary: AgentSummary,
+    /// Tasks still owned by the agent (helps when `current_task_id` is missing).
+    pub claimed_tasks: ClaimedTasks,
+    /// Most recent bus topic activity involving this agent.
+    pub last_topic: Option<AgentLastTopic>,
     pub current_task_plan_id: Option<String>,
     pub current_task_plan_title: Option<String>,
     pub current_task_started_at: Option<DateTime<Utc>>,
     pub leases: Vec<AgentLease>,
     pub recent_audit: Vec<AgentAuditEntry>,
     pub recent_prs: Vec<AgentPrLink>,
+}
+
+/// Enriched `cvg agent list` payload.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
+pub struct AgentSummaryEnriched {
+    #[serde(flatten)]
+    pub summary: AgentSummary,
+    pub claimed_tasks: ClaimedTasks,
+    pub last_topic: Option<AgentLastTopic>,
 }
 
 /// Mount agent registry routes.
@@ -99,8 +114,22 @@ async fn retire(
     Ok(Json(state.durability.retire_agent(&id).await?))
 }
 
-async fn summaries(State(state): State<AppState>) -> Result<Json<Vec<AgentSummary>>, ApiError> {
-    Ok(Json(state.durability.agents().summaries().await?))
+async fn summaries(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<AgentSummaryEnriched>>, ApiError> {
+    let store = state.durability.agents();
+    let rows = store.summaries().await?;
+    let mut out = Vec::with_capacity(rows.len());
+    for summary in rows {
+        let claimed_tasks = store.claimed_tasks_for_agent(&summary.agent.id, 3).await?;
+        let last_topic = state.bus.last_topic_for_agent(&summary.agent.id).await?;
+        out.push(AgentSummaryEnriched {
+            summary,
+            claimed_tasks,
+            last_topic,
+        });
+    }
+    Ok(Json(out))
 }
 
 #[derive(Deserialize)]
@@ -133,8 +162,12 @@ async fn details(
     let recent_prs = store
         .recent_prs(plan_id.as_deref(), task_id.as_deref(), q.pr_limit)
         .await?;
+    let claimed_tasks = store.claimed_tasks_for_agent(&id, 20).await?;
+    let last_topic = state.bus.last_topic_for_agent(&id).await?;
     Ok(Json(AgentDetails {
         summary,
+        claimed_tasks,
+        last_topic,
         current_task_plan_id: meta.as_ref().map(|m| m.plan_id.clone()),
         current_task_plan_title: meta.as_ref().map(|m| m.plan_title.clone()),
         current_task_started_at: meta.and_then(|m| m.started_at),

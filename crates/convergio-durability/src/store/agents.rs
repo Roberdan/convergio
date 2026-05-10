@@ -144,7 +144,7 @@ impl AgentStore {
     /// Mark an agent terminated.
     pub async fn retire(&self, agent_id: &str) -> Result<AgentRecord> {
         let rows = sqlx::query(
-            "UPDATE agents SET status = 'terminated', current_task_id = NULL, \
+            "UPDATE agents SET status = 'retired', current_task_id = NULL, \
              updated_at = ? WHERE id = ?",
         )
         .bind(Utc::now().to_rfc3339())
@@ -191,7 +191,8 @@ impl AgentStore {
         let mut sql = if status.is_some() {
             format!("{AGENT_SELECT} WHERE status = ? ORDER BY updated_at DESC")
         } else {
-            format!("{AGENT_SELECT} ORDER BY status = 'terminated', updated_at DESC")
+            // Keep terminal rows at the bottom, but preserve ordering between them.
+            format!("{AGENT_SELECT} ORDER BY status IN ('terminated', 'retired'), updated_at DESC")
         };
         if let Some(n) = limit.filter(|&n| n > 0) {
             sql.push_str(&format!(" LIMIT {n}"));

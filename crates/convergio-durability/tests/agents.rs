@@ -73,11 +73,11 @@ async fn invalid_and_unknown_agents_are_rejected() {
 }
 
 #[tokio::test]
-async fn retire_marks_agent_terminated() {
+async fn retire_marks_agent_retired() {
     let (dur, _dir) = fresh().await;
     dur.register_agent(new_agent("agent-a")).await.unwrap();
     let agent = dur.retire_agent("agent-a").await.unwrap();
-    assert_eq!(agent.status, "terminated");
+    assert_eq!(agent.status, "retired");
     assert!(agent.current_task_id.is_none());
 }
 

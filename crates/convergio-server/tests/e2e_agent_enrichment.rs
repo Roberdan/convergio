@@ -30,7 +30,7 @@ async fn set_heartbeat_age(pool: &Pool, agent_id: &str, age_secs: i64) {
 
 #[tokio::test]
 async fn summaries_resolves_current_task_title() {
-    let (base, _pool, _dir) = boot().await;
+    let (base, pool, _dir) = boot().await;
     let client = reqwest::Client::new();
 
     let plan: Value = client
@@ -70,6 +70,33 @@ async fn summaries_resolves_current_task_title() {
         .await
         .unwrap();
 
+    // Simulate a real claim: task assigned to the agent and moved into an active state.
+    let now = chrono::Utc::now().to_rfc3339();
+    sqlx::query(
+        "UPDATE tasks SET agent_id = ?, status = 'in_progress', started_at = ?, updated_at = ? WHERE id = ?",
+    )
+    .bind("agent-fresh")
+    .bind(&now)
+    .bind(&now)
+    .bind(&task_id)
+    .execute(pool.inner())
+    .await
+    .unwrap();
+
+    // And one bus message, so last_topic is populated.
+    client
+        .post(format!("{base}/v1/plans/{plan_id}/messages"))
+        .json(&json!({
+            "topic": "coordination.test",
+            "sender": "agent-fresh",
+            "payload": {"ok": true}
+        }))
+        .send()
+        .await
+        .unwrap()
+        .error_for_status()
+        .unwrap();
+
     let summaries: Vec<Value> = client
         .get(format!("{base}/v1/agent-registry/agents/summaries"))
         .send()
@@ -81,7 +108,14 @@ async fn summaries_resolves_current_task_title() {
 
     let row = summaries.iter().find(|s| s["id"] == "agent-fresh").unwrap();
     assert_eq!(row["current_task_title"], "wire enrichment to CLI");
-    assert_eq!(row["current_task_status"], "pending");
+    assert_eq!(row["current_task_status"], "in_progress");
+    assert_eq!(row["claimed_tasks"]["count"], 1);
+    assert_eq!(
+        row["claimed_tasks"]["tasks"][0]["id"].as_str().unwrap(),
+        task_id
+    );
+    assert_eq!(row["last_topic"]["topic"], "coordination.test");
+    assert_eq!(row["last_topic"]["kind"], "sent");
 }
 
 #[tokio::test]
@@ -102,6 +136,9 @@ async fn details_includes_all_sections_even_when_empty() {
         .unwrap();
 
     assert_eq!(details["id"], "agent-bare");
+    assert!(details["claimed_tasks"].is_object());
+    assert_eq!(details["claimed_tasks"]["count"], 0);
+    assert!(details["last_topic"].is_null());
     assert!(details["leases"].is_array());
     assert_eq!(details["leases"].as_array().unwrap().len(), 0);
     assert!(details["recent_audit"].is_array());
@@ -162,7 +199,7 @@ async fn retire_stale_dry_run_then_apply() {
         assert_eq!(a["retired"], true);
     }
 
-    // Confirm the rows are now terminated and audit chain still verifies.
+    // Confirm the rows are now retired and audit chain still verifies.
     let stale: Value = client
         .get(format!("{base}/v1/agent-registry/agents/agent-stale-1"))
         .send()
@@ -171,7 +208,7 @@ async fn retire_stale_dry_run_then_apply() {
         .json()
         .await
         .unwrap();
-    assert_eq!(stale["status"], "terminated");
+    assert_eq!(stale["status"], "retired");
 
     let verify: Value = client
         .get(format!("{base}/v1/audit/verify"))
