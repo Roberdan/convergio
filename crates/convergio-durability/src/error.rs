@@ -74,6 +74,24 @@ pub enum DurabilityError {
         id: String,
     },
 
+    /// A done-only operation observed a task in another status.
+    #[error("expected task {id} in 'done', found '{actual}'")]
+    NotDone {
+        /// Task id.
+        id: String,
+        /// Actual current status.
+        actual: &'static str,
+    },
+
+    /// An agent re-registration was requested but the agent is not terminated.
+    #[error("expected agent {id} in 'terminated', found '{actual}'")]
+    AgentNotTerminated {
+        /// Agent id.
+        id: String,
+        /// Actual agent status tag.
+        actual: String,
+    },
+
     /// `rename_plan` was called with an empty / blank title.
     #[error("plan title must be non-empty")]
     PlanTitleEmpty,

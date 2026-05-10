@@ -65,4 +65,5 @@ do not edit between the markers.
 | [0045](./0045-per-host-realtime-context-push.md) | 0045. Per-host real-time context push: Cursor / Copilot / Cline strategies | accepted |
 | [0046](./0046-stdout-relay-to-bus.md) | -0046 — Sub-agent stdout relay to the plan bus | accepted |
 | [0047](./0047-action-type-registry-actions-json.md) | 0047. Generate a discoverable action type registry (actions.json) | proposed |
+| [0048](./0048-compensating-action-types.md) | 0048. Add compensating action types | proposed |
 <!-- END AUTO -->

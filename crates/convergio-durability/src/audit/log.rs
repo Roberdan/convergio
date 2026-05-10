@@ -38,6 +38,18 @@ impl AuditLog {
         Ok(entry)
     }
 
+    /// Fetch one entry by sequence number.
+    pub async fn get(&self, seq: i64) -> Result<Option<AuditEntry>> {
+        let row = sqlx::query_as::<_, AuditRow>(
+            "SELECT id, seq, entity_type, entity_id, transition, payload, agent_id, \
+             prev_hash, hash, created_at FROM audit_log WHERE seq = ? LIMIT 1",
+        )
+        .bind(seq)
+        .fetch_optional(self.pool.inner())
+        .await?;
+        Ok(row.map(Into::into))
+    }
+
     /// Entries with `seq > after_seq`, oldest first, capped at
     /// `limit`. Used by `cvg monitor` (and any client that wants a
     /// live tail) — pass `0` on the first call, then use the last

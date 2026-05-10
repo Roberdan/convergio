@@ -8,11 +8,13 @@
 //! See [ADR-0002](../../../../docs/adr/0002-audit-hash-chain.md) for the
 //! decision and threat model.
 
+mod action;
 mod canonical;
 mod hash;
 mod log;
 mod model;
 
+pub use action::Action;
 pub use canonical::canonical_json;
 pub use hash::{compute_hash, GENESIS_HASH};
 pub(crate) use log::append_tx;
