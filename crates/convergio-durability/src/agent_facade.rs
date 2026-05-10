@@ -112,6 +112,38 @@ impl Durability {
         Ok(agent)
     }
 
+    /// Re-register a terminated agent identity: flips status back to
+    /// `idle` without mutating identity metadata. Writes one audit row
+    /// of kind `agent.re_registered`.
+    pub async fn reregister_agent(&self, agent_id: &str) -> Result<AgentRecord> {
+        let agent = self.agents().get(agent_id).await?;
+        if agent.status != "terminated" {
+            return Err(crate::error::DurabilityError::AgentNotTerminated {
+                id: agent_id.to_string(),
+                actual: agent.status,
+            });
+        }
+        let now = Utc::now().to_rfc3339();
+        sqlx::query(
+            "UPDATE agents SET status = 'idle', current_task_id = NULL, updated_at = ? WHERE id = ?",
+        )
+        .bind(&now)
+        .bind(agent_id)
+        .execute(self.pool().inner())
+        .await?;
+
+        self.audit()
+            .append(
+                EntityKind::Agent,
+                agent_id,
+                "agent.re_registered",
+                &json!({"agent_id": agent_id}),
+                Some(agent_id),
+            )
+            .await?;
+        self.agents().get(agent_id).await
+    }
+
     /// Retire all agents whose last heartbeat is older than
     /// `threshold_secs`. Writes one `agent.retired_stale` audit row
     /// per agent retired. When `dry_run` is true the method only

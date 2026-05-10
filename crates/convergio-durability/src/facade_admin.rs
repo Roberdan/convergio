@@ -20,6 +20,62 @@ use chrono::Utc;
 use serde_json::json;
 
 impl Durability {
+    /// Reopen a `done` task back to `target`, clearing the terminal
+    /// timing cache (`ended_at`, `duration_ms`) so ADR-0031 stays
+    /// consistent. Writes one audit row of kind `task.reopened`.
+    pub async fn reopen_task_from_done(
+        &self,
+        task_id: &str,
+        target: TaskStatus,
+        reason: &str,
+        source_seq: Option<i64>,
+        agent_id: Option<&str>,
+    ) -> Result<Task> {
+        if matches!(target, TaskStatus::Done) {
+            return Err(DurabilityError::DoneNotByThor);
+        }
+        let task = self.tasks().get(task_id).await?;
+        if !matches!(task.status, TaskStatus::Done) {
+            return Err(DurabilityError::NotDone {
+                id: task_id.to_string(),
+                actual: task.status.as_str(),
+            });
+        }
+        let trimmed = reason.trim();
+        if trimmed.is_empty() {
+            return Err(DurabilityError::PostHocReasonMissing);
+        }
+
+        let mut tx = self.pool().inner().begin().await?;
+        let now = Utc::now().to_rfc3339();
+        sqlx::query(
+            "UPDATE tasks SET status = ?, updated_at = ?, ended_at = NULL, duration_ms = NULL WHERE id = ?",
+        )
+        .bind(target.as_str())
+        .bind(&now)
+        .bind(task_id)
+        .execute(&mut *tx)
+        .await?;
+        append_tx(
+            &mut tx,
+            EntityKind::Task,
+            task_id,
+            "task.reopened",
+            &json!({
+                "task_id": task_id,
+                "from": "done",
+                "to": target.as_str(),
+                "reason": trimmed,
+                "source_seq": source_seq,
+                "agent_id": agent_id,
+            }),
+            agent_id,
+        )
+        .await?;
+        tx.commit().await?;
+        self.tasks().get(task_id).await
+    }
+
     /// Close a task `post hoc`: move it directly to `done` because
     /// the operator confirms the work shipped outside the daemon's
     /// evidence flow. Writes one audit row of kind

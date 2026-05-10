@@ -148,6 +148,12 @@ impl IntoResponse for ApiError {
                 DurabilityError::AlreadyDone { .. } => {
                     (StatusCode::CONFLICT, "already_done", e.to_string())
                 }
+                DurabilityError::NotDone { .. } => {
+                    (StatusCode::CONFLICT, "not_done", e.to_string())
+                }
+                DurabilityError::AgentNotTerminated { .. } => {
+                    (StatusCode::CONFLICT, "agent_not_terminated", e.to_string())
+                }
                 DurabilityError::PlanTitleEmpty => (
                     StatusCode::UNPROCESSABLE_ENTITY,
                     "plan_title_empty",
