@@ -6,43 +6,51 @@
 //! without re-implementing the catalog or shelling out to `cvg`.
 
 use crate::app::AppState;
+use axum::body::Bytes;
+use axum::http::header;
+use axum::response::IntoResponse;
 use axum::routing::get;
-use axum::{Json, Router};
-use convergio_api::{actions_registry, ActionMetadata, SCHEMA_VERSION};
-use serde::Serialize;
-
-#[derive(Serialize)]
-struct ActionsResponse {
-    schema_version: &'static str,
-    actions: Vec<ActionMetadata>,
-}
+use axum::Router;
+use convergio_api::actions_json_bytes;
 
 /// Mount the actions registry route.
 pub fn router() -> Router<AppState> {
     Router::new().route("/v1/api/actions", get(actions))
 }
 
-async fn actions() -> Json<ActionsResponse> {
-    Json(ActionsResponse {
-        schema_version: SCHEMA_VERSION,
-        actions: actions_registry(),
-    })
+async fn actions() -> impl IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "application/json")],
+        Bytes::from_static(actions_json_bytes()),
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use axum::body::to_bytes;
 
     #[tokio::test]
     async fn actions_response_has_known_shape() {
-        let resp = actions().await;
-        assert_eq!(resp.0.schema_version, SCHEMA_VERSION);
-        assert!(!resp.0.actions.is_empty());
-        // Every entry has a non-empty name + capability + summary.
-        for a in &resp.0.actions {
-            assert!(!a.name.is_empty(), "action name is empty");
-            assert!(!a.capability.is_empty(), "{} capability empty", a.name);
-            assert!(!a.summary.is_empty(), "{} summary empty", a.name);
+        let response = actions().await.into_response();
+        assert_eq!(
+            response.headers().get(header::CONTENT_TYPE).unwrap(),
+            "application/json"
+        );
+
+        let bytes = to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("body bytes");
+        let json: serde_json::Value = serde_json::from_slice(&bytes).expect("valid JSON");
+
+        assert_eq!(json["schema_version"], convergio_api::SCHEMA_VERSION);
+        let actions = json["actions"].as_array().expect("actions array");
+        assert!(!actions.is_empty());
+
+        for a in actions {
+            assert!(!a["name"].as_str().unwrap_or_default().is_empty());
+            assert!(!a["capability"].as_str().unwrap_or_default().is_empty());
+            assert!(!a["summary"].as_str().unwrap_or_default().is_empty());
         }
     }
 }

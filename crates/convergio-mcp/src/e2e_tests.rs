@@ -97,8 +97,12 @@ fn assert_help_contract() {
         verbosity: HelpVerbosity::Schema,
     });
     let actions = catalog["actions"].as_array().unwrap();
-    assert!(actions.iter().any(|action| action == "validate_plan"));
-    assert!(!actions.iter().any(|action| action == "complete_task"));
+    assert!(actions
+        .iter()
+        .any(|a| a["name"].as_str() == Some("validate_plan")));
+    assert!(!actions
+        .iter()
+        .any(|a| a["name"].as_str() == Some("complete_task")));
 }
 
 async fn spawn_stub_daemon() -> (String, Arc<StubDaemon>) {

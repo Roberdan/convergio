@@ -8,6 +8,8 @@ mod bus_actions;
 #[cfg(test)]
 mod e2e_tests;
 mod help;
+#[cfg(test)]
+mod help_tests;
 mod http;
 
 use anyhow::Result;

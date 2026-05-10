@@ -199,6 +199,20 @@ pub fn actions_registry() -> Vec<ActionMetadata> {
         .collect()
 }
 
+/// Canonical generated JSON action registry document (P3-1).
+///
+/// This is generated at build time by `build.rs` and embedded into the
+/// crate so every consumer (daemon HTTP and MCP bridge) can return the
+/// exact same bytes.
+pub fn actions_json() -> &'static str {
+    include_str!(concat!(env!("OUT_DIR"), "/actions.json"))
+}
+
+/// Raw bytes for the canonical generated action registry JSON.
+pub fn actions_json_bytes() -> &'static [u8] {
+    actions_json().as_bytes()
+}
+
 /// Stable MCP tool names.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ToolNames {
