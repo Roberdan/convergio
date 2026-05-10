@@ -101,3 +101,32 @@ fn setup_agent_prompt_txt_contains_register_and_poll_for_every_host() {
         );
     }
 }
+
+#[test]
+fn setup_agent_bootstraps_step0_into_existing_prompt_txt() {
+    let home = tempfile::tempdir().expect("temp home");
+    let host = "cursor";
+    let dir = home.path().join(".convergio/adapters").join(host);
+    std::fs::create_dir_all(&dir).expect("create adapter dir");
+
+    let legacy = format!("# Convergio adapter — {host}\n\n## Working loop\n\nLegacy body kept.\n");
+    std::fs::write(dir.join("prompt.txt"), legacy).expect("write legacy prompt");
+
+    cvg()
+        .env("HOME", home.path())
+        .args(["setup", "agent", host])
+        .assert()
+        .success();
+
+    let body = std::fs::read_to_string(dir.join("prompt.txt")).expect("read patched prompt");
+    assert!(
+        body.starts_with(&format!("# Convergio adapter — {host}")),
+        "title should be preserved"
+    );
+    assert!(body.contains("## Step 0 — register your session"));
+    assert!(body.contains("cvg session register-and-poll"));
+    assert!(
+        body.contains("Legacy body kept."),
+        "existing content must not be discarded"
+    );
+}
