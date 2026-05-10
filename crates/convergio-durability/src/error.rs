@@ -180,6 +180,13 @@ pub enum DurabilityError {
         reason: String,
     },
 
+    /// Evidence payload is invalid (schema/type/range).
+    #[error("invalid evidence: {reason}")]
+    InvalidEvidence {
+        /// Validation failure reason.
+        reason: String,
+    },
+
     /// A patch proposal violates workspace coordination policy.
     #[error("workspace patch refused: {kind}: {reason}")]
     WorkspacePatchRefused {

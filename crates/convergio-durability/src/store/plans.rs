@@ -6,7 +6,7 @@ use chrono::{DateTime, Utc};
 use convergio_db::Pool;
 
 const PLAN_SELECT: &str = "SELECT id, number, title, description, project, status, \
-    created_at, updated_at, started_at, ended_at, duration_ms FROM plans ";
+    created_at, updated_at, started_at, ended_at, duration_ms, tokens, cost_usd FROM plans ";
 
 /// Read/write access to the `plans` table.
 #[derive(Clone)]
@@ -115,6 +115,8 @@ struct PlanRow {
     started_at: Option<String>,
     ended_at: Option<String>,
     duration_ms: Option<i64>,
+    tokens: i64,
+    cost_usd: f64,
 }
 
 impl TryFrom<PlanRow> for Plan {
@@ -132,6 +134,8 @@ impl TryFrom<PlanRow> for Plan {
             started_at: r.started_at.as_deref().map(parse_ts).transpose()?,
             ended_at: r.ended_at.as_deref().map(parse_ts).transpose()?,
             duration_ms: r.duration_ms,
+            tokens: r.tokens,
+            cost_usd: r.cost_usd,
         })
     }
 }

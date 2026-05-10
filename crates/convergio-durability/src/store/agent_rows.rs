@@ -5,7 +5,7 @@ use crate::store::AgentRecord;
 use chrono::{DateTime, Utc};
 
 pub(super) const AGENT_SELECT: &str = "SELECT id, kind, name, host, status, capabilities, \
-     current_task_id, metadata, last_heartbeat_at, created_at, updated_at FROM agents";
+     current_task_id, metadata, tokens, cost_usd, last_heartbeat_at, created_at, updated_at FROM agents";
 
 #[derive(sqlx::FromRow)]
 pub(super) struct AgentRow {
@@ -17,6 +17,8 @@ pub(super) struct AgentRow {
     capabilities: String,
     current_task_id: Option<String>,
     metadata: String,
+    tokens: i64,
+    cost_usd: f64,
     last_heartbeat_at: Option<String>,
     created_at: String,
     updated_at: String,
@@ -34,6 +36,8 @@ impl TryFrom<AgentRow> for AgentRecord {
             capabilities: serde_json::from_str(&row.capabilities)?,
             current_task_id: row.current_task_id,
             metadata: serde_json::from_str(&row.metadata)?,
+            tokens: row.tokens,
+            cost_usd: row.cost_usd,
             last_heartbeat_at: parse_optional_time(row.last_heartbeat_at)?,
             created_at: parse_time(&row.created_at)?,
             updated_at: parse_time(&row.updated_at)?,

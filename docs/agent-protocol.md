@@ -55,6 +55,30 @@ workspace actions:
 9. Add evidence with `add_evidence`.
 10. Submit file changes as a patch proposal with `submit_patch_proposal`
    while the matching leases are still active.
+
+## Evidence kinds
+
+Evidence is append-only per task. `kind` is a short stable tag; `payload` is
+JSON.
+
+### `usage`
+
+Attach `kind: "usage"` to report incremental LLM usage for a single model call
+or tool step.
+
+Payload schema:
+
+```json
+{
+  "input_tokens": 123,
+  "output_tokens": 456,
+  "model": "copilot:gpt-5.2",
+  "cost_usd": 0.0123
+}
+```
+
+On insert, the daemon accumulates `tasks.tokens` / `tasks.cost_usd` and
+recomputes the cached rollups in `plans` and `agents` in the same transaction.
 11. Enqueue the accepted proposal with `enqueue_patch_proposal`. The merge
    arbiter, not the agent, owns canonical workspace application.
 12. Release workspace leases after the proposal is queued or the work is

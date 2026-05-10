@@ -58,6 +58,14 @@ pub struct AgentRecord {
     pub current_task_id: Option<String>,
     /// Free-form metadata.
     pub metadata: Value,
+
+    /// Cached rollup: total LLM tokens attributed to tasks owned by this agent.
+    #[serde(default)]
+    pub tokens: i64,
+    /// Cached rollup: total USD cost attributed to tasks owned by this agent.
+    #[serde(default)]
+    pub cost_usd: f64,
+
     /// Last heartbeat timestamp.
     pub last_heartbeat_at: Option<DateTime<Utc>>,
     /// Creation timestamp.

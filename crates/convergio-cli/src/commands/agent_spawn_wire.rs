@@ -30,6 +30,10 @@ pub(crate) struct TaskWire {
     #[serde(default)]
     duration_ms: Option<i64>,
     #[serde(default)]
+    tokens: Option<i64>,
+    #[serde(default)]
+    cost_usd: Option<f64>,
+    #[serde(default)]
     runner_kind: Option<String>,
     #[serde(default)]
     profile: Option<String>,
@@ -55,6 +59,8 @@ impl TaskWire {
             started_at: parse_ts_opt(self.started_at.as_deref()),
             ended_at: parse_ts_opt(self.ended_at.as_deref()),
             duration_ms: self.duration_ms,
+            tokens: self.tokens.unwrap_or(0),
+            cost_usd: self.cost_usd.unwrap_or(0.0),
             runner_kind: self.runner_kind,
             profile: self.profile,
             max_budget_usd: self.max_budget_usd,

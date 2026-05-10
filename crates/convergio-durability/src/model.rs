@@ -72,6 +72,13 @@ pub struct Plan {
     /// Materialised cache (ADR-0031): `ended_at - started_at` in ms.
     #[serde(default)]
     pub duration_ms: Option<i64>,
+
+    /// Cached rollup: total LLM tokens attributed to tasks in this plan.
+    #[serde(default)]
+    pub tokens: i64,
+    /// Cached rollup: total USD cost attributed to tasks in this plan.
+    #[serde(default)]
+    pub cost_usd: f64,
 }
 
 /// Input for [`crate::Durability::create_plan`].
@@ -167,6 +174,14 @@ pub struct Task {
     /// milliseconds. `None` until ended.
     #[serde(default)]
     pub duration_ms: Option<i64>,
+
+    /// Cached rollup: total LLM tokens attributed to this task.
+    #[serde(default)]
+    pub tokens: i64,
+    /// Cached rollup: total USD cost attributed to this task.
+    #[serde(default)]
+    pub cost_usd: f64,
+
     /// Per-task runner kind (ADR-0034) in the wire format
     /// `<vendor>:<model>` — e.g. `claude:sonnet`, `claude:opus`,
     /// `copilot:gpt-5.2`, `qwen:qwen3-coder`. `None` ⇒ executor
