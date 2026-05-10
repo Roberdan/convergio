@@ -147,11 +147,7 @@ fn agent(bundle: &Bundle, host: AgentHost, force: bool) -> Result<()> {
     fs::create_dir_all(&dir).with_context(|| format!("create {}", dir.display()))?;
 
     write_snippet(&dir.join("mcp.json"), &mcp_snippet(host), force)?;
-    write_snippet(
-        &dir.join("prompt.txt"),
-        &super::setup_prompts::prompt_snippet(host),
-        force,
-    )?;
+    super::setup_agent_prompt::write_prompt(&dir.join("prompt.txt"), host, force)?;
     write_snippet(&dir.join("README.txt"), &readme_snippet(host), force)?;
 
     if matches!(host, AgentHost::Claude) {

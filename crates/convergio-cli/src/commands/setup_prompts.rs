@@ -10,8 +10,6 @@
 
 use super::setup::AgentHost;
 
-const DAEMON_URL: &str = "http://127.0.0.1:8420";
-
 /// Render the `prompt.txt` content for a given agent host.
 ///
 /// The first section after the title is always "Step 0 — register
@@ -20,31 +18,36 @@ const DAEMON_URL: &str = "http://127.0.0.1:8420";
 /// machine cannot collide.
 pub fn prompt_snippet(host: AgentHost) -> String {
     let host_str = host.as_str();
+    format!(
+        "# Convergio adapter — {host_str}\n\n{step0}\n\n{rest}",
+        step0 = step_zero_snippet(host),
+        rest = working_loop_snippet(),
+    )
+}
+
+/// The Step 0 bootstrap block injected into existing `prompt.txt`.
+///
+/// Keep this self-contained: it must make sense when inserted into an
+/// older prompt that already has its own working loop text.
+pub fn step_zero_snippet(host: AgentHost) -> String {
+    let host_str = host.as_str();
     let agent_id = agent_id_placeholder(host);
     format!(
-        "# Convergio adapter — {host_str}\n\n\
-         ## Step 0 — register your session\n\n\
+        "## Step 0 — register your session\n\n\
          When this session starts, your VERY FIRST action must be to register\n\
-         yourself with the local Convergio daemon. This makes you visible to\n\
-         peer sessions and gives the daemon a heartbeat to detect liveness.\n\n\
-         Run this once at session start (or invoke `cvg session register-and-poll`\n\
-         when that command is available in your installed cvg version):\n\n\
+         yourself with the local Convergio daemon and poll your inbox. This\n\
+         makes you visible to peer sessions and publishes a session-started\n\
+         announcement on the bus (discoverability).\n\n\
+         Run this once at session start:\n\n\
          ```\n\
-         curl -fsS -X POST {DAEMON_URL}/v1/agent-registry/agents \\\n  \
-         -H 'Content-Type: application/json' \\\n  \
-         -d '{{\"id\":\"{agent_id}\",\"kind\":\"{host_str}\",\"name\":\"<descriptive>\",\"host\":\"<machine>\",\"capabilities\":[\"...\"]}}'\n\n\
-         curl -fsS -X POST {DAEMON_URL}/v1/agent-registry/agents/{agent_id}/heartbeat \\\n  \
-         -H 'Content-Type: application/json' -d '{{\"status\":\"idle\"}}'\n\
+         cvg session register-and-poll --agent-id \"{agent_id}\" --kind {host_str} --output human\n\
          ```\n\n\
-         Then poll your inbox:\n\n\
-         ```\n\
-         curl -s \"{DAEMON_URL}/v1/plans?status=active\" | jq -r '.[].id' | while read plan; do\n  \
-         curl -s \"{DAEMON_URL}/v1/plans/$plan/messages?topic=agent:{agent_id}\"\n\
-         done\n\
-         ```\n\n\
-         If those commands fail, the daemon is down: `cvg service start`, then retry.\n\n\
+         Debug note: `register-and-poll` hits `POST /v1/agent-registry/agents`\n\
+         and `POST /v1/agent-registry/agents/:id/heartbeat`, then polls\n\
+         `/v1/plans/:plan_id/messages?topic=agent:{agent_id}`.\n\n\
+         If it fails, the daemon is down: `cvg service start`, then retry.\n\n\
          ## Step 0.5 — load the cold-start packet\n\n\
-         After register, run `cvg session resume` to load live state\n\
+         After Step 0, run `cvg session resume` to load live state\n\
          (daemon health, audit chain, active plan, top pending tasks,\n\
          open PRs). For Claude Code this is already automated: the\n\
          project-level `SessionStart` hook in `.claude/settings.json`\n\
@@ -55,14 +58,17 @@ pub fn prompt_snippet(host: AgentHost) -> String {
          For other hosts, run it manually once after Step 0:\n\n\
          ```\n\
          cvg session resume --output plain\n\
-         ```\n\n\
-         ## Working loop\n\n\
-         Use Convergio as the local source of truth. Call convergio.help once. \
-         Use convergio.act for task lifecycle and evidence. If a gate refuses \
-         work, fix the reason, attach new evidence, and retry submit_task. \
-         Do not tell the user work is done until validate_plan returns Pass — \
-         agents submit, the validator (Thor) is the only path to done (ADR-0011).\n",
+         ```\n",
     )
+}
+
+fn working_loop_snippet() -> &'static str {
+    "## Working loop\n\n\
+     Use Convergio as the local source of truth. Call convergio.help once. \
+     Use convergio.act for task lifecycle and evidence. If a gate refuses \
+     work, fix the reason, attach new evidence, and retry submit_task. \
+     Do not tell the user work is done until validate_plan returns Pass — \
+     agents submit, the validator (Thor) is the only path to done (ADR-0011).\n"
 }
 
 /// Host-specific placeholder that the agent must substitute when it
