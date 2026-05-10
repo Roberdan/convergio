@@ -125,7 +125,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0048-compensating-action-types.md` | adr | [convergio-durability, convergio-server] | proposed | 65 |
 | `docs/adr/README.md` | adr | - | - | 69 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
-| `docs/agent-protocol.md` | - | - | - | 113 |
+| `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
 | `docs/agents/README.md` | agent-docs | - | - | 101 |
 | `docs/incidents/2026-05-08-dirty-state-postmortem.md` | - | - | - | 230 |
@@ -137,7 +137,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/fleet-retrieval-cross-repo-graph.md` | plan | - | F1 complete (α/β/γ/δ/ε/ζ landed); 30-fixture curated bench done; F2 GO | 174 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
-| `docs/plans/v0.2-friction-log.md` | plan | - | - | 188 |
+| `docs/plans/v0.2-friction-log.md` | plan | - | - | 189 |
 | `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
 | `docs/release.md` | - | - | - | 106 |
 | `docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |
