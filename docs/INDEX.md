@@ -18,7 +18,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 487 |
+| `AGENTS.md` | agent-rules | - | - | 488 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
 | `CHANGELOG.md` | release | - | - | 1031 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -41,14 +41,14 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-cli-pr/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 57 |
 | `crates/convergio-cli-session/README.md` | crate-readme | - | - | 33 |
-| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 41 |
+| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 40 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 31 |
 | `crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
 | `crates/convergio-coherence/AGENTS.md` | crate-rules | - | - | 67 |
 | `crates/convergio-coherence/README.md` | crate-readme | - | - | 23 |
 | `crates/convergio-db/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-db/README.md` | crate-readme | - | - | 26 |
-| `crates/convergio-durability/AGENTS.md` | crate-rules | - | - | 85 |
+| `crates/convergio-durability/AGENTS.md` | crate-rules | - | - | 86 |
 | `crates/convergio-embed/AGENTS.md` | crate-rules | - | - | 67 |
 | `crates/convergio-executor/AGENTS.md` | crate-rules | - | - | 26 |
 | `crates/convergio-executor/README.md` | crate-readme | - | - | 10 |
@@ -59,18 +59,18 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-i18n/README.md` | crate-readme | - | - | 41 |
 | `crates/convergio-lifecycle/AGENTS.md` | crate-rules | - | - | 27 |
 | `crates/convergio-lifecycle/README.md` | crate-readme | - | - | 46 |
-| `crates/convergio-mcp/AGENTS.md` | crate-rules | - | - | 28 |
+| `crates/convergio-mcp/AGENTS.md` | crate-rules | - | - | 29 |
 | `crates/convergio-mcp/README.md` | crate-readme | - | - | 12 |
 | `crates/convergio-parse-multi/AGENTS.md` | crate-rules | - | - | 53 |
 | `crates/convergio-parse-multi/CLAUDE.md` | crate-rules | - | - | 1 |
 | `crates/convergio-planner/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-planner/README.md` | crate-readme | - | - | 8 |
 | `crates/convergio-runner/AGENTS.md` | crate-rules | - | - | 53 |
-| `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 30 |
+| `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 29 |
 | `crates/convergio-server/README.md` | crate-readme | - | - | 58 |
 | `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 22 |
-| `crates/convergio-tui/AGENTS.md` | crate-rules | - | - | 113 |
+| `crates/convergio-tui/AGENTS.md` | crate-rules | - | - | 116 |
 | `crates/convergio-tui/README.md` | crate-readme | - | - | 98 |
 | `docs/AGENTS.md` | - | - | - | 63 |
 | `docs/INDEX.md` | - | - | - | - |
@@ -121,9 +121,11 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0044-plan-execution-contract.md` | adr | [convergio-cli, convergio-coherence] | accepted | 110 |
 | `docs/adr/0045-per-host-realtime-context-push.md` | adr | [convergio-cli-session] | accepted | 113 |
 | `docs/adr/0046-stdout-relay-to-bus.md` | adr | [convergio-lifecycle, convergio-server] | accepted | 77 |
-| `docs/adr/README.md` | adr | - | - | 21 |
+| `docs/adr/0047-action-type-registry-actions-json.md` | adr | [convergio-api, convergio-server, convergio-mcp] | proposed | 59 |
+| `docs/adr/0048-compensating-action-types.md` | adr | [convergio-durability, convergio-server] | proposed | 65 |
+| `docs/adr/README.md` | adr | - | - | 69 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
-| `docs/agent-protocol.md` | - | - | - | 113 |
+| `docs/agent-protocol.md` | - | - | - | 137 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
 | `docs/agents/README.md` | agent-docs | - | - | 101 |
 | `docs/incidents/2026-05-08-dirty-state-postmortem.md` | - | - | - | 230 |
