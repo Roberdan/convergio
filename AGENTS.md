@@ -440,6 +440,45 @@ Knobs: `CONVERGIO_REAPER_TICK_SECS`, `CONVERGIO_REAPER_TIMEOUT_SECS`,
 **Do not document loops you have not actually implemented.** (We had
 this exact lie in v2 docs for months — not again.)
 
+## Dispatch guard rails
+
+The Executor now refuses to spawn a new runner whenever any of the
+following hold. Implementation lives in
+`crates/convergio-executor/src/guards.rs` and is invoked from
+`worktree::prepare()` before any filesystem mutation. Driven by the
+2026-05-08 incident (see `docs/incidents/2026-05-08-dirty-state-postmortem.md`):
+
+| Env var                                | Default | Effect when exceeded |
+|----------------------------------------|---------|----------------------|
+| `CONVERGIO_DISPATCH_DISABLED=1`        | unset   | hard kill switch — refuse all spawns until cleared |
+| `CONVERGIO_GUARD_MAX_WORKTREES`        | `2`     | refuse if `<repo>/.claude/worktrees/` already has ≥ N child dirs |
+| `CONVERGIO_GUARD_MAX_WORKTREES_BYTES`  | `5 GiB` | refuse if total bytes under `<repo>/.claude/worktrees/` ≥ cap |
+| `CONVERGIO_EXECUTOR_MAX_PARALLEL`      | unset   | per-tick fan-out cap (separate from disk guard above) |
+
+Guard refusals surface as `ExecutorError::Worktree` and land in the
+audit log via `executor_tick_failed`. I/O failures inside the guard
+log a `warn!` and treat the result as "assume safe" so a transient
+filesystem hiccup never wedges the executor permanently.
+
+Operator playbook for the laptop-killer scenario (worktrees filling
+the disk):
+
+```bash
+# freeze new spawns without bringing the daemon down
+launchctl setenv CONVERGIO_DISPATCH_DISABLED 1
+# then clean up
+git -C "$CONVERGIO_REPO_PATH" worktree list \
+  | awk '/agent-/{print $1}' \
+  | xargs -I{} git -C "$CONVERGIO_REPO_PATH" worktree remove --force {}
+# resume
+launchctl unsetenv CONVERGIO_DISPATCH_DISABLED
+```
+
+The launchd plist at `~/Library/LaunchAgents/com.convergio.v3.plist`
+is also expected to set `KeepAlive=false` and `RunAtLoad=false` so
+that a dying daemon stays dead instead of being respawned every few
+seconds — this was the second half of the 2026-05-08 incident.
+
 ## When in doubt
 
 1. Read the relevant `crates/<name>/src/lib.rs` `//!` block.
