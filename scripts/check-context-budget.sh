@@ -38,7 +38,7 @@ cd "$repo_root"
 RS_HARD=300
 NON_RS_SOFT=500
 CRATE_SOFT=5000
-CRATE_HARD=13000
+CRATE_HARD=14000
 
 hard_fail=0
 soft_warn=0

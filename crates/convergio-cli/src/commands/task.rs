@@ -67,6 +67,10 @@ pub enum TaskCommand {
         /// Agent id to record on the transition.
         #[arg(long)]
         agent_id: Option<String>,
+        /// GitHub PR URL to attach as `pr_url` evidence and to register
+        /// as a plan↔PR link (best-effort).
+        #[arg(long, value_name = "URL")]
+        pr_url: Option<String>,
     },
     /// Touch a task heartbeat.
     Heartbeat {
@@ -187,7 +191,40 @@ pub async fn run(
             task_id,
             target,
             agent_id,
+            pr_url,
         } => {
+            if let Some(url) = pr_url.as_deref() {
+                // Evidence required by EvidenceGate for most real tasks.
+                let _: Value = client
+                    .post(
+                        &format!("/v1/tasks/{task_id}/evidence"),
+                        &json!({
+                            "kind": "pr_url",
+                            "payload": {"url": url},
+                        }),
+                    )
+                    .await?;
+
+                // Ownership mapping (best-effort): if we can parse the URL
+                // and resolve plan_id, populate plan_pr_links.
+                if let Some((repo_slug, pr_number)) = parse_github_pr_url(url) {
+                    let task: Value = client.get(&format!("/v1/tasks/{task_id}")).await?;
+                    if let Some(plan_id) = task.get("plan_id").and_then(Value::as_str) {
+                        let _: Value = client
+                            .post(
+                                &format!("/v1/plans/{plan_id}/pr-links"),
+                                &json!({
+                                    "pr_number": pr_number,
+                                    "repo_slug": repo_slug,
+                                    "task_id": task_id.clone(),
+                                    "agent_id": agent_id.clone(),
+                                }),
+                            )
+                            .await?;
+                    }
+                }
+            }
+
             let body = json!({
                 "target": target.as_api(),
                 "agent_id": agent_id,
@@ -238,4 +275,25 @@ pub async fn run(
             render_task(&done, output)
         }
     }
+}
+fn parse_github_pr_url(url: &str) -> Option<(String, i64)> {
+    let url = url.trim();
+    let url = url
+        .strip_prefix("https://github.com/")
+        .or_else(|| url.strip_prefix("http://github.com/"))?;
+    let mut parts = url.split('/');
+    let owner = parts.next()?.trim();
+    let repo = parts.next()?.trim();
+    let kind = parts.next()?;
+    if kind != "pull" {
+        return None;
+    }
+    let pr_raw = parts.next()?;
+    let pr_number_str = pr_raw.split(['?', '#']).next().unwrap_or("");
+    let pr_number = pr_number_str.parse::<i64>().ok()?;
+    if owner.is_empty() || repo.is_empty() {
+        return None;
+    }
+
+    Some((format!("{owner}/{repo}"), pr_number))
 }

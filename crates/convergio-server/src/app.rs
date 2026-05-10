@@ -45,6 +45,7 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .merge(crate::routes::health::router())
         .merge(crate::routes::plans::router())
+        .merge(crate::routes::pr_links::router())
         .merge(crate::routes::tasks::router())
         .merge(crate::routes::evidence::router())
         .merge(crate::routes::audit::router())

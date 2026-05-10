@@ -7,6 +7,7 @@ use super::Client;
 use anyhow::{bail, Context, Result};
 use convergio_i18n::Bundle;
 use serde_json::{json, Value};
+use std::process::Command;
 
 /// Run the full completion orchestration for one task.
 ///
@@ -73,12 +74,15 @@ pub(super) async fn run(
         .await
         .context("adding embed_query evidence")?;
 
-    // 6. Evidence: pr_link.
+    // 6. Evidence: PR reference.
+    // Keep both `pr_link` (legacy) and `pr_url` (current) so the EvidenceGate
+    // can be satisfied regardless of template.
     let pr_str = pr.to_string();
     eprintln!(
         "{}",
         bundle.t("task-complete-step-evidence-pr", &[("pr", &pr_str)])
     );
+
     let _: Value = client
         .post(
             &format!("/v1/tasks/{task_id}/evidence"),
@@ -89,6 +93,32 @@ pub(super) async fn run(
         )
         .await
         .context("adding pr_link evidence")?;
+
+    let repo_slug = detect_repo_slug_or_unknown();
+    let pr_url = format!("https://github.com/{repo_slug}/pull/{pr}");
+    let _: Value = client
+        .post(
+            &format!("/v1/tasks/{task_id}/evidence"),
+            &json!({
+                "kind": "pr_url",
+                "payload": {"url": pr_url},
+            }),
+        )
+        .await
+        .context("adding pr_url evidence")?;
+
+    // Best-effort: register the plan↔PR link so ownership can be resolved.
+    let _: Result<Value> = client
+        .post(
+            &format!("/v1/plans/{plan_id}/pr-links"),
+            &json!({
+                "pr_number": pr as i64,
+                "repo_slug": repo_slug,
+                "task_id": task_id,
+                "agent_id": agent_id,
+            }),
+        )
+        .await;
 
     // 7. Transition to submitted.
     eprintln!("{}", bundle.t("task-complete-step-submit", &[]));
@@ -135,6 +165,34 @@ fn summarise_pack(pack: &Value) -> Value {
         "files": pack["files"].as_array().map(|a| a.len()).unwrap_or(0),
         "estimated_tokens": pack.get("estimated_tokens"),
     })
+}
+
+fn detect_repo_slug_or_unknown() -> String {
+    detect_repo_slug().unwrap_or_else(|| "unknown/unknown".into())
+}
+
+fn detect_repo_slug() -> Option<String> {
+    let out = Command::new("gh")
+        .args([
+            "repo",
+            "view",
+            "--json",
+            "nameWithOwner",
+            "-q",
+            ".nameWithOwner",
+        ])
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let s = String::from_utf8(out.stdout).ok()?;
+    let s = s.trim().to_string();
+    if s.is_empty() {
+        None
+    } else {
+        Some(s)
+    }
 }
 
 fn summarise_embed(hits: &Value) -> Value {

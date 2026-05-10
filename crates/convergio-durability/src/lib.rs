@@ -92,7 +92,7 @@ pub use store::{MergeOutcome, MergeQueueItem};
 pub use store::{
     NewPatchProposal, PatchFile, PatchProposal, WorkspaceConflict, WorkspaceConflictRef,
 };
-pub use store::{NewPlanPrLink, PlanPrLinksStore};
+pub use store::{NewPlanPrLink, PlanPrLink, PlanPrLinksStore};
 pub use store::{
     NewWorkspaceLease, NewWorkspaceResource, WorkspaceLease, WorkspaceResource, WorkspaceStore,
 };

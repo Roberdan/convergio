@@ -17,6 +17,7 @@ use super::pr_link::LinkArgs;
 use super::pr_merge::MergeArgs;
 use super::pr_parse::parse_manifest;
 use super::pr_render;
+use super::pr_who::WhoArgs;
 use super::{Client, OutputMode};
 use anyhow::{Context, Result};
 use clap::Subcommand;
@@ -57,6 +58,8 @@ pub enum PrCommand {
     /// which agent opened a given PR. Call this immediately after
     /// `gh pr create`. P2-3 / F47.
     Link(LinkArgs),
+    /// Resolve PR ownership from the daemon's `plan_pr_links` table.
+    Who(WhoArgs),
 }
 
 /// Run a pr subcommand.
@@ -73,6 +76,7 @@ pub async fn run(
         }
         PrCommand::Merge(args) => super::pr_merge::run(client, output, args).await,
         PrCommand::Link(args) => super::pr_link::run(client, output, args).await,
+        PrCommand::Who(args) => super::pr_who::run(client, output, args).await,
     }
 }
 

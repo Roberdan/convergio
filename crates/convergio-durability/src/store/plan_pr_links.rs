@@ -3,7 +3,7 @@
 //! (they share the pool; stores are cheap to construct).
 
 use crate::error::{DurabilityError, Result};
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use convergio_db::Pool;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -23,6 +23,27 @@ pub struct NewPlanPrLink {
     pub branch: Option<String>,
     /// Agent that opened the PR.
     pub agent_id: Option<String>,
+}
+
+/// One `plan_pr_links` row.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlanPrLink {
+    /// Row id (UUIDv4).
+    pub id: String,
+    /// Plan this PR belongs to.
+    pub plan_id: String,
+    /// Task this PR closes (optional).
+    pub task_id: Option<String>,
+    /// GitHub PR number.
+    pub pr_number: i64,
+    /// `owner/repo` slug, e.g. `Roberdan/convergio`.
+    pub repo_slug: String,
+    /// Branch name (best-effort).
+    pub branch: Option<String>,
+    /// Agent that opened the PR.
+    pub agent_id: Option<String>,
+    /// Row creation time.
+    pub created_at: DateTime<Utc>,
 }
 
 /// Write-side store for `plan_pr_links`.
@@ -80,6 +101,64 @@ impl PlanPrLinksStore {
 
         Ok(())
     }
+
+    /// List links for a given PR (repo slug + number), newest first.
+    pub async fn list_by_pr(
+        &self,
+        repo_slug: &str,
+        pr_number: i64,
+        limit: i64,
+    ) -> Result<Vec<PlanPrLink>> {
+        let limit = limit.clamp(1, 100);
+        let rows = sqlx::query_as::<_, PlanPrLinkRow>(
+            "SELECT id, plan_id, task_id, pr_number, repo_slug, branch, agent_id, created_at \
+             FROM plan_pr_links WHERE repo_slug = ? AND pr_number = ? \
+             ORDER BY created_at DESC LIMIT ?",
+        )
+        .bind(repo_slug)
+        .bind(pr_number)
+        .bind(limit)
+        .fetch_all(self.pool.inner())
+        .await?;
+
+        rows.into_iter().map(TryInto::try_into).collect()
+    }
+}
+
+#[derive(sqlx::FromRow)]
+struct PlanPrLinkRow {
+    id: String,
+    plan_id: String,
+    task_id: Option<String>,
+    pr_number: i64,
+    repo_slug: String,
+    branch: Option<String>,
+    agent_id: Option<String>,
+    created_at: String,
+}
+
+impl TryFrom<PlanPrLinkRow> for PlanPrLink {
+    type Error = DurabilityError;
+
+    fn try_from(r: PlanPrLinkRow) -> Result<Self> {
+        let created_at = DateTime::parse_from_rfc3339(&r.created_at)
+            .map(|d| d.with_timezone(&Utc))
+            .map_err(|_| DurabilityError::NotFound {
+                entity: "timestamp",
+                id: r.created_at.clone(),
+            })?;
+
+        Ok(Self {
+            id: r.id,
+            plan_id: r.plan_id,
+            task_id: r.task_id,
+            pr_number: r.pr_number,
+            repo_slug: r.repo_slug,
+            branch: r.branch,
+            agent_id: r.agent_id,
+            created_at,
+        })
+    }
 }
 
 #[cfg(test)]
@@ -127,6 +206,11 @@ mod tests {
                 .await
                 .unwrap();
         assert_eq!(count, 1);
+
+        let links = store.list_by_pr("owner/repo", 42, 10).await.unwrap();
+        assert_eq!(links.len(), 1);
+        assert_eq!(links[0].plan_id, "plan-1");
+        assert_eq!(links[0].agent_id.as_deref(), Some("agent-abc"));
     }
 
     #[tokio::test]
