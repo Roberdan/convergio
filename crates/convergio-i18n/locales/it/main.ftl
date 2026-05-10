@@ -209,6 +209,27 @@ gate-refused-wave-sequence = { $count ->
 # ---------- audit ----------
 audit-clean = Catena audit verificata: { $count } eventi, nessuna manomissione rilevata.
 audit-broken = Catena audit rotta alla sequenza { $seq }.
+audit-compensate-dry-run = Dry-run: compenserei l'evento audit { $seq } ({ $transition }).
+audit-compensate-applied = Compensazione applicata per l'evento audit { $seq } ({ $transition }).
+audit-compensate-apply-hint = Applica con: cvg audit compensate { $seq } --apply
+audit-compensate-action = Azione compensante:
+{ $action }
+
+# ---------- CLI: actions ----------
+actions-list-empty = Nessuna azione trovata.
+actions-list-header = { $count ->
+    [one] Un'azione:
+   *[other] { $count } azioni:
+}
+actions-list-line = - [{ $capability }] { $name } — { $summary }
+
+# ---------- CLI: gates ----------
+gates-list-empty = Nessuna precondizione gate trovata.
+gates-list-header = { $count ->
+    [one] Un gate:
+   *[other] { $count } gate:
+}
+gates-list-line = - { $gate } active={ $active } reads={ $reads } refusals={ $refusals } evidence_required={ $evidence_required }
 
 # ---------- CLI: pr stack ----------
 pr-stack-empty = Nessuna PR aperta.

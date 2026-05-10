@@ -638,6 +638,7 @@ dependencies = [
  "cargo_metadata",
  "chrono",
  "clap",
+ "convergio-api",
  "convergio-brand",
  "convergio-cli-plan-run",
  "convergio-cli-pr",

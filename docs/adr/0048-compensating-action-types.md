@@ -42,7 +42,7 @@ Chosen option: **Option 2**, because it keeps compensation safe and explicit, re
 - A typed `convergio_durability::audit::Action` inferred from selected daemon-owned audit transitions.
 - `Action::compensate() -> Option<Action>` returning a mechanical inverse when available.
 - Non-invertible actions return `None` and expose a short rationale (e.g. creation has no delete surface; destructive removals lose data).
-- `GET /v1/audit/events/:seq/compensate` computes and applies the compensating action, and the applied operation is recorded as the normal fresh audit row emitted by the underlying durability method.
+- `GET /v1/audit/events/:seq/compensate` computes the compensating action (dry-run by default). Pass `?apply=true` to apply it; the applied operation is recorded as the normal fresh audit row emitted by the underlying durability method.
 
 ### Explicit non-inverses (examples)
 

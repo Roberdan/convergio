@@ -26,6 +26,8 @@ fn help_lists_known_subcommands() {
         "service",
         "demo",
         "audit",
+        "actions",
+        "gates",
     ] {
         a = a.stdout(predicate::str::contains(name));
     }
@@ -38,7 +40,9 @@ fn subcommand_help_table() {
         ("setup", &["init", "agent"][..]),
         ("doctor", &["--json"][..]),
         ("plan", &["create", "list", "get"][..]),
-        ("audit", &["verify"][..]),
+        ("audit", &["verify", "compensate"][..]),
+        ("actions", &["list"][..]),
+        ("gates", &["show"][..]),
         ("crdt", &["conflicts"][..]),
         ("workspace", &["leases"][..]),
         ("mcp", &["tail"][..]),

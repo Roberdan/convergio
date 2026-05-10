@@ -42,12 +42,14 @@ pub(crate) async fn run(
         Command::Plan { sub } => commands::plan::run(&client, &bundle, output, sub).await,
         Command::Task { sub } => commands::task::run(&client, &bundle, output, sub).await,
         Command::Evidence { sub } => commands::evidence::run(&client, sub).await,
-        Command::Audit { sub } => commands::audit::run(&client, sub).await,
+        Command::Audit { sub } => commands::audit::run(&client, &bundle, output, sub).await,
         Command::Agent { sub } => commands::agent::run(&client, &bundle, output, sub).await,
         Command::Crdt { sub } => commands::crdt::run(&client, &bundle, output, sub).await,
         Command::Capability { sub } => {
             commands::capability::run(&client, &bundle, output, sub).await
         }
+        Command::Actions { sub } => commands::actions::run(&client, &bundle, output, sub).await,
+        Command::Gates { sub } => commands::gates::run(&client, &bundle, output, sub).await,
         Command::Coherence { sub } => commands::coherence::run(&bundle, output, sub).await,
         Command::Docs { sub } => commands::docs::run(output, sub).await,
         Command::Graph { sub } => commands::graph::run(&client, output, sub).await,
