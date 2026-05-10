@@ -12,6 +12,7 @@ use convergio_db::Pool;
 use convergio_durability::{init, Durability};
 use convergio_lifecycle::Supervisor;
 use convergio_server::{router, AppState};
+use serde_json::Value;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
@@ -87,6 +88,100 @@ async fn handshake_full_round_trip_succeeds() {
         "agent B id format"
     );
     assert!(!report.plan_id.is_empty(), "plan_id is recorded");
+
+    // Stronger assertions than "success": the two published messages
+    // must be acked (so they no longer re-surface on poll), and the
+    // audit chain must verify.
+    let http = reqwest::Client::new();
+
+    let tail: Value = http
+        .get(format!(
+            "{base}/v1/plans/{}/messages/tail?topic=coordination/handshake&limit=10",
+            report.plan_id
+        ))
+        .send()
+        .await
+        .expect("tail request")
+        .json()
+        .await
+        .expect("tail json");
+    let arr = tail.as_array().expect("tail is array");
+    assert_eq!(arr.len(), 2, "handshake publishes ping + pong");
+
+    let ping = &arr[0];
+    let pong = &arr[1];
+    let ping_id = ping.get("id").and_then(Value::as_str).expect("ping id");
+
+    assert_eq!(
+        ping.get("sender").and_then(Value::as_str),
+        Some(report.agent_ids.0.as_str()),
+        "ping sender must be agent A"
+    );
+    assert_eq!(
+        pong.get("sender").and_then(Value::as_str),
+        Some(report.agent_ids.1.as_str()),
+        "pong sender must be agent B"
+    );
+    assert_eq!(
+        ping.pointer("/payload/type").and_then(Value::as_str),
+        Some("ping"),
+        "ping payload type"
+    );
+    assert_eq!(
+        pong.pointer("/payload/type").and_then(Value::as_str),
+        Some("pong"),
+        "pong payload type"
+    );
+    assert_eq!(
+        pong.pointer("/payload/replying_to").and_then(Value::as_str),
+        Some(ping_id),
+        "pong must reply to ping id"
+    );
+
+    for (label, msg) in [("ping", ping), ("pong", pong)] {
+        assert!(
+            msg.get("consumed_at")
+                .map(|v| !v.is_null())
+                .unwrap_or(false),
+            "{label} must be acked (consumed_at non-null): {msg}"
+        );
+    }
+    assert_eq!(
+        ping.get("consumed_by").and_then(Value::as_str),
+        Some(report.agent_ids.1.as_str()),
+        "B must ack ping"
+    );
+    assert_eq!(
+        pong.get("consumed_by").and_then(Value::as_str),
+        Some(report.agent_ids.0.as_str()),
+        "A must ack pong"
+    );
+
+    let poll: Value = http
+        .get(format!(
+            "{base}/v1/plans/{}/messages?topic=coordination/handshake&limit=10",
+            report.plan_id
+        ))
+        .send()
+        .await
+        .expect("poll request")
+        .json()
+        .await
+        .expect("poll json");
+    assert!(
+        poll.as_array().expect("poll is array").is_empty(),
+        "acked messages must not re-surface on poll"
+    );
+
+    let audit: Value = http
+        .get(format!("{base}/v1/audit/verify"))
+        .send()
+        .await
+        .expect("audit request")
+        .json()
+        .await
+        .expect("audit json");
+    assert_eq!(audit["ok"], true, "audit chain should verify");
 }
 
 #[tokio::test]
