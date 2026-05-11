@@ -243,6 +243,7 @@ The full top-level CLI surface is also auto-regenerated:
 
 <!-- BEGIN AUTO:cvg_subcommands -->
 - `cvg about`
+- `cvg actions`
 - `cvg agent`
 - `cvg audit`
 - `cvg bus`
@@ -261,6 +262,7 @@ The full top-level CLI surface is also auto-regenerated:
 - `cvg embed`
 - `cvg evidence`
 - `cvg fleet`
+- `cvg gates`
 - `cvg graph`
 - `cvg health`
 - `cvg mcp`
@@ -504,6 +506,45 @@ The launchd plist at `~/Library/LaunchAgents/com.convergio.v3.plist`
 is also expected to set `KeepAlive=false` and `RunAtLoad=false` so
 that a dying daemon stays dead instead of being respawned every few
 seconds — this was the second half of the 2026-05-08 incident.
+
+## Definition of Done
+
+A task or PR is "done" **only** when **every** condition below holds.
+Anything else is "in progress" — never claim completion otherwise.
+
+1. **PR merged on `main`** (not just opened). Verify with
+   `gh pr view <N> --json state,mergedAt`; both fields must be set.
+2. **CI fully green** at the merged commit. Required checks
+   (`fmt + clippy + test`, `cargo deny + audit`, `Docs drift`) must
+   all be `pass`. `gh run list --branch main --limit 1` shows the
+   landing run; it must be `success`.
+3. **Source branch deleted** on both `origin` and locally.
+   `git branch -r | grep <branch>` and `git branch | grep <branch>`
+   both return empty.
+4. **Task transitioned** to `done` (or `failed`/`cancelled` with
+   rationale) in the daemon. The audit chain carries the transition;
+   nothing relies on a dangling `submitted` row to recover state.
+   Use `cvg task close-post-hoc <id> --reason "shipped via PR #N"`
+   when the PR body's `Tracks: T<id>` line is the canonical link.
+5. **No orphan worktrees** under `<repo>/.claude/worktrees/`.
+   `git worktree list` shows only the operator's main checkout
+   plus any worktrees of currently-live tasks.
+6. **No zombie agent processes**. Cross-check
+   `pgrep -fl "copilot.*--allow-all"` against
+   `SELECT pid FROM agent_processes WHERE status='running'`: every
+   DB row must have a matching live PID, every live runner must
+   have a DB row.
+7. **Pre-completion gate passes** locally — run
+   `bash ~/.claude/hooks/pre-completion-gate.sh` (operator-side hook
+   defined in `~/.claude/`) and confirm no `⚠️ PRE-COMPLETION` lines.
+
+If you find yourself wanting to skip one of these on the basis of
+"it's a small change", you are about to ship the exact pattern that
+generated the 2026-05 incident series. Don't.
+
+The `/ship-pr` skill in `~/.claude/skills/ship-pr/` encodes this
+checklist as a single verb. Use it instead of running the steps by
+hand whenever possible.
 
 ## When in doubt
 
