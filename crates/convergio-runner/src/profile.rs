@@ -122,6 +122,7 @@ impl PermissionProfile {
                 "shell(git:add*)",
                 "shell(git:commit*)",
                 "shell(git:fetch*)",
+                "shell(git:push*)",
                 "shell(git:rebase*)",
                 "shell(git:worktree*)",
                 "shell(cvg:*)",
