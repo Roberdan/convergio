@@ -222,21 +222,88 @@ full pre-merge contract.
 | Permission prompts breaking autonomous flow | #1 allowlist |
 | Bash:Edit 5:1 ratio | #5 `/ship-pr` skill, #6 `cvg fleet cleanup` |
 | Stale branches / zombie processes | #4 post-merge hook, #6 `cvg fleet cleanup` |
-| Output token-limit errors | (deferred — see "On the horizon" below) |
+| Output token-limit errors | #8 long-output → file memo (operator-side) |
+| Tasks pane drowned by terminal rows | #9 TUI hide-terminal filter (default ON) |
+| Trial-and-error on macOS internals | #10 trial-and-error → web memo (operator-side) |
+
+## 8. Long-output → file memo
+
+**Problem.** ≥5 audited sessions hit the 500-token output cap and
+lost content; dense table replies prompted "non ho capito ridimmi
+bene". Inline long outputs also burn the chat context they live in.
+
+**Where.** Operator-side global memory at
+`~/.claude/projects/-Users-Roberdan-GitHub/memory/feedback_long_output_to_file.md`,
+indexed in `MEMORY.md`. Backed by `~/.claude/reports/` for the
+generated files.
+
+**How.** When a reply would carry more than ~50 rows or ~2 KB
+(multi-PR status, audit reports, dense tables, plan dumps), write
+the full content to `~/.claude/reports/<YYYY-MM-DD>-<slug>.md` and
+reply with: 1-line summary + counts + absolute file path. The chat
+reply still answers the question — the file is durable detail, not a
+substitute.
+
+**Maintain.** Memory persists across sessions; nothing in this repo
+to maintain. If the rule needs to be enforced at the daemon CLI
+level later (e.g. a `--output-to-file` flag on `cvg status`,
+`cvg pr stack`, `cvg fleet ls`), open a follow-up plan.
+
+## 9. TUI hide-terminal task filter (default ON)
+
+**Problem.** The `cvg dash` Tasks pane showed every status side-by-
+side, so `done`/`failed` rows drowned out live work as plan history
+grew.
+
+**Where.** `crates/convergio-tui/src/state.rs` (the
+`show_terminal_tasks` flag), `crates/convergio-tui/src/panes/tasks.rs`
+(filter at render time, title carries `(active/total · t:show all)`),
+`crates/convergio-tui/src/keymap.rs` (`t` toggles the new
+`Action::ToggleShowTerminalTasks`).
+
+**How.** Default state hides `done`/`failed`; press `t` to reveal
+them. The underlying `state.tasks` Vec is intact so scope filters,
+detail mode, and other panes still see everything — only the
+Tasks-pane view is filtered. PR #303.
+
+**Maintain.** When new task statuses land in `convergio-durability`,
+review the `is_terminal` helper in `panes/tasks.rs` to decide whether
+they count as terminal for the filter.
+
+## 10. Trial-and-error → web memo (operator-side)
+
+**Problem.** During the May 2026 macOS Tahoe Spotlight saga the
+user cut off a trial-and-error loop ("non possiamo andare a
+tentativi"); the root cause (a corrupted plist, 22 consecutive
+crashes) only surfaced after switching to web search + external model
+consult. Trial-and-error on system internals also leaves zombie
+procs, half-applied configs, and killed daemons in its wake.
+
+**Where.** Operator-side global memory at
+`~/.claude/projects/-Users-Roberdan-GitHub/memory/feedback_no_trial_and_error.md`,
+indexed in `MEMORY.md`.
+
+**How.** On system/infra bugs (launchd, code-signing, Spotlight,
+SQLite locking, daemon spawn loops, kernel/macOS internals), after
+the 2nd failed fix attempt stop and consult web/docs/crash logs
+before attempt #3. Routine application bugs (compile errors, unit
+test failures) do not trigger the rule.
+
+**Maintain.** Memory persists across sessions; nothing in this repo
+to maintain. If the same pattern shows up inside Convergio dispatch
+loops (e.g. an executor retrying a spawn that keeps failing), encode
+the same back-off-and-research behaviour there as a follow-up.
 
 ## On the horizon
 
 Patterns the insights flagged that are **not** addressed here:
 
-- **Write-to-file instead of long inline outputs.** The pattern
-  needs a global memory entry plus probably a `--output-to-file`
-  flag on the heavy CLI commands. Tracked as a follow-up.
+- **`--output-to-file` flag on heavy `cvg` commands** (status, pr
+  stack, fleet ls). Memo #8 handles it operator-side; a daemon-side
+  flag would make it discoverable for new agents too.
 - **Deploy-verify-or-rollback loop.** Out of scope for convergio
   (we don't deploy a production app); relevant for the
   MirrorHR-style workflows.
-- **Trial-and-error debugging on macOS internals.** Operator-side
-  pattern — could be a memory feedback entry pinning "consult web
-  search after two failed attempts on system internals".
 
 ## Maintenance routine
 
