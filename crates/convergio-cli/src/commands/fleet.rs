@@ -56,16 +56,10 @@ pub enum FleetCommand {
         #[arg(long)]
         refresh_similarity: bool,
     },
-    /// Sweep operator-side residue left by autonomous PR sessions.
-    ///
-    /// `git worktree prune` + remove `.claude/worktrees/agent-*`
-    /// whose branch is gone on `origin` + delete local `agent/*`
-    /// branches whose remote ref is gone. Best-effort and idempotent.
-    /// Mirrors `scripts/post-merge-fleet-cleanup.sh` (driven by the
-    /// 2026-05 insights audit: 13 stale remote branches + 6 zombie
-    /// processes routinely left after fleet sprints).
+    /// Sweep operator-side residue (orphan worktrees + stale `agent/*` branches).
+    /// See `fleet_cleanup` module doc for rationale.
     Cleanup {
-        /// Print what would be removed without touching the filesystem.
+        /// Preview without touching the filesystem.
         #[arg(long)]
         dry_run: bool,
     },
