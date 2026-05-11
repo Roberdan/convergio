@@ -158,6 +158,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/reviews/crate-audits/convergio-fleet.md` | - | - | - | 28 |
 | `docs/reviews/crate-audits/convergio-graph.md` | - | - | - | 40 |
 | `docs/reviews/crate-audits/convergio-lifecycle.md` | - | - | - | 33 |
+| `docs/reviews/crate-audits/convergio-thor.md` | - | - | - | 26 |
 | `docs/setup.md` | - | - | - | 102 |
 | `docs/spec/README.md` | spec | - | - | 10 |
 | `docs/spec/f2-13-measurement.md` | spec | - | - | 89 |
