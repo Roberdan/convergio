@@ -40,8 +40,23 @@ if [ -d ".claude/worktrees" ]; then
     [ -d "$wt" ] || continue
     name=$(basename "$wt")
     branch="agent/${name#agent-}"
-    # Skip if the remote ref is still alive.
+    # Skip if the remote ref is still alive (PR open or merged but
+    # branch retained).
     if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+      continue
+    fi
+    # Skip if the worktree has uncommitted or unpushed work — that
+    # signals a live agent run that hasn't reached its push step yet.
+    # Killing it here would erase audit reports / WIP commits before
+    # they can be salvaged (2026-05-11 incident: cleanup hook fired
+    # mid-flight during the per-crate audit pass and wiped two active
+    # runners' reports).
+    if [ -n "$(git -C "$wt" status --porcelain 2>/dev/null)" ]; then
+      continue
+    fi
+    if [ "$(git -C "$wt" rev-parse HEAD 2>/dev/null)" != "$(git rev-parse HEAD 2>/dev/null)" ]; then
+      # Worktree has commits past the operator's main HEAD — likely a
+      # local commit that hasn't been pushed yet.
       continue
     fi
     git worktree remove --force "$wt" 2>/dev/null
@@ -50,11 +65,19 @@ if [ -d ".claude/worktrees" ]; then
 fi
 
 # Also nuke local agent/* branches whose remote ref is gone, even
-# when no worktree was attached to them.
+# when no worktree was attached to them. Skip branches that point to
+# commits ahead of main — they belong to a live runner that just
+# committed before the push step.
+main_head=$(git rev-parse HEAD 2>/dev/null)
 for branch in $(git for-each-ref --format='%(refname:short)' refs/heads/agent/ 2>/dev/null); do
-  if ! git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
-    git branch -D "$branch" 2>/dev/null
+  if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+    continue
   fi
+  branch_head=$(git rev-parse "$branch" 2>/dev/null)
+  if [ -n "$branch_head" ] && [ "$branch_head" != "$main_head" ]; then
+    continue
+  fi
+  git branch -D "$branch" 2>/dev/null
 done
 
 # 4. Sync `agent_processes` with live PIDs in the convergio DB.
