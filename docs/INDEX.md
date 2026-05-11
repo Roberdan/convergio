@@ -74,7 +74,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-tui/README.md` | crate-readme | - | - | 98 |
 | `docs/AGENTS.md` | - | - | - | 63 |
 | `docs/INDEX.md` | - | - | - | - |
-| `docs/OPTIMIZATIONS.md` | - | - | - | 247 |
+| `docs/OPTIMIZATIONS.md` | - | - | - | 314 |
 | `docs/adr/0000-template.md` | adr | [] | proposed \| accepted \| deprecated \| superseded by [NNNN](NNNN-title.md) | 55 |
 | `docs/adr/0001-four-layer-architecture.md` | adr | [] | accepted | 77 |
 | `docs/adr/0002-audit-hash-chain.md` | adr | [] | accepted | 121 |
