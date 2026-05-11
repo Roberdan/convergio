@@ -143,6 +143,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/release.md` | - | - | - | 106 |
 | `docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |
 | `docs/reviews/PRD-001-pre-PR-review-v1.md` | - | - | - | 114 |
+| `docs/reviews/crate-audits/convergio-api.md` | - | - | - | 24 |
 | `docs/setup.md` | - | - | - | 102 |
 | `docs/spec/README.md` | spec | - | - | 10 |
 | `docs/spec/f2-13-measurement.md` | spec | - | - | 89 |
