@@ -243,6 +243,7 @@ The full top-level CLI surface is also auto-regenerated:
 
 <!-- BEGIN AUTO:cvg_subcommands -->
 - `cvg about`
+- `cvg actions`
 - `cvg agent`
 - `cvg audit`
 - `cvg bus`
@@ -261,6 +262,7 @@ The full top-level CLI surface is also auto-regenerated:
 - `cvg embed`
 - `cvg evidence`
 - `cvg fleet`
+- `cvg gates`
 - `cvg graph`
 - `cvg health`
 - `cvg mcp`
