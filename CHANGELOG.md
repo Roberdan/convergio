@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.22](https://github.com/Roberdan/convergio/compare/convergio-v0.3.21...convergio-v0.3.22) (2026-05-11)
+
+
+### Features
+
+* **cli:** cvg fleet cleanup — sweep orphan worktrees + stale branches ([fefee02](https://github.com/Roberdan/convergio/commit/fefee0258949a9a62d485fcee9c24be568128b1f))
+* **cli:** cvg fleet cleanup — sweep orphan worktrees + stale branches ([d7cb7a7](https://github.com/Roberdan/convergio/commit/d7cb7a777b5bba97cc5907261c02a34dc32e4c56))
+* **durability:** PrLinkGate refuses task.done without plan_pr_links row ([3a2fbdd](https://github.com/Roberdan/convergio/commit/3a2fbddbd2354141e37493cc01de402bff0f6dba))
+* **durability:** PrLinkGate refuses task.done without plan_pr_links row ([f2dd3b7](https://github.com/Roberdan/convergio/commit/f2dd3b7ca801816612fa2513ca42e7ca40e185bd))
+* **repo:** definition of done + post-merge fleet cleanup hook ([073737b](https://github.com/Roberdan/convergio/commit/073737b7e9f05c9a85169d459e322fb51a44bcbb))
+* **repo:** definition of done + post-merge fleet cleanup hook ([90159e1](https://github.com/Roberdan/convergio/commit/90159e1f4e01fa4c2d03ff41bd5330f34471ed24))
+
+
+### Bug Fixes
+
+* **cli:** trim fleet.rs doc-comment to stay under 300-line cap ([2992faf](https://github.com/Roberdan/convergio/commit/2992faf1504d1dde5a14b6eaee599d9096ce24ac))
+
+
+### Documentation
+
+* **repo:** OPTIMIZATIONS.md catalog of the 7 environment fixes ([0175ca3](https://github.com/Roberdan/convergio/commit/0175ca3001f007af3ab7f7d2b16c70bd70a3f801))
+* **repo:** OPTIMIZATIONS.md catalog of the 7 environment fixes ([6e5105f](https://github.com/Roberdan/convergio/commit/6e5105ff3978d57f4c6f36cc9f7bbe2b01bfe763))
+
 ## [0.3.21](https://github.com/Roberdan/convergio/compare/convergio-v0.3.20...convergio-v0.3.21) (2026-05-10)
 
 
