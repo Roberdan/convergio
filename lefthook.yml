@@ -76,6 +76,22 @@ post-merge:
       # blocks the user with a 30s rebuild on an unrelated merge.
       glob: "Cargo.toml,**/*.rs"
       run: cvg update --if-needed || true
+    fleet-cleanup:
+      # 2026-05 insights: across the autonomous PR sessions Claude
+      # left 13 stale remote branches and 6 zombie agent_processes
+      # behind, and the operator had to clean up by hand. After
+      # every merge into the operator's main checkout, sweep:
+      #   - worktrees pointing at branches that no longer exist on
+      #     origin (their PR closed/merged) → `git worktree prune`
+      #     + `git worktree remove --force`;
+      #   - local agent/* branches whose remote ref is gone → -D;
+      #   - `agent_processes.status='running'` rows whose pid is
+      #     no longer alive → exited (P -1).
+      # Non-blocking: every step has `|| true` so a transient
+      # convergio daemon outage never wedges the post-merge flow.
+      run: |
+        ./scripts/post-merge-fleet-cleanup.sh || true
+      fail_text: "fleet cleanup encountered an issue (non-blocking) — see ./scripts/post-merge-fleet-cleanup.sh"
 
 post-commit:
   commands:
