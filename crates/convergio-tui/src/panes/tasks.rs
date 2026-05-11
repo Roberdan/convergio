@@ -15,14 +15,28 @@ use ratatui::Frame;
 
 /// Render the Tasks pane.
 pub fn render(f: &mut Frame, area: Rect, state: &AppState, focused: bool) {
-    let mut sorted: Vec<TaskSummary> = state.scoped_tasks().into_iter().cloned().collect();
+    let scoped: Vec<TaskSummary> = state.scoped_tasks().into_iter().cloned().collect();
+    let total = scoped.len();
+    let mut sorted: Vec<TaskSummary> = if state.show_terminal_tasks {
+        scoped
+    } else {
+        scoped
+            .into_iter()
+            .filter(|t| !is_terminal(&t.status))
+            .collect()
+    };
     sorted.sort_by_key(|t| status_priority(&t.status));
 
     let scope_crumb = state
         .scoped_plan_title()
         .map(|t| format!(" · {}", short(t, 24)))
         .unwrap_or_default();
-    let title = format!(" Tasks ({}){scope_crumb} ", sorted.len());
+    let filter_crumb = if state.show_terminal_tasks {
+        String::new()
+    } else {
+        format!("/{total} · t:show all")
+    };
+    let title = format!(" Tasks ({}{filter_crumb}){scope_crumb} ", sorted.len());
     let block = pane_block(&title, focused);
 
     let selected_idx = state
@@ -85,6 +99,10 @@ fn task_title(t: &TaskSummary) -> String {
         Some(d) => format!("{} - {}", t.title, d.trim()),
         None => t.title.clone(),
     }
+}
+
+fn is_terminal(status: &str) -> bool {
+    matches!(status, "done" | "failed")
 }
 
 fn status_priority(status: &str) -> u8 {
@@ -153,6 +171,56 @@ mod tests {
         let mut v = vec!["done", "in_progress", "submitted", "pending"];
         v.sort_by_key(|s| status_priority(s));
         assert_eq!(v, vec!["in_progress", "submitted", "pending", "done"]);
+    }
+
+    #[test]
+    fn hide_terminal_filters_done_and_failed_by_default() {
+        let backend = TestBackend::new(140, 8);
+        let mut term = Terminal::new(backend).unwrap();
+        let state = AppState {
+            tasks: vec![
+                task("aaaaaaaa11", "in_progress"),
+                task("bbbbbbbb22", "done"),
+                task("cccccccc33", "failed"),
+            ],
+            ..AppState::default()
+        };
+        term.draw(|f| render(f, f.area(), &state, true)).unwrap();
+        let dump = term
+            .backend()
+            .buffer()
+            .content()
+            .iter()
+            .map(|c| c.symbol())
+            .collect::<String>();
+        assert!(dump.contains("in_progress"));
+        assert!(!dump.contains("done"));
+        assert!(!dump.contains("failed"));
+        // Title carries (1/3 · t:show all).
+        assert!(dump.contains("(1/3"));
+    }
+
+    #[test]
+    fn toggle_reveals_terminal_tasks() {
+        let backend = TestBackend::new(140, 8);
+        let mut term = Terminal::new(backend).unwrap();
+        let mut state = AppState {
+            tasks: vec![
+                task("aaaaaaaa11", "in_progress"),
+                task("bbbbbbbb22", "done"),
+            ],
+            ..AppState::default()
+        };
+        state.toggle_show_terminal_tasks();
+        term.draw(|f| render(f, f.area(), &state, true)).unwrap();
+        let dump = term
+            .backend()
+            .buffer()
+            .content()
+            .iter()
+            .map(|c| c.symbol())
+            .collect::<String>();
+        assert!(dump.contains("done"));
     }
 
     #[test]
