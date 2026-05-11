@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.21](https://github.com/Roberdan/convergio/compare/convergio-v0.3.20...convergio-v0.3.21) (2026-05-10)
+
+
+### Features
+
+* **api:** gate precondition catalog ([6ea9fe9](https://github.com/Roberdan/convergio/commit/6ea9fe971bafb7337d47f22bdeb021a36be58460))
+* **api:** gate precondition catalog ([9266140](https://github.com/Roberdan/convergio/commit/92661401224263f9d43a24e674a11ce931c3e529))
+* **api:** generate actions registry actions.json ([11f94c0](https://github.com/Roberdan/convergio/commit/11f94c071dbf1d09e043be3aada838e57e916ede))
+* **cli:** actions/gates/compensate commands ([0c1c4c7](https://github.com/Roberdan/convergio/commit/0c1c4c7410688bb9a5368ca731f1d9b869d75e60))
+* **cli:** add actions/gates/compensate commands ([a8c01d8](https://github.com/Roberdan/convergio/commit/a8c01d8ecbb0b92e84559272f845441929c8cbfd))
+* **cli:** bootstrap register-and-poll in prompt.txt ([d43b104](https://github.com/Roberdan/convergio/commit/d43b1045dca3d74133dfdb63e50ba43c25e6ce3a))
+* **cli:** bootstrap register-and-poll in prompt.txt ([c5b072b](https://github.com/Roberdan/convergio/commit/c5b072bc30fc1d2c2a4b4e628fa6886114fa4052))
+* **cli:** enrich agent list/show ([95ec4eb](https://github.com/Roberdan/convergio/commit/95ec4eb6d713c98684035902f1db61007467616b))
+* **durability:** compensating audit actions ([5759566](https://github.com/Roberdan/convergio/commit/5759566e276faf03c10cf684b6655d7127d49cdb))
+* **durability:** compensating audit actions ([c75ba60](https://github.com/Roberdan/convergio/commit/c75ba60b2cec211daeec34e66810ab6f0a083e39))
+* **durability:** usage evidence telemetry ([d40b2e6](https://github.com/Roberdan/convergio/commit/d40b2e6c3de38296c3066f43f28d7496a1ea649b))
+* **repo:** pre-push gate on stale auto blocks ([4802731](https://github.com/Roberdan/convergio/commit/48027318ad792e9ef74a85560fa330fc5ea56e2d))
+* **server:** add pr ownership lookup ([14e429e](https://github.com/Roberdan/convergio/commit/14e429eb2258aedede1fd989c00f99adc9285d3c))
+* **server:** add pr ownership lookup ([901698a](https://github.com/Roberdan/convergio/commit/901698a7cfa8acff1d98031d96841b03e63cd7ec))
+* **skills:** add background mode to cvg-spawn ([f412231](https://github.com/Roberdan/convergio/commit/f412231719efedc41bf0e4eaf1de83715f48f59a))
+* **skills:** add background mode to cvg-spawn ([2c35dc1](https://github.com/Roberdan/convergio/commit/2c35dc1c5ab32fe7b715bd30611e4697bfb84444))
+* usage evidence telemetry ([9687e1f](https://github.com/Roberdan/convergio/commit/9687e1f7a22ce51b71f31c24028bdaf35d33148a))
+
+
+### Bug Fixes
+
+* **cli-pr:** cleanup after pr merge ([1ffc33a](https://github.com/Roberdan/convergio/commit/1ffc33a9683065d34db18f22439460ad5fee2102))
+* **cli-pr:** cleanup after pr merge ([9fe7f85](https://github.com/Roberdan/convergio/commit/9fe7f85adbc7d21ae31f30b3239f4dd3d3f0a05d))
+* **server:** single-instance daemon lock to prevent dispatcher cap blow-through ([103f36d](https://github.com/Roberdan/convergio/commit/103f36deeccdaed86cb9e70b674abe47c07b094b))
+* **server:** single-instance daemon lock to prevent dispatcher cap blow-through ([47c74e5](https://github.com/Roberdan/convergio/commit/47c74e5d18185be0c5598f9ec2a68f83643187d2))
+* **tui:** make detail view scrollable ([22b535a](https://github.com/Roberdan/convergio/commit/22b535a10f629d7128828eb7eaa61c66906a9c7f))
+* **tui:** make detail view scrollable ([c5ee3a9](https://github.com/Roberdan/convergio/commit/c5ee3a92df2278a924d0ddb4fc45c86ecc81cc4e))
+
+
+### Documentation
+
+* **plans:** add F47 row to friction log for PR ownership tracking ([46f4dc7](https://github.com/Roberdan/convergio/commit/46f4dc7f3c0ac2f26793cebd29f0d22ef5955494))
+* **repo:** document new ontology endpoints + cvg verbs ([663c4f0](https://github.com/Roberdan/convergio/commit/663c4f0070144af52dfae703beb59b15d55ec579))
+* **repo:** document new ontology endpoints + cvg verbs (ADR-0047/0048 + P3-2) ([8b863db](https://github.com/Roberdan/convergio/commit/8b863db131c71ae4b54dc917d29b6b28309a2883))
+
 ## [0.3.20](https://github.com/Roberdan/convergio/compare/convergio-v0.3.19...convergio-v0.3.20) (2026-05-10)
 
 
