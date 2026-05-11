@@ -106,7 +106,7 @@ fn draw_footer(f: &mut Frame, area: Rect, state: &AppState) {
         None => Span::styled("audit ?", theme::dim()),
     };
     let last = match state.last_refresh {
-        Some(t) => format!("last {}", t.format("%H:%M:%S")),
+        Some(t) => format!("last {}", crate::time_fmt::clock_utc(t)),
         None => "last –".into(),
     };
     let pane_name = format!("pane: {}", state.focus.label());

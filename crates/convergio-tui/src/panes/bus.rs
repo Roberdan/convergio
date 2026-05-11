@@ -160,10 +160,9 @@ fn payload_summary(payload: &serde_json::Value) -> String {
 }
 
 fn short_time(raw: &str) -> String {
-    // Expect RFC3339 like `2026-05-04T19:23:45Z` -> `19:23:45`.
-    raw.get(11..19)
-        .map(|s| s.to_string())
-        .unwrap_or_else(|| raw.get(..8).unwrap_or(raw).to_string())
+    // Parse RFC3339 UTC from the daemon and render in the operator's
+    // local timezone — see `crate::time_fmt`.
+    crate::time_fmt::parse_clock_local(raw)
 }
 
 fn short(s: &str, max: usize) -> &str {
@@ -212,7 +211,10 @@ mod tests {
         assert!(dump.contains("Bus"));
         assert!(dump.contains("agent.status"));
         assert!(dump.contains("alpha"));
-        assert!(dump.contains("20:11:00"));
+        // Time is rendered in local tz so we can't pin the literal — assert
+        // the expected local clock for the fixture instant instead.
+        let expected = crate::time_fmt::parse_clock_local("2026-05-02T20:11:00Z");
+        assert!(dump.contains(&expected), "missing {expected:?} in dump");
         assert!(dump.contains("hello"));
     }
 

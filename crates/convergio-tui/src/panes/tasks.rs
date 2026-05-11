@@ -117,7 +117,7 @@ fn status_priority(status: &str) -> u8 {
 }
 
 fn time_or_dash(raw: Option<&str>) -> String {
-    raw.map(|s| s.get(..16).unwrap_or(s).replace('T', " "))
+    raw.map(crate::time_fmt::parse_short_local)
         .unwrap_or_else(|| "-".into())
 }
 
