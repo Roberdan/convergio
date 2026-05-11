@@ -136,6 +136,10 @@ pub struct AppState {
     pub bus_following: Option<String>,
     /// P2-11: when `true`, exited rows are listed in the Agents pane.
     pub show_exited_agents: bool,
+    /// Tasks pane filter: when `false` (default) tasks in terminal
+    /// statuses (`done`, `failed`) are hidden from the Tasks pane.
+    /// Toggled with `t`. Data is not removed — only the view is filtered.
+    pub show_terminal_tasks: bool,
 }
 
 /// Cursors for the four panes, addressable by [`Pane`].
@@ -219,6 +223,13 @@ impl AppState {
     /// Toggle visibility of exited agents in the Agents pane (P2-11).
     pub fn toggle_show_exited_agents(&mut self) {
         self.show_exited_agents = !self.show_exited_agents;
+    }
+
+    /// Toggle visibility of terminal-status tasks (`done`/`failed`) in
+    /// the Tasks pane. Hidden by default so the pane shows live work
+    /// first; press `t` to reveal historical rows.
+    pub fn toggle_show_terminal_tasks(&mut self) {
+        self.show_terminal_tasks = !self.show_terminal_tasks;
     }
 
     /// Replace the PR list without touching the rest of the state.

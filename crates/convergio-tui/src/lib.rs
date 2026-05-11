@@ -205,6 +205,7 @@ async fn event_loop(
                             }
                         },
                         Action::ToggleHideExited => state.toggle_show_exited_agents(),
+                        Action::ToggleShowTerminalTasks => state.toggle_show_terminal_tasks(),
                         Action::Noop => {}
                     }
                 }

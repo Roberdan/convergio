@@ -32,6 +32,10 @@ pub enum Action {
     /// the Agents pane. Default is to hide; pressing `e` reveals
     /// them so an operator can audit historical runs.
     ToggleHideExited,
+    /// Toggle whether terminal-status tasks (`done`/`failed`) are
+    /// listed in the Tasks pane. Default is to hide; pressing `t`
+    /// reveals them so an operator can audit historical task runs.
+    ToggleShowTerminalTasks,
     /// Key was bound to no action — caller ignores.
     Noop,
 }
@@ -57,6 +61,7 @@ impl KeyMap {
             KeyCode::Char('j') | KeyCode::Down => Action::RowDown,
             KeyCode::Char('k') | KeyCode::Up => Action::RowUp,
             KeyCode::Char('e') => Action::ToggleHideExited,
+            KeyCode::Char('t') => Action::ToggleShowTerminalTasks,
             _ => Action::Noop,
         }
     }
@@ -142,5 +147,14 @@ mod tests {
     fn e_toggles_hide_exited() {
         let km = KeyMap;
         assert_eq!(km.translate(key(Char('e'))), Action::ToggleHideExited);
+    }
+
+    #[test]
+    fn t_toggles_show_terminal_tasks() {
+        let km = KeyMap;
+        assert_eq!(
+            km.translate(key(Char('t'))),
+            Action::ToggleShowTerminalTasks
+        );
     }
 }
