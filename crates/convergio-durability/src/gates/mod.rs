@@ -21,6 +21,7 @@ mod no_debt_gate;
 mod no_secrets_gate;
 mod no_stub_gate;
 mod plan_status_gate;
+mod pr_link_gate;
 mod wave_sequence_gate;
 mod wire_check_gate;
 mod zero_warnings_gate;
@@ -31,6 +32,7 @@ pub use no_debt_gate::{DebtRule, NoDebtGate};
 pub use no_secrets_gate::{NoSecretsGate, SecretRule};
 pub use no_stub_gate::{NoStubGate, StubRule};
 pub use plan_status_gate::PlanStatusGate;
+pub use pr_link_gate::PrLinkGate;
 pub use wave_sequence_gate::WaveSequenceGate;
 pub use wire_check_gate::WireCheckGate;
 pub use zero_warnings_gate::ZeroWarningsGate;
@@ -89,7 +91,9 @@ pub type Pipeline = Vec<Arc<dyn Gate>>;
 ///    cheap regex, before the rest).
 /// 7. `NoSecretsGate` (P2) — common credential leaks in payloads.
 /// 8. `ZeroWarningsGate` (P1) — build/lint/test signal must be clean.
-/// 9. `WaveSequenceGate` last (queries dependencies in the same plan).
+/// 9. `WaveSequenceGate` (queries dependencies in the same plan).
+/// 10. `PrLinkGate` last (only fires on `done`, cheap when it does
+///     fire — single `COUNT(*)` against `plan_pr_links`).
 pub fn default_pipeline() -> Pipeline {
     vec![
         Arc::new(PlanStatusGate),
@@ -101,6 +105,7 @@ pub fn default_pipeline() -> Pipeline {
         Arc::new(NoSecretsGate::default()),
         Arc::new(ZeroWarningsGate),
         Arc::new(WaveSequenceGate),
+        Arc::new(PrLinkGate),
     ]
 }
 
