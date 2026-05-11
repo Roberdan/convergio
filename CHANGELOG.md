@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.23](https://github.com/Roberdan/convergio/compare/convergio-v0.3.22...convergio-v0.3.23) (2026-05-11)
+
+
+### Features
+
+* **tui:** hide terminal-status tasks by default, toggle with 't' ([a0abf66](https://github.com/Roberdan/convergio/commit/a0abf66475e5e3609b96945a2c5d3ba34926ee50))
+* **tui:** hide terminal-status tasks by default, toggle with 't' ([25fd06c](https://github.com/Roberdan/convergio/commit/25fd06cf7b5b014dafdaa61270a9d040371c5135))
+
+
+### Documentation
+
+* **repo:** close 2 deferred items in optimizations catalog ([6ba3b13](https://github.com/Roberdan/convergio/commit/6ba3b136e67df77dd2b29a0be623997d085e4d0d))
+
 ## [0.3.22](https://github.com/Roberdan/convergio/compare/convergio-v0.3.21...convergio-v0.3.22) (2026-05-11)
 
 
