@@ -108,10 +108,21 @@ fn copilot_standard_uses_per_tool_whitelist_with_deny() {
     assert!(a.iter().any(|s| s == "--allow-tool"));
     assert!(a.iter().any(|s| s == "--deny-tool"));
     assert!(a.iter().any(|s| s == "--add-dir"));
+    // `--allow-all-tools` is the auto-confirm-tools toggle that copilot
+    // CLI requires for ANY tool to fire in non-interactive `-p` mode;
+    // granular `--allow-tool` only pre-confirms (it does not bypass the
+    // confirmation gate in scripted runs). Containment is the
+    // `--deny-tool` list plus `--add-dir <worktree>` — see runner.rs
+    // for the audit-bus evidence backing this design.
     assert!(
-        !a.iter()
-            .any(|s| s == "--allow-all-tools" || s == "--allow-all"),
-        "Standard profile must NOT use the nuke flag"
+        a.iter().any(|s| s == "--allow-all-tools"),
+        "Standard profile must enable auto-confirm via --allow-all-tools"
+    );
+    // `--allow-all` is the wider nuke (paths + urls + tools); not used
+    // by Standard.
+    assert!(
+        !a.iter().any(|s| s == "--allow-all"),
+        "Standard profile must NOT use the wider --allow-all nuke"
     );
     assert!(a.iter().any(|s| s.contains("shell(cargo:*)")));
     assert!(a.iter().any(|s| s.contains("shell(rm:*)")));

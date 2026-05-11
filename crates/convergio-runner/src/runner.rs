@@ -198,6 +198,22 @@ impl Runner for CopilotRunner {
                 args.push(ctx.cwd.as_os_str().to_owned());
             }
             other => {
+                // Copilot CLI in `-p` mode requires `--allow-all-tools`
+                // for any tool that would normally prompt for operator
+                // confirmation — granular `--allow-tool` only PRE-
+                // confirms (it doesn't bypass the confirmation gate in
+                // non-interactive). Without this, agents could `write`
+                // their report file but every `shell(...)` call (git
+                // add / commit / push, gh pr create, curl) returned
+                // "Permission denied and could not request permission
+                // from user" — surfaced explicitly in the audit plan's
+                // bus tail on 2026-05-11.
+                //
+                // Containment now relies on `--deny-tool` (rm/sudo/
+                // push-to-main/force-push/reset --hard/curl-with-data)
+                // plus `--add-dir <worktree>` keeping file writes
+                // inside the agent's branch.
+                args.push("--allow-all-tools".into());
                 for pat in other.copilot_allow_tools() {
                     args.push("--allow-tool".into());
                     args.push(pat.into());
