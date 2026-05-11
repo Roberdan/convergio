@@ -37,6 +37,7 @@ pub mod state;
 pub mod state_lifecycle;
 pub mod theme;
 pub mod tick;
+pub mod time_fmt;
 pub mod types;
 
 pub mod panes {
