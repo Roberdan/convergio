@@ -90,4 +90,36 @@ mod tests {
         assert!(out.contains("/Users/example/.convergio/convergio.log"));
         assert!(out.contains("/Users/example/.convergio/convergio.err.log"));
     }
+
+    /// AGENTS.md § "Background loops in the daemon" and the
+    /// 2026-05-08 dirty-state postmortem require that the launchd
+    /// plist NOT auto-start the daemon on load. Regression guard for
+    /// the crates/convergio-cli audit follow-up on service.rs:185.
+    #[test]
+    fn launchd_plist_defaults_run_at_load_to_false() {
+        let out = plist();
+        assert!(
+            out.contains("<key>RunAtLoad</key><false/>"),
+            "plist must default RunAtLoad to false per AGENTS.md, got:\n{out}"
+        );
+        assert!(
+            !out.contains("<key>RunAtLoad</key><true/>"),
+            "plist must NOT enable RunAtLoad by default (post-2026-05-08 incident)"
+        );
+    }
+
+    /// Companion to the test above for `KeepAlive`. Crash-respawn is
+    /// the second half of the documented incident pattern.
+    #[test]
+    fn launchd_plist_defaults_keep_alive_to_false() {
+        let out = plist();
+        assert!(
+            out.contains("<key>KeepAlive</key><false/>"),
+            "plist must default KeepAlive to false per AGENTS.md, got:\n{out}"
+        );
+        assert!(
+            !out.contains("<key>KeepAlive</key><true/>"),
+            "plist must NOT enable KeepAlive by default (post-2026-05-08 incident)"
+        );
+    }
 }
