@@ -121,13 +121,15 @@ fn write_timestamp(path: &PathBuf, now: SystemTime) -> std::io::Result<()> {
 
 /// Should the first-call "heartbeating …" banner be emitted?
 ///
-/// Initial implementation always returns `true` to preserve existing
-/// behavior; the audit follow-up (2026-05-12) replaces this with an
-/// `IsTerminal`-gated check so the hardcoded English string never
-/// ships through the non-TTY PreToolUse hook path (P5 constitution
-/// compliance, src/heartbeat_since_last_turn.rs:50).
+/// Returns `true` only when stderr is a terminal. The PreToolUse
+/// hook runs with piped stderr, so the hardcoded English banner is
+/// suppressed in that path — addresses the P5 constitution audit
+/// follow-up (2026-05-12, src/heartbeat_since_last_turn.rs:50).
+/// Interactive operators still see the message when they invoke
+/// `cvg session heartbeat-since-last-turn` by hand.
 pub(crate) fn should_show_banner() -> bool {
-    true
+    use std::io::IsTerminal;
+    std::io::stderr().is_terminal()
 }
 
 #[cfg(test)]
