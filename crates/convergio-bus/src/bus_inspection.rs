@@ -4,7 +4,7 @@
 //! surface. Kept separate so [`crate::bus`] stays under the 300-line
 //! cap (CONSTITUTION § 13).
 
-use crate::bus::{Bus, MessageRow};
+use crate::bus::{clamp_limit, Bus, MessageRow, MESSAGE_COLUMNS};
 use crate::error::Result;
 use crate::model::{AgentLastTopic, Message, TopicSummary};
 
@@ -14,13 +14,12 @@ impl Bus {
     /// This is a small operator UX helper used by the agent registry
     /// enrichment surfaces.
     pub async fn last_topic_for_agent(&self, agent_id: &str) -> Result<Option<AgentLastTopic>> {
-        let row = sqlx::query_as::<_, MessageRow>(
-            "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
-                    consumed_by, created_at \
+        let row = sqlx::query_as::<_, MessageRow>(&format!(
+            "SELECT {MESSAGE_COLUMNS} \
              FROM agent_messages \
              WHERE sender = ? OR consumed_by = ? \
-             ORDER BY COALESCE(consumed_at, created_at) DESC LIMIT 1",
-        )
+             ORDER BY COALESCE(consumed_at, created_at) DESC LIMIT 1"
+        ))
         .bind(agent_id)
         .bind(agent_id)
         .fetch_optional(self.pool().inner())
@@ -58,14 +57,14 @@ impl Bus {
         cursor: i64,
         limit: i64,
     ) -> Result<Vec<Message>> {
+        let limit = clamp_limit(limit)?;
         let rows = if let Some(t) = topic {
-            sqlx::query_as::<_, MessageRow>(
-                "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
-                        consumed_by, created_at \
+            sqlx::query_as::<_, MessageRow>(&format!(
+                "SELECT {MESSAGE_COLUMNS} \
                  FROM agent_messages \
                  WHERE plan_id = ? AND topic = ? AND seq > ? \
-                 ORDER BY seq ASC LIMIT ?",
-            )
+                 ORDER BY seq ASC LIMIT ?"
+            ))
             .bind(plan_id)
             .bind(t)
             .bind(cursor)
@@ -73,13 +72,12 @@ impl Bus {
             .fetch_all(self.pool().inner())
             .await?
         } else {
-            sqlx::query_as::<_, MessageRow>(
-                "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
-                        consumed_by, created_at \
+            sqlx::query_as::<_, MessageRow>(&format!(
+                "SELECT {MESSAGE_COLUMNS} \
                  FROM agent_messages \
                  WHERE plan_id = ? AND seq > ? \
-                 ORDER BY seq ASC LIMIT ?",
-            )
+                 ORDER BY seq ASC LIMIT ?"
+            ))
             .bind(plan_id)
             .bind(cursor)
             .bind(limit)
