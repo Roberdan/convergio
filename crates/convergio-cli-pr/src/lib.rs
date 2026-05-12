@@ -22,6 +22,9 @@ pub mod pr_sync_parse;
 pub mod pr_sync_render;
 pub mod pr_who;
 
+#[cfg(test)]
+mod i18n_tests;
+
 pub use pr::{run, PrCommand};
 
 use anyhow::{Context, Result};
