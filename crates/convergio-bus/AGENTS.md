@@ -7,7 +7,10 @@ agents coordinate without private, unaudited side chats.
 
 ## Invariants
 
-- Messages are scoped to a plan.
+- Messages are scoped to a plan, with one narrow exception: the
+  `system.*` topic family (ADR-0025) persists with `plan_id IS NULL`
+  for presence and coordination signals that have no single plan
+  home. Everything else stays plan-scoped.
 - Delivery is at-least-once; consumers must be idempotent.
 - Message ordering is per `(plan_id, topic)` sequence.
 - Do not use the bus for hidden task state; durable state belongs in the
