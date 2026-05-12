@@ -15,6 +15,7 @@ use super::pr_sync_parse::parse_tracks_lines;
 use super::{Client, OutputMode};
 use anyhow::{Context, Result};
 use clap::Args;
+use convergio_i18n::Bundle;
 use serde::Serialize;
 use serde_json::{json, Value};
 use std::path::Path;
@@ -84,7 +85,12 @@ pub(super) struct EightCheckEntry {
 
 /// Run `cvg pr merge`: 4-check, merge via `gh`, cleanup, optional
 /// retire, and `merge_record` evidence per tracked task.
-pub async fn run(client: &Client, output: OutputMode, args: MergeArgs) -> Result<()> {
+pub async fn run(
+    client: &Client,
+    bundle: &Bundle,
+    output: OutputMode,
+    args: MergeArgs,
+) -> Result<()> {
     let mut report = MergeReport {
         pr: args.pr,
         ..MergeReport::default()
@@ -96,7 +102,7 @@ pub async fn run(client: &Client, output: OutputMode, args: MergeArgs) -> Result
     let pass_all = report.eight_check.iter().all(|e| e.ok);
 
     if args.dry_run || !pass_all {
-        render_report(&report, output, !pass_all && !args.dry_run)?;
+        render_report(bundle, &report, output, !pass_all && !args.dry_run)?;
         if !pass_all {
             anyhow::bail!("4-check refused merge — see findings above");
         }
@@ -155,7 +161,7 @@ pub async fn run(client: &Client, output: OutputMode, args: MergeArgs) -> Result
         }
     }
 
-    render_report(&report, output, false)?;
+    render_report(bundle, &report, output, false)?;
     merge_outcome(&report)
 }
 

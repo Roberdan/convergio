@@ -7,14 +7,20 @@
 use super::pr_merge::MergeReport;
 use super::OutputMode;
 use anyhow::Result;
+use convergio_i18n::Bundle;
 
-pub(super) fn render_report(report: &MergeReport, output: OutputMode, refused: bool) -> Result<()> {
+pub(super) fn render_report(
+    bundle: &Bundle,
+    report: &MergeReport,
+    output: OutputMode,
+    refused: bool,
+) -> Result<()> {
     match output {
         OutputMode::Json => {
             println!("{}", serde_json::to_string_pretty(report)?);
         }
         OutputMode::Plain => render_plain(report),
-        OutputMode::Human => render_human(report, refused),
+        OutputMode::Human => render_human(bundle, report, refused),
     }
     Ok(())
 }
@@ -33,13 +39,18 @@ fn render_plain(r: &MergeReport) {
     );
 }
 
-fn render_human(r: &MergeReport, refused: bool) {
-    println!("cvg pr merge — PR #{} ({})", r.pr, r.head_ref);
+fn render_human(bundle: &Bundle, r: &MergeReport, refused: bool) {
+    let pr = r.pr.to_string();
+    println!(
+        "{}",
+        bundle.t("pr-merge-header", &[("pr", &pr), ("head", &r.head_ref)])
+    );
     for c in &r.eight_check {
         println!("  [{}] {}", if c.ok { "ok" } else { "x" }, c.name);
     }
     if refused {
-        println!("\n  refused: 4-check did not pass.");
+        println!();
+        println!("  {}", bundle.t("pr-merge-refused", &[]));
         return;
     }
     println!(
@@ -51,20 +62,26 @@ fn render_human(r: &MergeReport, refused: bool) {
         r.remote_branch_deleted,
         r.agent_retired.as_deref().unwrap_or("-")
     );
-    println!("  tracked tasks updated ({}):", r.tracked_tasks.len());
+    let count = r.tracked_tasks.len().to_string();
+    println!(
+        "  {}",
+        bundle.t("pr-merge-tracked-header", &[("count", &count)])
+    );
     for t in &r.tracked_tasks {
         println!("    {}", t);
     }
     if !r.failed_evidence.is_empty() {
+        let fcount = r.failed_evidence.len().to_string();
         println!(
-            "  failed evidence writes ({}): merge_record was NOT attached",
-            r.failed_evidence.len()
+            "  {}",
+            bundle.t("pr-merge-failed-evidence-header", &[("count", &fcount)])
         );
         for f in &r.failed_evidence {
             println!("    {}", f);
         }
     }
+    let note_prefix = bundle.t("pr-merge-note-prefix", &[]);
     for n in &r.notes {
-        println!("  note: {}", n);
+        println!("  {note_prefix} {}", n);
     }
 }

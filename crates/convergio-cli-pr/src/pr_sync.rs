@@ -22,6 +22,7 @@ use super::pr_sync_parse::parse_tracks_lines;
 use super::pr_sync_render::render_report;
 use super::{Client, OutputMode};
 use anyhow::{Context, Result};
+use convergio_i18n::Bundle;
 use serde_json::{json, Value};
 use std::collections::BTreeSet;
 use std::process::Command;
@@ -31,6 +32,7 @@ use std::process::Command;
 /// to `submitted`.
 pub async fn run(
     client: &Client,
+    bundle: &Bundle,
     plan_id: String,
     agent_id: Option<String>,
     output: OutputMode,
@@ -44,7 +46,7 @@ pub async fn run(
         .collect();
 
     if plan_task_ids.is_empty() {
-        return render_report(&SyncReport::default(), output);
+        return render_report(bundle, &SyncReport::default(), output);
     }
 
     // 2. Pull recent merged PRs.
@@ -141,7 +143,7 @@ pub async fn run(
         }
     }
 
-    render_report(&report, output)
+    render_report(bundle, &report, output)
 }
 
 fn fetch_merged_prs() -> Result<Vec<Value>> {

@@ -8,6 +8,7 @@
 use super::pr_sync::{SyncFailure, SyncOk, SyncReport, SyncSkip};
 use super::OutputMode;
 use anyhow::Result;
+use convergio_i18n::Bundle;
 use serde_json::{json, Value};
 
 /// Build the JSON body for a `SyncReport`. Kept separate from the
@@ -48,13 +49,17 @@ fn failure_json(f: &SyncFailure) -> Value {
     })
 }
 
-pub(super) fn render_report(report: &SyncReport, output: OutputMode) -> Result<()> {
+pub(super) fn render_report(
+    bundle: &Bundle,
+    report: &SyncReport,
+    output: OutputMode,
+) -> Result<()> {
     match output {
         OutputMode::Json => {
             println!("{}", serde_json::to_string_pretty(&report_json(report))?);
         }
         OutputMode::Plain => render_plain(report),
-        OutputMode::Human => render_human(report),
+        OutputMode::Human => render_human(bundle, report),
     }
     Ok(())
 }
@@ -71,42 +76,50 @@ fn render_plain(r: &SyncReport) {
     );
 }
 
-fn render_human(r: &SyncReport) {
+fn render_human(bundle: &Bundle, r: &SyncReport) {
+    let scanned = r.scanned_prs.to_string();
+    let tracked = r.tracked_pairs.to_string();
     println!(
-        "cvg pr sync — scanned {} merged PRs, {} (PR, task) pairs found",
-        r.scanned_prs, r.tracked_pairs
+        "{}",
+        bundle.t(
+            "pr-sync-header",
+            &[("scanned", &scanned), ("tracked", &tracked)],
+        )
     );
     println!();
-    println!(
-        "  transitioned ({}):  {} → submitted",
-        r.transitioned.len(),
-        if r.transitioned.is_empty() {
-            "no tasks"
-        } else {
-            "pending"
-        }
-    );
+    let tcount = r.transitioned.len().to_string();
+    let header_key = if r.transitioned.is_empty() {
+        "pr-sync-transitioned-empty"
+    } else {
+        "pr-sync-transitioned-header"
+    };
+    println!("  {}", bundle.t(header_key, &[("count", &tcount)]));
     for o in &r.transitioned {
-        println!("    PR #{} → task {}", o.pr_number, short_id(&o.task_id));
+        println!("    PR #{} -> task {}", o.pr_number, short_id(&o.task_id));
     }
     println!();
-    println!("  skipped ({}): already submitted or done", r.skipped.len());
+    let scount = r.skipped.len().to_string();
+    println!(
+        "  {}",
+        bundle.t("pr-sync-skipped-header", &[("count", &scount)])
+    );
     for s in &r.skipped {
         println!(
-            "    PR #{} → task {} ({})",
+            "    PR #{} -> task {} ({})",
             s.pr_number,
             short_id(&s.task_id),
             s.current_status
         );
     }
     println!();
+    let fcount = r.failed.len().to_string();
     println!(
-        "  failed ({}): gate refusal or transport error",
-        r.failed.len()
+        "  {}",
+        bundle.t("pr-sync-failed-header", &[("count", &fcount)])
     );
     for f in &r.failed {
         println!(
-            "    PR #{} → task {}: {}",
+            "    PR #{} -> task {}: {}",
             f.pr_number,
             short_id(&f.task_id),
             f.reason
@@ -114,13 +127,14 @@ fn render_human(r: &SyncReport) {
     }
     if !r.link_failures.is_empty() {
         println!();
+        let lcount = r.link_failures.len().to_string();
         println!(
-            "  link_failures ({}): /pr-links POST refused",
-            r.link_failures.len()
+            "  {}",
+            bundle.t("pr-sync-link-failures-header", &[("count", &lcount)])
         );
         for f in &r.link_failures {
             println!(
-                "    PR #{} → task {}: {}",
+                "    PR #{} -> task {}: {}",
                 f.pr_number,
                 short_id(&f.task_id),
                 f.reason

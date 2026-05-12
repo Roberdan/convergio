@@ -73,11 +73,11 @@ pub async fn run(
     match cmd {
         PrCommand::Stack => stack(bundle, output).await,
         PrCommand::Sync { plan, agent_id } => {
-            super::pr_sync::run(client, plan, agent_id, output).await
+            super::pr_sync::run(client, bundle, plan, agent_id, output).await
         }
-        PrCommand::Merge(args) => super::pr_merge::run(client, output, args).await,
-        PrCommand::Link(args) => super::pr_link::run(client, output, args).await,
-        PrCommand::Who(args) => super::pr_who::run(client, output, args).await,
+        PrCommand::Merge(args) => super::pr_merge::run(client, bundle, output, args).await,
+        PrCommand::Link(args) => super::pr_link::run(client, bundle, output, args).await,
+        PrCommand::Who(args) => super::pr_who::run(client, bundle, output, args).await,
     }
 }
 
