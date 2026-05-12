@@ -60,8 +60,27 @@ mod tests {
     }
 
     #[test]
-    fn high_contrast_returns_plain_text() {
-        assert_eq!(brand("CONVERGIO", Theme::HighContrast), "CONVERGIO");
+    fn high_contrast_emits_bold_escapes() {
+        // P3: HighContrast is documented as bold-only (lib.rs:31,
+        // theme.rs:25). It must produce *some* ANSI styling — plain
+        // text would silently demote accessibility to mono.
+        let s = brand("CONVERGIO", Theme::HighContrast);
+        assert!(
+            s.contains("\x1b["),
+            "high-contrast must emit escapes, got {s:?}"
+        );
+        assert!(s.contains("CONVERGIO"));
+        assert!(s.ends_with(RESET));
+        // Bold attribute (SGR 1) is the documented branch.
+        assert!(
+            s.contains("1m") || s.contains(";1m"),
+            "expected bold SGR, got {s:?}"
+        );
+        // No truecolor escape — high contrast is not the gradient.
+        assert!(
+            !s.contains("\x1b[38;2;"),
+            "high-contrast must not use truecolor, got {s:?}"
+        );
     }
 
     #[test]

@@ -118,11 +118,40 @@ mod tests {
     }
 
     #[test]
-    fn explicit_theme_overrides_no_color() {
+    fn no_color_wins_over_explicit_color_theme() {
+        // P3 accessibility: NO_COLOR must defeat a casual
+        // CONVERGIO_THEME=color, otherwise our "every output respects
+        // NO_COLOR" promise (lib.rs) is a lie.
         with_clean_env(|| {
             env::set_var("NO_COLOR", "1");
             env::set_var("CONVERGIO_THEME", "color");
+            assert_eq!(Theme::resolve(true), Theme::Mono);
+            env::remove_var("CONVERGIO_THEME");
+            env::remove_var("NO_COLOR");
+        });
+    }
+
+    #[test]
+    fn force_color_intentionally_bypasses_no_color() {
+        // The documented escape hatch: an operator who *knows* what
+        // they are doing can still force colour past NO_COLOR.
+        with_clean_env(|| {
+            env::set_var("NO_COLOR", "1");
+            env::set_var("CONVERGIO_THEME", "force-color");
             assert_eq!(Theme::resolve(false), Theme::Color);
+            env::remove_var("CONVERGIO_THEME");
+            env::remove_var("NO_COLOR");
+        });
+    }
+
+    #[test]
+    fn no_color_does_not_break_explicit_high_contrast() {
+        // HighContrast is bold-only / no truecolor, so NO_COLOR has
+        // no reason to override it.
+        with_clean_env(|| {
+            env::set_var("NO_COLOR", "1");
+            env::set_var("CONVERGIO_THEME", "hc");
+            assert_eq!(Theme::resolve(true), Theme::HighContrast);
             env::remove_var("CONVERGIO_THEME");
             env::remove_var("NO_COLOR");
         });

@@ -135,6 +135,23 @@ mod tests {
     }
 
     #[test]
+    fn lockup_high_contrast_uses_bold_not_truecolor() {
+        // P3: HighContrast renders the whole lockup in bold,
+        // white-on-black — not as plain mono and not as truecolor.
+        let s = lockup(Theme::HighContrast);
+        assert!(
+            s.contains("\x1b["),
+            "high-contrast lockup must emit escapes"
+        );
+        assert!(
+            !s.contains("\x1b[38;2;"),
+            "high-contrast must not use truecolor"
+        );
+        assert!(s.contains(CLAIM));
+        assert!(s.contains(SUBLINE));
+    }
+
+    #[test]
     fn lockup_has_six_hex_rows_plus_wordmark_and_claim() {
         let s = lockup(Theme::Mono);
         // 6 hex rows + 1 blank + 1 wordmark + 1 blank + 1 claim + 1
