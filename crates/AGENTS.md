@@ -9,7 +9,7 @@ turning one crate into a god module.
 
 | Crate | Boundary |
 |-------|----------|
-| `convergio-db` | database pool and migration primitives |
+| `convergio-db` | database connection pool primitives (per-crate migrations live in their owning crate; see ADR-0003) |
 | `convergio-durability` | plans, tasks, evidence, audit, gates |
 | `convergio-bus` | persisted plan-scoped agent messages |
 | `convergio-lifecycle` | spawning, heartbeat, process watching |
