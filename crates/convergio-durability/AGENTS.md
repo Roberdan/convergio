@@ -56,7 +56,13 @@ back together.
 ## Known invariants
 
 - Every state-changing method on [`Durability`] writes **exactly one**
-  audit row.
+  audit row, with one documented exception: `register_agent()` writes
+  `agent.registered` on every call and additionally writes
+  `agent.session_started` when the agent is new or its previous
+  heartbeat is older than the dedup window
+  (`SESSION_STARTED_DEDUP_MINUTES`, currently 30 min). The
+  `agent.session_started` row is the signal counted by
+  `/v1/status.telemetry.sessions_started_24h`.
 - `audit_log.seq` is monotonic and gap-free (sqlx-side; the verifier
   does not currently check for gaps but the chain hashing makes gaps
   self-detecting since `prev_hash` would not match).
