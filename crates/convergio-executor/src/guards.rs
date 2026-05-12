@@ -57,8 +57,13 @@ pub fn enforce(repo_root: &Path) -> Result<()> {
     let count = count_subdirs(&worktrees);
     if count >= cap_count {
         return Err(ExecutorError::Worktree(format!(
-            "dispatch refused: {count} worktrees ≥ cap {cap_count} ({COUNT_CAP_ENV}); \
-             clean up old worktrees with `cvg session cleanup` before dispatching more"
+            "dispatch refused: {count} worktrees ≥ cap {cap_count} ({COUNT_CAP_ENV}). \
+             To recover: \
+             (1) `git -C {} worktree list` to inspect, \
+             (2) `git -C {} worktree remove --force <path>` for stale ones, \
+             or (3) raise the cap with `launchctl setenv {COUNT_CAP_ENV} N` + daemon restart.",
+            repo_root.display(),
+            repo_root.display(),
         )));
     }
 

@@ -21,8 +21,47 @@
 
 use crate::embedder::{Embedder, EmbedderError};
 use fastembed::{EmbeddingModel, InitOptions, TextEmbedding};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+
+/// Shared lazy-load + embed routine for every `fastembed`-backed
+/// embedder. Construction must never touch the network; the first
+/// call to this helper downloads the model into `cache_dir` and the
+/// loaded [`TextEmbedding`] is parked in `slot` for reuse.
+///
+/// Extracted from the per-model impls to keep the embedder structs
+/// thin and consistent (audit LOW · fastembed_impl.rs:87).
+fn lazy_embed(
+    slot: &Mutex<Option<TextEmbedding>>,
+    model: EmbeddingModel,
+    cache_dir: &Path,
+    text: &str,
+) -> Result<Vec<f32>, EmbedderError> {
+    let mut guard = slot
+        .lock()
+        .map_err(|_| EmbedderError::ModelLoad("embedder mutex poisoned".into()))?;
+    if guard.is_none() {
+        let opts = InitOptions::new(model)
+            .with_cache_dir(cache_dir.to_path_buf())
+            .with_show_download_progress(false);
+        let loaded =
+            TextEmbedding::try_new(opts).map_err(|e| EmbedderError::ModelLoad(e.to_string()))?;
+        *guard = Some(loaded);
+    }
+    let model = guard
+        .as_mut()
+        .ok_or_else(|| EmbedderError::ModelLoad("embedder slot empty".into()))?;
+    let mut embeddings = model
+        .embed(vec![text], None)
+        .map_err(|e| EmbedderError::Inference(e.to_string()))?;
+    embeddings
+        .pop()
+        .ok_or_else(|| EmbedderError::Inference("model returned no embeddings".into()))
+}
+
+fn loaded(slot: &Mutex<Option<TextEmbedding>>) -> bool {
+    slot.lock().map(|g| g.is_some()).unwrap_or(false)
+}
 
 /// `intfloat/multilingual-e5-small` via `fastembed-rs`.
 /// Multilingual (≥100 languages), 384-dim, ~120MB ONNX.
@@ -53,7 +92,7 @@ impl MultilingualE5Embedder {
     /// tests that want to assert lazy-load semantics without
     /// triggering a network download.
     pub fn is_loaded(&self) -> bool {
-        self.inner.lock().map(|g| g.is_some()).unwrap_or(false)
+        loaded(&self.inner)
     }
 }
 
@@ -80,7 +119,7 @@ impl BgeM3Embedder {
 
     /// Returns `true` once the model is loaded into memory.
     pub fn is_loaded(&self) -> bool {
-        self.inner.lock().map(|g| g.is_some()).unwrap_or(false)
+        loaded(&self.inner)
     }
 }
 
@@ -94,27 +133,12 @@ impl Embedder for MultilingualE5Embedder {
     }
 
     fn embed(&self, text: &str) -> Result<Vec<f32>, EmbedderError> {
-        let mut guard = self
-            .inner
-            .lock()
-            .map_err(|_| EmbedderError::ModelLoad("embedder mutex poisoned".into()))?;
-        if guard.is_none() {
-            let opts = InitOptions::new(EmbeddingModel::MultilingualE5Small)
-                .with_cache_dir(self.cache_dir.clone())
-                .with_show_download_progress(false);
-            let model = TextEmbedding::try_new(opts)
-                .map_err(|e| EmbedderError::ModelLoad(e.to_string()))?;
-            *guard = Some(model);
-        }
-        let model = guard
-            .as_mut()
-            .ok_or_else(|| EmbedderError::ModelLoad("embedder slot empty".into()))?;
-        let mut embeddings = model
-            .embed(vec![text], None)
-            .map_err(|e| EmbedderError::Inference(e.to_string()))?;
-        embeddings
-            .pop()
-            .ok_or_else(|| EmbedderError::Inference("model returned no embeddings".into()))
+        lazy_embed(
+            &self.inner,
+            EmbeddingModel::MultilingualE5Small,
+            &self.cache_dir,
+            text,
+        )
     }
 }
 
@@ -128,27 +152,7 @@ impl Embedder for BgeM3Embedder {
     }
 
     fn embed(&self, text: &str) -> Result<Vec<f32>, EmbedderError> {
-        let mut guard = self
-            .inner
-            .lock()
-            .map_err(|_| EmbedderError::ModelLoad("embedder mutex poisoned".into()))?;
-        if guard.is_none() {
-            let opts = InitOptions::new(EmbeddingModel::BGEM3)
-                .with_cache_dir(self.cache_dir.clone())
-                .with_show_download_progress(false);
-            let model = TextEmbedding::try_new(opts)
-                .map_err(|e| EmbedderError::ModelLoad(e.to_string()))?;
-            *guard = Some(model);
-        }
-        let model = guard
-            .as_mut()
-            .ok_or_else(|| EmbedderError::ModelLoad("embedder slot empty".into()))?;
-        let mut embeddings = model
-            .embed(vec![text], None)
-            .map_err(|e| EmbedderError::Inference(e.to_string()))?;
-        embeddings
-            .pop()
-            .ok_or_else(|| EmbedderError::Inference("model returned no embeddings".into()))
+        lazy_embed(&self.inner, EmbeddingModel::BGEM3, &self.cache_dir, text)
     }
 }
 

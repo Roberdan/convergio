@@ -23,8 +23,8 @@ fn lease_from_row(r: sqlx::sqlite::SqliteRow) -> Result<AgentLease> {
         id: r.try_get("id")?,
         resource_label: resource_label(&kind, project.as_deref(), &path, symbol.as_deref()),
         purpose: r.try_get("purpose")?,
-        created_at: parse_ts(&r.try_get::<String, _>("created_at")?),
-        expires_at: parse_ts(&r.try_get::<String, _>("expires_at")?),
+        created_at: parse_ts(&r.try_get::<String, _>("created_at")?)?,
+        expires_at: parse_ts(&r.try_get::<String, _>("expires_at")?)?,
     })
 }
 
@@ -35,7 +35,7 @@ fn audit_from_row(r: sqlx::sqlite::SqliteRow) -> Result<AgentAuditEntry> {
         transition: r.try_get("transition")?,
         entity_type: r.try_get("entity_type")?,
         entity_id: r.try_get("entity_id")?,
-        created_at: parse_ts(&r.try_get::<String, _>("created_at")?),
+        created_at: parse_ts(&r.try_get::<String, _>("created_at")?)?,
         payload: decode_payload(&payload),
     })
 }
@@ -48,14 +48,21 @@ fn pr_from_row(r: sqlx::sqlite::SqliteRow) -> Result<AgentPrLink> {
         plan_id: r.try_get("plan_id")?,
         task_id: r.try_get("task_id")?,
         agent_id: r.try_get("agent_id")?,
-        created_at: parse_ts(&r.try_get::<String, _>("created_at")?),
+        created_at: parse_ts(&r.try_get::<String, _>("created_at")?)?,
     })
 }
 
-fn parse_ts(value: &str) -> DateTime<Utc> {
+/// Parse a persisted RFC-3339 timestamp from a projection row.
+/// Corrupt values are surfaced as a typed [`crate::DurabilityError`]
+/// rather than masked with `Utc::now()`, which would make stale or
+/// tampered rows look freshly written.
+fn parse_ts(value: &str) -> Result<DateTime<Utc>> {
     DateTime::parse_from_rfc3339(value)
         .map(|d| d.with_timezone(&Utc))
-        .unwrap_or_else(|_| Utc::now())
+        .map_err(|_| crate::error::DurabilityError::NotFound {
+            entity: "timestamp",
+            id: value.to_string(),
+        })
 }
 
 impl AgentStore {
