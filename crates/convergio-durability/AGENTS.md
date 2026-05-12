@@ -56,7 +56,13 @@ back together.
 ## Known invariants
 
 - Every state-changing method on [`Durability`] writes **exactly one**
-  audit row.
+  audit row, with one documented exception: `register_agent()` writes
+  `agent.registered` on every call and additionally writes
+  `agent.session_started` when the agent is new or its previous
+  heartbeat is older than the dedup window
+  (`SESSION_STARTED_DEDUP_MINUTES`, currently 30 min). The
+  `agent.session_started` row is the signal counted by
+  `/v1/status.telemetry.sessions_started_24h`.
 - `audit_log.seq` is monotonic and gap-free (sqlx-side; the verifier
   does not currently check for gaps but the chain hashing makes gaps
   self-detecting since `prev_hash` would not match).
@@ -71,18 +77,19 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-durability` stats:** 59 `*.rs` files / 173 public items / 8865 lines (under `src/`).
+**`convergio-durability` stats:** 59 `*.rs` files / 173 public items / 8903 lines (under `src/`).
 
 Files approaching the 300-line cap:
 - `src/audit/action.rs` (296 lines)
 - `src/facade_transitions.rs` (294 lines)
-- `src/store/agent_queries.rs` (287 lines)
-- `src/store/tasks.rs` (277 lines)
+- `src/store/agent_queries.rs` (294 lines)
+- `src/store/tasks.rs` (288 lines)
 - `src/store/workspace_patch.rs` (270 lines)
 - `src/store/plan_pr_links.rs` (263 lines)
 - `src/store/workspace.rs` (259 lines)
 - `src/audit/log.rs` (258 lines)
 - `src/facade.rs` (256 lines)
+- `src/store/agents.rs` (253 lines)
 - `src/store/crdt_merge.rs` (252 lines)
 - `src/model.rs` (250 lines)
 <!-- END AUTO -->

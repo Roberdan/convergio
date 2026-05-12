@@ -88,7 +88,11 @@ impl AgentStore {
         validate_agent_id(&input.id)?;
         validate_agent_kind(&input.kind)?;
         let now = Utc::now().to_rfc3339();
-        let existing = self.get(&input.id).await.ok();
+        let existing = match self.get(&input.id).await {
+            Ok(record) => Some(record),
+            Err(DurabilityError::NotFound { .. }) => None,
+            Err(e) => return Err(e),
+        };
         let metadata = merge_metadata(existing.as_ref().map(|a| &a.metadata), &input.metadata);
 
         if existing.is_some() {
