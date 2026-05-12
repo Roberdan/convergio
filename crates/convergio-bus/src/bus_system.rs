@@ -10,7 +10,7 @@
 //! distinct from the plan-scoped publish/poll/ack/tail/topics
 //! cluster.
 
-use crate::bus::{clamp_limit, Bus, MessageRow, SYSTEM_TOPIC_PREFIX};
+use crate::bus::{clamp_limit, Bus, MessageRow, MESSAGE_COLUMNS, SYSTEM_TOPIC_PREFIX};
 use crate::error::{BusError, Result};
 use crate::model::{Message, NewSystemMessage};
 use chrono::Utc;
@@ -71,14 +71,13 @@ impl Bus {
             )));
         }
         let limit = clamp_limit(limit)?;
-        let rows = sqlx::query_as::<_, MessageRow>(
-            "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
-                    consumed_by, created_at \
+        let rows = sqlx::query_as::<_, MessageRow>(&format!(
+            "SELECT {MESSAGE_COLUMNS} \
              FROM agent_messages \
              WHERE plan_id IS NULL AND topic = ? AND seq > ? \
                    AND consumed_at IS NULL \
-             ORDER BY seq ASC LIMIT ?",
-        )
+             ORDER BY seq ASC LIMIT ?"
+        ))
         .bind(topic)
         .bind(cursor)
         .bind(limit)

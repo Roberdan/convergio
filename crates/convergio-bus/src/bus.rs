@@ -6,6 +6,12 @@ use chrono::{DateTime, Utc};
 use convergio_db::Pool;
 use uuid::Uuid;
 
+/// Column projection used by every `agent_messages` SELECT in this
+/// crate. Keep this and the `MessageRow` struct in lockstep: the order
+/// of columns here matches `sqlx::query_as::<_, MessageRow>` decoding.
+pub(crate) const MESSAGE_COLUMNS: &str = "id, seq, plan_id, topic, sender, payload, \
+                                          consumed_at, consumed_by, created_at";
+
 /// Topic prefix that marks the system-scoped family (ADR-0025).
 pub(crate) const SYSTEM_TOPIC_PREFIX: &str = "system.";
 
@@ -147,13 +153,12 @@ impl Bus {
         let limit = clamp_limit(limit)?;
         let rows = match exclude_sender {
             None => {
-                sqlx::query_as::<_, MessageRow>(
-                    "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
-                            consumed_by, created_at \
+                sqlx::query_as::<_, MessageRow>(&format!(
+                    "SELECT {MESSAGE_COLUMNS} \
                      FROM agent_messages \
                      WHERE plan_id = ? AND topic = ? AND seq > ? AND consumed_at IS NULL \
-                     ORDER BY seq ASC LIMIT ?",
-                )
+                     ORDER BY seq ASC LIMIT ?"
+                ))
                 .bind(plan_id)
                 .bind(topic)
                 .bind(cursor)
@@ -162,14 +167,13 @@ impl Bus {
                 .await?
             }
             Some(excl) => {
-                sqlx::query_as::<_, MessageRow>(
-                    "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
-                            consumed_by, created_at \
+                sqlx::query_as::<_, MessageRow>(&format!(
+                    "SELECT {MESSAGE_COLUMNS} \
                      FROM agent_messages \
                      WHERE plan_id = ? AND topic = ? AND seq > ? AND consumed_at IS NULL \
                        AND (sender IS NULL OR sender != ?) \
-                     ORDER BY seq ASC LIMIT ?",
-                )
+                     ORDER BY seq ASC LIMIT ?"
+                ))
                 .bind(plan_id)
                 .bind(topic)
                 .bind(cursor)
