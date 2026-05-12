@@ -14,6 +14,17 @@ pub enum BusError {
     #[error("invalid topic scope: {0}")]
     InvalidTopicScope(String),
 
+    /// Caller passed a non-positive page-size limit. The bus rejects
+    /// `limit <= 0` because SQLite treats negative `LIMIT` as
+    /// unbounded, which would expose every plan-scoped or system-scoped
+    /// row in a single call (CONSTITUTION § Sacred principles —
+    /// security first).
+    #[error("invalid limit: {value} (must be positive)")]
+    InvalidLimit {
+        /// The offending value passed by the caller.
+        value: i64,
+    },
+
     /// Stored timestamp is not valid RFC 3339.
     #[error("invalid timestamp in {field}: {value}")]
     InvalidTimestamp {
