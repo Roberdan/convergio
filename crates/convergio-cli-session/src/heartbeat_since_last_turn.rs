@@ -115,8 +115,14 @@ fn write_timestamp(path: &PathBuf, now: SystemTime) -> std::io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Mutex;
     use std::time::Duration;
     use tempfile::tempdir;
+
+    // Tests in a single binary share process-global env. Without
+    // serialization the `HOME` writes race and the file-existence
+    // assertions are flaky.
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
 
     #[test]
     fn missing_file_triggers_heartbeat() {
@@ -158,5 +164,38 @@ mod tests {
         let past = SystemTime::now() - HEARTBEAT_INTERVAL;
         write_timestamp(&p, past).unwrap();
         assert!(should_heartbeat(&p, SystemTime::now()));
+    }
+
+    /// Regression: a failed heartbeat POST must NOT rewrite the
+    /// throttle timestamp, otherwise repeated failures stay invisible
+    /// for one full [`HEARTBEAT_INTERVAL`]. See the
+    /// `convergio-cli-session` audit follow-up (2026-05-12).
+    #[tokio::test(flavor = "current_thread")]
+    async fn failed_post_does_not_persist_throttle_timestamp() {
+        let _g = ENV_LOCK.lock().unwrap();
+        let dir = tempdir().unwrap();
+        let prev_home = std::env::var_os("HOME");
+        std::env::set_var("HOME", dir.path());
+
+        // Port 1 is reserved and unreachable; the POST resolves to an
+        // immediate `Err` without external dependencies.
+        let client = crate::Client::new("http://127.0.0.1:1".to_string());
+        run(&client, Some("audit-test".into()), "working".into())
+            .await
+            .expect("run swallows the outward error");
+
+        let path = timestamp_path().expect("HOME resolves to a path");
+        let exists = path.exists();
+
+        if let Some(h) = prev_home {
+            std::env::set_var("HOME", h);
+        } else {
+            std::env::remove_var("HOME");
+        }
+
+        assert!(
+            !exists,
+            "failed heartbeat POST must not refresh the throttle timestamp"
+        );
     }
 }
