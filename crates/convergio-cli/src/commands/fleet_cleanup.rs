@@ -249,4 +249,46 @@ mod tests {
         let report = sweep(&repo, true).expect("sweep");
         assert!(report.stale_branches.iter().any(|b| b == "agent/foo"));
     }
+
+    /// Regression guard for the crates/convergio-cli audit
+    /// follow-up (T828d03c, MEDIUM finding on
+    /// fleet_cleanup.rs:70): when a worktree directory under
+    /// `.claude/worktrees/agent-*` is NOT actually a registered git
+    /// worktree, \`git worktree remove --force\` fails. The original
+    /// code swallowed that failure with \`let _ = run_git(...)\`
+    /// while still pushing the path to \`orphan_worktrees\`, so the
+    /// report told the operator "removed" when the directory was
+    /// still on disk. The sweep must record the failure instead.
+    #[test]
+    fn sweep_records_failure_when_worktree_remove_fails() {
+        let (_tmp, repo) = init_repo();
+        // Create an orphan directory under .claude/worktrees/agent-X
+        // that is NOT a registered git worktree: `git worktree
+        // remove` will refuse it.
+        let wt_dir = repo.join(".claude/worktrees/agent-fake");
+        fs::create_dir_all(&wt_dir).unwrap();
+        fs::write(wt_dir.join("placeholder"), "not-a-worktree").unwrap();
+
+        let report = sweep(&repo, false).expect("sweep");
+
+        // The path must not be reported as successfully removed —
+        // either it does not appear in orphan_worktrees at all, or
+        // the report carries an explicit failure entry. Either way
+        // the directory must still exist on disk because the
+        // underlying git command refused the operation.
+        assert!(
+            wt_dir.exists(),
+            "git worktree remove should have refused; dir gone — test setup broke"
+        );
+        let claims_removed = report
+            .orphan_worktrees
+            .iter()
+            .any(|p| p == &wt_dir);
+        let records_failure = report.failures.iter().any(|(p, _)| p == &wt_dir);
+        assert!(
+            !claims_removed || records_failure,
+            "sweep claimed to remove {wt_dir:?} but the directory still exists \
+             and no failure was recorded"
+        );
+    }
 }
