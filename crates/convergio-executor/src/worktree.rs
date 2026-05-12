@@ -84,38 +84,39 @@ pub fn prepare(repo_root: &Path, task_id: &str) -> Result<PathBuf> {
 }
 
 /// Build the argv for `git worktree add <path> <branch>` (re-attach
-/// path). Currently flattens `path` through `to_str().unwrap_or("")`
-/// — see audit 2026-05-12 LOW · worktree.rs:76. Fix lands separately.
+/// path). The worktree path is passed through as an [`OsString`] so
+/// non-UTF-8 components on Unix survive byte-for-byte (audit
+/// 2026-05-12 LOW · worktree.rs:76).
 fn build_worktree_add_reattach_argv(path: &Path, branch: &str) -> Vec<OsString> {
     vec![
         OsString::from("worktree"),
         OsString::from("add"),
-        OsString::from(path.to_str().unwrap_or("")),
+        path.as_os_str().to_os_string(),
         OsString::from(branch),
     ]
 }
 
 /// Build the argv for `git worktree add <path> -b <branch> <base>`
-/// (new-branch path). Same lossy bug as above; fix lands separately.
+/// (new-branch path). Path preserved as [`OsString`].
 fn build_worktree_add_new_branch_argv(path: &Path, branch: &str, base: &str) -> Vec<OsString> {
     vec![
         OsString::from("worktree"),
         OsString::from("add"),
-        OsString::from(path.to_str().unwrap_or("")),
+        path.as_os_str().to_os_string(),
         OsString::from("-b"),
         OsString::from(branch),
         OsString::from(base),
     ]
 }
 
-/// Build the argv for `git worktree remove --force <path>`. Same
-/// lossy bug as the add helpers; fix lands separately.
+/// Build the argv for `git worktree remove --force <path>`. Path
+/// preserved as [`OsString`].
 fn build_worktree_remove_argv(path: &Path) -> Vec<OsString> {
     vec![
         OsString::from("worktree"),
         OsString::from("remove"),
         OsString::from("--force"),
-        OsString::from(path.to_str().unwrap_or("")),
+        path.as_os_str().to_os_string(),
     ]
 }
 
