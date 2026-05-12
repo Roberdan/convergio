@@ -24,7 +24,8 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-bus` stats:** 7 `*.rs` files / 13 public items / 661 lines (under `src/`).
+**`convergio-bus` stats:** 7 `*.rs` files / 13 public items / 700 lines (under `src/`).
 
-No files within 50 lines of the 300-line cap.
+Files approaching the 300-line cap:
+- `src/bus.rs` (269 lines)
 <!-- END AUTO -->
