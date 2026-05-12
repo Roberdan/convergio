@@ -256,6 +256,28 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn upsert_below_similar_to_threshold_is_noop() {
+        // Regression: `upsert_similar_edge` used to store any score below
+        // DUPLICATES_THRESHOLD as `similar_to`, even when the score was
+        // below the documented 0.85 `SIMILAR_TO_THRESHOLD`. Callers should
+        // not be able to slip sub-threshold edges into the table.
+        let (store, _tmp) = test_store().await;
+        store
+            .upsert_similar_edge("a", "n1", "b", "n2", 0.10)
+            .await
+            .unwrap();
+        store
+            .upsert_similar_edge("a", "n1", "b", "n2", 0.84)
+            .await
+            .unwrap();
+        assert_eq!(
+            store.count_similar_edges(None).await.unwrap(),
+            0,
+            "scores below SIMILAR_TO_THRESHOLD must not produce edges"
+        );
+    }
+
+    #[tokio::test]
     async fn classified_upsert_respects_explicit_kind() {
         let (store, _tmp) = test_store().await;
         // Score would normally give "duplicates" (≥0.95), but we force "similar_to".
