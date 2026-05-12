@@ -129,7 +129,7 @@ fn copilot_standard_uses_per_tool_whitelist_with_deny() {
 }
 
 #[test]
-fn copilot_sandbox_uses_allow_all() {
+fn copilot_sandbox_uses_allow_all_with_deny_list() {
     let task = task();
     let ctx = ctx_with(&task, PermissionProfile::Sandbox);
     let cmd = (CopilotRunner {
@@ -141,6 +141,36 @@ fn copilot_sandbox_uses_allow_all() {
     assert!(a.iter().any(|s| s == "--allow-all"));
     assert!(!a.iter().any(|s| s == "--allow-tool"));
     assert!(!a.iter().any(|s| s == "--add-dir"));
+    // Audit 2026-05-12 W1-E: deny-list is "always applied" per
+    // PermissionProfile::copilot_deny_tools docs. Sandbox MUST emit
+    // it so destructive commands (rm, sudo, push to main, force-push,
+    // reset --hard, curl with data, chmod 777) cannot fire even when
+    // the operator opts into --allow-all.
+    assert!(
+        a.iter().any(|s| s == "--deny-tool"),
+        "Sandbox must include --deny-tool"
+    );
+    assert!(a.iter().any(|s| s.contains("shell(rm:*)")));
+    assert!(a.iter().any(|s| s.contains("shell(git:push origin main")));
+}
+
+#[test]
+fn copilot_unrestricted_keeps_deny_list() {
+    let task = task();
+    let ctx = ctx_with(&task, PermissionProfile::Unrestricted);
+    let cmd = (CopilotRunner {
+        model: "gpt-5.2".into(),
+    })
+    .prepare(&ctx)
+    .unwrap();
+    let a = argv(&cmd);
+    assert!(a.iter().any(|s| s == "--allow-all"));
+    assert!(a.iter().any(|s| s == "--add-dir"));
+    assert!(
+        a.iter().any(|s| s == "--deny-tool"),
+        "Unrestricted must include --deny-tool"
+    );
+    assert!(a.iter().any(|s| s.contains("shell(rm:*)")));
 }
 
 #[test]

@@ -33,16 +33,16 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-api/AGENTS.md` | crate-rules | - | - | 33 |
 | `crates/convergio-api/README.md` | crate-readme | - | - | 7 |
 | `crates/convergio-brand/AGENTS.md` | crate-rules | - | - | 45 |
-| `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 27 |
-| `crates/convergio-bus/README.md` | crate-readme | - | - | 36 |
+| `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 31 |
+| `crates/convergio-bus/README.md` | crate-readme | - | - | 56 |
 | `crates/convergio-cli-plan-run/AGENTS.md` | crate-rules | - | - | 17 |
 | `crates/convergio-cli-plan-run/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-pr/AGENTS.md` | crate-rules | - | - | 12 |
 | `crates/convergio-cli-pr/README.md` | crate-readme | - | - | 5 |
-| `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 57 |
+| `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 61 |
 | `crates/convergio-cli-session/README.md` | crate-readme | - | - | 33 |
-| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 42 |
-| `crates/convergio-cli/README.md` | crate-readme | - | - | 31 |
+| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 40 |
+| `crates/convergio-cli/README.md` | crate-readme | - | - | 38 |
 | `crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
 | `crates/convergio-coherence/AGENTS.md` | crate-rules | - | - | 80 |
 | `crates/convergio-coherence/README.md` | crate-readme | - | - | 40 |
@@ -138,7 +138,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/fleet-retrieval-cross-repo-graph.md` | plan | - | F1 complete (α/β/γ/δ/ε/ζ landed); 30-fixture curated bench done; F2 GO | 174 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
-| `docs/plans/v0.2-friction-log.md` | plan | - | - | 189 |
+| `docs/plans/v0.2-friction-log.md` | plan | - | - | 207 |
 | `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
 | `docs/release.md` | - | - | - | 106 |
 | `docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |
