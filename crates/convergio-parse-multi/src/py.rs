@@ -55,7 +55,10 @@ pub fn parse_py(repo_name: &str, file_path: &str, source: &[u8]) -> Result<(Vec<
     let mut parser = Parser::new();
     parser
         .set_language(&Lang::Python.grammar())
-        .expect("grammar version mismatch — rebuild required");
+        .map_err(|source| ParseError::GrammarVersionMismatch {
+            lang: Lang::Python.label(),
+            source,
+        })?;
 
     let tree = parser
         .parse(source, None)
