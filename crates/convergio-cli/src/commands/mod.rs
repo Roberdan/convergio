@@ -38,6 +38,7 @@ pub mod evidence;
 pub mod fleet;
 pub(crate) mod fleet_build;
 pub(crate) mod fleet_cleanup;
+pub(crate) mod fleet_cleanup_render;
 pub(crate) mod fleet_duplicates;
 pub(crate) mod fleet_patterns;
 pub mod gates;
