@@ -26,7 +26,17 @@ pub fn parse_doc(repo: &str, rel_path: &str, abs_path: &Path) -> Result<(Node, V
         .id
         .clone()
         .unwrap_or_else(|| filename_without_ext(rel_path));
-    let id = Node::compute_id(kind, repo, DOCS_CRATE, Some(rel_path), &name, None);
+    // ADR nodes are addressed by `name` (e.g. "0001") elsewhere in
+    // the graph — notably from `related_adrs` mention edges that do
+    // not know the target's file path. Keep the ADR identity
+    // path-independent so those edges always resolve. Non-ADR docs
+    // keep `file_path` in the id so two docs with the same filename
+    // in different folders stay distinct.
+    let id_file_path = match kind {
+        NodeKind::Adr => None,
+        _ => Some(rel_path),
+    };
+    let id = Node::compute_id(kind, repo, DOCS_CRATE, id_file_path, &name, None);
     let node = Node {
         id: id.clone(),
         kind,
