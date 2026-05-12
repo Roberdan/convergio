@@ -125,11 +125,21 @@ impl Supervisor {
             return Err(spawn_timeout(&spec.command, timeout));
         }
 
-        // Vendor-CLI runners read the prompt off stdin, then close.
+        // Vendor-CLI runners read the prompt off stdin then close.
+        // Write failure (EPIPE) must surface as spawn failure or
+        // the API reports success with no prompt delivered.
         if let Some(payload) = spec.stdin_payload.as_deref() {
             if let Some(mut stdin) = child.stdin.take() {
                 use tokio::io::AsyncWriteExt;
-                let _ = stdin.write_all(payload.as_bytes()).await;
+                if let Err(e) = stdin.write_all(payload.as_bytes()).await {
+                    drop(stdin);
+                    self.kill_unrecorded_child(&mut child).await;
+                    self.record_spawn_failed(&id).await;
+                    return Err(LifecycleError::SpawnFailed(format!(
+                        "{}: stdin write failed: {e}",
+                        spec.command
+                    )));
+                }
                 drop(stdin);
             }
         }
@@ -274,7 +284,12 @@ impl TryFrom<ProcessRow> for AgentProcess {
             plan_id: r.plan_id,
             task_id: r.task_id,
             pid: r.pid,
-            status: ProcessStatus::parse(&r.status).unwrap_or(ProcessStatus::Failed),
+            status: ProcessStatus::parse(&r.status).ok_or_else(|| {
+                LifecycleError::InvalidStatus {
+                    field: "status",
+                    value: r.status.clone(),
+                }
+            })?,
             exit_code: r.exit_code,
             last_heartbeat_at: parse_ts_opt("last_heartbeat_at", r.last_heartbeat_at.as_deref())?,
             started_at: parse_ts("started_at", &r.started_at)?,

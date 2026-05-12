@@ -33,6 +33,7 @@ pub async fn build(manifest_dir: &Path, store: &Store, force: bool) -> Result<Bu
         crates: snap.crates.len(),
         files_parsed: 0,
         files_skipped: 0,
+        doc_edges_skipped: 0,
     };
 
     for c in &snap.crates {
@@ -124,11 +125,21 @@ async fn scan_docs(
     }
     // Pass 2: insert edges now that every src/dst node exists. Skip
     // edges whose dst is unknown (e.g. ADR mentions a crate that no
-    // longer ships) — better to drop than to refuse the build.
+    // longer ships) — better to drop than to refuse the build, but
+    // count and warn so broken doc-link invariants surface instead of
+    // disappearing at debug level (audit 2026-05 follow-up).
     for b in &bundles {
         for e in &b.edges {
             if let Err(err) = store.upsert_edge(e).await {
-                tracing::debug!(?err, "skipping doc edge with unknown dst");
+                report.doc_edges_skipped += 1;
+                tracing::warn!(
+                    src = %e.src,
+                    dst = %e.dst,
+                    kind = e.kind.as_str(),
+                    doc = %b.rel,
+                    error = %err,
+                    "skipping doc edge with unknown destination"
+                );
             }
         }
         report.files_parsed += 1;

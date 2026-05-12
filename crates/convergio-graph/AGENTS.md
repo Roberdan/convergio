@@ -15,9 +15,12 @@ generation, cluster detection, and ADR/code drift.
   needing deeper semantics layer rustdoc JSON on top in v1.
 - **SQLite-only persistence.** Schema in `migrations/0600_*.sql`.
   Migration range 600-699 (ADR-0003).
-- **Lazy on read.** Queries compare file mtime to the parsed-at
-  timestamp and re-parse stale nodes inline. Background loops are
-  opt-in (`CONVERGIO_GRAPH_REFRESH_SECS`).
+- **Eager build, no lazy refresh (yet).** `cvg graph build` is the
+  authoritative refresh path. Queries read whatever the last build
+  wrote — they do **not** re-parse stale files inline. Lazy on read
+  and a background refresh loop (e.g. a `CONVERGIO_GRAPH_REFRESH_SECS`
+  knob) are future work; do not document them as shipped until the
+  code lands.
 - **No daemon dependency for parsing.** The parser runs in any
   process; persistence requires the SQLite pool from `convergio-db`.
 - **No script glue.** Every operation surfaces as a `cvg graph ...`
@@ -28,19 +31,24 @@ generation, cluster detection, and ADR/code drift.
 
 | File | Owns |
 |------|------|
-| `parse.rs` | syn walker; produces `Vec<Node>` + `Vec<Edge>` from a single `*.rs` file or a crate root |
+| `parse.rs` | syn walker; produces `Vec<Node>` + `Vec<Edge>` from a single `*.rs` file |
 | `meta.rs` | `cargo_metadata` wrapper; produces crate-level dependency edges |
-| `doc_link.rs` | Markdown frontmatter + grep-based ADR↔crate edges |
+| `doc_link.rs` | Markdown YAML frontmatter → ADR/doc `claims`/`mentions` edges |
+| `build.rs` | Top-level orchestrator: walks the workspace, calls `meta` + `parse` + `doc_link`, persists via `store` |
 | `store.rs` | SQLite read/write of nodes and edges, mtime-aware refresh |
-| `refresh.rs` | Optional daemon loop; lazy-on-read API used by `for_task` |
-| `model.rs` | `Node`, `Edge`, `ContextPack`, `DriftReport`, `ClusterReport` |
+| `model.rs` | `Node`, `Edge`, `NodeKind`, `EdgeKind`, `BuildReport` |
+| `query.rs` | Read-side `for_task_text` + `ContextPack` |
+| `drift.rs` | `cvg graph drift` + `DriftReport` |
+| `cluster.rs` | Community detection + `ClusterReport` |
 
 ## Tests
 
-E2E tests live under `tests/`. Each test boots a tempdir SQLite via
-`convergio-db::Pool` and runs the parser against a fixture crate at
-`tests/fixtures/`. Keep fixtures small (one struct, one fn) so the
-test suite stays under a second.
+Unit tests live alongside each module under `#[cfg(test)]`.
+Integration tests live in `tests/store.rs` and `tests/query.rs`;
+each boots a tempdir SQLite via `convergio_db::Pool` and seeds the
+graph store inline. There is no `tests/fixtures/` directory — keep
+inline fixtures small (one struct, one fn, two ADR nodes) so the
+suite stays under a second.
 
 ## Crate stats
 
@@ -48,10 +56,9 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-graph` stats:** 16 `*.rs` files / 51 public items / 2785 lines (under `src/`).
+**`convergio-graph` stats:** 18 `*.rs` files / 51 public items / 2898 lines (under `src/`).
 
 Files approaching the 300-line cap:
-- `src/parse.rs` (284 lines)
-- `src/drift.rs` (277 lines)
-- `src/cluster.rs` (259 lines)
+- `src/cluster.rs` (268 lines)
+- `src/drift.rs` (254 lines)
 <!-- END AUTO -->
