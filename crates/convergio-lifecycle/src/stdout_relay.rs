@@ -16,17 +16,35 @@ pub(crate) async fn relay(stdout: ChildStdout, plan_id: String, process_id: Stri
     let reader = BufReader::new(stdout);
     let mut lines = reader.lines();
     let mut seq: u64 = 0;
-    while let Ok(Some(line)) = lines.next_line().await {
-        let msg = NewMessage {
-            plan_id: plan_id.clone(),
-            topic: topic.clone(),
-            sender: Some(process_id.clone()),
-            payload: json!({ "type": "stdout", "text": line, "seq": seq }),
-        };
-        if let Err(e) = bus.publish(msg).await {
-            warn!(process_id = %process_id, error = %e, "stdout relay: publish failed");
+    loop {
+        match lines.next_line().await {
+            Ok(Some(line)) => {
+                let msg = NewMessage {
+                    plan_id: plan_id.clone(),
+                    topic: topic.clone(),
+                    sender: Some(process_id.clone()),
+                    payload: json!({ "type": "stdout", "text": line, "seq": seq }),
+                };
+                if let Err(e) = bus.publish(msg).await {
+                    warn!(process_id = %process_id, error = %e, "stdout relay: publish failed");
+                }
+                seq += 1;
+            }
+            Ok(None) => break,
+            Err(e) => {
+                // Read failures (closed pipe, decode error, ...) are
+                // observability events: log them so an operator can
+                // tell "relay ended because EOF" from "relay ended
+                // because the pipe broke". The loop terminates either
+                // way -- the child's stdout cannot be re-opened.
+                warn!(
+                    process_id = %process_id,
+                    error = %e,
+                    "stdout relay: read failed, terminating relay"
+                );
+                break;
+            }
         }
-        seq += 1;
     }
 }
 
