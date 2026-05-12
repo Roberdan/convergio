@@ -4,7 +4,7 @@
 //! surface. Kept separate so [`crate::bus`] stays under the 300-line
 //! cap (CONSTITUTION § 13).
 
-use crate::bus::{Bus, MessageRow};
+use crate::bus::{clamp_limit, Bus, MessageRow};
 use crate::error::Result;
 use crate::model::{AgentLastTopic, Message, TopicSummary};
 
@@ -58,6 +58,7 @@ impl Bus {
         cursor: i64,
         limit: i64,
     ) -> Result<Vec<Message>> {
+        let limit = clamp_limit(limit)?;
         let rows = if let Some(t) = topic {
             sqlx::query_as::<_, MessageRow>(
                 "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \

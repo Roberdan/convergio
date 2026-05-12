@@ -10,7 +10,7 @@
 //! distinct from the plan-scoped publish/poll/ack/tail/topics
 //! cluster.
 
-use crate::bus::{Bus, MessageRow, SYSTEM_TOPIC_PREFIX};
+use crate::bus::{clamp_limit, Bus, MessageRow, SYSTEM_TOPIC_PREFIX};
 use crate::error::{BusError, Result};
 use crate::model::{Message, NewSystemMessage};
 use chrono::Utc;
@@ -70,6 +70,7 @@ impl Bus {
                 "topic '{topic}' is not system-scoped; use poll"
             )));
         }
+        let limit = clamp_limit(limit)?;
         let rows = sqlx::query_as::<_, MessageRow>(
             "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
                     consumed_by, created_at \
