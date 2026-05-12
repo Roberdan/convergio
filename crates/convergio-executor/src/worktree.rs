@@ -24,6 +24,7 @@
 //! the existing branch into a fresh worktree.
 
 use crate::error::{ExecutorError, Result};
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -71,25 +72,51 @@ pub fn prepare(repo_root: &Path, task_id: &str) -> Result<PathBuf> {
     if branch_exists(repo_root, &branch)? {
         // Re-attach to an existing branch (re-dispatch after the
         // worktree dir was removed but the branch survived).
-        run_git(
-            repo_root,
-            &["worktree", "add", path.to_str().unwrap_or(""), &branch],
-        )?;
+        run_git_os(repo_root, &build_worktree_add_reattach_argv(&path, &branch))?;
     } else {
         // Fresh branch off main.
-        run_git(
+        run_git_os(
             repo_root,
-            &[
-                "worktree",
-                "add",
-                path.to_str().unwrap_or(""),
-                "-b",
-                &branch,
-                "main",
-            ],
+            &build_worktree_add_new_branch_argv(&path, &branch, "main"),
         )?;
     }
     Ok(path)
+}
+
+/// Build the argv for `git worktree add <path> <branch>` (re-attach
+/// path). Currently flattens `path` through `to_str().unwrap_or("")`
+/// — see audit 2026-05-12 LOW · worktree.rs:76. Fix lands separately.
+fn build_worktree_add_reattach_argv(path: &Path, branch: &str) -> Vec<OsString> {
+    vec![
+        OsString::from("worktree"),
+        OsString::from("add"),
+        OsString::from(path.to_str().unwrap_or("")),
+        OsString::from(branch),
+    ]
+}
+
+/// Build the argv for `git worktree add <path> -b <branch> <base>`
+/// (new-branch path). Same lossy bug as above; fix lands separately.
+fn build_worktree_add_new_branch_argv(path: &Path, branch: &str, base: &str) -> Vec<OsString> {
+    vec![
+        OsString::from("worktree"),
+        OsString::from("add"),
+        OsString::from(path.to_str().unwrap_or("")),
+        OsString::from("-b"),
+        OsString::from(branch),
+        OsString::from(base),
+    ]
+}
+
+/// Build the argv for `git worktree remove --force <path>`. Same
+/// lossy bug as the add helpers; fix lands separately.
+fn build_worktree_remove_argv(path: &Path) -> Vec<OsString> {
+    vec![
+        OsString::from("worktree"),
+        OsString::from("remove"),
+        OsString::from("--force"),
+        OsString::from(path.to_str().unwrap_or("")),
+    ]
 }
 
 /// Best-effort cleanup. Called when a task transitions to a
@@ -100,10 +127,7 @@ pub fn cleanup(repo_root: &Path, task_id: &str) {
     if !path.exists() {
         return;
     }
-    let _ = run_git(
-        repo_root,
-        &["worktree", "remove", "--force", path.to_str().unwrap_or("")],
-    );
+    let _ = run_git_os(repo_root, &build_worktree_remove_argv(&path));
 }
 
 fn branch_exists(repo_root: &Path, branch: &str) -> Result<bool> {
@@ -118,18 +142,17 @@ fn branch_exists(repo_root: &Path, branch: &str) -> Result<bool> {
     Ok(out.status.success())
 }
 
-fn run_git(repo_root: &Path, args: &[&str]) -> Result<()> {
+fn run_git_os(repo_root: &Path, args: &[OsString]) -> Result<()> {
     let out = Command::new("git")
         .arg("-C")
         .arg(repo_root)
         .args(args)
         .output()
-        .map_err(|e| ExecutorError::Worktree(format!("git {}: {e}", args.join(" "))))?;
+        .map_err(|e| ExecutorError::Worktree(format!("git: {e}")))?;
     if !out.status.success() {
         let stderr = String::from_utf8_lossy(&out.stderr);
         return Err(ExecutorError::Worktree(format!(
-            "git {} failed: {}",
-            args.join(" "),
+            "git failed: {}",
             stderr.trim()
         )));
     }
@@ -155,5 +178,73 @@ mod tests {
     #[test]
     fn branch_name_is_namespaced() {
         assert_eq!(branch_name("0cdefc9a-a17d"), "agent/0cdefc9");
+    }
+
+    /// Audit 2026-05-12 LOW · worktree.rs:76 — Non-UTF-8 worktree
+    /// paths must reach `git worktree add` byte-for-byte instead of
+    /// being flattened to an empty string by
+    /// `Path::to_str().unwrap_or("")`. Unix-only because constructing
+    /// a non-UTF-8 path requires `OsStrExt`.
+    #[cfg(unix)]
+    #[test]
+    fn worktree_add_reattach_argv_preserves_non_utf8_path() {
+        use std::ffi::OsStr;
+        use std::os::unix::ffi::OsStrExt;
+        use std::path::PathBuf;
+        let mut bytes = b"/tmp/convergio-".to_vec();
+        bytes.push(0xFF); // not valid UTF-8
+        bytes.extend_from_slice(b"/agent-abc1234");
+        let path = PathBuf::from(OsStr::from_bytes(&bytes));
+        let argv = build_worktree_add_reattach_argv(&path, "agent/abc1234");
+        assert_eq!(argv[0], OsStr::new("worktree"));
+        assert_eq!(argv[1], OsStr::new("add"));
+        assert_eq!(
+            argv[2].as_os_str(),
+            path.as_os_str(),
+            "non-UTF-8 path must be preserved byte-for-byte"
+        );
+        assert_eq!(argv[3], OsStr::new("agent/abc1234"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn worktree_add_new_branch_argv_preserves_non_utf8_path() {
+        use std::ffi::OsStr;
+        use std::os::unix::ffi::OsStrExt;
+        use std::path::PathBuf;
+        let mut bytes = b"/tmp/convergio-".to_vec();
+        bytes.push(0xFE);
+        bytes.extend_from_slice(b"/agent-deadbee");
+        let path = PathBuf::from(OsStr::from_bytes(&bytes));
+        let argv = build_worktree_add_new_branch_argv(&path, "agent/deadbee", "main");
+        assert_eq!(
+            argv[2].as_os_str(),
+            path.as_os_str(),
+            "non-UTF-8 path must be preserved byte-for-byte"
+        );
+        assert_eq!(argv[3], OsStr::new("-b"));
+        assert_eq!(argv[4], OsStr::new("agent/deadbee"));
+        assert_eq!(argv[5], OsStr::new("main"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn worktree_remove_argv_preserves_non_utf8_path() {
+        use std::ffi::OsStr;
+        use std::os::unix::ffi::OsStrExt;
+        use std::path::PathBuf;
+        let mut bytes = b"/tmp/convergio-".to_vec();
+        bytes.push(0x80);
+        bytes.extend_from_slice(b"/agent-cafebab");
+        let path = PathBuf::from(OsStr::from_bytes(&bytes));
+        let argv = build_worktree_remove_argv(&path);
+        assert_eq!(argv[0], OsStr::new("worktree"));
+        assert_eq!(argv[1], OsStr::new("remove"));
+        assert_eq!(argv[2], OsStr::new("--force"));
+        assert_eq!(
+            argv[3].as_os_str(),
+            path.as_os_str(),
+            "non-UTF-8 path must be preserved byte-for-byte"
+        );
     }
 }
