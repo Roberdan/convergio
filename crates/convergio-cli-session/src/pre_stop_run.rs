@@ -50,29 +50,39 @@ pub fn handle(
 /// strings through [`convergio_i18n`] per the P5 constitution audit
 /// follow-up (2026-05-12, src/pre_stop_run.rs:38).
 pub(crate) fn render_human_string(
-    _bundle: &Bundle,
+    bundle: &Bundle,
     agent_id: &str,
     force: bool,
     report: &PreStopReport,
 ) -> String {
+    let force_s = if force { "true" } else { "false" };
     let mut out = String::new();
-    out.push_str(&format!(
-        "session pre-stop report (agent_id={agent_id}, force={force})\n"
+    out.push_str(&bundle.t(
+        "session-pre-stop-header",
+        &[("agent_id", agent_id), ("force", force_s)],
     ));
+    out.push('\n');
     for r in &report.results {
-        let mark = match &r.outcome {
-            CheckOutcome::Pass => "ok",
-            CheckOutcome::Fail { .. } => "FAIL",
-            CheckOutcome::NotImplemented { .. } => "todo",
+        let mark_key = match &r.outcome {
+            CheckOutcome::Pass => "session-pre-stop-mark-pass",
+            CheckOutcome::Fail { .. } => "session-pre-stop-mark-fail",
+            CheckOutcome::NotImplemented { .. } => "session-pre-stop-mark-todo",
         };
-        out.push_str(&format!("  [{mark}] {} — {}\n", r.id, r.label));
+        let mark = bundle.t(mark_key, &[]);
+        out.push_str(&bundle.t(
+            "session-pre-stop-check-line",
+            &[("mark", &mark), ("id", r.id), ("label", r.label)],
+        ));
+        out.push('\n');
         if let CheckOutcome::Fail { findings } = &r.outcome {
             for f in findings {
-                out.push_str(&format!("        - {f}\n"));
+                out.push_str(&bundle.t("session-pre-stop-finding-line", &[("finding", f)]));
+                out.push('\n');
             }
         }
         if let CheckOutcome::NotImplemented { task_id } = &r.outcome {
-            out.push_str(&format!("        scheduled in plan task {task_id}\n"));
+            out.push_str(&bundle.t("session-pre-stop-todo-line", &[("task_id", task_id)]));
+            out.push('\n');
         }
     }
     out

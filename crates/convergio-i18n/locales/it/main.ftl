@@ -287,6 +287,15 @@ session-register-poll-announcements-header = { $count ->
 session-register-poll-message-line =   - piano { $plan } seq { $seq } [{ $topic }] sender={ $sender }
 session-register-poll-message-line-consumed =   - piano { $plan } seq { $seq } [{ $topic }] sender={ $sender } (consumato)
 
+# ---------- CLI: session pre-stop ----------
+session-pre-stop-header = Rapporto pre-arresto (agent_id={ $agent_id }, force={ $force })
+session-pre-stop-mark-pass = ok
+session-pre-stop-mark-fail = FAIL
+session-pre-stop-mark-todo = da fare
+session-pre-stop-check-line =   [{ $mark }] { $id } — { $label }
+session-pre-stop-finding-line =         - { $finding }
+session-pre-stop-todo-line =         pianificato nel task { $task_id }
+
 # ---------- brand (CLI: about) ----------
 # I marchi (claim/subline/nome prodotto) NON vengono tradotti — sono
 # trade dress e vivono in `convergio-brand`. Queste chiavi sono le
