@@ -46,7 +46,7 @@ pub async fn run(client: &Client, agent_id: Option<String>, status: String) -> R
     if !should_heartbeat(&path, now) {
         return Ok(());
     }
-    if first_call {
+    if first_call && should_show_banner() {
         eprintln!("convergio: heartbeating {id} every ~5 min");
     }
     let body = json!({"status": status});
@@ -117,6 +117,17 @@ fn write_timestamp(path: &PathBuf, now: SystemTime) -> std::io::Result<()> {
         .map(|d| d.as_secs())
         .unwrap_or(0);
     std::fs::write(path, secs.to_string())
+}
+
+/// Should the first-call "heartbeating …" banner be emitted?
+///
+/// Initial implementation always returns `true` to preserve existing
+/// behavior; the audit follow-up (2026-05-12) replaces this with an
+/// `IsTerminal`-gated check so the hardcoded English string never
+/// ships through the non-TTY PreToolUse hook path (P5 constitution
+/// compliance, src/heartbeat_since_last_turn.rs:50).
+pub(crate) fn should_show_banner() -> bool {
+    true
 }
 
 #[cfg(test)]
@@ -204,6 +215,27 @@ mod tests {
         assert!(
             !exists,
             "failed heartbeat POST must not refresh the throttle timestamp"
+        );
+    }
+
+    /// Regression: the hot-path PreToolUse hook never has a TTY on
+    /// stderr, so the hardcoded English "heartbeating …" banner has
+    /// no operator to read it. [`should_show_banner`] must return
+    /// `false` whenever stderr is not a terminal, otherwise the
+    /// non-i18n string ships in every hook invocation. See the
+    /// `convergio-cli-session` audit follow-up (2026-05-12):
+    /// src/heartbeat_since_last_turn.rs:50.
+    #[test]
+    fn banner_is_suppressed_when_stderr_is_not_a_tty() {
+        use std::io::IsTerminal;
+        // Test invariant: cargo test pipes stderr.
+        assert!(
+            !std::io::stderr().is_terminal(),
+            "expected piped stderr under cargo test"
+        );
+        assert!(
+            !should_show_banner(),
+            "hot-path hook must not emit hardcoded English banner without a TTY"
         );
     }
 }
