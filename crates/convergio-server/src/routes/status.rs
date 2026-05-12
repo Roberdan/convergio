@@ -88,6 +88,9 @@ async fn status(
     State(state): State<AppState>,
     Query(q): Query<StatusQuery>,
 ) -> Result<Json<StatusResponse>, ApiError> {
+    // Negative caps mean "none"; the tasks side already uses
+    // `.max(0)` below, so clamp once and reuse for both sides.
+    let completed_cap = q.completed_limit.max(0) as usize;
     let plans = state.durability.plans().list(q.plan_limit).await?;
     let mut active_plans = Vec::new();
     let mut recent_completed_plans = Vec::new();
@@ -96,7 +99,7 @@ async fn status(
         let summary = summarize_plan(&state, plan).await?;
         match summary.status {
             PlanStatus::Completed => {
-                if recent_completed_plans.len() < q.completed_limit as usize {
+                if recent_completed_plans.len() < completed_cap {
                     recent_completed_plans.push(summary);
                 }
             }
@@ -108,7 +111,7 @@ async fn status(
     let recent_completed_tasks = state
         .durability
         .tasks()
-        .list_recent_done(q.completed_limit.max(0))
+        .list_recent_done(completed_cap as i64)
         .await?
         .into_iter()
         .map(completed_task)
