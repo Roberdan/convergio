@@ -7,6 +7,7 @@
 #![forbid(unsafe_code)]
 
 mod action;
+mod compensation;
 mod gates;
 
 pub use action::Action;
