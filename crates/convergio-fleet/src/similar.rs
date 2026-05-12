@@ -70,7 +70,10 @@ impl FleetStore {
     ///
     /// Scores ≥ [`DUPLICATES_THRESHOLD`] → `"duplicates"`;
     /// scores ≥ [`SIMILAR_TO_THRESHOLD`] → `"similar_to"`.
-    /// For structural-shape-aware classification use
+    /// Scores **below** [`SIMILAR_TO_THRESHOLD`] are silently dropped:
+    /// the helper is a no-op and no row is written. This keeps the
+    /// invariant that every persisted edge is at or above the documented
+    /// 0.85 floor. For structural-shape-aware classification use
     /// [`Self::upsert_similar_edge_classified`] directly.
     pub async fn upsert_similar_edge(
         &self,
@@ -80,6 +83,9 @@ impl FleetStore {
         node_id_b: &str,
         score: f32,
     ) -> Result<()> {
+        if score < SIMILAR_TO_THRESHOLD {
+            return Ok(());
+        }
         let kind = if score >= DUPLICATES_THRESHOLD {
             "duplicates"
         } else {
