@@ -7,6 +7,7 @@ mod actions_refusal_tests;
 #[cfg(test)]
 mod actions_tests;
 mod bridge;
+mod bridge_log;
 mod bus_actions;
 #[cfg(test)]
 mod e2e_tests;
