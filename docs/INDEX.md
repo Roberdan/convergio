@@ -138,7 +138,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/fleet-retrieval-cross-repo-graph.md` | plan | - | F1 complete (α/β/γ/δ/ε/ζ landed); 30-fixture curated bench done; F2 GO | 174 |
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
-| `docs/plans/v0.2-friction-log.md` | plan | - | - | 189 |
+| `docs/plans/v0.2-friction-log.md` | plan | - | - | 207 |
 | `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
 | `docs/release.md` | - | - | - | 106 |
 | `docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |
