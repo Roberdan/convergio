@@ -161,6 +161,12 @@ pub struct BuildReport {
     pub files_parsed: usize,
     /// Number of files skipped because their mtime equals the stored value.
     pub files_skipped: usize,
+    /// Number of doc-link edges (claims/mentions from ADRs and docs)
+    /// that could not be inserted because their destination node did
+    /// not exist (e.g. an ADR mentions a crate that no longer ships,
+    /// or a related-ADR id that was never written).
+    #[serde(default)]
+    pub doc_edges_skipped: usize,
 }
 
 #[cfg(test)]

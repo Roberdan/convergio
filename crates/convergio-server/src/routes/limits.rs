@@ -40,50 +40,72 @@ pub fn validate_message_limit(
 mod tests {
     use super::*;
 
+    fn assert_bad_request(
+        result: Result<i64, ApiError>,
+        expected_code: &str,
+        expected_field: &str,
+    ) {
+        match result {
+            Err(ApiError::BadRequest { code, message }) => {
+                assert_eq!(code, expected_code);
+                assert!(
+                    message.starts_with(&format!("{expected_field} must")),
+                    "got message {message:?}",
+                );
+                assert!(message.contains("100"));
+            }
+            Err(_) => panic!("expected BadRequest"),
+            Ok(v) => panic!("expected BadRequest, got Ok({v})"),
+        }
+    }
+
+    fn assert_ok(result: Result<i64, ApiError>, expected: i64) {
+        match result {
+            Ok(v) => assert_eq!(v, expected),
+            Err(_) => panic!("expected Ok({expected})"),
+        }
+    }
+
     #[test]
     fn accepts_bounds() {
-        assert_eq!(
-            validate_message_limit(1, "invalid_message_limit", "limit").unwrap(),
-            1
+        assert_ok(
+            validate_message_limit(1, "invalid_message_limit", "limit"),
+            1,
         );
-        assert_eq!(
-            validate_message_limit(MAX_MESSAGE_LIMIT, "invalid_message_limit", "limit").unwrap(),
-            MAX_MESSAGE_LIMIT
+        assert_ok(
+            validate_message_limit(MAX_MESSAGE_LIMIT, "invalid_message_limit", "limit"),
+            MAX_MESSAGE_LIMIT,
         );
     }
 
     #[test]
     fn rejects_below_one() {
-        let err = validate_message_limit(0, "invalid_message_limit", "limit").unwrap_err();
-        match err {
-            ApiError::BadRequest { code, message } => {
-                assert_eq!(code, "invalid_message_limit");
-                assert!(message.contains("limit"));
-                assert!(message.contains("100"));
-            }
-            _ => panic!("expected BadRequest, got something else"),
-        }
+        assert_bad_request(
+            validate_message_limit(0, "invalid_message_limit", "limit"),
+            "invalid_message_limit",
+            "limit",
+        );
     }
 
     #[test]
     fn rejects_above_max() {
-        let err = validate_message_limit(
-            MAX_MESSAGE_LIMIT + 1,
+        assert_bad_request(
+            validate_message_limit(
+                MAX_MESSAGE_LIMIT + 1,
+                "invalid_context_limit",
+                "message_limit",
+            ),
             "invalid_context_limit",
             "message_limit",
-        )
-        .unwrap_err();
-        match err {
-            ApiError::BadRequest { code, message } => {
-                assert_eq!(code, "invalid_context_limit");
-                assert!(message.starts_with("message_limit must"));
-            }
-            _ => panic!("expected BadRequest"),
-        }
+        );
     }
 
     #[test]
     fn rejects_negative() {
-        assert!(validate_message_limit(-5, "invalid_message_limit", "limit").is_err());
+        assert_bad_request(
+            validate_message_limit(-5, "invalid_message_limit", "limit"),
+            "invalid_message_limit",
+            "limit",
+        );
     }
 }

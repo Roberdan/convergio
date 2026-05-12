@@ -31,6 +31,17 @@ pub enum LifecycleError {
         value: String,
     },
 
+    /// Persisted status string did not match any known
+    /// [`crate::ProcessStatus`] variant — database invariant drift
+    /// that operators must see, not silently coerce away.
+    #[error("invalid status in {field}: {value}")]
+    InvalidStatus {
+        /// Column name carrying the bad status string.
+        field: &'static str,
+        /// Persisted value that failed to parse.
+        value: String,
+    },
+
     /// I/O error during process management.
     #[error(transparent)]
     Io(#[from] std::io::Error),
