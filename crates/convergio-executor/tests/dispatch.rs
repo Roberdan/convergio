@@ -56,8 +56,13 @@ async fn tick_skips_failing_task_and_dispatches_next() {
     let n = exec.tick().await.unwrap();
     assert_eq!(n, 1);
 
+    // Audit follow-up 2026-05-12: atomic claim runs BEFORE spawn.
+    // If the spawn fails, the executor compensates by transitioning
+    // the (now-claimed) task to `Failed` instead of silently rolling
+    // back to `Pending` — the operator can `cvg task retry` to put
+    // it back into the pending queue.
     let failing_after = dur.tasks().get(&failing.id).await.unwrap();
-    assert_eq!(failing_after.status, TaskStatus::Pending);
+    assert_eq!(failing_after.status, TaskStatus::Failed);
 
     let ok_after = dur.tasks().get(&ok.id).await.unwrap();
     assert_eq!(ok_after.status, TaskStatus::InProgress);
@@ -205,7 +210,7 @@ async fn tick_is_idempotent_on_already_dispatched_tasks() {
 }
 
 #[tokio::test]
-async fn tick_leaves_task_pending_when_spawn_fails() {
+async fn tick_marks_task_failed_when_spawn_fails() {
     let (exec, dur, _dir) = support::fresh_with(SpawnTemplate {
         command: "/definitely-not-convergio-executor-test".into(),
         args: vec![],
@@ -249,9 +254,13 @@ async fn tick_leaves_task_pending_when_spawn_fails() {
 
     let n = exec.tick().await.unwrap();
     assert_eq!(n, 0);
+    // Audit follow-up 2026-05-12: spawn failure after atomic claim
+    // compensates by transitioning to `Failed`. The agent_id from the
+    // claim stays on the row so the operator can see which dispatch
+    // tried it; `cvg task retry` puts it back to pending.
     let after = dur.tasks().get(&task.id).await.unwrap();
-    assert_eq!(after.status, TaskStatus::Pending);
-    assert!(after.agent_id.is_none());
+    assert_eq!(after.status, TaskStatus::Failed);
+    assert!(after.agent_id.is_some());
     assert!(dur.audit().verify(None, None).await.unwrap().ok);
 }
 
