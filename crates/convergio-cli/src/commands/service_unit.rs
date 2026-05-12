@@ -25,8 +25,8 @@ pub(super) fn launchd_plist(convergio: &Path, home: &Path) -> String {
 <plist version="1.0"><dict>
   <key>Label</key><string>{label}</string>
   <key>ProgramArguments</key><array><string>{}</string><string>start</string></array>
-  <key>RunAtLoad</key><true/>
-  <key>KeepAlive</key><true/>
+  <key>RunAtLoad</key><false/>
+  <key>KeepAlive</key><false/>
   <key>WorkingDirectory</key><string>{}</string>
   <key>EnvironmentVariables</key><dict>
     <key>PATH</key><string>{}:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
