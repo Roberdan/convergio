@@ -31,7 +31,7 @@ pub enum TaskType {
 }
 
 /// Required evidence kinds per task type (see ADR-0044).
-fn required_kinds(t: &TaskType) -> &'static [&'static str] {
+pub(crate) fn required_kinds(t: &TaskType) -> &'static [&'static str] {
     match t {
         TaskType::Code => &["context_pack", "ci_run", "merge_record"],
         TaskType::DocOnly => &["ci_run", "merge_record"],
@@ -39,7 +39,7 @@ fn required_kinds(t: &TaskType) -> &'static [&'static str] {
     }
 }
 
-fn infer_type(evidence_kinds: &HashSet<String>) -> TaskType {
+pub(crate) fn infer_type(evidence_kinds: &HashSet<String>) -> TaskType {
     if evidence_kinds.contains("code") || evidence_kinds.contains("merge_record") {
         TaskType::Code
     } else if evidence_kinds.contains("adr") {
@@ -108,7 +108,11 @@ pub async fn run(
     Ok(())
 }
 
-async fn build_report(client: &reqwest::Client, daemon: &str, plan_id: &str) -> Result<Report> {
+pub(crate) async fn build_report(
+    client: &reqwest::Client,
+    daemon: &str,
+    plan_id: &str,
+) -> Result<Report> {
     let all_tasks = scan::fetch_tasks(client, daemon, plan_id).await?;
     let closed: Vec<_> = all_tasks
         .into_iter()
@@ -125,7 +129,7 @@ async fn build_report(client: &reqwest::Client, daemon: &str, plan_id: &str) -> 
 
     let mut task_results = Vec::with_capacity(closed.len());
     for task in &closed {
-        let ev = scan::fetch_evidence(client, daemon, &task.id).await;
+        let ev = scan::fetch_evidence(client, daemon, &task.id).await?;
         let kinds: HashSet<String> = ev.iter().map(|e| e.kind.clone()).collect();
         let kind_list: Vec<String> = {
             let mut v: Vec<_> = kinds.iter().cloned().collect();
@@ -227,50 +231,4 @@ fn render_plain(report: &Report) {
         "plan={} closed={} compliant={} score={}%",
         report.plan_id, report.tasks_closed, report.tasks_compliant, report.score_pct
     );
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn infer_type_code_from_code_evidence() {
-        let mut kinds = HashSet::new();
-        kinds.insert("code".to_string());
-        kinds.insert("context_pack".to_string());
-        assert_eq!(infer_type(&kinds), TaskType::Code);
-    }
-
-    #[test]
-    fn infer_type_code_from_merge_record() {
-        let mut kinds = HashSet::new();
-        kinds.insert("merge_record".to_string());
-        assert_eq!(infer_type(&kinds), TaskType::Code);
-    }
-
-    #[test]
-    fn infer_type_doc_only() {
-        let mut kinds = HashSet::new();
-        kinds.insert("adr".to_string());
-        assert_eq!(infer_type(&kinds), TaskType::DocOnly);
-    }
-
-    #[test]
-    fn infer_type_analysis_when_empty() {
-        let kinds = HashSet::new();
-        assert_eq!(infer_type(&kinds), TaskType::Analysis);
-    }
-
-    #[test]
-    fn code_task_requires_graph_and_ci() {
-        let required = required_kinds(&TaskType::Code);
-        assert!(required.contains(&"context_pack"));
-        assert!(required.contains(&"ci_run"));
-        assert!(required.contains(&"merge_record"));
-    }
-
-    #[test]
-    fn analysis_has_no_requirements() {
-        assert!(required_kinds(&TaskType::Analysis).is_empty());
-    }
 }

@@ -288,6 +288,15 @@ session-register-poll-announcements-header = { $count ->
 session-register-poll-message-line =   - piano { $plan } seq { $seq } [{ $topic }] sender={ $sender }
 session-register-poll-message-line-consumed =   - piano { $plan } seq { $seq } [{ $topic }] sender={ $sender } (consumato)
 
+# ---------- CLI: session pre-stop ----------
+session-pre-stop-header = Rapporto pre-arresto (agent_id={ $agent_id }, force={ $force })
+session-pre-stop-mark-pass = ok
+session-pre-stop-mark-fail = FAIL
+session-pre-stop-mark-todo = da fare
+session-pre-stop-check-line =   [{ $mark }] { $id } — { $label }
+session-pre-stop-finding-line =         - { $finding }
+session-pre-stop-todo-line =         pianificato nel task { $task_id }
+
 # ---------- brand (CLI: about) ----------
 # I marchi (claim/subline/nome prodotto) NON vengono tradotti — sono
 # trade dress e vivono in `convergio-brand`. Queste chiavi sono le
@@ -338,6 +347,19 @@ coherence-plan-execution-summary = Piano { $plan }… — { $closed } task chius
 coherence-plan-execution-plan-checks = Livello piano: registry={ $registry }  bus={ $bus }
 coherence-plan-execution-task-ok = OK   { $id }… { $title }
 coherence-plan-execution-task-fail = ERRORE { $id }… { $title } — mancanti: { $missing }
+
+# ---------- CLI: coherence close-post-hoc (ADR-0026, retro H5) ----------
+coherence-close-post-hoc-header = cvg coherence close-post-hoc — { $total } chiusura/e dal { $since }
+coherence-close-post-hoc-clean = nessuna riga close-post-hoc nella finestra — pulito.
+coherence-close-post-hoc-by-agent = per agente:
+coherence-close-post-hoc-by-plan = per piano:
+coherence-close-post-hoc-rows = righe:
+coherence-close-post-hoc-row-reason = motivo: { $reason }
+
+# ---------- CLI: coherence fleet (issue #177) ----------
+coherence-fleet-header = cvg coherence fleet — { $repos } repo in { $path }
+coherence-fleet-clean = nessun rilievo — pulito.
+coherence-fleet-findings = { $count } rilievo/i:
 
 # ---------- CLI: bus tail / list (P1.2) ----------
 bus-tail-following = In ascolto sul bus del piano { $plan } (Ctrl-C per uscire)

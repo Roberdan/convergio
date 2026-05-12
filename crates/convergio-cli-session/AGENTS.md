@@ -28,9 +28,13 @@ Public entry points: [`run`] and [`SessionCommand`].
 
 - HTTP only via the `Client` injected from the host CLI; no direct
   daemon URL hard-coding inside the crate.
-- Shells out to `gh` and `git` for PR + worktree visibility (the
-  pre-stop checks); every shell-out is conservative — failures
-  collapse to `Pass`, never to a brick wall.
+- Shells out to `gh`, `git`, and `curl` for PR + worktree + daemon
+  visibility (the pre-stop checks); every shell-out is conservative —
+  failures collapse to `Pass`, never to a brick wall. The `curl`
+  shell-out in `check_1_plan_pr_drift` lets a sync-trait `Check`
+  hit the daemon without dragging in an async runtime; it disappears
+  the day the `Check` trait widens to async and the injected
+  `Client` can be used directly.
 - All user-facing strings flow through `convergio-i18n` so output
   renders in EN and IT (`session-*` Fluent keys).
 - The CLI hosts only a thin shim

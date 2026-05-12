@@ -152,8 +152,6 @@ pub(super) fn gen_adr_index(root: &Path) -> Result<String> {
             .trim()
             .to_string();
         let display = if display.is_empty() { title } else { display };
-        let file = format!("{id}-*");
-        let _ = file; // file glob would need a directory scan — skip for now
         out.push_str(&format!(
             "| [{id}](./{id_full}.md) | {display} | {status} |\n",
             id_full = adr_filename(&adr_dir, &id).unwrap_or_else(|| format!("{id}-")),

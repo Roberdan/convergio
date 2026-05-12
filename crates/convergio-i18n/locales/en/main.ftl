@@ -288,6 +288,15 @@ session-register-poll-announcements-header = { $count ->
 session-register-poll-message-line =   - plan { $plan } seq { $seq } [{ $topic }] sender={ $sender }
 session-register-poll-message-line-consumed =   - plan { $plan } seq { $seq } [{ $topic }] sender={ $sender } (consumed)
 
+# ---------- CLI: session pre-stop ----------
+session-pre-stop-header = Pre-stop report (agent_id={ $agent_id }, force={ $force })
+session-pre-stop-mark-pass = ok
+session-pre-stop-mark-fail = FAIL
+session-pre-stop-mark-todo = todo
+session-pre-stop-check-line =   [{ $mark }] { $id } — { $label }
+session-pre-stop-finding-line =         - { $finding }
+session-pre-stop-todo-line =         scheduled in plan task { $task_id }
+
 # ---------- brand (CLI: about) ----------
 # Brand marks (claim/subline/product name) are NOT translated — they
 # are trade dress and live in `convergio-brand`. These keys are the
@@ -338,6 +347,19 @@ coherence-plan-execution-summary = Plan { $plan }… — { $closed } closed task
 coherence-plan-execution-plan-checks = Plan-level: registry={ $registry }  bus={ $bus }
 coherence-plan-execution-task-ok = OK   { $id }… { $title }
 coherence-plan-execution-task-fail = FAIL { $id }… { $title } — missing: { $missing }
+
+# ---------- CLI: coherence close-post-hoc (ADR-0026, retro H5) ----------
+coherence-close-post-hoc-header = cvg coherence close-post-hoc — { $total } closure(s) since { $since }
+coherence-close-post-hoc-clean = no close-post-hoc rows in the window — clean.
+coherence-close-post-hoc-by-agent = by agent:
+coherence-close-post-hoc-by-plan = by plan:
+coherence-close-post-hoc-rows = rows:
+coherence-close-post-hoc-row-reason = reason: { $reason }
+
+# ---------- CLI: coherence fleet (issue #177) ----------
+coherence-fleet-header = cvg coherence fleet — { $repos } repo(s) in { $path }
+coherence-fleet-clean = no findings — clean.
+coherence-fleet-findings = { $count } finding(s):
 
 # ---------- CLI: bus tail / list (P1.2) ----------
 bus-tail-following = Following bus on plan { $plan } (Ctrl-C to exit)

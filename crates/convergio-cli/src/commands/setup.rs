@@ -28,11 +28,7 @@ pub enum SetupCommand {
     },
     /// Bootstrap the operator's fleet: detect ~/GitHub/convergio*
     /// repos, register them, run fleet build (P0-2).
-    Fleet {
-        /// Re-register repos even if already in the fleet.
-        #[arg(long)]
-        force: bool,
-    },
+    Fleet,
     /// Verify install correctness (ADR-0044): daemon up, version match,
     /// MCP registered, fleet bootstrapped, embed non-empty, loops running,
     /// registry active. Exits non-zero on any FAIL check.
@@ -91,7 +87,7 @@ pub async fn run(
     match command {
         SetupCommand::Init { force } => init(bundle, force),
         SetupCommand::Agent { host, force } => agent(bundle, host, force),
-        SetupCommand::Fleet { force } => super::setup_fleet::run(client, output, force).await,
+        SetupCommand::Fleet => super::setup_fleet::run(client, output).await,
         SetupCommand::SelfCheck => super::setup_self_check::run(client, bundle, output).await,
     }
 }
