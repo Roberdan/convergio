@@ -243,4 +243,40 @@ mod tests {
         let err = parse_response(raw).unwrap_err();
         assert!(matches!(err, PlannerError::OpusOutputInvalid(_)));
     }
+
+    // Regression: brace counter must respect JSON strings.
+    // A `}` inside a quoted title used to terminate the object
+    // early, truncating the payload and failing schema parse.
+    #[test]
+    fn parse_response_tolerates_braces_inside_strings() {
+        let raw = r#"
+        {
+          "title": "Refactor closing brace } in code samples",
+          "description": "Map `match x { _ => () }` arms (unbalanced { only here)",
+          "tasks": [
+            {
+              "wave": 1,
+              "sequence": 1,
+              "title": "Document the `}` rendering",
+              "evidence_required": ["cargo test passes"]
+            }
+          ]
+        }"#;
+        let shape = parse_response(raw).expect("braces-in-strings JSON must parse");
+        assert_eq!(shape.title, "Refactor closing brace } in code samples");
+        assert_eq!(shape.tasks.len(), 1);
+        assert_eq!(shape.tasks[0].title, "Document the `}` rendering");
+    }
+
+    // Regression: trailing prose after the JSON object must not
+    // confuse the parser (this already worked before, kept here
+    // to lock the new serde-based extractor's behavior).
+    #[test]
+    fn parse_response_tolerates_trailing_prose() {
+        let raw = r#"{"title":"x","tasks":[{"wave":1,"sequence":1,"title":"t","evidence_required":[]}]}
+
+Let me know if you want to iterate."#;
+        let shape = parse_response(raw).expect("trailing prose must be ignored");
+        assert_eq!(shape.title, "x");
+    }
 }
