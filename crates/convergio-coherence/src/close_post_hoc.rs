@@ -95,27 +95,33 @@ async fn build_report(daemon: &str, since: &str, cutoff: DateTime<Utc>) -> Resul
     Ok(report)
 }
 
-fn render_human(report: &Report, _bundle: &Bundle) {
+fn render_human(report: &Report, bundle: &Bundle) {
     println!(
-        "cvg coherence close-post-hoc — {} closure(s) since {}",
-        report.total, report.since
+        "{}",
+        bundle.t(
+            "coherence-close-post-hoc-header",
+            &[
+                ("total", &report.total.to_string()),
+                ("since", &report.since),
+            ]
+        )
     );
     if report.rows.is_empty() {
-        println!("  no close-post-hoc rows in the window — clean.");
+        println!("  {}", bundle.t("coherence-close-post-hoc-clean", &[]));
         return;
     }
     println!();
-    println!("  by agent:");
+    println!("  {}", bundle.t("coherence-close-post-hoc-by-agent", &[]));
     for (a, c) in &report.by_agent {
-        println!("    {:<32} {}", a, c);
+        println!("    {a:<32} {c}");
     }
     println!();
-    println!("  by plan:");
+    println!("  {}", bundle.t("coherence-close-post-hoc-by-plan", &[]));
     for (p, c) in &report.by_plan {
         println!("    {:<40} {}", &p[..p.len().min(38)], c);
     }
     println!();
-    println!("  rows:");
+    println!("  {}", bundle.t("coherence-close-post-hoc-rows", &[]));
     for r in &report.rows {
         println!(
             "    {} {} {} ({})",
@@ -125,7 +131,13 @@ fn render_human(report: &Report, _bundle: &Bundle) {
             r.agent_id
         );
         if !r.reason.is_empty() {
-            println!("      reason: {}", r.reason);
+            println!(
+                "      {}",
+                bundle.t(
+                    "coherence-close-post-hoc-row-reason",
+                    &[("reason", &r.reason)]
+                )
+            );
         }
     }
 }

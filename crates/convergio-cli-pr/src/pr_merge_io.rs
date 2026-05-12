@@ -1,5 +1,9 @@
 //! `cvg pr merge` — gh / git I/O helpers. Pure shelling-out; no
-//! daemon HTTP. AUTO-block auto-resolve lives in `pr_merge_resolve`.
+//! daemon HTTP. AUTO-block auto-resolve is future work: when it
+//! lands it will live in a sibling `pr_merge_resolve` module (see
+//! the "in-process auto-resolve is a follow-up" comment in
+//! `pr_merge.rs::run`). Until then `cvg pr merge` aborts with an
+//! actionable hint on AUTO-block conflicts.
 
 use anyhow::{Context, Result};
 use serde_json::Value;
