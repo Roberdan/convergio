@@ -4,8 +4,10 @@
 //!
 //! Convergio is intentionally local-first: one daemon, one user, one
 //! SQLite database file. Higher layers (`convergio-durability`,
-//! `convergio-bus`, `convergio-lifecycle`) depend on this crate, never
-//! on `sqlx` directly.
+//! `convergio-bus`, `convergio-lifecycle`) depend on this crate for
+//! connection ownership via [`Pool`]; they still use `sqlx` directly
+//! for query execution and for running their own per-crate migrations
+//! (see ADR-0003 for the migration-version partitioning).
 //!
 //! ## Database URL
 //!
