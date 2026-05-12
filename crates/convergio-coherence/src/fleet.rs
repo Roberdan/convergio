@@ -138,16 +138,28 @@ fn check_repo(repo: &RepoEntry, names: &BTreeSet<String>) -> Vec<Row> {
     rows
 }
 
-fn render_human(report: &Report, _bundle: &Bundle) {
+fn render_human(report: &Report, bundle: &Bundle) {
     println!(
-        "cvg coherence fleet — {} repo(s) in {}",
-        report.repos, report.fleet_toml
+        "{}",
+        bundle.t(
+            "coherence-fleet-header",
+            &[
+                ("repos", &report.repos.to_string()),
+                ("path", &report.fleet_toml),
+            ]
+        )
     );
     if report.rows.is_empty() {
-        println!("  no findings — clean.");
+        println!("  {}", bundle.t("coherence-fleet-clean", &[]));
         return;
     }
-    println!("  {} finding(s):", report.rows.len());
+    println!(
+        "  {}",
+        bundle.t(
+            "coherence-fleet-findings",
+            &[("count", &report.rows.len().to_string())]
+        )
+    );
     for r in &report.rows {
         let label = if r.repo.is_empty() {
             "<fleet>".to_string()

@@ -338,6 +338,19 @@ coherence-plan-execution-plan-checks = Livello piano: registry={ $registry }  bu
 coherence-plan-execution-task-ok = OK   { $id }… { $title }
 coherence-plan-execution-task-fail = ERRORE { $id }… { $title } — mancanti: { $missing }
 
+# ---------- CLI: coherence close-post-hoc (ADR-0026, retro H5) ----------
+coherence-close-post-hoc-header = cvg coherence close-post-hoc — { $total } chiusura/e dal { $since }
+coherence-close-post-hoc-clean = nessuna riga close-post-hoc nella finestra — pulito.
+coherence-close-post-hoc-by-agent = per agente:
+coherence-close-post-hoc-by-plan = per piano:
+coherence-close-post-hoc-rows = righe:
+coherence-close-post-hoc-row-reason = motivo: { $reason }
+
+# ---------- CLI: coherence fleet (issue #177) ----------
+coherence-fleet-header = cvg coherence fleet — { $repos } repo in { $path }
+coherence-fleet-clean = nessun rilievo — pulito.
+coherence-fleet-findings = { $count } rilievo/i:
+
 # ---------- CLI: bus tail / list (P1.2) ----------
 bus-tail-following = In ascolto sul bus del piano { $plan } (Ctrl-C per uscire)
 bus-tail-disconnect = stream del bus disconnesso, riconnessione in corso...
