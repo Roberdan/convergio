@@ -9,14 +9,17 @@
 //! local types defined below.
 
 pub mod pr;
+pub mod pr_analyse;
 pub mod pr_diff;
 pub mod pr_link;
 pub mod pr_merge;
 pub mod pr_merge_io;
+pub mod pr_merge_render;
 pub mod pr_parse;
 pub mod pr_render;
 pub mod pr_sync;
 pub mod pr_sync_parse;
+pub mod pr_sync_render;
 pub mod pr_who;
 
 pub use pr::{run, PrCommand};

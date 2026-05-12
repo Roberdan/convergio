@@ -240,6 +240,7 @@ pr-stack-header = { $count ->
 }
 pr-stack-no-manifest = no Files-touched manifest
 pr-stack-manifest-mismatch = manifest does not match diff
+pr-stack-manifest-unverified = manifest unverified (gh diff fetch failed)
 pr-stack-files-summary = { $count ->
     [one] one file
    *[other] { $count } files

@@ -240,6 +240,7 @@ pr-stack-header = { $count ->
 }
 pr-stack-no-manifest = manifest Files-touched assente
 pr-stack-manifest-mismatch = il manifest non corrisponde al diff
+pr-stack-manifest-unverified = manifest non verificato (recupero diff gh fallito)
 pr-stack-files-summary = { $count ->
     [one] un file
    *[other] { $count } file

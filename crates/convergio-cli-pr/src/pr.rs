@@ -12,10 +12,9 @@
 //! Renderers live in the sibling [`super::pr_render`] module to keep
 //! both files under the 300-line cap.
 
-use super::pr_diff::{compare_manifest, fetch_pr_files};
+use super::pr_analyse::analyse_pr_with_diff;
 use super::pr_link::LinkArgs;
 use super::pr_merge::MergeArgs;
-use super::pr_parse::parse_manifest;
 use super::pr_render;
 use super::pr_who::WhoArgs;
 use super::{Client, OutputMode};
@@ -84,10 +83,7 @@ pub async fn run(
 
 async fn stack(bundle: &Bundle, output: OutputMode) -> Result<()> {
     let prs = fetch_prs().context("`gh pr list` — is gh installed and authenticated?")?;
-    let analysed: Vec<AnalysedPr> = prs
-        .iter()
-        .map(|v| analyse_pr_with_diff(v).unwrap_or_else(|_| analyse_pr(v)))
-        .collect();
+    let analysed: Vec<AnalysedPr> = prs.iter().map(analyse_pr_with_diff).collect();
     let order = suggest_merge_order(&analysed);
     pr_render::render(bundle, output, &analysed, &order)
 }
@@ -102,6 +98,12 @@ pub(crate) enum ManifestStatus {
     Missing,
     /// Manifest disagrees with the diff (extra or missing entries).
     Mismatch,
+    /// Diff fetch failed (typically `gh pr view --json files` errored
+    /// out) so we fell back to manifest-only analysis without being
+    /// able to verify it. Surfaced so operators see the degraded
+    /// state instead of silently trusting the manifest.
+    #[allow(dead_code)] // wired up in the follow-up fix commit
+    Unverified,
 }
 
 /// One PR after parsing its body for the Files-touched manifest.
@@ -113,6 +115,10 @@ pub(crate) struct AnalysedPr {
     pub depends_on: BTreeSet<i64>,
     pub manifest_status: ManifestStatus,
 }
+
+// Analysis helpers (`analyse_pr_with_diff`, `combine_manifest_and_diff`)
+// live in the sibling `pr_analyse` module to keep this file under the
+// 300-line cap (CONSTITUTION § Agent context budget).
 
 fn fetch_prs() -> Result<Vec<Value>> {
     let out = Command::new("gh")
@@ -136,52 +142,9 @@ fn fetch_prs() -> Result<Vec<Value>> {
     Ok(arr)
 }
 
-/// Best-effort: pull the real diff for one PR and cross-check.
-/// Falls back to manifest-only via [`analyse_pr`] on any gh failure.
-fn analyse_pr_with_diff(value: &Value) -> Result<AnalysedPr> {
-    let number = value.get("number").and_then(Value::as_i64).unwrap_or(0);
-    let title = value
-        .get("title")
-        .and_then(Value::as_str)
-        .unwrap_or("")
-        .to_string();
-    let body = value.get("body").and_then(Value::as_str).unwrap_or("");
-    let manifest = parse_manifest(body);
-    let diff_files = fetch_pr_files(number)?;
-    let manifest_status = compare_manifest(&manifest, &diff_files);
-    Ok(AnalysedPr {
-        number,
-        title,
-        // Trust the diff when it disagrees with the manifest — the
-        // diff is ground truth, the manifest is human-authored.
-        files: diff_files,
-        depends_on: manifest.depends_on,
-        manifest_status,
-    })
-}
-
-fn analyse_pr(value: &Value) -> AnalysedPr {
-    let number = value.get("number").and_then(Value::as_i64).unwrap_or(0);
-    let title = value
-        .get("title")
-        .and_then(Value::as_str)
-        .unwrap_or("")
-        .to_string();
-    let body = value.get("body").and_then(Value::as_str).unwrap_or("");
-    let manifest = parse_manifest(body);
-    let manifest_status = if manifest.files.is_empty() {
-        ManifestStatus::Missing
-    } else {
-        ManifestStatus::Match
-    };
-    AnalysedPr {
-        number,
-        title,
-        files: manifest.files,
-        depends_on: manifest.depends_on,
-        manifest_status,
-    }
-}
+// Analysis helpers live in the sibling `pr_analyse` module to keep
+// this file under the 300-line cap (CONSTITUTION § Agent context
+// budget).
 
 /// Compute the file overlap between every pair, then a topological
 /// merge order: bottom-up by `Depends on` edges, with overlap-pairs
@@ -250,4 +213,7 @@ mod tests {
         let pos2 = order.iter().position(|&n| n == 2).unwrap();
         assert!(pos1 < pos2, "PR 1 must merge before PR 2 (its dependent)");
     }
+
+    // Combiner tests for the LOW pr.rs:87 finding live in
+    // `pr_analyse::tests` since the helper now lives there.
 }
