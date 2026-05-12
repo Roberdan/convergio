@@ -105,6 +105,33 @@ async fn spawn_runner(
         }
         .into());
     }
+    // Audit 2026-05-12 W1-C: when the request carries a task_id, claim
+    // it BEFORE registering the agent or spawning the process. If the
+    // task is no longer `pending`, we surface a 409 conflict — earlier
+    // the route spawned first and transitioned after, so a transition
+    // failure left an orphaned OS process attached to a task someone
+    // else already owned.
+    let task = match &request.task_id {
+        Some(task_id) => {
+            let claimed = state
+                .durability
+                .try_claim_pending(task_id, &request.agent_id)
+                .await?;
+            match claimed {
+                Some(t) => Some(t),
+                None => {
+                    return Err(ApiError::BadRequest {
+                        code: "claim_conflict",
+                        message: format!(
+                            "task {task_id} is not in `pending` — another runner may already \
+                             have claimed it, or the operator transitioned it elsewhere"
+                        ),
+                    });
+                }
+            }
+        }
+        None => None,
+    };
     let agent = state
         .durability
         .register_agent(NewAgent {
@@ -124,7 +151,7 @@ async fn spawn_runner(
     if let Some(task_id) = &request.task_id {
         env.push(("CONVERGIO_TASK_ID".into(), task_id.clone()));
     }
-    let process = state
+    let spawn_result = state
         .supervisor
         .spawn(SpawnSpec {
             kind: request.kind,
@@ -136,15 +163,25 @@ async fn spawn_runner(
             cwd: None,
             stdin_payload: None,
         })
-        .await?;
-    let task = match request.task_id {
-        Some(task_id) => Some(
-            state
-                .durability
-                .transition_task(&task_id, TaskStatus::InProgress, Some(&request.agent_id))
-                .await?,
-        ),
-        None => None,
+        .await;
+    let process = match spawn_result {
+        Ok(p) => p,
+        Err(err) => {
+            // Spawn failed AFTER the atomic claim. Compensate by
+            // transitioning the claimed task to `failed` so it no
+            // longer occupies the in-progress slot — operator can
+            // `cvg task retry` to re-queue. Best-effort: if the
+            // compensation itself fails we still surface the original
+            // spawn error.
+            if let Some(task_id) = &request.task_id {
+                state
+                    .durability
+                    .transition_task(task_id, TaskStatus::Failed, Some(&request.agent_id))
+                    .await
+                    .ok();
+            }
+            return Err(err.into());
+        }
     };
     Ok(Json(SpawnRunnerResponse {
         agent,
