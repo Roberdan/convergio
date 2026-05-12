@@ -34,6 +34,10 @@ pub struct Snapshot {
     /// Daemon version from `/v1/health`, compared with binary's
     /// `CARGO_PKG_VERSION` to surface drift in the header.
     pub daemon_version: Option<String>,
+    /// `true` when at least one non-fatal sub-fetch failed (e.g. a
+    /// per-plan task list returned 5xx) while the top-level plan
+    /// list still came through. Drives the degraded footer pill.
+    pub partial: bool,
 }
 
 /// Read-only HTTP client. Cloneable.
@@ -131,6 +135,7 @@ impl Client {
             messages,
             audit_ok,
             daemon_version,
+            partial: false,
         })
     }
 
