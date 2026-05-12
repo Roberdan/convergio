@@ -19,8 +19,8 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-executor` stats:** 8 `*.rs` files / 23 public items / 977 lines (under `src/`).
+**`convergio-executor` stats:** 8 `*.rs` files / 23 public items / 984 lines (under `src/`).
 
 Files approaching the 300-line cap:
-- `src/executor.rs` (298 lines)
+- `src/executor.rs` (300 lines)
 <!-- END AUTO -->
