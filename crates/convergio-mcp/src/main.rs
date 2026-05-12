@@ -2,6 +2,8 @@
 
 mod actions;
 #[cfg(test)]
+mod actions_refusal_tests;
+#[cfg(test)]
 mod actions_tests;
 mod bridge;
 mod bus_actions;
