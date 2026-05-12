@@ -71,3 +71,63 @@ fn parse_ts(s: &str) -> Option<DateTime<Utc>> {
 fn parse_ts_opt(s: Option<&str>) -> Option<DateTime<Utc>> {
     s.and_then(parse_ts)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Regression guard for the crates/convergio-cli audit
+    /// follow-up (T828d03c): the wire decoder used to silently
+    /// coerce an unknown status string to `TaskStatus::Pending`,
+    /// which would mask a wire-incompatible daemon as "the task is
+    /// fine, it just hasn't started". Decoding must instead fail
+    /// loudly so the operator sees the mismatch.
+    #[test]
+    fn task_wire_rejects_unknown_status() {
+        let raw = serde_json::json!({
+            "id": "task-123",
+            "plan_id": "plan-456",
+            "wave": 1,
+            "sequence": 1,
+            "title": "t",
+            "description": null,
+            "status": "imaginary-status",
+            "agent_id": null,
+            "evidence_required": [],
+            "last_heartbeat_at": null,
+            "created_at": "2026-05-12T00:00:00Z",
+            "updated_at": "2026-05-12T00:00:00Z",
+        });
+        let wire: TaskWire = serde_json::from_value(raw).expect("decode wire shape");
+        let result = wire.try_into_task();
+        let err = result.expect_err("unknown status must fail, not coerce to pending");
+        let msg = format!("{err:#}");
+        assert!(
+            msg.contains("imaginary-status"),
+            "error must mention the offending status, got: {msg}"
+        );
+    }
+
+    /// Known statuses keep round-tripping cleanly so we do not lose
+    /// the normal happy path while tightening the unknown-status arm.
+    #[test]
+    fn task_wire_decodes_known_status() {
+        let raw = serde_json::json!({
+            "id": "task-123",
+            "plan_id": "plan-456",
+            "wave": 0,
+            "sequence": 0,
+            "title": "t",
+            "description": null,
+            "status": "in_progress",
+            "agent_id": null,
+            "evidence_required": [],
+            "last_heartbeat_at": null,
+            "created_at": "2026-05-12T00:00:00Z",
+            "updated_at": "2026-05-12T00:00:00Z",
+        });
+        let wire: TaskWire = serde_json::from_value(raw).expect("decode wire shape");
+        let task = wire.try_into_task().expect("known status decodes");
+        assert!(matches!(task.status, TaskStatus::InProgress));
+    }
+}
