@@ -122,6 +122,7 @@ plan-run-task-submitted = [{ $wave }.{ $seq }] { $title } → submitted ✓
 plan-run-halted = Halted at task [{ $wave }.{ $seq }] { $title }: { $error }
 plan-run-complete = Plan #{ $number } complete: { $count } tasks submitted.
 plan-run-resume-hint = Resume with: cvg plan run { $number }
+plan-run-bus-warning = ⚠️  [{ $wave }.{ $seq }] { $title }: plan bus publish failed (non-fatal): { $error }
 
 # ---------- CLI: plan triage ----------
 plan-triage-empty = No stale tasks found (pending/failed, not touched in { $days } days).

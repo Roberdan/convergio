@@ -66,8 +66,24 @@ pub async fn run(
             let SubmitOutcome {
                 task,
                 transition,
-                bus_warning: _,
+                bus_warning,
             } = outcome;
+            if let Some(err) = bus_warning {
+                // P5: localized, non-fatal warning so swallowed publish
+                // failures are at least observable to the operator.
+                eprintln!(
+                    "{}",
+                    bundle.t(
+                        "plan-run-bus-warning",
+                        &[
+                            ("wave", &task.wave.to_string()),
+                            ("seq", &task.sequence.to_string()),
+                            ("title", &task.title),
+                            ("error", &err.to_string()),
+                        ]
+                    )
+                );
+            }
             if let Err(err) = transition {
                 halt(bundle, output, &task, &err, plan_number);
                 return Err(err);

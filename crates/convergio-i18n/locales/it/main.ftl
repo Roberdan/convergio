@@ -122,6 +122,7 @@ plan-run-task-submitted = [{ $wave }.{ $seq }] { $title } → submitted ✓
 plan-run-halted = Interrotto al task [{ $wave }.{ $seq }] { $title }: { $error }
 plan-run-complete = Piano #{ $number } completato: { $count } task sottomessi.
 plan-run-resume-hint = Riprendi con: cvg plan run { $number }
+plan-run-bus-warning = ⚠️  [{ $wave }.{ $seq }] { $title }: pubblicazione sul bus del piano fallita (non bloccante): { $error }
 
 # ---------- CLI: triage piano ----------
 plan-triage-empty = Nessun task obsoleto (pending/failed, non aggiornato da { $days } giorni).

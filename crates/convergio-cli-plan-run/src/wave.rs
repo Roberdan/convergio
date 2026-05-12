@@ -22,9 +22,6 @@ pub(crate) struct TaskMeta {
 pub(crate) struct SubmitOutcome {
     pub task: TaskMeta,
     pub transition: Result<()>,
-    // Wired into the user-facing warning path in the follow-up
-    // `fix` commit; read in tests via destructuring.
-    #[allow(dead_code)]
     pub bus_warning: Option<anyhow::Error>,
 }
 
@@ -65,11 +62,17 @@ where
         }
     }
     let mut results = Vec::new();
+    let mut failed = false;
     while let Some(outcome) = in_flight.next().await {
-        let halt = outcome.transition.is_err();
+        if outcome.transition.is_err() {
+            failed = true;
+        }
         results.push(outcome);
-        if halt {
-            break;
+        if failed {
+            // Stop scheduling new submissions, but drain the futures
+            // already in flight so already-claimed tasks are not
+            // stranded in `in_progress` on the daemon.
+            continue;
         }
         if let Some(next) = iter.next() {
             in_flight.push(submit_fn(next));
@@ -156,8 +159,8 @@ where
     if let Err(e) = submit_fn().await {
         return (Err(e), None);
     }
-    let _ = publish_fn().await;
-    (Ok(()), None)
+    let bus_warning = publish_fn().await.err();
+    (Ok(()), bus_warning)
 }
 
 pub(crate) fn transition_body(agent_id: Option<&str>, target: &str) -> Value {
