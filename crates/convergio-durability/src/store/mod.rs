@@ -25,6 +25,7 @@ mod workspace_merge;
 mod workspace_merge_rows;
 mod workspace_patch;
 mod workspace_rows;
+mod worktree;
 
 pub use agent_summary::{
     AgentAuditEntry, AgentLease, AgentPrLink, AgentSummary, ClaimedTask, ClaimedTasks,
@@ -46,3 +47,4 @@ pub use workspace_merge::{MergeOutcome, MergeQueueItem};
 pub use workspace_patch::{
     NewPatchProposal, PatchFile, PatchProposal, WorkspaceConflict, WorkspaceConflictRef,
 };
+pub use worktree::{WorktreeHolder, WorktreeStore};
