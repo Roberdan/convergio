@@ -14,24 +14,56 @@ use std::path::Path;
 /// File-extension filter (lowercase, without the leading dot).
 pub type ExtensionFilter<'a> = &'a [&'a str];
 
+/// Tally of paths the corpus walk had to skip, returned by
+/// [`collect_files_report`] so orchestrators can surface coverage
+/// loss instead of silently shrinking the corpus.
+///
+/// Convergio's zero-tolerance rule (CONSTITUTION § Sacred principles)
+/// forbids dropping filesystem errors on the floor. The `walk_errors`
+/// and `unreadable` counters exist so a caller — or a future audit
+/// gate — can refuse the run when the loss is too high.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct CorpusReport {
+    /// Errors raised by `walkdir` while iterating the tree
+    /// (broken symlinks, `EACCES` on a directory, etc.).
+    pub walk_errors: usize,
+    /// Files whose extension matched but whose contents could not be
+    /// decoded as UTF-8 or could not be read (`EACCES`, etc.).
+    pub unreadable: usize,
+    /// Files whose first `max_lines` were empty after trim, so they
+    /// were dropped before embedding.
+    pub skipped_empty: usize,
+    /// Number of [`IngestNode`]s the walk produced.
+    pub collected: usize,
+}
+
 /// Collect [`IngestNode`]s from a directory tree.
 ///
-/// Files whose content trims to empty are dropped (not embedded).
-/// Symlinks and unreadable files are skipped silently — corpus build
-/// is best-effort, the orchestrator uses [`IngestReport`] to surface
-/// counts.
-///
-/// `node_id` is the repo-relative path with forward-slash separators,
-/// stable across operating systems.
-///
-/// [`IngestReport`]: crate::IngestReport
+/// Convenience wrapper around [`collect_files_report`] for callers
+/// that do not need the per-skip counters. Equivalent to
+/// `collect_files_report(...).0`.
 pub fn collect_files(
     repo: &str,
     root: &Path,
     include_extensions: ExtensionFilter<'_>,
     max_lines: usize,
 ) -> Vec<IngestNode> {
+    collect_files_report(repo, root, include_extensions, max_lines).0
+}
+
+/// Collect [`IngestNode`]s from a directory tree and report skips.
+///
+/// Stub returns the collected list with a zeroed [`CorpusReport`];
+/// counters are wired up in the follow-up commit. Behaviour for the
+/// node list is identical to [`collect_files`].
+pub fn collect_files_report(
+    repo: &str,
+    root: &Path,
+    include_extensions: ExtensionFilter<'_>,
+    max_lines: usize,
+) -> (Vec<IngestNode>, CorpusReport) {
     let mut out = Vec::new();
+    let report = CorpusReport::default();
     for entry in walkdir::WalkDir::new(root)
         .follow_links(false)
         .into_iter()
@@ -60,7 +92,7 @@ pub fn collect_files(
             source: truncated,
         });
     }
-    out
+    (out, report)
 }
 
 fn has_allowed_extension(path: &Path, allow: ExtensionFilter<'_>) -> bool {
@@ -167,5 +199,80 @@ mod tests {
                 n.node_id
             );
         }
+    }
+
+    /// Regression: filesystem traversal must not silently swallow
+    /// errors. `collect_files_report` should surface walk failures
+    /// and unreadable-file counts, otherwise corpus coverage can
+    /// shrink without signal (audit finding LOW · corpus.rs:38/46).
+    #[test]
+    fn report_surfaces_unreadable_and_empty_skips() {
+        let dir = tempdir().expect("tempdir");
+        // A normal source file — embedded.
+        fs::write(dir.path().join("good.rs"), "fn answer() -> u8 { 42 }\n").expect("write good.rs");
+        // A file with the right extension but invalid UTF-8 —
+        // `std::fs::read_to_string` will refuse it. Today this is
+        // dropped on the floor; the report must count it.
+        fs::write(dir.path().join("bad.rs"), [0xFFu8, 0xFE, 0xFD, 0xFC]).expect("write bad.rs");
+        // A whitespace-only matching file — currently dropped after
+        // trim. The report must count it as `skipped_empty`.
+        fs::write(dir.path().join("empty.rs"), "   \n\n").expect("write empty.rs");
+
+        let (nodes, report) = collect_files_report("convergio", dir.path(), SOURCE_EXTENSIONS, 200);
+        assert_eq!(nodes.len(), 1, "only good.rs survives");
+        assert_eq!(report.collected, 1);
+        assert_eq!(
+            report.unreadable, 1,
+            "bad.rs is invalid UTF-8 and must be counted as unreadable, not silently dropped"
+        );
+        assert_eq!(
+            report.skipped_empty, 1,
+            "empty.rs must be counted as skipped_empty"
+        );
+    }
+
+    /// Regression: when `walkdir` itself errors on an entry (e.g.
+    /// dangling symlink), the count must be visible in the report
+    /// (audit finding LOW · corpus.rs:38).
+    #[cfg(unix)]
+    #[test]
+    fn report_surfaces_walk_errors_for_dangling_symlinks() {
+        use std::os::unix::fs::symlink;
+        let dir = tempdir().expect("tempdir");
+        // Real file so the walk has something to count as collected.
+        fs::write(dir.path().join("real.rs"), "fn ok() {}\n").expect("write real.rs");
+        // Dangling symlink in a subdir we cannot traverse into:
+        // a symlink whose target does not exist makes `walkdir`
+        // raise an error for the entry itself when `follow_links`
+        // is false only if we try to descend; instead create a
+        // subdirectory we make unreadable so `walkdir` yields an
+        // error iterating it.
+        let locked = dir.path().join("locked");
+        fs::create_dir(&locked).expect("mkdir locked");
+        fs::write(locked.join("hidden.rs"), "fn h() {}\n").expect("write hidden.rs");
+        // Strip read+exec from the directory so walkdir cannot list it.
+        let mut perm = fs::metadata(&locked).expect("meta").permissions();
+        std::os::unix::fs::PermissionsExt::set_mode(&mut perm, 0o000);
+        fs::set_permissions(&locked, perm).expect("chmod 000");
+        // Also point a symlink at a missing target — handled by walkdir.
+        symlink(
+            dir.path().join("does-not-exist.rs"),
+            dir.path().join("link.rs"),
+        )
+        .expect("symlink");
+
+        let (_nodes, report) =
+            collect_files_report("convergio", dir.path(), SOURCE_EXTENSIONS, 200);
+
+        // Restore perms so tempdir cleanup works regardless of assertions.
+        let mut perm = fs::metadata(&locked).expect("meta").permissions();
+        std::os::unix::fs::PermissionsExt::set_mode(&mut perm, 0o755);
+        let _ = fs::set_permissions(&locked, perm);
+
+        assert!(
+            report.walk_errors >= 1,
+            "expected at least one walk error from the locked subdir, got {}",
+            report.walk_errors
+        );
     }
 }

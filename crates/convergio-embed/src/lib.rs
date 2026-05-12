@@ -75,7 +75,9 @@ pub mod store;
 pub mod fastembed_impl;
 
 /// Re-export: filesystem corpus collector + defaults.
-pub use corpus::{collect_files, DEFAULT_MAX_LINES, SOURCE_EXTENSIONS};
+pub use corpus::{
+    collect_files, collect_files_report, CorpusReport, DEFAULT_MAX_LINES, SOURCE_EXTENSIONS,
+};
 /// Re-export: embedder trait + embedder-level errors.
 pub use embedder::{Embedder, EmbedderError};
 /// Re-export: crate error types.
