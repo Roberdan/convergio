@@ -50,10 +50,17 @@ pub async fn run(client: &Client, agent_id: Option<String>, status: String) -> R
         eprintln!("convergio: heartbeating {id} every ~5 min");
     }
     let body = json!({"status": status});
-    let _ = client
+    let post_ok = client
         .post::<_, serde_json::Value>(&format!("/v1/agent-registry/agents/{id}/heartbeat"), &body)
-        .await;
-    let _ = write_timestamp(&path, now);
+        .await
+        .is_ok();
+    // Only refresh the throttle when the POST actually succeeded;
+    // otherwise repeated failures would stay hidden for one full
+    // `HEARTBEAT_INTERVAL`. The outward error is still swallowed so
+    // a transient daemon glitch never blocks the calling tool.
+    if post_ok {
+        let _ = write_timestamp(&path, now);
+    }
     Ok(())
 }
 
@@ -171,6 +178,7 @@ mod tests {
     /// for one full [`HEARTBEAT_INTERVAL`]. See the
     /// `convergio-cli-session` audit follow-up (2026-05-12).
     #[tokio::test(flavor = "current_thread")]
+    #[allow(clippy::await_holding_lock)] // serializing $HOME across one cheap await is intentional
     async fn failed_post_does_not_persist_throttle_timestamp() {
         let _g = ENV_LOCK.lock().unwrap();
         let dir = tempdir().unwrap();
