@@ -39,6 +39,8 @@ pub(crate) mod check;
 pub mod close_post_hoc;
 mod close_post_hoc_scan;
 pub mod fleet;
+#[cfg(test)]
+mod fleet_tests;
 pub mod handshake;
 mod handshake_http;
 mod handshake_render;
@@ -53,6 +55,8 @@ mod plan_execution_tests;
 mod routes;
 mod routes_diff;
 mod routes_parse;
+#[cfg(test)]
+mod routes_parse_tests;
 
 pub use coherence::{run, CoherenceCommand};
 

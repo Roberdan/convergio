@@ -1,13 +1,17 @@
-//! Reproduction tests for [`crate::plan_execution`] daemon-side
-//! behaviors that the inline `mod tests` cannot easily host (they
-//! need a tokio runtime + an in-process axum mock). Keeping these
-//! beside the module so the audit-finding traces stay close to the
-//! verifier code (CONSTITUTION § 5, P5).
+//! Unit tests for [`crate::plan_execution`].
+//!
+//! Split out of `plan_execution.rs` to honour the 300-line per-file
+//! cap (CONSTITUTION § 13). Pure helpers (`infer_type`,
+//! `required_kinds`) are exercised inline. `build_report` is tested
+//! against a tiny in-process axum mock so the error-propagation
+//! behavior covered by audit finding `plan_execution_scan.rs:79`
+//! stays green.
 
 #![cfg(test)]
 
-use crate::plan_execution::build_report;
+use crate::plan_execution::{build_report, infer_type, required_kinds, TaskType};
 use axum::{routing::get, Json, Router};
+use std::collections::HashSet;
 use tokio::net::TcpListener;
 
 async fn spawn(router: Router) -> String {
@@ -17,6 +21,47 @@ async fn spawn(router: Router) -> String {
         axum::serve(listener, router).await.unwrap();
     });
     format!("http://{addr}")
+}
+
+#[test]
+fn infer_type_code_from_code_evidence() {
+    let mut kinds = HashSet::new();
+    kinds.insert("code".to_string());
+    kinds.insert("context_pack".to_string());
+    assert_eq!(infer_type(&kinds), TaskType::Code);
+}
+
+#[test]
+fn infer_type_code_from_merge_record() {
+    let mut kinds = HashSet::new();
+    kinds.insert("merge_record".to_string());
+    assert_eq!(infer_type(&kinds), TaskType::Code);
+}
+
+#[test]
+fn infer_type_doc_only() {
+    let mut kinds = HashSet::new();
+    kinds.insert("adr".to_string());
+    assert_eq!(infer_type(&kinds), TaskType::DocOnly);
+}
+
+#[test]
+fn infer_type_analysis_when_empty() {
+    let kinds = HashSet::new();
+    assert_eq!(infer_type(&kinds), TaskType::Analysis);
+}
+
+#[test]
+fn code_task_requires_graph_and_ci() {
+    let required = required_kinds(&TaskType::Code);
+    assert!(required.contains(&"context_pack"));
+    assert!(required.contains(&"ci_run"));
+    assert!(required.contains(&"merge_record"));
+}
+
+#[test]
+fn analysis_has_no_requirements() {
+    assert!(required_kinds(&TaskType::Analysis).is_empty());
 }
 
 // Regression test for audit finding `plan_execution_scan.rs:79`:
