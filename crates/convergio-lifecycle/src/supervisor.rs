@@ -126,10 +126,22 @@ impl Supervisor {
         }
 
         // Vendor-CLI runners read the prompt off stdin, then close.
+        // If the write fails (e.g. the child exited before draining
+        // the pipe, EPIPE) we MUST treat that as a spawn failure:
+        // silently dropping it would leave the runner without its
+        // prompt while the API reports success.
         if let Some(payload) = spec.stdin_payload.as_deref() {
             if let Some(mut stdin) = child.stdin.take() {
                 use tokio::io::AsyncWriteExt;
-                let _ = stdin.write_all(payload.as_bytes()).await;
+                if let Err(e) = stdin.write_all(payload.as_bytes()).await {
+                    drop(stdin);
+                    self.kill_unrecorded_child(&mut child).await;
+                    self.record_spawn_failed(&id).await;
+                    return Err(LifecycleError::SpawnFailed(format!(
+                        "{}: stdin write failed: {e}",
+                        spec.command
+                    )));
+                }
                 drop(stdin);
             }
         }
