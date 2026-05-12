@@ -57,64 +57,51 @@ impl Bundle {
     /// if the message is missing — never panics, never returns an
     /// `Err` (i18n failures should not break the CLI).
     pub fn t(&self, key: &str, args: &[(&str, &str)]) -> String {
-        let Some(msg) = self.inner.get_message(key) else {
-            tracing::warn!(key, "i18n: missing message");
-            return key.to_string();
-        };
-        let Some(pattern) = msg.value() else {
-            return key.to_string();
-        };
-
         let mut fluent_args = FluentArgs::new();
         for (k, v) in args {
             fluent_args.set(*k, FluentValue::from(*v));
         }
-
-        let mut errors = vec![];
-        let formatted = self
-            .inner
-            .format_pattern(pattern, Some(&fluent_args), &mut errors);
-        if !errors.is_empty() {
-            tracing::warn!(?errors, key, "i18n: format errors");
-        }
-        formatted.into_owned()
+        self.format(key, fluent_args)
     }
 
     /// `t` with a single number placeholder, used for plural-aware
     /// messages like `plan-list-header`.
     pub fn t_n(&self, key: &str, count: i64) -> String {
-        let Some(msg) = self.inner.get_message(key) else {
-            return key.to_string();
-        };
-        let Some(pattern) = msg.value() else {
-            return key.to_string();
-        };
         let mut args = FluentArgs::new();
         args.set("count", FluentValue::from(count));
-        let mut errors = vec![];
-        self.inner
-            .format_pattern(pattern, Some(&args), &mut errors)
-            .into_owned()
+        self.format(key, args)
     }
 
     /// `t_n` plus additional string placeholders — for plural-aware
     /// messages that also need extra variables (e.g. `plan-triage-header`).
     pub fn t_n_with(&self, key: &str, count: i64, extra: &[(&str, &str)]) -> String {
-        let Some(msg) = self.inner.get_message(key) else {
-            return key.to_string();
-        };
-        let Some(pattern) = msg.value() else {
-            return key.to_string();
-        };
         let mut args = FluentArgs::new();
         args.set("count", FluentValue::from(count));
         for (k, v) in extra {
             args.set(*k, FluentValue::from(*v));
         }
+        self.format(key, args)
+    }
+
+    /// Shared formatter for `t`, `t_n`, and `t_n_with`. Centralizes
+    /// missing-message and Fluent-format-error diagnostics so plural
+    /// helpers stay observable on par with `t` (P1 constitution
+    /// compliance).
+    fn format(&self, key: &str, args: FluentArgs<'_>) -> String {
+        let Some(msg) = self.inner.get_message(key) else {
+            tracing::warn!(key, "i18n: missing message");
+            return key.to_string();
+        };
+        let Some(pattern) = msg.value() else {
+            tracing::warn!(key, "i18n: message has no value");
+            return key.to_string();
+        };
         let mut errors = vec![];
-        self.inner
-            .format_pattern(pattern, Some(&args), &mut errors)
-            .into_owned()
+        let formatted = self.inner.format_pattern(pattern, Some(&args), &mut errors);
+        if !errors.is_empty() {
+            tracing::warn!(?errors, key, "i18n: format errors");
+        }
+        formatted.into_owned()
     }
 }
 
