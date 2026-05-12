@@ -1,12 +1,17 @@
 //! `cvg session pre-stop` — end-of-session safety net.
 //!
-//! Stub scaffold for PRD-001 § Artefact 4. The full body is split
-//! across the W0b.2 plan as six independent checks. This module owns
-//! only the dispatch surface: a `Check` registry, a `PreStopReport`
-//! shape, and a runner that walks the registry and prints a
-//! per-check verdict. The checks themselves return
-//! [`CheckOutcome::NotImplemented`] until their dedicated tasks
-//! land.
+//! Hosts the dispatch surface for PRD-001 § Artefact 4: a [`Check`]
+//! registry, a [`PreStopReport`] shape, and a runner that walks the
+//! registry and prints a per-check verdict. The registry currently
+//! mixes three implemented checks (`check.plan_pr_drift`,
+//! `check.worktree.no_pr`, `check.friction.missing` — all
+//! conservative, shell-first, sub-second) with three HTTP-shaped
+//! [`CheckOutcome::NotImplemented`] stubs (`check.bus.inbound`,
+//! `check.bus.outbound`, `check.handshake.uncommitted`). Each stub
+//! is *advisory only*: [`CheckOutcome::blocks`] returns `false` for
+//! it, so it cannot wedge a detach — it merely points operators at
+//! the plan task that will promote it once the [`Check`] trait
+//! widens to async.
 //!
 //! Keeping every check behind the same trait + registry means each
 //! follow-up PR adds one file under `checks/` and registers
@@ -109,9 +114,10 @@ pub struct CheckResult {
 /// `check_1_plan_pr_drift`, `worktree_no_pr` and `friction_missing`
 /// are real (shell + curl, sub-second). The three remaining
 /// HTTP-shaped checks (`bus.inbound`, `bus.outbound`,
-/// `handshake.uncommitted`) stay as `NotImplemented` stubs —
-/// promoting each needs its own per-check PR (W0b.2 follow-ups).
-/// Their plan task ids point at the follow-ups.
+/// `handshake.uncommitted`) ship as advisory `NotImplemented`
+/// stubs — they never block detach (see [`CheckOutcome::blocks`])
+/// and point the operator at the per-check task that will promote
+/// each one once [`Check`] widens to async.
 pub fn registry() -> Vec<Box<dyn Check>> {
     vec![
         Box::new(crate::checks::check_1_plan_pr_drift::PlanPrDriftCheck),
