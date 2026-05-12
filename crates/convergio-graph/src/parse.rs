@@ -6,6 +6,7 @@
 
 use crate::error::{GraphError, Result};
 use crate::model::{Edge, EdgeKind, Node, NodeKind};
+use crate::parse_use::{flatten_use, path_to_string};
 use std::path::Path;
 use syn::visit::Visit;
 
@@ -186,54 +187,6 @@ impl<'ast> Visit<'ast> for ItemVisitor {
     }
 }
 
-fn path_to_string(p: &syn::Path) -> String {
-    p.segments
-        .iter()
-        .map(|s| s.ident.to_string())
-        .collect::<Vec<_>>()
-        .join("::")
-}
-
-fn flatten_use(tree: &syn::UseTree, prefix: String) -> Vec<String> {
-    use syn::UseTree;
-    match tree {
-        UseTree::Path(p) => {
-            let next = if prefix.is_empty() {
-                p.ident.to_string()
-            } else {
-                format!("{prefix}::{}", p.ident)
-            };
-            flatten_use(&p.tree, next)
-        }
-        UseTree::Name(n) => {
-            if prefix.is_empty() {
-                vec![n.ident.to_string()]
-            } else {
-                vec![format!("{prefix}::{}", n.ident)]
-            }
-        }
-        UseTree::Rename(r) => {
-            if prefix.is_empty() {
-                vec![r.ident.to_string()]
-            } else {
-                vec![format!("{prefix}::{}", r.ident)]
-            }
-        }
-        UseTree::Glob(_) => {
-            if prefix.is_empty() {
-                vec!["*".to_string()]
-            } else {
-                vec![format!("{prefix}::*")]
-            }
-        }
-        UseTree::Group(g) => g
-            .items
-            .iter()
-            .flat_map(|t| flatten_use(t, prefix.clone()))
-            .collect(),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -272,13 +225,5 @@ mod tests {
             .collect();
         assert!(uses.len() >= 4); // HashMap + B + x + y
         assert!(uses.iter().any(|e| e.kind == EdgeKind::ReExports));
-    }
-
-    #[test]
-    fn flatten_use_handles_groups() {
-        let parsed: syn::ItemUse = syn::parse_str("use a::b::{c, d::e};").unwrap();
-        let paths = flatten_use(&parsed.tree, String::new());
-        assert!(paths.contains(&"a::b::c".to_string()));
-        assert!(paths.contains(&"a::b::d::e".to_string()));
     }
 }
