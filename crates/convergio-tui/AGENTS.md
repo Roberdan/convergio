@@ -19,10 +19,15 @@ bridge, or another agent-facing surface.
   commands belong in `cvg` subcommands, not in the dashboard.
   (Future: a vim-mode interactive evolution may add `:validate
   <plan>` / `:claim <task>`; that lives in a follow-up ADR.)
-- **No business logic.** Everything rendered must be a 1:1 view of
-  what the daemon returns. No client-side merging, no derived
-  validation, no summary statistics that the daemon does not already
-  expose. If a number is needed, expose it server-side first.
+- **No business logic, modulo presentation-only aggregation.**
+  Everything rendered must be a 1:1 view of what the daemon returns.
+  Strict client-side merging, derived validation, or domain logic is
+  forbidden — if a number changes the state of the world it must come
+  from the daemon. Presentation-only roll-ups (e.g. status-bucket
+  counts in [`plan_counts`] used purely to draw a progress bar) are
+  permitted: they have no observable effect outside the renderer and
+  the daemon would have to invent the same shape anyway. When in
+  doubt, expose it server-side first.
 - **No `convergio-cli`/`convergio-server`/SQLite imports.** The
   client is a small reqwest wrapper. Dashboard code must compile
   in isolation against the HTTP contract documented in
@@ -52,11 +57,11 @@ bridge, or another agent-facing surface.
 
 | File | Owns |
 |------|------|
-| `src/lib.rs` | `pub fn run(daemon_url, tick_secs)` — entry point. Sets up the terminal, runs the event loop, restores the terminal on exit. |
+| `src/lib.rs` | `pub fn run(daemon_url, tick_secs, github_slug)` — entry point. Sets up the terminal, owns the `tokio::time::interval` refresh loop, dispatches keystrokes, restores the terminal on exit. |
 | `src/state.rs` | `AppState` aggregating `Plans`, `Tasks`, `Agents`, `Prs`, plus selected pane / row offsets. |
 | `src/client.rs` | `reqwest`-based fetcher: `GET /v1/plans`, `GET /v1/agents`, `GET /v1/audit/verify`, `gh pr list` shell-out. Read-only. |
-| `src/tick.rs` | `tokio::time::interval` refresh loop with a graceful debounce. |
-| `src/keymap.rs` | Keybinding dispatcher: `q` quit, `r` refresh-now, `Tab` change pane, `j/k` move row. |
+| `src/tick.rs` | Pure tick-bound helpers (interval clamp, refresh formatting). The interval itself lives in `lib.rs` so the supervisor and the event loop see the same clock. |
+| `src/keymap.rs` | Keybinding dispatcher: `q` quit, `r` refresh-now, `Tab` change pane, `j/k` move row, `Enter` drill, `Esc` back. |
 | `src/render.rs` | Top-level layout (multi-pane split + footer + header). Each pane delegates to `panes::*`. |
 | `src/panes/plans.rs` | Plans pane: title, progress bar, breakdown counts, current selection highlight. |
 | `src/panes/tasks.rs` | Tasks pane: task history with status, timing, and agent owner. |
@@ -75,8 +80,10 @@ assertions. No tokio runtime is needed for renderer tests; an
 E2E tests against a live daemon belong under
 `crates/convergio-server/tests/` (cross-crate convention) when the
 TUI gains action surfaces; today the TUI is read-only and the
-`reqwest` client is exercised by integration smoke in
-`tests/client.rs`.
+`reqwest` client is exercised by the in-crate integration tests
+under `crates/convergio-tui/tests/` (`bus_stream.rs`,
+`snapshot_failures.rs`, `detail_render.rs`, `detail_scroll.rs`,
+`footer_render.rs`, `plan_sort.rs`).
 
 ## Where to put new behaviour
 
