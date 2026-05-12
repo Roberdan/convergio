@@ -12,11 +12,17 @@
 //!
 //! | Module | Responsibility |
 //! |--------|----------------|
+//! | [`corpus`]   | Walk a directory tree into [`IngestNode`]s + [`CorpusReport`] |
 //! | [`embedder`] | [`Embedder`] trait + deterministic test embedder |
-//! | [`source`]   | Build canonical embeddable text + SHA-256 hash |
-//! | [`select`]   | [`EmbedPolicy`] decides which targets get embedded |
-//! | [`store`]    | SQLite persistence + brute-force cosine KNN |
+//! | [`error`]    | Crate error types ([`EmbedError`], [`Result`]) |
+//! | [`hybrid`]   | RRF + linear-blend fusion over structural ⊕ semantic |
+//! | [`ingest`]   | Embed a batch of [`IngestNode`]s into the store |
 //! | [`migrate`]  | Migration runner (range 700-799, ADR-0003) |
+//! | [`query`]    | [`semantic_search`] helper over [`EmbedStore`] |
+//! | [`select`]   | [`EmbedPolicy`] decides which targets get embedded |
+//! | [`source`]   | Build canonical embeddable text + SHA-256 hash |
+//! | [`store`]    | SQLite persistence + brute-force cosine KNN |
+//! | [`fastembed_impl`] | Feature-gated real ONNX embedders (requires `fastembed`) |
 //!
 //! ## Quickstart (deterministic, model-free)
 //!

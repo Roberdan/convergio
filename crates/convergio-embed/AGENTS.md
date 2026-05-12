@@ -38,12 +38,18 @@ real `fastembed-rs`-backed embedders that download into
 
 | File | Owns |
 |------|------|
-| `embedder.rs` | [`Embedder`] trait + `testing::DeterministicTestEmbedder` |
-| `source.rs`   | [`SourceText`] — canonical text + SHA-256 hash |
-| `select.rs`   | [`EmbedPolicy`] — which targets get embedded |
-| `store.rs`    | [`EmbedStore`] — persistence + brute-force cosine KNN |
-| `migrate.rs`  | Migration runner (range 700-799, ADR-0003) |
-| `error.rs`    | [`EmbedError`] |
+| `codec.rs`          | Internal `Vec<f32>` ⇄ blob round-trip (little-endian) |
+| `corpus.rs`         | [`collect_files`] / [`collect_files_report`] — filesystem walk → [`IngestNode`] inputs (+ skip counters) |
+| `embedder.rs`       | [`Embedder`] trait + `testing::DeterministicTestEmbedder` |
+| `error.rs`          | [`EmbedError`] |
+| `fastembed_impl.rs` | Feature-gated `fastembed-rs` embedders (`MultilingualE5Embedder`, `BgeM3Embedder`) |
+| `hybrid.rs`         | RRF + linear-blend fusion for structural ⊕ semantic retrieval |
+| `ingest.rs`         | Batch embed pipeline: [`ingest`] / [`ingest_one`] + [`IngestReport`] |
+| `migrate.rs`        | Migration runner (range 700-799, ADR-0003) |
+| `query.rs`          | [`semantic_search`] — semantic-only KNN over the store |
+| `select.rs`         | [`EmbedPolicy`] — which targets get embedded |
+| `source.rs`         | [`SourceText`] — canonical text + SHA-256 hash |
+| `store.rs`          | [`EmbedStore`] — persistence + brute-force cosine KNN |
 
 ## Tests
 
