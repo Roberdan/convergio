@@ -22,7 +22,8 @@ pub fn wordmark(theme: Theme) -> String {
 
 /// Render the full lockup: hexagonal "C" mark, wordmark, claim,
 /// subline. Suitable as the body of `cvg about` or the daemon boot
-/// banner. Lines are ASCII-only when [`Theme::Mono`].
+/// banner. Plain text (no escapes) when [`Theme::Mono`];
+/// bold-white-on-black when [`Theme::HighContrast`].
 pub fn lockup(theme: Theme) -> String {
     let mark = hexagonal_c(theme);
     let wm = wordmark(theme);
@@ -41,6 +42,8 @@ pub fn lockup(theme: Theme) -> String {
 fn format_claim(theme: Theme) -> String {
     if theme.allows_color() {
         gradient::brand(CLAIM, theme)
+    } else if !theme.style_prefix().is_empty() {
+        format!("{}{}{}", theme.style_prefix(), CLAIM, theme.style_suffix())
     } else {
         CLAIM.to_string()
     }
@@ -52,6 +55,13 @@ fn format_subline(theme: Theme) -> String {
     // skimmable.
     if theme.allows_color() {
         format!("\x1b[2m{SUBLINE}\x1b[0m")
+    } else if !theme.style_prefix().is_empty() {
+        format!(
+            "{}{}{}",
+            theme.style_prefix(),
+            SUBLINE,
+            theme.style_suffix()
+        )
     } else {
         SUBLINE.to_string()
     }
@@ -59,7 +69,10 @@ fn format_subline(theme: Theme) -> String {
 
 /// Six-line hexagonal "C" mark. Sized to sit comfortably above the
 /// wordmark on a 24-row terminal. The hex is drawn with box-drawing
-/// glyphs and tinted with the brand gradient when colour is on.
+/// glyphs; it is tinted with the brand gradient under
+/// [`Theme::Color`], wrapped in bold-white-on-black under
+/// [`Theme::HighContrast`], and emitted as plain text under
+/// [`Theme::Mono`].
 fn hexagonal_c(theme: Theme) -> String {
     const ROWS: [&str; 6] = [
         "        ▄▄████████▄▄",
@@ -70,7 +83,11 @@ fn hexagonal_c(theme: Theme) -> String {
         "        ▀▀████████▀▀",
     ];
     if !theme.allows_color() {
-        return ROWS.join("\n");
+        let plain = ROWS.join("\n");
+        if theme.style_prefix().is_empty() {
+            return plain;
+        }
+        return format!("{}{}{}", theme.style_prefix(), plain, theme.style_suffix());
     }
     ROWS.iter()
         .enumerate()

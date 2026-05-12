@@ -19,11 +19,17 @@ pub fn fg_escape(rgb: Rgb) -> String {
 }
 
 /// Render `text` with a left-to-right gradient between `start` and
-/// `end`. When `theme` does not allow colour, returns `text`
-/// unchanged so non-TTY consumers see plain ASCII.
+/// `end`. [`Theme::Color`] emits the truecolor gradient,
+/// [`Theme::HighContrast`] wraps `text` in the documented
+/// bold-white-on-black branch (no gradient), and [`Theme::Mono`]
+/// returns `text` unchanged.
 pub fn render(text: &str, start: Rgb, end: Rgb, theme: Theme) -> String {
     if !theme.allows_color() {
-        return text.to_string();
+        let prefix = theme.style_prefix();
+        if prefix.is_empty() {
+            return text.to_string();
+        }
+        return format!("{}{}{}", prefix, text, theme.style_suffix());
     }
     let chars: Vec<char> = text.chars().collect();
     let len = chars.len();
@@ -73,7 +79,7 @@ mod tests {
         assert!(s.ends_with(RESET));
         // Bold attribute (SGR 1) is the documented branch.
         assert!(
-            s.contains("1m") || s.contains(";1m"),
+            s.contains("\x1b[1;") || s.contains("\x1b[1m"),
             "expected bold SGR, got {s:?}"
         );
         // No truecolor escape — high contrast is not the gradient.
