@@ -15,10 +15,11 @@
 //!   per-plan mechanism compliance score (ADR-0044).
 //!
 //! Extracted from `convergio-cli` per ADR-0040 to honour the
-//! 11k-line per-crate hard cap (CONSTITUTION § 13). The verifiers
+//! 11k-line per-crate hard cap (CONSTITUTION § 13). Most verifiers
 //! are pure (no daemon dependency), so they remain agent-callable
-//! from any CLI, skill, or runner. Exception: `PlanExecution` and
-//! `Handshake` require a running daemon.
+//! from any CLI, skill, or runner. Exceptions: `Agents`,
+//! `ClosePostHoc`, `Handshake`, and `PlanExecution` require a
+//! running daemon.
 
 pub mod coherence;
 
@@ -38,6 +39,8 @@ pub(crate) mod check;
 pub mod close_post_hoc;
 mod close_post_hoc_scan;
 pub mod fleet;
+#[cfg(test)]
+mod fleet_tests;
 pub mod handshake;
 mod handshake_http;
 mod handshake_render;
@@ -47,9 +50,13 @@ mod handshake_tests;
 mod parse;
 pub mod plan_execution;
 mod plan_execution_scan;
+#[cfg(test)]
+mod plan_execution_tests;
 mod routes;
 mod routes_diff;
 mod routes_parse;
+#[cfg(test)]
+mod routes_parse_tests;
 
 pub use coherence::{run, CoherenceCommand};
 

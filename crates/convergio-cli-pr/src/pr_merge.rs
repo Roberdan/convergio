@@ -1,6 +1,7 @@
 //! `cvg pr merge <pr> [--retire-agent <id>]` — merge orchestrator.
-//! 8-check pre-flight, branch+worktree cleanup, optional sub-agent
-//! retire, `merge_record` evidence per tracked task. On AUTO-block
+//! 4-check pre-flight (mergeable, mergeStateStatus, reviewDecision,
+//! CI rollup), branch+worktree cleanup, optional sub-agent retire,
+//! `merge_record` evidence per tracked task. On AUTO-block
 //! conflict it aborts with an actionable hint; the in-process
 //! auto-resolve is a follow-up (gated on E2E mock infra to avoid the
 //! P4 "scaffolding only" trap). Audit footprint until P2-2 ships
@@ -9,10 +10,12 @@
 use super::pr_merge_io::{
     delete_local_branch, fetch_pr_view, gh_merge, is_auto_block_conflict, remove_worktree, PrView,
 };
+use super::pr_merge_render::render_report;
 use super::pr_sync_parse::parse_tracks_lines;
 use super::{Client, OutputMode};
 use anyhow::{Context, Result};
 use clap::Args;
+use convergio_i18n::Bundle;
 use serde::Serialize;
 use serde_json::{json, Value};
 use std::path::Path;
@@ -28,7 +31,7 @@ pub struct MergeArgs {
     /// Skip the worktree + branch cleanup phase.
     #[arg(long)]
     pub no_cleanup: bool,
-    /// Print the 8-check + plan and exit. Mutates nothing.
+    /// Print the 4-check + plan and exit. Mutates nothing.
     #[arg(long)]
     pub dry_run: bool,
     /// Agent id recorded on the merge_record evidence row.
@@ -37,29 +40,57 @@ pub struct MergeArgs {
 }
 
 #[derive(Debug, Default, Serialize)]
-struct MergeReport {
-    pr: u64,
-    head_ref: String,
-    eight_check: Vec<EightCheckEntry>,
-    merged: bool,
-    auto_conflict_resolved: bool,
-    worktree_removed: Option<String>,
-    local_branch_deleted: bool,
-    remote_branch_deleted: bool,
-    agent_retired: Option<String>,
-    tracked_tasks: Vec<String>,
-    notes: Vec<String>,
+pub(super) struct MergeReport {
+    pub(super) pr: u64,
+    pub(super) head_ref: String,
+    pub(super) eight_check: Vec<EightCheckEntry>,
+    pub(super) merged: bool,
+    pub(super) auto_conflict_resolved: bool,
+    pub(super) worktree_removed: Option<String>,
+    pub(super) local_branch_deleted: bool,
+    pub(super) remote_branch_deleted: bool,
+    pub(super) agent_retired: Option<String>,
+    pub(super) tracked_tasks: Vec<String>,
+    /// Per-task evidence-write failures recorded after a successful
+    /// `gh pr merge`. Populated when the daemon refuses or is
+    /// unreachable. Surfaced in renders and triggers a non-zero
+    /// exit via [`merge_outcome`] so missing audit metadata cannot
+    /// be silently swallowed.
+    pub(super) failed_evidence: Vec<String>,
+    pub(super) notes: Vec<String>,
+}
+
+/// Inspect the report after the merge orchestration loop and
+/// decide whether the command should exit zero. Partial-failure
+/// (merge succeeded, evidence writes did not) bubbles up as an
+/// `Err` so the operator notices the missing audit metadata.
+/// Audit finding MEDIUM pr_merge.rs:122.
+fn merge_outcome(report: &MergeReport) -> Result<()> {
+    if report.failed_evidence.is_empty() {
+        return Ok(());
+    }
+    anyhow::bail!(
+        "merge succeeded but {} merge_record evidence write(s) failed: \
+         re-run with --dry-run or attach evidence manually before claiming \
+         this PR is done — missing audit metadata is not acceptable",
+        report.failed_evidence.len()
+    )
 }
 
 #[derive(Debug, Clone, Serialize)]
-struct EightCheckEntry {
-    name: String,
-    ok: bool,
+pub(super) struct EightCheckEntry {
+    pub(super) name: String,
+    pub(super) ok: bool,
 }
 
-/// Run `cvg pr merge`: 8-check, merge via `gh`, cleanup, optional
+/// Run `cvg pr merge`: 4-check, merge via `gh`, cleanup, optional
 /// retire, and `merge_record` evidence per tracked task.
-pub async fn run(client: &Client, output: OutputMode, args: MergeArgs) -> Result<()> {
+pub async fn run(
+    client: &Client,
+    bundle: &Bundle,
+    output: OutputMode,
+    args: MergeArgs,
+) -> Result<()> {
     let mut report = MergeReport {
         pr: args.pr,
         ..MergeReport::default()
@@ -71,9 +102,9 @@ pub async fn run(client: &Client, output: OutputMode, args: MergeArgs) -> Result
     let pass_all = report.eight_check.iter().all(|e| e.ok);
 
     if args.dry_run || !pass_all {
-        render_report(&report, output, !pass_all && !args.dry_run)?;
+        render_report(bundle, &report, output, !pass_all && !args.dry_run)?;
         if !pass_all {
-            anyhow::bail!("8-check refused merge — see findings above");
+            anyhow::bail!("4-check refused merge — see findings above");
         }
         return Ok(());
     }
@@ -124,11 +155,14 @@ pub async fn run(client: &Client, output: OutputMode, args: MergeArgs) -> Result
             .await
         {
             Ok(_) => report.tracked_tasks.push(task_id.clone()),
-            Err(e) => report.notes.push(format!("evidence task {task_id}: {e}")),
+            Err(e) => {
+                report.failed_evidence.push(format!("task {task_id}: {e}"));
+            }
         }
     }
 
-    render_report(&report, output, false)
+    render_report(bundle, &report, output, false)?;
+    merge_outcome(&report)
 }
 
 fn eight_check(v: &PrView) -> Vec<EightCheckEntry> {
@@ -170,54 +204,8 @@ fn format_path(p: &Path) -> String {
     p.display().to_string()
 }
 
-fn render_report(report: &MergeReport, output: OutputMode, refused: bool) -> Result<()> {
-    match output {
-        OutputMode::Json => {
-            println!("{}", serde_json::to_string_pretty(report)?);
-        }
-        OutputMode::Plain => {
-            println!(
-                "pr={} merged={} auto_resolved={} worktree={} branch={} agent_retired={} tasks={}",
-                report.pr,
-                report.merged,
-                report.auto_conflict_resolved,
-                report.worktree_removed.is_some(),
-                report.local_branch_deleted,
-                report.agent_retired.as_deref().unwrap_or("-"),
-                report.tracked_tasks.len()
-            );
-        }
-        _ => render_human(report, refused),
-    }
-    Ok(())
-}
-
-fn render_human(r: &MergeReport, refused: bool) {
-    println!("cvg pr merge — PR #{} ({})", r.pr, r.head_ref);
-    for c in &r.eight_check {
-        println!("  [{}] {}", if c.ok { "ok" } else { "x" }, c.name);
-    }
-    if refused {
-        println!("\n  refused: 8-check did not pass.");
-        return;
-    }
-    println!(
-        "\n  merged: {} | auto-resolved: {} | worktree: {} | branch L/R: {}/{} | agent retired: {}",
-        r.merged,
-        r.auto_conflict_resolved,
-        r.worktree_removed.as_deref().unwrap_or("-"),
-        r.local_branch_deleted,
-        r.remote_branch_deleted,
-        r.agent_retired.as_deref().unwrap_or("-")
-    );
-    println!("  tracked tasks updated ({}):", r.tracked_tasks.len());
-    for t in &r.tracked_tasks {
-        println!("    {}", t);
-    }
-    for n in &r.notes {
-        println!("  note: {}", n);
-    }
-}
+// `render_report` / `render_human` live in `pr_merge_render` to
+// keep this file under the 300-line cap.
 
 #[cfg(test)]
 mod tests {
@@ -267,5 +255,37 @@ mod tests {
         assert_eq!(p["auto_conflict_resolved"], true);
         assert_eq!(p["agent_id"], "agent-1");
         assert_eq!(p["tool"], "cvg pr merge");
+    }
+
+    // Audit finding (MEDIUM, pr_merge.rs:122): `merge_record` evidence
+    // failures after a successful merge are only appended to `notes`,
+    // so the command exits successfully with missing audit metadata.
+    // The fix turns `merge_outcome` into a partial-failure gate that
+    // returns Err when any evidence write failed.
+    #[test]
+    fn merge_outcome_fails_when_evidence_writes_failed() {
+        let r = MergeReport {
+            pr: 42,
+            merged: true,
+            failed_evidence: vec!["task-x: HTTP 500".to_string()],
+            ..MergeReport::default()
+        };
+        let outcome = merge_outcome(&r);
+        assert!(
+            outcome.is_err(),
+            "merge_outcome must bail when failed_evidence is non-empty so missing \
+             audit metadata cannot silently fall on the floor; got Ok"
+        );
+    }
+
+    #[test]
+    fn merge_outcome_passes_when_no_evidence_failures() {
+        let r = MergeReport {
+            pr: 7,
+            merged: true,
+            tracked_tasks: vec!["task-a".into()],
+            ..MergeReport::default()
+        };
+        assert!(merge_outcome(&r).is_ok());
     }
 }

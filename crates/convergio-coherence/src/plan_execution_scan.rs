@@ -64,21 +64,32 @@ pub(crate) async fn fetch_tasks(
         .context("decode tasks")
 }
 
-/// Fetch evidence for a task. Returns empty vec on any error (advisory).
+/// Fetch evidence for a task. Surfaces transport and decode failures
+/// to the caller so plan-execution reports can distinguish "no
+/// evidence attached" from "daemon round-trip failed" (CONSTITUTION
+/// § Zero tolerance).
 pub(crate) async fn fetch_evidence(
     client: &reqwest::Client,
     daemon: &str,
     task_id: &str,
-) -> Vec<EvidenceItem> {
+) -> Result<Vec<EvidenceItem>> {
     let url = format!(
         "{}/v1/tasks/{}/evidence",
         daemon.trim_end_matches('/'),
         task_id
     );
-    match client.get(&url).send().await {
-        Ok(r) if r.status().is_success() => r.json().await.unwrap_or_default(),
-        _ => vec![],
+    let resp = client
+        .get(&url)
+        .send()
+        .await
+        .with_context(|| format!("fetch evidence for {task_id}"))?;
+    let status = resp.status();
+    if !status.is_success() {
+        anyhow::bail!("fetch evidence for {task_id}: HTTP {status}");
     }
+    resp.json()
+        .await
+        .with_context(|| format!("decode evidence for {task_id}"))
 }
 
 /// Fetch registry agents. Returns empty vec on any error (advisory).
@@ -90,9 +101,14 @@ pub(crate) async fn fetch_agents(client: &reqwest::Client, daemon: &str) -> Vec<
     }
 }
 
-/// Fetch the latest bus messages for a plan. Returns empty vec on any error.
+/// Fetch the latest bus messages for a plan. Returns empty vec on any
+/// transport or non-success status (advisory: the verifier only uses
+/// this to decide `bus_ok`).
 ///
-/// The endpoint returns NDJSON (one JSON object per line), not a JSON array.
+/// The endpoint returns a JSON array of [`convergio_bus::Message`] —
+/// **not** NDJSON. Decoding as line-delimited JSON was the bug behind
+/// audit finding `plan_execution_scan.rs:108` (bus_ok permanently
+/// false).
 pub(crate) async fn fetch_bus_messages(
     client: &reqwest::Client,
     daemon: &str,
@@ -104,13 +120,55 @@ pub(crate) async fn fetch_bus_messages(
         plan_id
     );
     match client.get(&url).send().await {
-        Ok(r) if r.status().is_success() => {
-            let text = r.text().await.unwrap_or_default();
-            text.lines()
-                .filter(|l| !l.is_empty())
-                .filter_map(|l| serde_json::from_str(l).ok())
-                .collect()
-        }
+        Ok(r) if r.status().is_success() => r.json::<Vec<BusMessage>>().await.unwrap_or_default(),
         _ => vec![],
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::{routing::get, Json, Router};
+    use tokio::net::TcpListener;
+
+    async fn spawn(router: Router) -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            axum::serve(listener, router).await.unwrap();
+        });
+        format!("http://{addr}")
+    }
+
+    // Regression test for audit finding `plan_execution_scan.rs:108`:
+    // `GET /v1/plans/:plan_id/messages` returns a JSON array, not NDJSON,
+    // so per-line parsing always yields an empty vec and `bus_ok` is
+    // permanently false. With the fix this returns one decoded message.
+    #[tokio::test]
+    async fn fetch_bus_messages_decodes_json_array() {
+        let router = Router::new().route(
+            "/v1/plans/:plan_id/messages",
+            get(|| async {
+                Json(serde_json::json!([
+                    {
+                        "id": "msg-1",
+                        "seq": 1,
+                        "plan_id": "plan-1",
+                        "topic": "task.done",
+                        "sender": "agent-a",
+                        "payload": {},
+                        "consumed_at": null,
+                        "consumed_by": null,
+                        "created_at": "2026-01-01T00:00:00Z"
+                    }
+                ]))
+            }),
+        );
+        let base = spawn(router).await;
+        let client = reqwest::Client::new();
+        let msgs = fetch_bus_messages(&client, &base, "plan-1").await;
+        assert_eq!(msgs.len(), 1, "expected 1 message decoded from JSON array");
+        assert_eq!(msgs[0].sender, "agent-a");
+        assert_eq!(msgs[0].topic, "task.done");
     }
 }

@@ -12,10 +12,9 @@
 //! Renderers live in the sibling [`super::pr_render`] module to keep
 //! both files under the 300-line cap.
 
-use super::pr_diff::{compare_manifest, fetch_pr_files};
+use super::pr_analyse::analyse_pr_with_diff;
 use super::pr_link::LinkArgs;
 use super::pr_merge::MergeArgs;
-use super::pr_parse::parse_manifest;
 use super::pr_render;
 use super::pr_who::WhoArgs;
 use super::{Client, OutputMode};
@@ -46,13 +45,15 @@ pub enum PrCommand {
         #[arg(long, env = "CONVERGIO_AGENT_ID")]
         agent_id: Option<String>,
     },
-    /// Merge a PR with 8-check pre-flight, branch + worktree
-    /// cleanup, optional sub-agent retire, and a transactional
-    /// `merge_record` evidence row on every task tracked by the PR
-    /// body. On AUTO-block conflict the wrapper aborts with an
-    /// actionable hint (in-process auto-resolve is a follow-up).
-    /// Subsumes A2/B1/B5/C5/C6/F3 from the 2026-05-04 retrospective.
-    /// See `~/Desktop/convergio-retrospective-2026-05-04.md` §2 P0-1.
+    /// Merge a PR with a 4-check pre-flight (mergeable,
+    /// mergeStateStatus, reviewDecision, CI rollup), branch +
+    /// worktree cleanup, optional sub-agent retire, and a
+    /// transactional `merge_record` evidence row on every task
+    /// tracked by the PR body. On AUTO-block conflict the wrapper
+    /// aborts with an actionable hint (in-process auto-resolve is a
+    /// follow-up). Subsumes A2/B1/B5/C5/C6/F3 from the 2026-05-04
+    /// retrospective. See `~/Desktop/convergio-retrospective-2026-05-04.md`
+    /// §2 P0-1.
     Merge(MergeArgs),
     /// Register a PR↔plan mapping in the daemon so the system knows
     /// which agent opened a given PR. Call this immediately after
@@ -72,20 +73,17 @@ pub async fn run(
     match cmd {
         PrCommand::Stack => stack(bundle, output).await,
         PrCommand::Sync { plan, agent_id } => {
-            super::pr_sync::run(client, plan, agent_id, output).await
+            super::pr_sync::run(client, bundle, plan, agent_id, output).await
         }
-        PrCommand::Merge(args) => super::pr_merge::run(client, output, args).await,
-        PrCommand::Link(args) => super::pr_link::run(client, output, args).await,
-        PrCommand::Who(args) => super::pr_who::run(client, output, args).await,
+        PrCommand::Merge(args) => super::pr_merge::run(client, bundle, output, args).await,
+        PrCommand::Link(args) => super::pr_link::run(client, bundle, output, args).await,
+        PrCommand::Who(args) => super::pr_who::run(client, bundle, output, args).await,
     }
 }
 
 async fn stack(bundle: &Bundle, output: OutputMode) -> Result<()> {
     let prs = fetch_prs().context("`gh pr list` — is gh installed and authenticated?")?;
-    let analysed: Vec<AnalysedPr> = prs
-        .iter()
-        .map(|v| analyse_pr_with_diff(v).unwrap_or_else(|_| analyse_pr(v)))
-        .collect();
+    let analysed: Vec<AnalysedPr> = prs.iter().map(analyse_pr_with_diff).collect();
     let order = suggest_merge_order(&analysed);
     pr_render::render(bundle, output, &analysed, &order)
 }
@@ -100,6 +98,11 @@ pub(crate) enum ManifestStatus {
     Missing,
     /// Manifest disagrees with the diff (extra or missing entries).
     Mismatch,
+    /// Diff fetch failed (typically `gh pr view --json files` errored
+    /// out) so we fell back to manifest-only analysis without being
+    /// able to verify it. Surfaced so operators see the degraded
+    /// state instead of silently trusting the manifest.
+    Unverified,
 }
 
 /// One PR after parsing its body for the Files-touched manifest.
@@ -111,6 +114,10 @@ pub(crate) struct AnalysedPr {
     pub depends_on: BTreeSet<i64>,
     pub manifest_status: ManifestStatus,
 }
+
+// Analysis helpers (`analyse_pr_with_diff`, `combine_manifest_and_diff`)
+// live in the sibling `pr_analyse` module to keep this file under the
+// 300-line cap (CONSTITUTION § Agent context budget).
 
 fn fetch_prs() -> Result<Vec<Value>> {
     let out = Command::new("gh")
@@ -134,52 +141,9 @@ fn fetch_prs() -> Result<Vec<Value>> {
     Ok(arr)
 }
 
-/// Best-effort: pull the real diff for one PR and cross-check.
-/// Falls back to manifest-only via [`analyse_pr`] on any gh failure.
-fn analyse_pr_with_diff(value: &Value) -> Result<AnalysedPr> {
-    let number = value.get("number").and_then(Value::as_i64).unwrap_or(0);
-    let title = value
-        .get("title")
-        .and_then(Value::as_str)
-        .unwrap_or("")
-        .to_string();
-    let body = value.get("body").and_then(Value::as_str).unwrap_or("");
-    let manifest = parse_manifest(body);
-    let diff_files = fetch_pr_files(number)?;
-    let manifest_status = compare_manifest(&manifest, &diff_files);
-    Ok(AnalysedPr {
-        number,
-        title,
-        // Trust the diff when it disagrees with the manifest — the
-        // diff is ground truth, the manifest is human-authored.
-        files: diff_files,
-        depends_on: manifest.depends_on,
-        manifest_status,
-    })
-}
-
-fn analyse_pr(value: &Value) -> AnalysedPr {
-    let number = value.get("number").and_then(Value::as_i64).unwrap_or(0);
-    let title = value
-        .get("title")
-        .and_then(Value::as_str)
-        .unwrap_or("")
-        .to_string();
-    let body = value.get("body").and_then(Value::as_str).unwrap_or("");
-    let manifest = parse_manifest(body);
-    let manifest_status = if manifest.files.is_empty() {
-        ManifestStatus::Missing
-    } else {
-        ManifestStatus::Match
-    };
-    AnalysedPr {
-        number,
-        title,
-        files: manifest.files,
-        depends_on: manifest.depends_on,
-        manifest_status,
-    }
-}
+// Analysis helpers live in the sibling `pr_analyse` module to keep
+// this file under the 300-line cap (CONSTITUTION § Agent context
+// budget).
 
 /// Compute the file overlap between every pair, then a topological
 /// merge order: bottom-up by `Depends on` edges, with overlap-pairs
@@ -248,4 +212,7 @@ mod tests {
         let pos2 = order.iter().position(|&n| n == 2).unwrap();
         assert!(pos1 < pos2, "PR 1 must merge before PR 2 (its dependent)");
     }
+
+    // Combiner tests for the LOW pr.rs:87 finding live in
+    // `pr_analyse::tests` since the helper now lives there.
 }

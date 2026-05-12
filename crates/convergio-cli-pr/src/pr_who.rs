@@ -4,6 +4,7 @@ use super::pr_link::detect_repo_slug_or_unknown;
 use super::{Client, OutputMode};
 use anyhow::{Context, Result};
 use clap::Args;
+use convergio_i18n::Bundle;
 use serde::{Deserialize, Serialize};
 
 /// `cvg pr who` arguments.
@@ -35,7 +36,12 @@ struct PrLinkRow {
 }
 
 /// Run `cvg pr who`.
-pub async fn run(client: &Client, output: OutputMode, args: WhoArgs) -> Result<()> {
+pub async fn run(
+    client: &Client,
+    bundle: &Bundle,
+    output: OutputMode,
+    args: WhoArgs,
+) -> Result<()> {
     let (repo_slug, pr_number) = parse_pr_arg(&args.pr, args.repo.as_deref())?;
 
     let path = format!(
@@ -58,24 +64,35 @@ pub async fn run(client: &Client, output: OutputMode, args: WhoArgs) -> Result<(
             println!("{who}");
         }
         OutputMode::Human => {
+            let pr_s = pr_number.to_string();
             if links.is_empty() {
-                println!("No PR ownership recorded for {repo_slug}#{pr_number}");
+                println!(
+                    "{}",
+                    bundle.t("pr-who-empty", &[("repo", &repo_slug), ("pr", &pr_s)])
+                );
                 return Ok(());
             }
             let top = &links[0];
-            println!(
-                "{}#{pr_number} → agent={} plan={} task={}{}",
-                repo_slug,
-                top.agent_id.as_deref().unwrap_or("unknown"),
-                top.plan_id,
-                top.task_id.as_deref().unwrap_or("-"),
-                top.branch
-                    .as_deref()
-                    .map(|b| format!(" branch={b}"))
-                    .unwrap_or_default(),
+            let agent = top.agent_id.as_deref().unwrap_or("unknown");
+            let plan = top.plan_id.as_str();
+            let task = top.task_id.as_deref().unwrap_or("-");
+            let mut line = bundle.t(
+                "pr-who-ownership",
+                &[
+                    ("repo", &repo_slug),
+                    ("pr", &pr_s),
+                    ("agent", agent),
+                    ("plan", plan),
+                    ("task", task),
+                ],
             );
+            if let Some(branch) = top.branch.as_deref() {
+                line.push_str(&format!(" branch={branch}"));
+            }
+            println!("{line}");
             if links.len() > 1 {
-                println!("(showing {} latest links)", links.len());
+                let count = links.len().to_string();
+                println!("{}", bundle.t("pr-who-more", &[("count", &count)]));
             }
         }
     }

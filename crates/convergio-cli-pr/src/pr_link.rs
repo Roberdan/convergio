@@ -9,6 +9,7 @@
 use super::{Client, OutputMode};
 use anyhow::{Context, Result};
 use clap::Args;
+use convergio_i18n::Bundle;
 use serde_json::{json, Value};
 
 /// `cvg pr link` arguments.
@@ -35,7 +36,12 @@ pub struct LinkArgs {
 }
 
 /// Register a PR↔plan link in the daemon.
-pub async fn run(client: &Client, output: OutputMode, args: LinkArgs) -> Result<()> {
+pub async fn run(
+    client: &Client,
+    bundle: &Bundle,
+    output: OutputMode,
+    args: LinkArgs,
+) -> Result<()> {
     let repo_slug = args.repo.unwrap_or_else(detect_repo_slug_or_unknown);
 
     let body = json!({
@@ -58,10 +64,22 @@ pub async fn run(client: &Client, output: OutputMode, args: LinkArgs) -> Result<
 
     match output {
         OutputMode::Json => println!("{}", serde_json::to_string_pretty(&result)?),
-        _ => println!(
-            "PR #{} linked to plan {} (repo: {})",
-            args.pr_number, args.plan, repo_slug
-        ),
+        OutputMode::Plain => {
+            println!(
+                "pr={} plan={} repo={}",
+                args.pr_number, args.plan, repo_slug
+            )
+        }
+        OutputMode::Human => {
+            let pr = args.pr_number.to_string();
+            println!(
+                "{}",
+                bundle.t(
+                    "pr-link-success",
+                    &[("pr", &pr), ("plan", &args.plan), ("repo", &repo_slug)],
+                )
+            );
+        }
     }
     Ok(())
 }

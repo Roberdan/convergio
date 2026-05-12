@@ -240,6 +240,7 @@ pr-stack-header = { $count ->
 }
 pr-stack-no-manifest = no Files-touched manifest
 pr-stack-manifest-mismatch = manifest does not match diff
+pr-stack-manifest-unverified = manifest unverified (gh diff fetch failed)
 pr-stack-files-summary = { $count ->
     [one] one file
    *[other] { $count } files
@@ -347,6 +348,19 @@ coherence-plan-execution-plan-checks = Plan-level: registry={ $registry }  bus={
 coherence-plan-execution-task-ok = OK   { $id }… { $title }
 coherence-plan-execution-task-fail = FAIL { $id }… { $title } — missing: { $missing }
 
+# ---------- CLI: coherence close-post-hoc (ADR-0026, retro H5) ----------
+coherence-close-post-hoc-header = cvg coherence close-post-hoc — { $total } closure(s) since { $since }
+coherence-close-post-hoc-clean = no close-post-hoc rows in the window — clean.
+coherence-close-post-hoc-by-agent = by agent:
+coherence-close-post-hoc-by-plan = by plan:
+coherence-close-post-hoc-rows = rows:
+coherence-close-post-hoc-row-reason = reason: { $reason }
+
+# ---------- CLI: coherence fleet (issue #177) ----------
+coherence-fleet-header = cvg coherence fleet — { $repos } repo(s) in { $path }
+coherence-fleet-clean = no findings — clean.
+coherence-fleet-findings = { $count } finding(s):
+
 # ---------- CLI: bus tail / list (P1.2) ----------
 bus-tail-following = Following bus on plan { $plan } (Ctrl-C to exit)
 bus-tail-disconnect = bus stream disconnected, reconnecting...
@@ -372,3 +386,20 @@ task-complete-step-evidence-pr = [complete] evidence add pr_link (PR #{ $pr }) �
 task-complete-step-submit = [complete] transition → submitted …
 task-complete-step-thor = [complete] validate plan (Thor) …
 task-complete-thor-failed = Thor validation failed: { $verdict }
+
+# ---------- CLI: cvg pr link / who / merge / sync (P5 i18n follow-up) ----------
+pr-link-success = PR #{ $pr } linked to plan { $plan } (repo: { $repo })
+pr-who-empty = No PR ownership recorded for { $repo }#{ $pr }
+pr-who-ownership = { $repo }#{ $pr } -> agent={ $agent } plan={ $plan } task={ $task }
+pr-who-more = (showing { $count } latest links)
+pr-merge-header = cvg pr merge -- PR #{ $pr } ({ $head })
+pr-merge-refused = refused: 4-check did not pass.
+pr-merge-tracked-header = tracked tasks updated ({ $count }):
+pr-merge-failed-evidence-header = failed evidence writes ({ $count }): merge_record was NOT attached
+pr-merge-note-prefix = note:
+pr-sync-header = cvg pr sync -- scanned { $scanned } merged PRs, { $tracked } (PR, task) pairs found
+pr-sync-transitioned-header = transitioned ({ $count }): pending -> submitted
+pr-sync-transitioned-empty = transitioned (0): no tasks -> submitted
+pr-sync-skipped-header = skipped ({ $count }): already submitted or done
+pr-sync-failed-header = failed ({ $count }): gate refusal or transport error
+pr-sync-link-failures-header = link_failures ({ $count }): /pr-links POST refused
