@@ -51,6 +51,7 @@ fn manifest_status_str(s: ManifestStatus) -> &'static str {
         ManifestStatus::Match => "match",
         ManifestStatus::Missing => "missing",
         ManifestStatus::Mismatch => "mismatch",
+        ManifestStatus::Unverified => "unverified",
     }
 }
 
@@ -113,6 +114,7 @@ fn manifest_label(bundle: &Bundle, p: &AnalysedPr) -> String {
     match p.manifest_status {
         ManifestStatus::Missing => bundle.t("pr-stack-no-manifest", &[]),
         ManifestStatus::Mismatch => bundle.t("pr-stack-manifest-mismatch", &[]),
+        ManifestStatus::Unverified => bundle.t("pr-stack-manifest-unverified", &[]),
         ManifestStatus::Match => {
             let count = p.files.len().to_string();
             bundle.t("pr-stack-files-summary", &[("count", &count)])

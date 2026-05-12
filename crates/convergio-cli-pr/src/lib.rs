@@ -1,22 +1,29 @@
 //! Pull-request lifecycle commands for Convergio: `cvg pr stack`,
-//! `cvg pr sync`, `cvg pr merge`. Extracted from `convergio-cli` to
-//! honour the per-crate hard cap (CONSTITUTION § Agent context
-//! budget); same pattern as ADR-0041 for `cvg session`.
+//! `cvg pr sync`, `cvg pr merge`, `cvg pr link`, `cvg pr who`.
+//! Extracted from `convergio-cli` to honour the per-crate hard cap
+//! (CONSTITUTION § Agent context budget); same pattern as ADR-0041
+//! for `cvg session`.
 //!
 //! The `convergio-cli` binary delegates `cvg pr ...` here through a
 //! thin shim that translates its own `Client` / `OutputMode` to the
 //! local types defined below.
 
 pub mod pr;
+pub mod pr_analyse;
 pub mod pr_diff;
 pub mod pr_link;
 pub mod pr_merge;
 pub mod pr_merge_io;
+pub mod pr_merge_render;
 pub mod pr_parse;
 pub mod pr_render;
 pub mod pr_sync;
 pub mod pr_sync_parse;
+pub mod pr_sync_render;
 pub mod pr_who;
+
+#[cfg(test)]
+mod i18n_tests;
 
 pub use pr::{run, PrCommand};
 

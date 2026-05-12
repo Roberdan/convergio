@@ -240,6 +240,7 @@ pr-stack-header = { $count ->
 }
 pr-stack-no-manifest = manifest Files-touched assente
 pr-stack-manifest-mismatch = il manifest non corrisponde al diff
+pr-stack-manifest-unverified = manifest non verificato (recupero diff gh fallito)
 pr-stack-files-summary = { $count ->
     [one] un file
    *[other] { $count } file
@@ -385,3 +386,20 @@ task-complete-step-evidence-pr = [complete] aggiunta evidenza pr_link (PR #{ $pr
 task-complete-step-submit = [complete] transizione → submitted …
 task-complete-step-thor = [complete] validazione piano (Thor) …
 task-complete-thor-failed = Validazione Thor fallita: { $verdict }
+
+# ---------- CLI: cvg pr link / who / merge / sync (follow-up i18n P5) ----------
+pr-link-success = PR #{ $pr } collegata al piano { $plan } (repo: { $repo })
+pr-who-empty = Nessuna proprieta PR registrata per { $repo }#{ $pr }
+pr-who-ownership = { $repo }#{ $pr } -> agente={ $agent } piano={ $plan } task={ $task }
+pr-who-more = (mostrati gli ultimi { $count } collegamenti)
+pr-merge-header = cvg pr merge -- PR #{ $pr } (ramo { $head })
+pr-merge-refused = rifiutato: il controllo 4-check non e' passato.
+pr-merge-tracked-header = task tracciati aggiornati ({ $count }):
+pr-merge-failed-evidence-header = scritture di evidence fallite ({ $count }): merge_record NON e' stato allegato
+pr-merge-note-prefix = nota:
+pr-sync-header = cvg pr sync -- analizzate { $scanned } PR mergiate, trovate { $tracked } coppie (PR, task)
+pr-sync-transitioned-header = transizionate ({ $count }): pending -> submitted
+pr-sync-transitioned-empty = transizionate (0): nessun task -> submitted
+pr-sync-skipped-header = saltate ({ $count }): gia' submitted o done
+pr-sync-failed-header = fallite ({ $count }): rifiuto del gate o errore di trasporto
+pr-sync-link-failures-header = errori_link ({ $count }): POST /pr-links rifiutato
