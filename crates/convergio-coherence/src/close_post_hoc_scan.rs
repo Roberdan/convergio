@@ -32,10 +32,19 @@ pub(super) async fn scan_audit(
     let mut since_seq: i64 = 0;
     loop {
         let url = format!("{daemon}/v1/audit/events?since={since_seq}&limit={PAGE}");
-        let page: Vec<AuditEvent> = match client.get(&url).send().await {
-            Ok(r) if r.status().is_success() => r.json().await.unwrap_or_default(),
-            _ => return Ok(hits),
-        };
+        let resp = client
+            .get(&url)
+            .send()
+            .await
+            .with_context(|| format!("fetch audit page since={since_seq}"))?;
+        let status = resp.status();
+        if !status.is_success() {
+            anyhow::bail!("fetch audit page since={since_seq}: HTTP {status}");
+        }
+        let page: Vec<AuditEvent> = resp
+            .json()
+            .await
+            .with_context(|| format!("decode audit page since={since_seq}"))?;
         if page.is_empty() {
             break;
         }

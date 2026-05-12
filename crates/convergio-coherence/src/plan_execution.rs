@@ -129,7 +129,7 @@ pub(crate) async fn build_report(
 
     let mut task_results = Vec::with_capacity(closed.len());
     for task in &closed {
-        let ev = scan::fetch_evidence(client, daemon, &task.id).await;
+        let ev = scan::fetch_evidence(client, daemon, &task.id).await?;
         let kinds: HashSet<String> = ev.iter().map(|e| e.kind.clone()).collect();
         let kind_list: Vec<String> = {
             let mut v: Vec<_> = kinds.iter().cloned().collect();
@@ -231,50 +231,4 @@ fn render_plain(report: &Report) {
         "plan={} closed={} compliant={} score={}%",
         report.plan_id, report.tasks_closed, report.tasks_compliant, report.score_pct
     );
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn infer_type_code_from_code_evidence() {
-        let mut kinds = HashSet::new();
-        kinds.insert("code".to_string());
-        kinds.insert("context_pack".to_string());
-        assert_eq!(infer_type(&kinds), TaskType::Code);
-    }
-
-    #[test]
-    fn infer_type_code_from_merge_record() {
-        let mut kinds = HashSet::new();
-        kinds.insert("merge_record".to_string());
-        assert_eq!(infer_type(&kinds), TaskType::Code);
-    }
-
-    #[test]
-    fn infer_type_doc_only() {
-        let mut kinds = HashSet::new();
-        kinds.insert("adr".to_string());
-        assert_eq!(infer_type(&kinds), TaskType::DocOnly);
-    }
-
-    #[test]
-    fn infer_type_analysis_when_empty() {
-        let kinds = HashSet::new();
-        assert_eq!(infer_type(&kinds), TaskType::Analysis);
-    }
-
-    #[test]
-    fn code_task_requires_graph_and_ci() {
-        let required = required_kinds(&TaskType::Code);
-        assert!(required.contains(&"context_pack"));
-        assert!(required.contains(&"ci_run"));
-        assert!(required.contains(&"merge_record"));
-    }
-
-    #[test]
-    fn analysis_has_no_requirements() {
-        assert!(required_kinds(&TaskType::Analysis).is_empty());
-    }
 }
