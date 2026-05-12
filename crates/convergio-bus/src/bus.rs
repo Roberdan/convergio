@@ -6,8 +6,36 @@ use chrono::{DateTime, Utc};
 use convergio_db::Pool;
 use uuid::Uuid;
 
+/// Column projection used by every `agent_messages` SELECT in this
+/// crate. Keep this and the `MessageRow` struct in lockstep: the order
+/// of columns here matches `sqlx::query_as::<_, MessageRow>` decoding.
+pub(crate) const MESSAGE_COLUMNS: &str = "id, seq, plan_id, topic, sender, payload, \
+                                          consumed_at, consumed_by, created_at";
+
 /// Topic prefix that marks the system-scoped family (ADR-0025).
 pub(crate) const SYSTEM_TOPIC_PREFIX: &str = "system.";
+
+/// Hard ceiling on page size for every public read API on the bus.
+///
+/// The HTTP layer already clamps `?limit=` to 1..=100, but the crate
+/// is reachable from in-process callers (executor, Layer 4, MCP) that
+/// bypass that check, so the same invariant is enforced here as
+/// defence-in-depth (CONSTITUTION § Sacred principles — security
+/// first). 1000 leaves plenty of headroom for batch consumers while
+/// still preventing a single call from streaming the entire table.
+pub(crate) const MAX_PAGE_LIMIT: i64 = 1000;
+
+/// Validate and clamp a caller-provided page-size `limit`. Returns the
+/// bound to use in the SQL `LIMIT ?` clause.
+///
+/// Rejects `limit <= 0` outright — SQLite treats negative limits as
+/// "no limit", which would turn every read into an unbounded scan.
+pub(crate) fn clamp_limit(limit: i64) -> Result<i64> {
+    if limit <= 0 {
+        return Err(BusError::InvalidLimit { value: limit });
+    }
+    Ok(limit.min(MAX_PAGE_LIMIT))
+}
 
 /// Read/write access to the message bus.
 #[derive(Clone)]
@@ -81,6 +109,9 @@ impl Bus {
     /// Pass `cursor = 0` on first call. The next cursor is the highest
     /// `seq` you saw. The bus does **not** auto-ack — call [`Self::ack`]
     /// when you have processed a message.
+    ///
+    /// `limit` must be `> 0` and is capped at [`MAX_PAGE_LIMIT`];
+    /// non-positive values return [`BusError::InvalidLimit`].
     pub async fn poll(
         &self,
         plan_id: &str,
@@ -119,15 +150,15 @@ impl Bus {
                 "topic '{topic}' is system-scoped; use poll_system"
             )));
         }
+        let limit = clamp_limit(limit)?;
         let rows = match exclude_sender {
             None => {
-                sqlx::query_as::<_, MessageRow>(
-                    "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
-                            consumed_by, created_at \
+                sqlx::query_as::<_, MessageRow>(&format!(
+                    "SELECT {MESSAGE_COLUMNS} \
                      FROM agent_messages \
                      WHERE plan_id = ? AND topic = ? AND seq > ? AND consumed_at IS NULL \
-                     ORDER BY seq ASC LIMIT ?",
-                )
+                     ORDER BY seq ASC LIMIT ?"
+                ))
                 .bind(plan_id)
                 .bind(topic)
                 .bind(cursor)
@@ -136,14 +167,13 @@ impl Bus {
                 .await?
             }
             Some(excl) => {
-                sqlx::query_as::<_, MessageRow>(
-                    "SELECT id, seq, plan_id, topic, sender, payload, consumed_at, \
-                            consumed_by, created_at \
+                sqlx::query_as::<_, MessageRow>(&format!(
+                    "SELECT {MESSAGE_COLUMNS} \
                      FROM agent_messages \
                      WHERE plan_id = ? AND topic = ? AND seq > ? AND consumed_at IS NULL \
                        AND (sender IS NULL OR sender != ?) \
-                     ORDER BY seq ASC LIMIT ?",
-                )
+                     ORDER BY seq ASC LIMIT ?"
+                ))
                 .bind(plan_id)
                 .bind(topic)
                 .bind(cursor)
