@@ -177,7 +177,7 @@ impl Thor {
                 }
             }
             if task_ok && matches!(task.status, TaskStatus::Submitted) {
-                to_promote.push(task.id.clone());
+                to_promote.push(task.id);
             }
         }
 
