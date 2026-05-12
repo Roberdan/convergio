@@ -37,7 +37,10 @@ pub fn parse_ts(repo_name: &str, file_path: &str, source: &[u8]) -> Result<(Vec<
     let mut parser = Parser::new();
     parser
         .set_language(&Lang::TypeScript.grammar())
-        .expect("grammar version mismatch — rebuild required");
+        .map_err(|source| ParseError::GrammarVersionMismatch {
+            lang: Lang::TypeScript.label(),
+            source,
+        })?;
 
     let tree = parser
         .parse(source, None)
