@@ -1,5 +1,6 @@
 //! `convergio-mcp` — stdio MCP bridge for the local daemon.
 
+mod action_params;
 mod actions;
 #[cfg(test)]
 mod actions_refusal_tests;
@@ -13,6 +14,8 @@ mod help;
 #[cfg(test)]
 mod help_tests;
 mod http;
+#[cfg(test)]
+mod http_tests;
 
 use anyhow::Result;
 use bridge::Bridge;

@@ -80,8 +80,15 @@ impl Bridge {
     }
 
     pub(crate) fn log_action(&self, action: Action, response: &convergio_api::AgentResponse) {
-        let Ok(path) = mcp_log_path() else {
-            return;
+        let path = match mcp_log_path() {
+            Ok(p) => p,
+            Err(e) => {
+                // Surface the setup failure through tracing so MCP
+                // diagnostics aren't silently dropped when HOME is
+                // unset/non-unicode. VarError carries no payload data.
+                tracing::warn!(error = %e, "mcp log path unavailable; skipping action log");
+                return;
+            }
         };
         if let Some(parent) = path.parent() {
             let _ = fs::create_dir_all(parent);

@@ -35,7 +35,21 @@ impl Bridge {
 
     async fn daemon_response(&self, path: &str, resp: reqwest::Response) -> AgentResponse {
         let status = resp.status();
-        let body = resp.json::<Value>().await.unwrap_or_else(|_| json!({}));
+        let body = match resp.json::<Value>().await {
+            Ok(value) => value,
+            // Surface decode failures explicitly instead of collapsing to
+            // `{}`, which would let a malformed daemon response masquerade
+            // as a successful empty payload.
+            Err(e) => {
+                return AgentResponse {
+                    ok: false,
+                    code: AgentCode::Error,
+                    message: format!("daemon returned invalid JSON: {e}"),
+                    data: Some(json!({"path": path, "status": status.as_u16()})),
+                    next: None,
+                };
+            }
+        };
         if status.is_success() {
             return ok("action completed", body, success_next(path));
         }
