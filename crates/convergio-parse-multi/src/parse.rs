@@ -16,7 +16,10 @@ pub fn parse(lang: Lang, source: &[u8], file: &str) -> Result<Vec<ParsedNode>> {
     let mut parser = Parser::new();
     parser
         .set_language(&lang.grammar())
-        .expect("grammar version mismatch — rebuild required");
+        .map_err(|source| ParseError::GrammarVersionMismatch {
+            lang: lang.label(),
+            source,
+        })?;
 
     let tree = parser
         .parse(source, None)
