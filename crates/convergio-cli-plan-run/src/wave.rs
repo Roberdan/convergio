@@ -7,6 +7,7 @@ use anyhow::Result;
 use convergio_i18n::Bundle;
 use futures_util::stream::{FuturesUnordered, StreamExt};
 use serde_json::{json, Value};
+use std::future::Future;
 
 #[derive(Clone, Debug)]
 pub(crate) struct TaskMeta {
@@ -14,6 +15,17 @@ pub(crate) struct TaskMeta {
     pub title: String,
     pub wave: i64,
     pub sequence: i64,
+}
+
+/// One submitted task's full outcome: the transition result plus an
+/// optional non-fatal warning from the plan-bus publish step.
+pub(crate) struct SubmitOutcome {
+    pub task: TaskMeta,
+    pub transition: Result<()>,
+    // Wired into the user-facing warning path in the follow-up
+    // `fix` commit; read in tests via destructuring.
+    #[allow(dead_code)]
+    pub bus_warning: Option<anyhow::Error>,
 }
 
 pub(crate) async fn run_wave(
@@ -24,39 +36,58 @@ pub(crate) async fn run_wave(
     agent_id: Option<&str>,
     max_parallel: u8,
     wave: Vec<TaskMeta>,
-) -> Vec<(TaskMeta, Result<()>)> {
+) -> Vec<SubmitOutcome> {
+    run_wave_with(max_parallel, wave, |task| {
+        submit(client, bundle, output, plan_id, agent_id, task)
+    })
+    .await
+}
+
+/// Generic wave orchestrator. Schedules up to `max_parallel` submit
+/// futures at a time over `wave`, using `submit_fn` to produce each
+/// future. Separated from the HTTP-driven path so the orchestration
+/// semantics can be unit-tested without a daemon.
+pub(crate) async fn run_wave_with<F, Fut>(
+    max_parallel: u8,
+    wave: Vec<TaskMeta>,
+    submit_fn: F,
+) -> Vec<SubmitOutcome>
+where
+    F: Fn(TaskMeta) -> Fut,
+    Fut: Future<Output = SubmitOutcome>,
+{
     let mut in_flight = FuturesUnordered::new();
     let mut iter = wave.into_iter();
     for _ in 0..max_parallel {
         match iter.next() {
-            Some(t) => in_flight.push(submit(client, bundle, output, plan_id, agent_id, t)),
+            Some(t) => in_flight.push(submit_fn(t)),
             None => break,
         }
     }
     let mut results = Vec::new();
-    while let Some((meta, outcome)) = in_flight.next().await {
-        let halt = outcome.is_err();
-        results.push((meta, outcome));
+    while let Some(outcome) = in_flight.next().await {
+        let halt = outcome.transition.is_err();
+        results.push(outcome);
         if halt {
             break;
         }
         if let Some(next) = iter.next() {
-            in_flight.push(submit(client, bundle, output, plan_id, agent_id, next));
+            in_flight.push(submit_fn(next));
         }
     }
     results
 }
 
-async fn submit(
+pub(crate) async fn submit(
     client: &Client,
     bundle: &Bundle,
     output: OutputMode,
     plan_id: &str,
     agent_id: Option<&str>,
     task: TaskMeta,
-) -> (TaskMeta, Result<()>) {
-    let outcome = submit_one(client, plan_id, agent_id, &task).await;
-    if outcome.is_ok() {
+) -> SubmitOutcome {
+    let (transition, bus_warning) = submit_one(client, plan_id, agent_id, &task).await;
+    if transition.is_ok() {
         crate::runner::say(
             bundle,
             output,
@@ -68,7 +99,11 @@ async fn submit(
             ],
         );
     }
-    (task, outcome)
+    SubmitOutcome {
+        task,
+        transition,
+        bus_warning,
+    }
 }
 
 async fn submit_one(
@@ -76,30 +111,53 @@ async fn submit_one(
     plan_id: &str,
     agent_id: Option<&str>,
     t: &TaskMeta,
-) -> Result<()> {
+) -> (Result<()>, Option<anyhow::Error>) {
     let path = format!("/v1/tasks/{}/transition", t.id);
-    client
-        .post::<Value, Value>(&path, &transition_body(agent_id, "in_progress"))
-        .await?;
-    client
-        .post::<Value, Value>(&path, &transition_body(agent_id, "submitted"))
-        .await?;
-    let _ = client
-        .post::<Value, Value>(
-            &format!("/v1/plans/{plan_id}/messages"),
-            &json!({
-                "topic": "plan.run",
-                "payload": {
-                    "event": "task.submitted",
-                    "task_id": t.id,
-                    "wave": t.wave,
-                    "sequence": t.sequence,
-                    "title": t.title,
-                }
-            }),
-        )
-        .await;
-    Ok(())
+    let claim_body = transition_body(agent_id, "in_progress");
+    let submit_body = transition_body(agent_id, "submitted");
+    let publish_path = format!("/v1/plans/{plan_id}/messages");
+    let publish_body = json!({
+        "topic": "plan.run",
+        "payload": {
+            "event": "task.submitted",
+            "task_id": t.id,
+            "wave": t.wave,
+            "sequence": t.sequence,
+            "title": t.title,
+        }
+    });
+    submit_one_inner(
+        || client.post::<Value, Value>(&path, &claim_body),
+        || client.post::<Value, Value>(&path, &submit_body),
+        || client.post::<Value, Value>(&publish_path, &publish_body),
+    )
+    .await
+}
+
+/// Pure orchestration of one task's transition pipeline. Splits the
+/// three HTTP calls behind closures so the publish-error policy can
+/// be unit-tested without a live daemon.
+async fn submit_one_inner<C, S, P, Cf, Sf, Pf>(
+    claim_fn: C,
+    submit_fn: S,
+    publish_fn: P,
+) -> (Result<()>, Option<anyhow::Error>)
+where
+    C: FnOnce() -> Cf,
+    S: FnOnce() -> Sf,
+    P: FnOnce() -> Pf,
+    Cf: Future<Output = Result<Value>>,
+    Sf: Future<Output = Result<Value>>,
+    Pf: Future<Output = Result<Value>>,
+{
+    if let Err(e) = claim_fn().await {
+        return (Err(e), None);
+    }
+    if let Err(e) = submit_fn().await {
+        return (Err(e), None);
+    }
+    let _ = publish_fn().await;
+    (Ok(()), None)
 }
 
 pub(crate) fn transition_body(agent_id: Option<&str>, target: &str) -> Value {
@@ -144,43 +202,5 @@ pub(crate) fn sfield<'a>(v: &'a Value, key: &str, fallback: &'a str) -> &'a str 
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn meta(wave: i64, seq: i64) -> TaskMeta {
-        TaskMeta {
-            id: format!("t{wave}{seq}"),
-            title: "x".into(),
-            wave,
-            sequence: seq,
-        }
-    }
-
-    #[test]
-    fn group_by_wave_partitions_and_keeps_order() {
-        let waves = group_by_wave(vec![meta(1, 1), meta(1, 2), meta(2, 1)]);
-        assert_eq!(waves.len(), 2);
-        assert_eq!(waves[0].len(), 2);
-        assert_eq!(waves[1][0].sequence, 1);
-    }
-
-    #[test]
-    fn collect_pending_filters_and_sorts() {
-        let raw = json!([
-            {"id":"a","title":"A","status":"done","wave":1,"sequence":1},
-            {"id":"b","title":"B","status":"pending","wave":2,"sequence":1},
-            {"id":"c","title":"C","status":"pending","wave":1,"sequence":2},
-        ]);
-        let ids: Vec<String> = collect_pending_in_wave_order(&raw)
-            .into_iter()
-            .map(|t| t.id)
-            .collect();
-        assert_eq!(ids, ["c", "b"]);
-    }
-
-    #[test]
-    fn transition_body_carries_agent_id_when_present() {
-        assert!(transition_body(None, "submitted").get("agent_id").is_none());
-        assert_eq!(transition_body(Some("a"), "in_progress")["agent_id"], "a");
-    }
-}
+#[path = "wave_tests.rs"]
+mod tests;

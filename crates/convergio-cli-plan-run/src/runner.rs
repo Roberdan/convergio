@@ -3,7 +3,9 @@
 //! Public entry point only. Wave/submit machinery lives in [`crate::wave`]
 //! to keep this file under the per-file Rust line cap (AGENTS.md).
 
-use crate::wave::{collect_pending_in_wave_order, group_by_wave, run_wave, sfield, TaskMeta};
+use crate::wave::{
+    collect_pending_in_wave_order, group_by_wave, run_wave, sfield, SubmitOutcome, TaskMeta,
+};
 use crate::{Client, OutputMode};
 use anyhow::Result;
 use convergio_i18n::Bundle;
@@ -50,7 +52,7 @@ pub async fn run(
 
     let mut completed = 0usize;
     for wave_tasks in group_by_wave(pending) {
-        for (task, outcome) in run_wave(
+        for outcome in run_wave(
             client,
             bundle,
             output,
@@ -61,7 +63,12 @@ pub async fn run(
         )
         .await
         {
-            if let Err(err) = outcome {
+            let SubmitOutcome {
+                task,
+                transition,
+                bus_warning: _,
+            } = outcome;
+            if let Err(err) = transition {
                 halt(bundle, output, &task, &err, plan_number);
                 return Err(err);
             }
