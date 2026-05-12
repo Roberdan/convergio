@@ -61,13 +61,19 @@ pub(super) struct MergeReport {
 
 /// Inspect the report after the merge orchestration loop and
 /// decide whether the command should exit zero. Partial-failure
-/// (merge succeeded, evidence writes did not) must bubble up as an
+/// (merge succeeded, evidence writes did not) bubbles up as an
 /// `Err` so the operator notices the missing audit metadata.
-#[allow(dead_code)] // wired into run() by the follow-up fix commit
-fn merge_outcome(_report: &MergeReport) -> Result<()> {
-    // Implemented in the follow-up fix commit. Today the orchestrator
-    // still happily exits zero even when evidence writes failed.
-    Ok(())
+/// Audit finding MEDIUM pr_merge.rs:122.
+fn merge_outcome(report: &MergeReport) -> Result<()> {
+    if report.failed_evidence.is_empty() {
+        return Ok(());
+    }
+    anyhow::bail!(
+        "merge succeeded but {} merge_record evidence write(s) failed: \
+         re-run with --dry-run or attach evidence manually before claiming \
+         this PR is done — missing audit metadata is not acceptable",
+        report.failed_evidence.len()
+    )
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -143,11 +149,14 @@ pub async fn run(client: &Client, output: OutputMode, args: MergeArgs) -> Result
             .await
         {
             Ok(_) => report.tracked_tasks.push(task_id.clone()),
-            Err(e) => report.notes.push(format!("evidence task {task_id}: {e}")),
+            Err(e) => {
+                report.failed_evidence.push(format!("task {task_id}: {e}"));
+            }
         }
     }
 
-    render_report(&report, output, false)
+    render_report(&report, output, false)?;
+    merge_outcome(&report)
 }
 
 fn eight_check(v: &PrView) -> Vec<EightCheckEntry> {

@@ -56,21 +56,16 @@ pub(crate) fn combine_manifest_and_diff(
             }
         }
         Err(_diff_err) => {
-            // Bug pr.rs:87 — current behavior silently classifies as
-            // Match or Missing depending on manifest emptiness, hiding
-            // the fact that we never verified against the real diff.
-            // The follow-up fix commit replaces this with Unverified.
-            let manifest_status = if manifest.files.is_empty() {
-                ManifestStatus::Missing
-            } else {
-                ManifestStatus::Match
-            };
+            // Bug fix pr.rs:87 — when the diff fetch fails we no
+            // longer silently classify the manifest as Match/Missing.
+            // Surfacing `Unverified` lets the renderer warn the
+            // operator that the manifest was not cross-checked.
             AnalysedPr {
                 number,
                 title,
                 files: manifest.files,
                 depends_on: manifest.depends_on,
-                manifest_status,
+                manifest_status: ManifestStatus::Unverified,
             }
         }
     }

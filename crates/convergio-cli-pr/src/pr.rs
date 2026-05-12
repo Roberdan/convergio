@@ -102,7 +102,6 @@ pub(crate) enum ManifestStatus {
     /// out) so we fell back to manifest-only analysis without being
     /// able to verify it. Surfaced so operators see the degraded
     /// state instead of silently trusting the manifest.
-    #[allow(dead_code)] // wired up in the follow-up fix commit
     Unverified,
 }
 

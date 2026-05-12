@@ -95,7 +95,10 @@ pub async fn run(
             .map(str::to_string);
 
         // Populate plan_pr_links regardless of task status so the
-        // mapping is recorded even for already-closed tasks.
+        // mapping is recorded even for already-closed tasks. The
+        // result is recorded via [`record_link_attempt`] so POST
+        // failures surface in the report instead of being dropped
+        // (audit finding LOW pr_sync.rs:107).
         if !task_plan_id.is_empty() {
             let link_body = json!({
                 "pr_number": pr_num,
@@ -103,11 +106,10 @@ pub async fn run(
                 "task_id":   task_id,
                 "agent_id":  task_agent_id,
             });
-            // Non-fatal — if the plan is missing or the daemon is
-            // unreachable we log it and continue.
-            let _: Result<Value> = client
+            let link_result: Result<Value> = client
                 .post(&format!("/v1/plans/{task_plan_id}/pr-links"), &link_body)
                 .await;
+            record_link_attempt(&mut report, pr_num, &task_id, &link_result);
         }
 
         if matches!(status, "submitted" | "done") {
@@ -200,19 +202,22 @@ pub(super) struct SyncFailure {
 // Pure parser unit tests live in `pr_sync_parse.rs`.
 
 /// Record the outcome of a `plan_pr_links` POST against the sync
-/// report. Today this is a no-op so failures fall on the floor; the
-/// follow-up fix commit makes errors push into `link_failures` so
-/// every render mode can surface them (audit finding LOW
-/// pr_sync.rs:107).
-#[allow(dead_code)] // wired into run() by the follow-up fix commit
+/// report. Errors push into `link_failures` so every render mode
+/// can surface them; success is a no-op. Audit finding LOW
+/// pr_sync.rs:107.
 fn record_link_attempt(
-    _report: &mut SyncReport,
-    _pr_number: i64,
-    _task_id: &str,
-    _result: &Result<Value>,
+    report: &mut SyncReport,
+    pr_number: i64,
+    task_id: &str,
+    result: &Result<Value>,
 ) {
-    // Intentionally empty in the test commit. Replaced in the
-    // follow-up `fix(cli-pr):` commit.
+    if let Err(e) = result {
+        report.link_failures.push(SyncFailure {
+            pr_number,
+            task_id: task_id.to_string(),
+            reason: format!("{e}"),
+        });
+    }
 }
 
 #[cfg(test)]
