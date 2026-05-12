@@ -113,7 +113,7 @@ pub async fn run(
             .await
         }
         SessionCommand::PreStop { agent_id, force } => {
-            pre_stop_run::handle(client, output, agent_id, force)
+            pre_stop_run::handle(client, bundle, output, agent_id, force)
         }
         SessionCommand::RegisterAndPoll {
             agent_id,

@@ -46,14 +46,21 @@ pub async fn run(client: &Client, agent_id: Option<String>, status: String) -> R
     if !should_heartbeat(&path, now) {
         return Ok(());
     }
-    if first_call {
+    if first_call && should_show_banner() {
         eprintln!("convergio: heartbeating {id} every ~5 min");
     }
     let body = json!({"status": status});
-    let _ = client
+    let post_ok = client
         .post::<_, serde_json::Value>(&format!("/v1/agent-registry/agents/{id}/heartbeat"), &body)
-        .await;
-    let _ = write_timestamp(&path, now);
+        .await
+        .is_ok();
+    // Only refresh the throttle when the POST actually succeeded;
+    // otherwise repeated failures would stay hidden for one full
+    // `HEARTBEAT_INTERVAL`. The outward error is still swallowed so
+    // a transient daemon glitch never blocks the calling tool.
+    if post_ok {
+        let _ = write_timestamp(&path, now);
+    }
     Ok(())
 }
 
@@ -112,11 +119,30 @@ fn write_timestamp(path: &PathBuf, now: SystemTime) -> std::io::Result<()> {
     std::fs::write(path, secs.to_string())
 }
 
+/// Should the first-call "heartbeating …" banner be emitted?
+///
+/// Returns `true` only when stderr is a terminal. The PreToolUse
+/// hook runs with piped stderr, so the hardcoded English banner is
+/// suppressed in that path — addresses the P5 constitution audit
+/// follow-up (2026-05-12, src/heartbeat_since_last_turn.rs:50).
+/// Interactive operators still see the message when they invoke
+/// `cvg session heartbeat-since-last-turn` by hand.
+pub(crate) fn should_show_banner() -> bool {
+    use std::io::IsTerminal;
+    std::io::stderr().is_terminal()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Mutex;
     use std::time::Duration;
     use tempfile::tempdir;
+
+    // Tests in a single binary share process-global env. Without
+    // serialization the `HOME` writes race and the file-existence
+    // assertions are flaky.
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
 
     #[test]
     fn missing_file_triggers_heartbeat() {
@@ -158,5 +184,60 @@ mod tests {
         let past = SystemTime::now() - HEARTBEAT_INTERVAL;
         write_timestamp(&p, past).unwrap();
         assert!(should_heartbeat(&p, SystemTime::now()));
+    }
+
+    /// Regression: a failed heartbeat POST must NOT rewrite the
+    /// throttle timestamp, otherwise repeated failures stay invisible
+    /// for one full [`HEARTBEAT_INTERVAL`]. See the
+    /// `convergio-cli-session` audit follow-up (2026-05-12).
+    #[tokio::test(flavor = "current_thread")]
+    #[allow(clippy::await_holding_lock)] // serializing $HOME across one cheap await is intentional
+    async fn failed_post_does_not_persist_throttle_timestamp() {
+        let _g = ENV_LOCK.lock().unwrap();
+        let dir = tempdir().unwrap();
+        let prev_home = std::env::var_os("HOME");
+        std::env::set_var("HOME", dir.path());
+
+        // Port 1 is reserved and unreachable; the POST resolves to an
+        // immediate `Err` without external dependencies.
+        let client = crate::Client::new("http://127.0.0.1:1".to_string());
+        run(&client, Some("audit-test".into()), "working".into())
+            .await
+            .expect("run swallows the outward error");
+
+        let path = timestamp_path().expect("HOME resolves to a path");
+        let exists = path.exists();
+
+        if let Some(h) = prev_home {
+            std::env::set_var("HOME", h);
+        } else {
+            std::env::remove_var("HOME");
+        }
+
+        assert!(
+            !exists,
+            "failed heartbeat POST must not refresh the throttle timestamp"
+        );
+    }
+
+    /// Regression: the hot-path PreToolUse hook never has a TTY on
+    /// stderr, so the hardcoded English "heartbeating …" banner has
+    /// no operator to read it. [`should_show_banner`] must return
+    /// `false` whenever stderr is not a terminal, otherwise the
+    /// non-i18n string ships in every hook invocation. See the
+    /// `convergio-cli-session` audit follow-up (2026-05-12):
+    /// src/heartbeat_since_last_turn.rs:50.
+    #[test]
+    fn banner_is_suppressed_when_stderr_is_not_a_tty() {
+        use std::io::IsTerminal;
+        // Test invariant: cargo test pipes stderr.
+        assert!(
+            !std::io::stderr().is_terminal(),
+            "expected piped stderr under cargo test"
+        );
+        assert!(
+            !should_show_banner(),
+            "hot-path hook must not emit hardcoded English banner without a TTY"
+        );
     }
 }
