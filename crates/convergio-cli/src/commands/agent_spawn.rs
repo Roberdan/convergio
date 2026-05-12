@@ -253,7 +253,7 @@ async fn fetch_task(client: &Client, id: &str) -> Result<Task> {
     let raw: Value = client.get(&format!("/v1/tasks/{id}")).await?;
     let row: TaskWire =
         serde_json::from_value(raw.clone()).context("decode task from /v1/tasks")?;
-    Ok(row.into_task())
+    row.try_into_task()
 }
 
 async fn fetch_plan(client: &Client, id: &str) -> Result<Value> {

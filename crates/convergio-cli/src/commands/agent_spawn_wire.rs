@@ -38,15 +38,26 @@ pub(crate) struct TaskWire {
 }
 
 impl TaskWire {
-    pub(crate) fn into_task(self) -> Task {
-        Task {
+    /// Convert the wire shape into a domain [`Task`]. Returns an
+    /// `Err` (instead of silently coercing to [`TaskStatus::Pending`])
+    /// when the daemon reports a status we do not recognise — that
+    /// is a wire-incompatibility signal the operator must see.
+    pub(crate) fn try_into_task(self) -> anyhow::Result<Task> {
+        let status = TaskStatus::parse(&self.status).ok_or_else(|| {
+            anyhow::anyhow!(
+                "unknown task status from daemon: {raw:?} (task id {id})",
+                raw = self.status,
+                id = self.id,
+            )
+        })?;
+        Ok(Task {
             id: self.id,
             plan_id: self.plan_id,
             wave: self.wave,
             sequence: self.sequence,
             title: self.title,
             description: self.description,
-            status: TaskStatus::parse(&self.status).unwrap_or(TaskStatus::Pending),
+            status,
             agent_id: self.agent_id,
             evidence_required: self.evidence_required,
             last_heartbeat_at: parse_ts_opt(self.last_heartbeat_at.as_deref()),
@@ -58,7 +69,7 @@ impl TaskWire {
             runner_kind: self.runner_kind,
             profile: self.profile,
             max_budget_usd: self.max_budget_usd,
-        }
+        })
     }
 }
 
