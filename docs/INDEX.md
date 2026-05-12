@@ -18,7 +18,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | Path | Topic | Touches | Status | Lines |
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
-| `AGENTS.md` | agent-rules | - | - | 560 |
+| `AGENTS.md` | agent-rules | - | - | 554 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
 | `CHANGELOG.md` | release | - | - | 1107 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -39,7 +39,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-cli-plan-run/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-pr/AGENTS.md` | crate-rules | - | - | 12 |
 | `crates/convergio-cli-pr/README.md` | crate-readme | - | - | 5 |
-| `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 57 |
+| `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 61 |
 | `crates/convergio-cli-session/README.md` | crate-readme | - | - | 33 |
 | `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 42 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 31 |
