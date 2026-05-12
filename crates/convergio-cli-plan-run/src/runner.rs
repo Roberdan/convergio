@@ -127,6 +127,14 @@ fn halt(
             ("error", &err.to_string()),
         ],
     );
+    if is_missing_evidence_refusal(&err.to_string()) {
+        say(
+            bundle,
+            output,
+            "plan-run-missing-evidence-hint",
+            &[("task_id", &task.id)],
+        );
+    }
     if plan_number > 0 {
         say(
             bundle,
@@ -137,8 +145,41 @@ fn halt(
     }
 }
 
+/// Detect the daemon's `gate_refused` + `missing_evidence_kind` pair on
+/// the wire. The server formats refusals as `HTTP 409 ... gate_refused ...
+/// missing_evidence_kind: <list>` (see `convergio-server::error` and
+/// `convergio-durability::gates::evidence_gate`), so we match on both
+/// substrings to avoid false positives from unrelated `gate_refused`
+/// errors that point at a different fix.
+fn is_missing_evidence_refusal(msg: &str) -> bool {
+    msg.contains("gate_refused") && msg.contains("missing_evidence_kind")
+}
+
 pub(crate) fn say(bundle: &Bundle, output: OutputMode, key: &str, args: &[(&str, &str)]) {
     if matches!(output, OutputMode::Human) {
         println!("{}", bundle.t(key, args));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_missing_evidence_refusal;
+
+    #[test]
+    fn detects_missing_evidence_refusal() {
+        let msg = r#"HTTP 409 Conflict: {"code":"gate_refused","message":"evidence: missing_evidence_kind: tests"}"#;
+        assert!(is_missing_evidence_refusal(msg));
+    }
+
+    #[test]
+    fn ignores_unrelated_gate_refusal() {
+        let msg =
+            r#"HTTP 409 Conflict: {"code":"gate_refused","message":"no_debt: lingering warnings"}"#;
+        assert!(!is_missing_evidence_refusal(msg));
+    }
+
+    #[test]
+    fn ignores_non_gate_errors() {
+        assert!(!is_missing_evidence_refusal("HTTP 500: boom"));
     }
 }
