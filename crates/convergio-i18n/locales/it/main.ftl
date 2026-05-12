@@ -123,6 +123,7 @@ plan-run-halted = Interrotto al task [{ $wave }.{ $seq }] { $title }: { $error }
 plan-run-complete = Piano #{ $number } completato: { $count } task sottomessi.
 plan-run-resume-hint = Riprendi con: cvg plan run { $number }
 plan-run-bus-warning = ⚠️  [{ $wave }.{ $seq }] { $title }: pubblicazione sul bus del piano fallita (non bloccante): { $error }
+plan-run-missing-evidence-hint = Suggerimento: a questo task mancano evidenze richieste. Allegale con `cvg evidence add { $task_id } --kind <kind> --payload <json>`, oppure avvia un agente che le produca con `cvg agent spawn --task { $task_id }`.
 
 # ---------- CLI: triage piano ----------
 plan-triage-empty = Nessun task obsoleto (pending/failed, non aggiornato da { $days } giorni).

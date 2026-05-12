@@ -10,7 +10,7 @@ Italian and English are first-class.
 ```rust
 use convergio_i18n::{Bundle, Locale, detect_locale};
 
-// Pick a locale: --lang flag → CONVERGIO_LANG → LANG → fallback en
+// Pick a locale: --lang flag → CONVERGIO_LANG → LC_ALL → LANG → fallback en
 let locale = detect_locale(cli_lang_flag.as_deref());
 let bundle = Bundle::new(locale)?;
 
@@ -25,8 +25,10 @@ println!("{}", bundle.t_n("plan-list-header", 5));
 2. Create `locales/xx/main.ftl` with **every** key from
    `locales/en/main.ftl`.
 3. Add a `match` arm in `src/bundle.rs` for the new locale.
-4. Run `cargo test -p convergio-i18n --test coverage` —
-   `every_locale_loads` and the cross-coverage tests must pass.
+4. Run `cargo test -p convergio-i18n --test coverage` — every test in
+   the `coverage` integration suite must pass (it asserts every locale
+   loads and that each locale has a translation for every key in
+   every other locale).
 
 The coverage tests are the i18n equivalent of P4: a locale is **not**
 acceptable until every message has a translation. No partial-locale
