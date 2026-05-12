@@ -26,7 +26,17 @@ pub fn parse_doc(repo: &str, rel_path: &str, abs_path: &Path) -> Result<(Node, V
         .id
         .clone()
         .unwrap_or_else(|| filename_without_ext(rel_path));
-    let id = Node::compute_id(kind, repo, DOCS_CRATE, Some(rel_path), &name, None);
+    // ADR nodes are addressed by `name` (e.g. "0001") elsewhere in
+    // the graph — notably from `related_adrs` mention edges that do
+    // not know the target's file path. Keep the ADR identity
+    // path-independent so those edges always resolve. Non-ADR docs
+    // keep `file_path` in the id so two docs with the same filename
+    // in different folders stay distinct.
+    let id_file_path = match kind {
+        NodeKind::Adr => None,
+        _ => Some(rel_path),
+    };
+    let id = Node::compute_id(kind, repo, DOCS_CRATE, id_file_path, &name, None);
     let node = Node {
         id: id.clone(),
         kind,
@@ -212,5 +222,28 @@ mod tests {
         let (node, edges) = parse_doc("convergio", "docs/foo.md", f.path()).unwrap();
         assert_eq!(node.kind, NodeKind::Doc);
         assert!(edges.is_empty());
+    }
+
+    /// Regression: a `related_adrs` mention edge MUST point to the
+    /// node id that `parse_doc` produces for the mentioned ADR. We
+    /// previously computed the dst with `file_path: None` while the
+    /// node itself was created with `Some(rel_path)`, so the edges
+    /// could never resolve and ADR↔ADR navigation silently broke.
+    #[test]
+    fn related_adr_mention_resolves_to_target_node_id() {
+        let f_src = write_tmp("---\nid: 0001\nrelated_adrs: [0002]\n---\n# A\n");
+        let f_dst = write_tmp("---\nid: 0002\n---\n# B\n");
+        let (_a_node, a_edges) =
+            parse_doc("convergio", "docs/adr/0001-a.md", f_src.path()).unwrap();
+        let (b_node, _b_edges) =
+            parse_doc("convergio", "docs/adr/0002-b.md", f_dst.path()).unwrap();
+        let mention = a_edges
+            .iter()
+            .find(|e| e.kind == EdgeKind::Mentions)
+            .expect("mention edge present");
+        assert_eq!(
+            mention.dst, b_node.id,
+            "mention dst must equal the target ADR's actual node id"
+        );
     }
 }

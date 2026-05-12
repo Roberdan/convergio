@@ -70,7 +70,10 @@ impl FleetStore {
     ///
     /// Scores ≥ [`DUPLICATES_THRESHOLD`] → `"duplicates"`;
     /// scores ≥ [`SIMILAR_TO_THRESHOLD`] → `"similar_to"`.
-    /// For structural-shape-aware classification use
+    /// Scores **below** [`SIMILAR_TO_THRESHOLD`] are silently dropped:
+    /// the helper is a no-op and no row is written. This keeps the
+    /// invariant that every persisted edge is at or above the documented
+    /// 0.85 floor. For structural-shape-aware classification use
     /// [`Self::upsert_similar_edge_classified`] directly.
     pub async fn upsert_similar_edge(
         &self,
@@ -80,6 +83,9 @@ impl FleetStore {
         node_id_b: &str,
         score: f32,
     ) -> Result<()> {
+        if score < SIMILAR_TO_THRESHOLD {
+            return Ok(());
+        }
         let kind = if score >= DUPLICATES_THRESHOLD {
             "duplicates"
         } else {
@@ -171,99 +177,5 @@ impl FleetStore {
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::config::{RepoEntry, RepoRole};
-    use crate::migrate::init;
-    use crate::store::FleetStore;
-
-    async fn test_store() -> (FleetStore, tempfile::NamedTempFile) {
-        let tmp = tempfile::NamedTempFile::new().unwrap();
-        let url = format!("sqlite://{}", tmp.path().display());
-        let pool = convergio_db::Pool::connect(&url).await.unwrap();
-        init(&pool).await.unwrap();
-        (FleetStore::new(pool), tmp)
-    }
-
-    fn repo(name: &str) -> RepoEntry {
-        RepoEntry {
-            name: name.to_owned(),
-            path: format!("/repos/{name}"),
-            language: "rust".to_owned(),
-            parser: "syn".to_owned(),
-            role: RepoRole::Engine,
-            derives_from: None,
-        }
-    }
-
-    #[tokio::test]
-    async fn upsert_and_count() {
-        let (store, _tmp) = test_store().await;
-        store.add_repo(&repo("alpha")).await.unwrap();
-        store.add_repo(&repo("beta")).await.unwrap();
-        store
-            .upsert_similar_edge("alpha", "src/lib.rs", "beta", "src/lib.rs", 0.90)
-            .await
-            .unwrap();
-        assert_eq!(store.count_similar_edges(None).await.unwrap(), 1);
-        assert_eq!(
-            store.count_similar_edges(Some("similar_to")).await.unwrap(),
-            1
-        );
-        assert_eq!(
-            store.count_similar_edges(Some("duplicates")).await.unwrap(),
-            0
-        );
-    }
-
-    #[tokio::test]
-    async fn upsert_idempotent_updates_score() {
-        let (store, _tmp) = test_store().await;
-        store
-            .upsert_similar_edge("a", "n1", "b", "n2", 0.86)
-            .await
-            .unwrap();
-        store
-            .upsert_similar_edge("a", "n1", "b", "n2", 0.96)
-            .await
-            .unwrap();
-        let edges = store.list_similar_edges(10).await.unwrap();
-        assert_eq!(edges.len(), 1);
-        assert!(edges[0].score >= 0.95, "score should be updated to 0.96");
-        assert_eq!(edges[0].kind, "duplicates");
-        assert_eq!(edges[0].weight, 960);
-    }
-
-    #[tokio::test]
-    async fn clear_removes_all_edges() {
-        let (store, _tmp) = test_store().await;
-        store
-            .upsert_similar_edge("a", "n1", "b", "n2", 0.88)
-            .await
-            .unwrap();
-        store.clear_similar_edges().await.unwrap();
-        assert_eq!(store.count_similar_edges(None).await.unwrap(), 0);
-    }
-
-    #[tokio::test]
-    async fn weight_computed_correctly() {
-        let (store, _tmp) = test_store().await;
-        store
-            .upsert_similar_edge("x", "n1", "y", "n2", 0.875)
-            .await
-            .unwrap();
-        let edges = store.list_similar_edges(1).await.unwrap();
-        assert_eq!(edges[0].weight, 875);
-    }
-
-    #[tokio::test]
-    async fn classified_upsert_respects_explicit_kind() {
-        let (store, _tmp) = test_store().await;
-        // Score would normally give "duplicates" (≥0.95), but we force "similar_to".
-        store
-            .upsert_similar_edge_classified("x", "n1", "y", "n2", 0.97, "similar_to")
-            .await
-            .unwrap();
-        let edges = store.list_similar_edges(1).await.unwrap();
-        assert_eq!(edges[0].kind, "similar_to");
-    }
-}
+#[path = "similar_tests.rs"]
+mod tests;

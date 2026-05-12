@@ -123,6 +123,7 @@ plan-run-halted = Halted at task [{ $wave }.{ $seq }] { $title }: { $error }
 plan-run-complete = Plan #{ $number } complete: { $count } tasks submitted.
 plan-run-resume-hint = Resume with: cvg plan run { $number }
 plan-run-bus-warning = ⚠️  [{ $wave }.{ $seq }] { $title }: plan bus publish failed (non-fatal): { $error }
+plan-run-missing-evidence-hint = Hint: this task is missing required evidence. Attach it with `cvg evidence add { $task_id } --kind <kind> --payload <json>`, or dispatch an agent that will produce it with `cvg agent spawn --task { $task_id }`.
 
 # ---------- CLI: plan triage ----------
 plan-triage-empty = No stale tasks found (pending/failed, not touched in { $days } days).

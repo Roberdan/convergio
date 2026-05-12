@@ -15,13 +15,13 @@
 //! Advisory at v0 (CI surfaces, never blocks); promote to gate when
 //! we have data on false positives across a few PRs.
 
-use crate::error::{GraphError, Result};
+use crate::drift_git::git_changed_files;
+use crate::error::Result;
 use crate::store::Store;
 use serde::{Deserialize, Serialize};
 use sqlx::Row;
 use std::collections::BTreeSet;
 use std::path::Path;
-use std::process::Command;
 
 /// What `cvg graph drift` returns.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -66,29 +66,6 @@ pub async fn drift_since(
         drift,
         ghosts,
     })
-}
-
-fn git_changed_files(repo_root: &Path, since: &str) -> Result<Vec<String>> {
-    let out = Command::new("git")
-        .arg("-C")
-        .arg(repo_root)
-        .arg("diff")
-        .arg("--name-only")
-        .arg(format!("{since}...HEAD"))
-        .output()
-        .map_err(GraphError::Io)?;
-    if !out.status.success() {
-        return Err(GraphError::Other(format!(
-            "git diff --name-only {since}...HEAD failed: {}",
-            String::from_utf8_lossy(&out.stderr).trim()
-        )));
-    }
-    Ok(String::from_utf8_lossy(&out.stdout)
-        .lines()
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .map(|s| s.to_string())
-        .collect())
 }
 
 async fn resolve_crates_for_files(store: &Store, files: &[String]) -> Result<BTreeSet<String>> {
