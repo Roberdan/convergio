@@ -1,6 +1,7 @@
 //! `cvg pr merge <pr> [--retire-agent <id>]` — merge orchestrator.
-//! 8-check pre-flight, branch+worktree cleanup, optional sub-agent
-//! retire, `merge_record` evidence per tracked task. On AUTO-block
+//! 4-check pre-flight (mergeable, mergeStateStatus, reviewDecision,
+//! CI rollup), branch+worktree cleanup, optional sub-agent retire,
+//! `merge_record` evidence per tracked task. On AUTO-block
 //! conflict it aborts with an actionable hint; the in-process
 //! auto-resolve is a follow-up (gated on E2E mock infra to avoid the
 //! P4 "scaffolding only" trap). Audit footprint until P2-2 ships
@@ -28,7 +29,7 @@ pub struct MergeArgs {
     /// Skip the worktree + branch cleanup phase.
     #[arg(long)]
     pub no_cleanup: bool,
-    /// Print the 8-check + plan and exit. Mutates nothing.
+    /// Print the 4-check + plan and exit. Mutates nothing.
     #[arg(long)]
     pub dry_run: bool,
     /// Agent id recorded on the merge_record evidence row.
@@ -57,7 +58,7 @@ struct EightCheckEntry {
     ok: bool,
 }
 
-/// Run `cvg pr merge`: 8-check, merge via `gh`, cleanup, optional
+/// Run `cvg pr merge`: 4-check, merge via `gh`, cleanup, optional
 /// retire, and `merge_record` evidence per tracked task.
 pub async fn run(client: &Client, output: OutputMode, args: MergeArgs) -> Result<()> {
     let mut report = MergeReport {
@@ -73,7 +74,7 @@ pub async fn run(client: &Client, output: OutputMode, args: MergeArgs) -> Result
     if args.dry_run || !pass_all {
         render_report(&report, output, !pass_all && !args.dry_run)?;
         if !pass_all {
-            anyhow::bail!("8-check refused merge — see findings above");
+            anyhow::bail!("4-check refused merge — see findings above");
         }
         return Ok(());
     }
@@ -198,7 +199,7 @@ fn render_human(r: &MergeReport, refused: bool) {
         println!("  [{}] {}", if c.ok { "ok" } else { "x" }, c.name);
     }
     if refused {
-        println!("\n  refused: 8-check did not pass.");
+        println!("\n  refused: 4-check did not pass.");
         return;
     }
     println!(

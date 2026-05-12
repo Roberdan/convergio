@@ -46,13 +46,15 @@ pub enum PrCommand {
         #[arg(long, env = "CONVERGIO_AGENT_ID")]
         agent_id: Option<String>,
     },
-    /// Merge a PR with 8-check pre-flight, branch + worktree
-    /// cleanup, optional sub-agent retire, and a transactional
-    /// `merge_record` evidence row on every task tracked by the PR
-    /// body. On AUTO-block conflict the wrapper aborts with an
-    /// actionable hint (in-process auto-resolve is a follow-up).
-    /// Subsumes A2/B1/B5/C5/C6/F3 from the 2026-05-04 retrospective.
-    /// See `~/Desktop/convergio-retrospective-2026-05-04.md` §2 P0-1.
+    /// Merge a PR with a 4-check pre-flight (mergeable,
+    /// mergeStateStatus, reviewDecision, CI rollup), branch +
+    /// worktree cleanup, optional sub-agent retire, and a
+    /// transactional `merge_record` evidence row on every task
+    /// tracked by the PR body. On AUTO-block conflict the wrapper
+    /// aborts with an actionable hint (in-process auto-resolve is a
+    /// follow-up). Subsumes A2/B1/B5/C5/C6/F3 from the 2026-05-04
+    /// retrospective. See `~/Desktop/convergio-retrospective-2026-05-04.md`
+    /// §2 P0-1.
     Merge(MergeArgs),
     /// Register a PR↔plan mapping in the daemon so the system knows
     /// which agent opened a given PR. Call this immediately after
