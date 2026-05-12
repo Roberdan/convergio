@@ -53,9 +53,11 @@ pub fn collect_files(
 
 /// Collect [`IngestNode`]s from a directory tree and report skips.
 ///
-/// Stub returns the collected list with a zeroed [`CorpusReport`];
-/// counters are wired up in the follow-up commit. Behaviour for the
-/// node list is identical to [`collect_files`].
+/// Behaves like [`collect_files`] but never drops a filesystem error
+/// silently: walk errors and unreadable matching files are counted
+/// in the returned [`CorpusReport`] (and logged at `warn`). Empty
+/// files dropped after truncation are also counted so coverage loss
+/// is visible.
 pub fn collect_files_report(
     repo: &str,
     root: &Path,
@@ -63,23 +65,37 @@ pub fn collect_files_report(
     max_lines: usize,
 ) -> (Vec<IngestNode>, CorpusReport) {
     let mut out = Vec::new();
-    let report = CorpusReport::default();
-    for entry in walkdir::WalkDir::new(root)
-        .follow_links(false)
-        .into_iter()
-        .filter_map(Result::ok)
-    {
+    let mut report = CorpusReport::default();
+    for entry in walkdir::WalkDir::new(root).follow_links(false) {
+        let entry = match entry {
+            Ok(e) => e,
+            Err(err) => {
+                report.walk_errors += 1;
+                tracing::warn!(error = %err, "corpus walk error");
+                continue;
+            }
+        };
         if !entry.file_type().is_file() {
             continue;
         }
         if !has_allowed_extension(entry.path(), include_extensions) {
             continue;
         }
-        let Ok(content) = std::fs::read_to_string(entry.path()) else {
-            continue;
+        let content = match std::fs::read_to_string(entry.path()) {
+            Ok(c) => c,
+            Err(err) => {
+                report.unreadable += 1;
+                tracing::warn!(
+                    path = %entry.path().display(),
+                    error = %err,
+                    "corpus file unreadable"
+                );
+                continue;
+            }
         };
         let truncated = take_first_lines(&content, max_lines);
         if truncated.trim().is_empty() {
+            report.skipped_empty += 1;
             continue;
         }
         let Ok(rel) = entry.path().strip_prefix(root) else {
@@ -92,6 +108,7 @@ pub fn collect_files_report(
             source: truncated,
         });
     }
+    report.collected = out.len();
     (out, report)
 }
 
