@@ -71,10 +71,15 @@ pub enum PlanCommand {
         #[arg(long)]
         auto_close: bool,
     },
-    /// Run a plan's pending tasks (wave/seq order). Halts on the first
-    /// failure and prints a resume hint. `--max-parallel <K>` (default 1,
-    /// clamped to [1, 16]) runs that many tasks of the same wave at once;
-    /// across waves we stay sequential so the wave-sequence gate holds.
+    /// Drives the wave/sequence state machine. Does NOT execute task
+    /// bodies — assumes an external agent attaches evidence via
+    /// `cvg evidence add` between transitions.
+    ///
+    /// Iterates pending tasks in wave/seq order, claiming each one and
+    /// transitioning it to `submitted`. Halts on the first failure and
+    /// prints a resume hint. `--max-parallel <K>` (default 1, clamped to
+    /// [1, 16]) runs that many tasks of the same wave at once; across
+    /// waves we stay sequential so the wave-sequence gate holds.
     Run {
         /// Plan number (integer) or UUID.
         id: String,
