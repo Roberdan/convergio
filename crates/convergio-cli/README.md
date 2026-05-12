@@ -16,8 +16,15 @@ cargo run -p convergio-cli -- validate <plan_id>
 cargo run -p convergio-cli -- demo
 ```
 
-The CLI does not import `convergio-server` or internal server crates.
-All inputs and outputs go through HTTP.
+The CLI does not import `convergio-server` or any internal HTTP
+route module. All inputs and outputs go through HTTP. The one
+exception is `convergio-durability`: the CLI re-uses the
+`Task` / `TaskStatus` / `audit::*` model types as a shared wire
+schema (see `commands/agent_spawn_wire.rs`, `commands/audit.rs`,
+`commands/monitor.rs`). Those types are owned by the durability
+layer, are stable across the HTTP boundary, and are explicitly
+out-of-scope for the "no server crates" rule in
+`crates/convergio-cli/AGENTS.md`.
 
 ## Configuration
 

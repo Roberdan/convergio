@@ -14,8 +14,7 @@ use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 
 /// Run the bootstrap.
-pub async fn run(client: &Client, output: OutputMode, force: bool) -> Result<()> {
-    let _ = force;
+pub async fn run(client: &Client, output: OutputMode) -> Result<()> {
     let candidates = discover_candidates();
     if candidates.is_empty() {
         println!("cvg setup fleet — no ~/GitHub/convergio* repos found.");

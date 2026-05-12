@@ -4,6 +4,7 @@
 //! the CLI just renders. Renderers live in [`super::graph_render`]
 //! to keep this file under the 300-line cap.
 
+use super::graph_query::{append_query_param, ForTaskHints};
 use super::graph_render::{
     render_build_human, render_cluster_human, render_drift_human, render_pack_human, render_plain,
 };
@@ -248,36 +249,6 @@ async fn for_task(
         OutputMode::Human => render_pack_human(&pack),
     }
     Ok(())
-}
-
-struct ForTaskHints {
-    crate_name: Option<String>,
-    related_crates: Option<String>,
-    adr_required: Option<String>,
-    docs_required: Option<String>,
-    validation_profile: Option<String>,
-}
-
-fn append_query_param(path: &mut String, name: &str, value: Option<&str>) {
-    if let Some(value) = value {
-        path.push_str(name);
-        path.push('=');
-        path.push_str(&encode_query_value(value));
-        path.push('&');
-    }
-}
-
-fn encode_query_value(value: &str) -> String {
-    let mut encoded = String::new();
-    for byte in value.bytes() {
-        match byte {
-            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'.' | b'_' | b'~' => {
-                encoded.push(byte as char);
-            }
-            _ => encoded.push_str(&format!("%{byte:02X}")),
-        }
-    }
-    encoded
 }
 
 async fn cluster(
