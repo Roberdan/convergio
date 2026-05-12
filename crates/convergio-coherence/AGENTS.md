@@ -5,10 +5,11 @@ For repo-wide rules see [../../AGENTS.md](../../AGENTS.md).
 ## Responsibility
 
 Documentation/code coherence verifiers for Convergio — the `cvg
-coherence` suite. Most verifiers are pure local checks; `handshake`
-is the one exception (it exercises the live daemon HTTP surface).
+coherence` suite. Most verifiers are pure local checks; four
+exceptions (`Agents`, `Handshake`, `ClosePostHoc`, `PlanExecution`)
+exercise the local daemon HTTP surface.
 
-Five verifiers ship today:
+Eight verifiers ship today:
 
 - `coherence::CoherenceCommand::Check` — ADR frontmatter against the
   ADR index (`docs/adr/README.md`) and `workspace.members`; markdown
@@ -21,21 +22,33 @@ Five verifiers ship today:
   frontmatter against implementation reality.
 - `coherence::CoherenceCommand::Agents` — flag merged PRs whose author
   skipped the multi-agent protocol (no `agent_registry` entry,
-  no heartbeat in window, no coordination messages).
+  no heartbeat in window, no coordination messages). Daemon-backed;
+  unreachable daemon downgrades the check to advisory.
+- `coherence::CoherenceCommand::Fleet` — cross-repo schema check on
+  `~/.convergio/v3/fleet.toml` (missing paths, dangling
+  `derives_from`, multiple `engine` roots, missing
+  retrieval-golden fixtures).
+- `coherence::CoherenceCommand::ClosePostHoc` — walk the daemon audit
+  chain and surface `task.closed_post_hoc` rows (volume per agent /
+  plan / reason). Requires the daemon.
 - `coherence::CoherenceCommand::Handshake` — 2-session E2E smoke test
-  of the multi-agent loop (register → publish → poll → ack). Unlike
-  the other verifiers this one **does** require a running daemon at
-  `--daemon` (default `http://127.0.0.1:8420`).
+  of the multi-agent loop (register → publish → poll → ack).
+  Requires the daemon at `--daemon` (default
+  `http://127.0.0.1:8420`).
+- `coherence::CoherenceCommand::PlanExecution` — per-plan mechanism
+  compliance score (ADR-0044). Calls the daemon for tasks,
+  evidence, agent registry, and bus state.
 
 Public entry points: [`run`] and [`CoherenceCommand`].
 
 ## Boundaries
 
 - No SQLite. No process spawning.
-- Local verifiers (Check, Routes, Adrs, Agents): walk the repo with
-  `walkdir`, read `Cargo.toml` with `toml`, never write files.
-- `Handshake` is the lone HTTP-using verifier — pure `reqwest` client
-  against the daemon, no in-process state.
+- Local verifiers (`Check`, `Routes`, `Adrs`, `Fleet`): walk the repo
+  with `walkdir`, read `Cargo.toml` with `toml`, never write files.
+- Daemon-backed verifiers (`Agents`, `Handshake`, `ClosePostHoc`,
+  `PlanExecution`): pure `reqwest` client against the daemon, no
+  in-process state.
 - Verifiers must be agent-callable from any CLI/skill, not just
   `cvg`. The CLI hosts only a thin shim
   (`crates/convergio-cli/src/commands/coherence.rs`).
