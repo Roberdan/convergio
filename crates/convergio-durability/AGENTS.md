@@ -71,7 +71,7 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-durability` stats:** 59 `*.rs` files / 173 public items / 8814 lines (under `src/`).
+**`convergio-durability` stats:** 59 `*.rs` files / 173 public items / 8865 lines (under `src/`).
 
 Files approaching the 300-line cap:
 - `src/audit/action.rs` (296 lines)
@@ -82,6 +82,7 @@ Files approaching the 300-line cap:
 - `src/store/plan_pr_links.rs` (263 lines)
 - `src/store/workspace.rs` (259 lines)
 - `src/audit/log.rs` (258 lines)
+- `src/facade.rs` (256 lines)
 - `src/store/crdt_merge.rs` (252 lines)
 - `src/model.rs` (250 lines)
 <!-- END AUTO -->

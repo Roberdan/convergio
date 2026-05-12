@@ -76,15 +76,8 @@ impl Executor {
         self
     }
 
-    /// Run one dispatch round. Returns the number of tasks moved to
-    /// `in_progress`.
-    ///
-    /// Respects `CONVERGIO_EXECUTOR_MAX_PARALLEL` (default unlimited):
-    /// when set, the dispatcher caps concurrent in-flight tasks at
-    /// that value. Without it the previous behaviour stands — a tick
-    /// dispatches every wave-ready pending task, which on a fresh
-    /// daemon with 50+ pending was enough to put the laptop into
-    /// load-300 territory.
+    /// Run one dispatch round. Respects `CONVERGIO_EXECUTOR_MAX_PARALLEL`
+    /// when set; without it dispatches every wave-ready pending task.
     pub async fn tick(&self) -> Result<usize> {
         let pending = self.find_dispatchable().await?;
         let cap = std::env::var("CONVERGIO_EXECUTOR_MAX_PARALLEL")
@@ -144,22 +137,43 @@ impl Executor {
     }
 
     async fn dispatch_one(&self, task_id: &str, plan_id: &str) -> Result<()> {
-        // Read the task to see if it carries an explicit
-        // `runner_kind`. Tasks created by the legacy planner / by
-        // older clients leave it `None` → fall back to the legacy
-        // shell template (still useful for smoke tests).
+        // Audit 2026-05-12 W1-B: atomic claim BEFORE spawn closes the
+        // duplicate-dispatch race. See `Durability::try_claim_pending`.
         let task = self.durability.tasks().get(task_id).await?;
         let is_legacy_shell =
             task.runner_kind.is_none() && std::env::var("CONVERGIO_EXECUTOR_USE_RUNNER").is_err();
-        let proc = if is_legacy_shell {
-            self.spawn_legacy(task_id, plan_id).await?
+        let kind = task
+            .runner_kind
+            .as_deref()
+            .and_then(|s| RunnerKind::from_str(s).ok())
+            .unwrap_or_else(|| self.defaults.kind.clone());
+        let task7 = task.id.get(..7).unwrap_or(&task.id);
+        let agent_id = if is_legacy_shell {
+            format!("legacy-{task7}")
         } else {
-            self.spawn_via_runner(&task, plan_id).await?
+            format!("{}-{}", kind.vendor, task7)
         };
-
-        self.durability
-            .transition_task(task_id, TaskStatus::InProgress, Some(&proc.id))
-            .await?;
+        let Some(task) = self
+            .durability
+            .try_claim_pending(task_id, &agent_id)
+            .await?
+        else {
+            tracing::debug!(task_id, plan_id, "claim lost — task no longer pending");
+            return Ok(());
+        };
+        let spawn_result = if is_legacy_shell {
+            self.spawn_legacy(task_id, plan_id).await
+        } else {
+            self.spawn_via_runner(&task, plan_id).await
+        };
+        if let Err(err) = spawn_result {
+            warn!(task_id, plan_id, error = %err, "spawn failed — compensating to failed");
+            self.durability
+                .transition_task(task_id, TaskStatus::Failed, Some(&agent_id))
+                .await
+                .ok();
+            return Err(err);
+        }
         Ok(())
     }
 
@@ -187,11 +201,7 @@ impl Executor {
             .await?)
     }
 
-    /// ADR-0034: per-task runner-based spawn. Picks
-    /// `task.runner_kind` (or daemon default), prepares the vendor
-    /// CLI argv via `convergio-runner`, fetches the graph context
-    /// pack when available, spawns through the supervisor with the
-    /// prompt piped on stdin.
+    /// ADR-0034: per-task runner-based spawn.
     async fn spawn_via_runner(
         &self,
         task: &convergio_durability::Task,
@@ -219,17 +229,11 @@ impl Executor {
         let graph_context = self.fetch_graph_context(&task.id, &seed).await;
         let repo_path = self.repo_path.as_ref().ok_or_else(|| {
             ExecutorError::Worktree(
-                "CONVERGIO_REPO_PATH not configured — refusing to spawn runner with cwd=daemon's \
-                 cwd; that bug wiped the operator's main checkout last time"
-                    .into(),
+                "CONVERGIO_REPO_PATH not configured — refusing to spawn runner".into(),
             )
         })?;
         let cwd = worktree::prepare(repo_path, &task.id)?;
-        info!(
-            task_id = %task.id,
-            cwd = %cwd.display(),
-            "prepared agent worktree"
-        );
+        info!(task_id = %task.id, cwd = %cwd.display(), "prepared agent worktree");
         let ctx = SpawnContext {
             task,
             plan_id,

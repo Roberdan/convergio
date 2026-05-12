@@ -134,6 +134,57 @@ impl Durability {
         Ok(plan)
     }
 
+    /// Atomically claim a `pending` task by promoting it to
+    /// `in_progress` and recording `agent_id`. Returns `Ok(Some(task))`
+    /// when this caller is the one who won the claim and
+    /// `Ok(None)` when the row was already in another state (a
+    /// concurrent caller won, or the task never was `pending`).
+    ///
+    /// The UPDATE is conditional on `status = 'pending'` and the
+    /// audit row goes into the same transaction, so two ticks
+    /// claiming the same task cannot both pass — the second one
+    /// gets `rows_affected = 0` and returns `None`. This closes the
+    /// 2026-05-11 audit's HIGH-severity duplicate-dispatch race in
+    /// `convergio-executor` (`executor.rs:89/108`).
+    pub async fn try_claim_pending(&self, task_id: &str, agent_id: &str) -> Result<Option<Task>> {
+        let now = Utc::now().to_rfc3339();
+        let mut tx = self.pool.inner().begin().await?;
+        let rows_affected = sqlx::query(
+            "UPDATE tasks SET status = 'in_progress', agent_id = ?, \
+             started_at = COALESCE(started_at, ?), updated_at = ? \
+             WHERE id = ? AND status = 'pending'",
+        )
+        .bind(agent_id)
+        .bind(&now)
+        .bind(&now)
+        .bind(task_id)
+        .execute(&mut *tx)
+        .await?
+        .rows_affected();
+        if rows_affected == 0 {
+            tx.rollback().await.ok();
+            return Ok(None);
+        }
+        append_tx(
+            &mut tx,
+            EntityKind::Task,
+            task_id,
+            "task.in_progress",
+            &json!({
+                "task_id": task_id,
+                "from": "pending",
+                "to": "in_progress",
+                "agent_id": agent_id,
+                "claim": "atomic",
+            }),
+            Some(agent_id),
+        )
+        .await?;
+        tx.commit().await?;
+        let task = self.tasks().get(task_id).await?;
+        Ok(Some(task))
+    }
+
     /// Create a task and write the audit row.
     pub async fn create_task(&self, plan_id: &str, input: NewTask) -> Result<Task> {
         // Make sure the plan exists (yields NotFound if not).
