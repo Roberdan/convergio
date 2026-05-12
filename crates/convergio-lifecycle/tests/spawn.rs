@@ -145,6 +145,43 @@ async fn mark_exited_records_exit_code() {
     assert!(after.ended_at.is_some());
 }
 
+/// `/usr/bin/false` exits immediately without reading stdin, so a
+/// `stdin_payload` larger than the OS pipe buffer is guaranteed to
+/// hit EPIPE before `write_all` completes. The supervisor must
+/// propagate that as a spawn failure and persist the row as `failed`
+/// — silently swallowing it (the pre-fix behaviour) would mean a
+/// vendor-CLI runner can miss its prompt while the API still
+/// reports success.
+#[tokio::test]
+async fn spawn_with_failed_stdin_write_marks_process_failed() {
+    let (sup, _dir) = fresh_supervisor().await;
+    // 8 MiB > any default pipe buffer on macOS / Linux.
+    let payload = "x".repeat(8 * 1024 * 1024);
+    let err = sup
+        .spawn(SpawnSpec {
+            kind: "shell".into(),
+            command: "/usr/bin/false".into(),
+            args: vec![],
+            env: vec![],
+            plan_id: None,
+            task_id: None,
+            cwd: None,
+            stdin_payload: Some(payload),
+        })
+        .await
+        .expect_err("expected stdin write failure to surface");
+    assert!(
+        matches!(err, LifecycleError::SpawnFailed(ref m) if m.contains("stdin")),
+        "got {err:?}"
+    );
+    let (status,): (String,) =
+        sqlx::query_as("SELECT status FROM agent_processes ORDER BY started_at DESC LIMIT 1")
+            .fetch_one(sup.pool().inner())
+            .await
+            .unwrap();
+    assert_eq!(status, "failed");
+}
+
 #[tokio::test]
 async fn invalid_started_timestamp_is_data_error_not_not_found() {
     let (sup, _dir) = fresh_supervisor().await;
