@@ -145,6 +145,47 @@ async fn mark_exited_records_exit_code() {
     assert!(after.ended_at.is_some());
 }
 
+/// Unknown persisted status values must surface as a typed error
+/// rather than being silently coerced to `Failed`. The silent
+/// coercion (the pre-fix behaviour at supervisor.rs:277) hides
+/// database invariant drift from operators -- a P1 (zero-tolerance)
+/// reliability concern.
+#[tokio::test]
+async fn unknown_persisted_status_surfaces_typed_error() {
+    let (sup, _dir) = fresh_supervisor().await;
+    let id = uuid::Uuid::new_v4().to_string();
+    sqlx::query(
+        "INSERT INTO agent_processes (id, kind, command, plan_id, task_id, pid, \
+         status, exit_code, last_heartbeat_at, started_at, ended_at) \
+         VALUES (?, 'shell', '/bin/echo', NULL, NULL, NULL, ?, NULL, NULL, ?, NULL)",
+    )
+    .bind(&id)
+    .bind("zombie")
+    .bind(chrono::Utc::now().to_rfc3339())
+    .execute(sup.pool().inner())
+    .await
+    .unwrap();
+
+    let err = sup
+        .get(&id)
+        .await
+        .expect_err("unknown status must surface as an error, not status='failed'");
+    let msg = format!("{err}");
+    assert!(
+        msg.contains("zombie"),
+        "error must mention the offending value, got: {msg}"
+    );
+    let err_list = sup
+        .list(10)
+        .await
+        .expect_err("list must also surface drift, not silently coerce");
+    let msg_list = format!("{err_list}");
+    assert!(
+        msg_list.contains("zombie"),
+        "list error must mention the offending value, got: {msg_list}"
+    );
+}
+
 /// `/usr/bin/false` exits immediately without reading stdin, so a
 /// `stdin_payload` larger than the OS pipe buffer is guaranteed to
 /// hit EPIPE before `write_all` completes. The supervisor must
