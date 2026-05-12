@@ -75,26 +75,22 @@ fn extract_inner_payload(raw: &str) -> Result<String> {
     Ok(trimmed.to_string())
 }
 
-/// Find the first `{ ... }` JSON object in `s` (greedy by depth
-/// counting). Tolerates leading prose / markdown fences from the
-/// model.
+/// Find the first JSON object in `s` and return the byte slice
+/// containing it. Tolerates leading prose / markdown fences and
+/// trailing text the model may emit. Uses [`serde_json`]'s
+/// streaming deserializer so `{` / `}` inside JSON strings do not
+/// truncate the payload (regression fixed in 0.3.x — the previous
+/// byte-level brace counter was string-unaware).
 fn extract_json_object(s: &str) -> Option<&str> {
-    let bytes = s.as_bytes();
-    let start = bytes.iter().position(|&b| b == b'{')?;
-    let mut depth: i32 = 0;
-    for (i, &b) in bytes.iter().enumerate().skip(start) {
-        match b {
-            b'{' => depth += 1,
-            b'}' => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some(&s[start..=i]);
-                }
-            }
-            _ => {}
-        }
-    }
-    None
+    let start = s.find('{')?;
+    let tail = &s[start..];
+    let mut stream = serde_json::Deserializer::from_str(tail).into_iter::<serde_json::Value>();
+    // We only care that a value parses; on parse error there is no
+    // recoverable object so signal None and let callers raise the
+    // higher-quality `OpusOutputInvalid` with the original error.
+    let _ = stream.next()?.ok()?;
+    let end = stream.byte_offset();
+    Some(&tail[..end])
 }
 
 async fn spawn_claude_opus(prompt: &str) -> Result<String> {

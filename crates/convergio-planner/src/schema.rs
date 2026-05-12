@@ -89,6 +89,11 @@ impl PlanShape {
                     "task #{i}: wave must be >= 1"
                 )));
             }
+            if t.sequence < 1 {
+                return Err(PlannerError::OpusOutputInvalid(format!(
+                    "task #{i}: sequence must be >= 1"
+                )));
+            }
         }
         Ok(())
     }
