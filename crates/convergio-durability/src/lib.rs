@@ -20,7 +20,9 @@
 //!
 //! - [`audit`] — append-only hash-chained log
 //! - [`store`] — DAOs for `plans`, `tasks`, `evidence`, `agents`
-//! - [`gates`] — gate pipeline (identity, plan_status, evidence, ...)
+//! - [`gates`] — gate pipeline (plan_status, evidence, crdt_conflict,
+//!   no_debt, no_stub, wire_check, no_secrets, zero_warnings,
+//!   wave_sequence, pr_link)
 //! - [`model`] — domain types
 //!
 //! ## Quickstart

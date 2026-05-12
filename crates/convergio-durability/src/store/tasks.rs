@@ -224,6 +224,17 @@ struct RecentCompletedTaskRow {
 impl TryFrom<TaskRow> for Task {
     type Error = DurabilityError;
     fn try_from(r: TaskRow) -> Result<Self> {
+        // Corrupt persisted state is an explicit durability error
+        // (CONSTITUTION P1, zero tolerance): never silently normalise
+        // an unknown status back to `Pending` (which would re-enter
+        // scheduling) or an unparseable evidence requirement set back
+        // to `[]` (which would let a bad row sail through the
+        // evidence gate).
+        let status = TaskStatus::parse(&r.status).ok_or_else(|| DurabilityError::NotFound {
+            entity: "task_status",
+            id: format!("{}={}", r.id, r.status),
+        })?;
+        let evidence_required = serde_json::from_str(&r.evidence_required)?;
         Ok(Task {
             id: r.id,
             plan_id: r.plan_id,
@@ -231,9 +242,9 @@ impl TryFrom<TaskRow> for Task {
             sequence: r.sequence,
             title: r.title,
             description: r.description,
-            status: TaskStatus::parse(&r.status).unwrap_or(TaskStatus::Pending),
+            status,
             agent_id: r.agent_id,
-            evidence_required: serde_json::from_str(&r.evidence_required).unwrap_or_default(),
+            evidence_required,
             last_heartbeat_at: r.last_heartbeat_at.as_deref().and_then(parse_ts_opt),
             created_at: parse_ts(&r.created_at)?,
             updated_at: parse_ts(&r.updated_at)?,

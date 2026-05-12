@@ -23,7 +23,14 @@ impl Durability {
     /// [`SESSION_STARTED_DEDUP_MINUTES`] (the telemetry signal
     /// `/v1/status.telemetry.sessions_started_24h` counts).
     pub async fn register_agent(&self, input: NewAgent) -> Result<AgentRecord> {
-        let prior = self.agents().get(&input.id).await.ok();
+        let prior = match self.agents().get(&input.id).await {
+            Ok(record) => Some(record),
+            Err(crate::error::DurabilityError::NotFound { .. }) => None,
+            // A decoder / database failure must not be silently coerced
+            // into "no prior agent" — that would emit a spurious
+            // `agent.session_started` audit row from a failed read.
+            Err(e) => return Err(e),
+        };
         let is_session_start = match &prior {
             None => true,
             Some(prev) => match prev.last_heartbeat_at {

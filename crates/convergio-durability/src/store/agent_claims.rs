@@ -10,17 +10,24 @@ use crate::store::AgentStore;
 use chrono::{DateTime, Utc};
 use sqlx::Row;
 
-fn parse_ts(value: &str) -> DateTime<Utc> {
+/// Parse a persisted RFC-3339 timestamp from a projection row.
+/// Corrupt values are surfaced as a typed [`crate::DurabilityError`]
+/// rather than masked with `Utc::now()`, which would make a stale or
+/// tampered task ownership row look freshly written.
+fn parse_ts(value: &str) -> Result<DateTime<Utc>> {
     DateTime::parse_from_rfc3339(value)
         .map(|d| d.with_timezone(&Utc))
-        .unwrap_or_else(|_| Utc::now())
+        .map_err(|_| crate::error::DurabilityError::NotFound {
+            entity: "timestamp",
+            id: value.to_string(),
+        })
 }
 
-fn parse_ts_opt(value: Option<String>) -> Option<DateTime<Utc>> {
-    value
-        .as_deref()
-        .and_then(|s| DateTime::parse_from_rfc3339(s).ok())
-        .map(|d| d.with_timezone(&Utc))
+fn parse_ts_opt(value: Option<String>) -> Result<Option<DateTime<Utc>>> {
+    match value {
+        None => Ok(None),
+        Some(s) => parse_ts(&s).map(Some),
+    }
 }
 
 impl AgentStore {
@@ -69,8 +76,8 @@ impl AgentStore {
                 status: r.try_get("status")?,
                 plan_id: r.try_get("plan_id")?,
                 plan_title: r.try_get("plan_title")?,
-                started_at: parse_ts_opt(started_at),
-                updated_at: parse_ts(&updated_at),
+                started_at: parse_ts_opt(started_at)?,
+                updated_at: parse_ts(&updated_at)?,
             });
         }
 

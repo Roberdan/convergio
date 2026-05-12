@@ -42,11 +42,7 @@ impl Executor {
 
     /// Set the operator's repo root. Required for runner-based
     /// dispatch — the executor pre-creates a git worktree under
-    /// `<repo_path>/.claude/worktrees/agent-<task7>` so the agent
-    /// never gets `cwd = main checkout`. Without it, the runner
-    /// path refuses to spawn (better than the historical bug
-    /// where an agent ran `git checkout` on the operator's main
-    /// working tree).
+    /// `<repo_path>/.claude/worktrees/agent-<task7>` per task.
     pub fn with_repo_path(mut self, repo_path: PathBuf) -> Self {
         self.repo_path = Some(repo_path);
         self
@@ -60,8 +56,6 @@ impl Executor {
     }
 
     /// Attach a graph store so context-pack injection works.
-    /// Without it the executor still spawns runners but the prompt
-    /// will not carry tier-3 retrieval (best-effort behaviour).
     pub fn with_graph(mut self, graph: convergio_graph::Store) -> Self {
         self.graph = Some(graph);
         self
@@ -137,8 +131,16 @@ impl Executor {
     }
 
     async fn dispatch_one(&self, task_id: &str, plan_id: &str) -> Result<()> {
-        // Audit 2026-05-12 W1-B: atomic claim BEFORE spawn closes the
-        // duplicate-dispatch race. See `Durability::try_claim_pending`.
+        // W1-B atomic claim + pre-check guards: cap-exceeded is
+        // transient, so skip claim+compensate to avoid flipping
+        // tasks to Failed under disk pressure (convergio-edu bug
+        // 2026-05-12). Claim+compensate stays for real spawn errors.
+        if let Some(repo_root) = self.repo_path.as_ref() {
+            if let Err(e) = crate::guards::enforce(repo_root) {
+                tracing::debug!(task_id, plan_id, error = %e, "skipping dispatch — guard refused");
+                return Ok(());
+            }
+        }
         let task = self.durability.tasks().get(task_id).await?;
         let is_legacy_shell =
             task.runner_kind.is_none() && std::env::var("CONVERGIO_EXECUTOR_USE_RUNNER").is_err();
