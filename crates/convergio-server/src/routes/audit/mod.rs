@@ -74,11 +74,17 @@ async fn verify(
             .await?
             .map(|e| e.seq)
             .unwrap_or(0);
+        // Recover from a poisoned mutex instead of panicking the
+        // request: the cache holds only a (seq, report) snapshot,
+        // and even a half-written entry is dropped + re-derived
+        // here. Pre-2026-05-12 these sites used `.expect()` which
+        // turned any poisoning into a 5xx panic-on-request — see
+        // 2026-05-11 audit `routes/audit/mod.rs:81` (HIGH).
         {
             let guard = state
                 .audit_verify_cache
                 .lock()
-                .expect("audit_verify_cache poisoned");
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
             if let Some((cached_seq, ref report)) = *guard {
                 if cached_seq == tail_seq {
                     return Ok(Json(report.clone()));
@@ -89,7 +95,7 @@ async fn verify(
         *state
             .audit_verify_cache
             .lock()
-            .expect("audit_verify_cache poisoned") = Some((tail_seq, report.clone()));
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = Some((tail_seq, report.clone()));
         return Ok(Json(report));
     }
     let report = state.durability.audit().verify(q.from, q.to).await?;
