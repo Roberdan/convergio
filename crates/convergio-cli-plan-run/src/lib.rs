@@ -8,6 +8,7 @@
 //! local mirrors defined below.
 
 pub mod runner;
+pub(crate) mod wave;
 
 pub use runner::run;
 
