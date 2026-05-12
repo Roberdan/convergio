@@ -97,10 +97,7 @@ impl Client {
     /// concurrently with the per-plan fan-out via
     /// `tokio::join!`.
     pub async fn snapshot_core(&self) -> Result<Snapshot> {
-        let mut plans: Vec<Plan> = self
-            .get_json("/v1/plans")
-            .await
-            .unwrap_or_else(|_| Vec::new());
+        let mut plans: Vec<Plan> = self.get_json("/v1/plans").await?;
         sort_plans_by_status(&mut plans);
 
         let plan_ids: Vec<String> = plans.iter().map(|p| p.id.clone()).collect();
@@ -116,12 +113,21 @@ impl Client {
 
         let mut tasks: Vec<TaskSummary> = Vec::new();
         let mut messages: Vec<BusMessage> = Vec::new();
-        for (plan_id, mut plan_tasks, mut plan_messages) in plan_results {
-            for t in &mut plan_tasks {
-                t.plan_id = plan_id.clone();
+        let mut partial = false;
+        for (plan_id, plan_tasks, plan_messages) in plan_results {
+            match plan_tasks {
+                Ok(mut rows) => {
+                    for t in &mut rows {
+                        t.plan_id = plan_id.clone();
+                    }
+                    tasks.append(&mut rows);
+                }
+                Err(_) => partial = true,
             }
-            tasks.append(&mut plan_tasks);
-            messages.append(&mut plan_messages);
+            match plan_messages {
+                Ok(mut rows) => messages.append(&mut rows),
+                Err(_) => partial = true,
+            }
         }
         messages.sort_by_key(|m| std::cmp::Reverse(m.seq));
         messages.truncate(200);
@@ -135,7 +141,7 @@ impl Client {
             messages,
             audit_ok,
             daemon_version,
-            partial: false,
+            partial,
         })
     }
 
@@ -179,18 +185,14 @@ impl Client {
     async fn fetch_plan_overview(
         &self,
         plan_id: String,
-    ) -> (String, Vec<TaskSummary>, Vec<BusMessage>) {
+    ) -> (String, Result<Vec<TaskSummary>>, Result<Vec<BusMessage>>) {
         let tasks_path = format!("/v1/plans/{plan_id}/tasks");
         let messages_path = format!("/v1/plans/{plan_id}/messages/tail?limit=100");
         let (tasks, messages) = tokio::join!(
             self.get_json::<Vec<TaskSummary>>(&tasks_path),
             self.get_json::<Vec<BusMessage>>(&messages_path),
         );
-        (
-            plan_id,
-            tasks.unwrap_or_default(),
-            messages.unwrap_or_default(),
-        )
+        (plan_id, tasks, messages)
     }
 
     async fn fetch_globals(

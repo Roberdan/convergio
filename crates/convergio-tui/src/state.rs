@@ -81,6 +81,11 @@ pub enum Connection {
     Initial,
     /// Last refresh succeeded.
     Connected,
+    /// Last refresh succeeded for the top-level plan list but at
+    /// least one per-plan sub-fetch failed (partial snapshot). The
+    /// dashboard keeps rendering what it has, but the footer warns
+    /// the operator instead of pretending everything is fine.
+    Degraded,
     /// Last refresh failed (network or 4xx/5xx).
     Disconnected,
 }

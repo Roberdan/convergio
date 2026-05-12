@@ -32,6 +32,7 @@ impl AppState {
     pub fn apply_snapshot(&mut self, snapshot: anyhow::Result<Snapshot>) {
         match snapshot {
             Ok(s) => {
+                let partial = s.partial;
                 self.plans = s.plans;
                 self.tasks = s.tasks;
                 self.agents = s.agents;
@@ -42,7 +43,11 @@ impl AppState {
                 self.messages = s.messages;
                 self.audit_ok = s.audit_ok;
                 self.daemon_version = s.daemon_version;
-                self.connection = Connection::Connected;
+                self.connection = if partial {
+                    Connection::Degraded
+                } else {
+                    Connection::Connected
+                };
                 self.last_refresh = Some(chrono::Utc::now());
             }
             Err(_) => {

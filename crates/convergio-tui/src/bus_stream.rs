@@ -100,9 +100,16 @@ async fn supervisor(
     buffer: Arc<Mutex<VecDeque<BusMessage>>>,
     transport: Arc<Mutex<Transport>>,
 ) {
+    // Building the reqwest client only fails on TLS init / OS resource
+    // exhaustion. Surface that as Reconnecting so the dashboard footer
+    // does not pretend nothing is wrong, then fall back to a default
+    // client so the supervisor keeps polling on the next plan change.
     let client = match reqwest::Client::builder().build() {
         Ok(c) => c,
-        Err(_) => return,
+        Err(_) => {
+            set_transport(&transport, Transport::Reconnecting);
+            reqwest::Client::new()
+        }
     };
     loop {
         let plan_id = plan_rx.borrow().clone();
