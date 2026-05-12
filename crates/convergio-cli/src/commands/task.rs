@@ -1,5 +1,6 @@
 //! `cvg task ...` — create, inspect and transition local tasks.
 
+use super::task_pr_url::parse_github_pr_url;
 use super::task_render::{render_task, render_task_list};
 use super::task_templates::{resolve_evidence, TaskTemplate};
 use super::{Client, OutputMode};
@@ -275,25 +276,4 @@ pub async fn run(
             render_task(&done, output)
         }
     }
-}
-fn parse_github_pr_url(url: &str) -> Option<(String, i64)> {
-    let url = url.trim();
-    let url = url
-        .strip_prefix("https://github.com/")
-        .or_else(|| url.strip_prefix("http://github.com/"))?;
-    let mut parts = url.split('/');
-    let owner = parts.next()?.trim();
-    let repo = parts.next()?.trim();
-    let kind = parts.next()?;
-    if kind != "pull" {
-        return None;
-    }
-    let pr_raw = parts.next()?;
-    let pr_number_str = pr_raw.split(['?', '#']).next().unwrap_or("");
-    let pr_number = pr_number_str.parse::<i64>().ok()?;
-    if owner.is_empty() || repo.is_empty() {
-        return None;
-    }
-
-    Some((format!("{owner}/{repo}"), pr_number))
 }

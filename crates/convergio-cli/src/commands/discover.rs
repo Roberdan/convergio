@@ -5,9 +5,10 @@
 //! across human / json / plain. Identity resolution mirrors
 //! `cvg status --mine`: `--agent-id` flag → `CONVERGIO_AGENT_ID` env →
 //! `claude-code-${USER}`. Uses `serde_json::Value` directly to keep
-//! the file under the 300-line cap (CONSTITUTION § 13).
+//! the file under the 300-line cap (CONSTITUTION § 13); rendering
+//! lives in [`super::discover_render`] for the same reason.
 
-use super::agent_format::{relative_ago_opt, truncate};
+use super::discover_render::{render_human, render_plain};
 use super::{Client, OutputMode};
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Duration, Utc};
@@ -160,127 +161,7 @@ async fn aggregate_your_plans(client: &Client, plans: &[Value], me: &str) -> Vec
     out
 }
 
-fn render_human(
-    bundle: &Bundle,
-    now: &DateTime<Utc>,
-    since: &str,
-    me: &str,
-    peers: &[Value],
-    topics: &[Value],
-    plans: &[Value],
-) {
-    println!(
-        "{} ({})",
-        bundle.t("discover-header", &[("at", &now.to_rfc3339())]),
-        me
-    );
-    println!();
-    println!("{}", bundle.t("discover-active-peers", &[("since", since)]));
-    if peers.is_empty() {
-        println!("  {}", bundle.t("discover-empty-peers", &[]));
-    }
-    for p in peers {
-        let id = p["id"].as_str().unwrap_or("-");
-        let kind = p["kind"].as_str().unwrap_or("-");
-        let status = p["status"].as_str().unwrap_or("-");
-        let caps = p["capabilities"]
-            .as_array()
-            .map(|a| {
-                a.iter()
-                    .filter_map(|v| v.as_str())
-                    .collect::<Vec<_>>()
-                    .join(",")
-            })
-            .unwrap_or_default();
-        let task = p["current_task_id"].as_str().unwrap_or("-");
-        let hb = parse_dt(&p["last_heartbeat_at"]);
-        println!(
-            "  {:<28} {:<10} {:<11} {:<10} {:<32} {}",
-            truncate(id, 28),
-            kind,
-            status,
-            relative_ago_opt(hb.as_ref(), now),
-            truncate(&caps, 32),
-            truncate(task, 32)
-        );
-    }
-    println!();
-    println!("{}", bundle.t("discover-recent-bus", &[]));
-    if topics.is_empty() {
-        println!("  {}", bundle.t("discover-empty-bus", &[]));
-    }
-    for t in topics {
-        let pid = t["plan_id"].as_str().unwrap_or("");
-        println!(
-            "  {:<40} {:<8} plan {} {}",
-            truncate(t["topic"].as_str().unwrap_or(""), 40),
-            t["count"].as_i64().unwrap_or(0),
-            &pid[..8.min(pid.len())],
-            relative_ago_opt(parse_dt(&t["last_at"]).as_ref(), now)
-        );
-    }
-    println!();
-    println!("{}", bundle.t("discover-your-plans", &[]));
-    if plans.is_empty() {
-        println!("  {}", bundle.t("discover-empty-plans", &[]));
-    }
-    for p in plans {
-        let pid = p["plan_id"].as_str().unwrap_or("");
-        println!(
-            "  {} {:<8} {:<48} open={}",
-            &pid[..8.min(pid.len())],
-            p["status"].as_str().unwrap_or(""),
-            truncate(p["title"].as_str().unwrap_or(""), 48),
-            p["your_tasks_open"].as_i64().unwrap_or(0)
-        );
-    }
-}
-
-fn render_plain(peers: &[Value], topics: &[Value], plans: &[Value], now: &DateTime<Utc>) {
-    for p in peers {
-        let caps = p["capabilities"]
-            .as_array()
-            .map(|a| {
-                a.iter()
-                    .filter_map(|v| v.as_str())
-                    .collect::<Vec<_>>()
-                    .join(",")
-            })
-            .unwrap_or_default();
-        println!(
-            "peer\t{}\t{}\t{}\t{}\t{}",
-            p["id"].as_str().unwrap_or(""),
-            p["kind"].as_str().unwrap_or(""),
-            p["status"].as_str().unwrap_or(""),
-            relative_ago_opt(parse_dt(&p["last_heartbeat_at"]).as_ref(), now),
-            caps
-        );
-    }
-    for t in topics {
-        println!(
-            "topic\t{}\t{}\t{}\t{}",
-            t["topic"].as_str().unwrap_or(""),
-            t["plan_id"].as_str().unwrap_or(""),
-            t["count"].as_i64().unwrap_or(0),
-            relative_ago_opt(parse_dt(&t["last_at"]).as_ref(), now)
-        );
-    }
-    for p in plans {
-        println!(
-            "plan\t{}\t{}\t{}\t{}",
-            p["plan_id"].as_str().unwrap_or(""),
-            p["status"].as_str().unwrap_or(""),
-            p["your_tasks_open"].as_i64().unwrap_or(0),
-            p["title"].as_str().unwrap_or("")
-        );
-    }
-}
-
-fn parse_dt(v: &Value) -> Option<DateTime<Utc>> {
-    v.as_str()
-        .and_then(|s| DateTime::parse_from_rfc3339(s).ok())
-        .map(|t| t.with_timezone(&Utc))
-}
+// `render_human` and `render_plain` live in `discover_render`.
 
 #[cfg(test)]
 mod tests {

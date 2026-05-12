@@ -15,9 +15,9 @@
 //! Now a single verb instead of seven hand-rolled `git worktree
 //! remove` / `git branch -D` calls per session.
 
+use super::fleet_cleanup_render::render as render_report;
 use super::OutputMode;
 use anyhow::{Context, Result};
-use serde_json::json;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -25,7 +25,14 @@ use std::process::Command;
 pub fn run(output: OutputMode, dry_run: bool) -> Result<()> {
     let repo_root = locate_repo_root().context("not inside a git repo")?;
     let report = sweep(&repo_root, dry_run)?;
-    render(&report, output, dry_run);
+    render_report(
+        &report.orphan_worktrees,
+        &report.stale_branches,
+        &report.failures,
+        report.prune_ran,
+        output,
+        dry_run,
+    );
     Ok(())
 }
 
@@ -34,10 +41,17 @@ pub fn run(output: OutputMode, dry_run: bool) -> Result<()> {
 #[derive(Debug, Default)]
 struct Report {
     /// Worktrees under `.claude/worktrees/agent-*` whose tracked
-    /// branch no longer exists on `origin` → safe to remove.
+    /// branch no longer exists on `origin` AND which were
+    /// successfully removed by `git worktree remove`. Failed removals
+    /// move into [`Report::failures`] instead.
     orphan_worktrees: Vec<PathBuf>,
     /// Local `agent/*` branches whose remote ref is gone → safe to delete.
     stale_branches: Vec<String>,
+    /// Per-item failures the sweep encountered: `(path, stderr/explanation)`.
+    /// Populated when `git worktree remove` / `git branch -D` refuses
+    /// the operation — the original code swallowed those silently and
+    /// still claimed the worktree was removed.
+    failures: Vec<(PathBuf, String)>,
     /// `git worktree prune` output (admin-dir cleanup count from stderr).
     prune_ran: bool,
 }
@@ -67,13 +81,24 @@ fn sweep(repo_root: &Path, dry_run: bool) -> Result<Report> {
                 continue;
             }
             if !dry_run {
-                let _ = run_git(
+                match run_git(
                     repo_root,
                     &["worktree", "remove", "--force", path.to_str().unwrap_or("")],
-                );
-                let _ = run_git(repo_root, &["branch", "-D", &branch]);
+                ) {
+                    Ok(_) => {
+                        // Branch deletion is best-effort: a worktree
+                        // without a tracking branch already returns
+                        // success from `branch -D`.
+                        let _ = run_git(repo_root, &["branch", "-D", &branch]);
+                        report.orphan_worktrees.push(path);
+                    }
+                    Err(e) => {
+                        report.failures.push((path, format!("{e:#}")));
+                    }
+                }
+            } else {
+                report.orphan_worktrees.push(path);
             }
-            report.orphan_worktrees.push(path);
         }
     }
 
@@ -92,58 +117,17 @@ fn sweep(repo_root: &Path, dry_run: bool) -> Result<Report> {
             continue;
         }
         if !dry_run {
-            let _ = run_git(repo_root, &["branch", "-D", branch]);
+            if let Err(e) = run_git(repo_root, &["branch", "-D", branch]) {
+                report
+                    .failures
+                    .push((PathBuf::from(branch), format!("{e:#}")));
+                continue;
+            }
         }
         report.stale_branches.push(branch.to_owned());
     }
 
     Ok(report)
-}
-
-fn render(report: &Report, output: OutputMode, dry_run: bool) {
-    match output {
-        OutputMode::Json => {
-            let v = json!({
-                "dry_run": dry_run,
-                "orphan_worktrees": report.orphan_worktrees.iter().map(|p| p.display().to_string()).collect::<Vec<_>>(),
-                "stale_branches":   report.stale_branches,
-                "prune_ran":        report.prune_ran,
-            });
-            println!(
-                "{}",
-                serde_json::to_string_pretty(&v).unwrap_or_else(|_| "{}".into())
-            );
-        }
-        OutputMode::Plain => {
-            for p in &report.orphan_worktrees {
-                println!("worktree {}", p.display());
-            }
-            for b in &report.stale_branches {
-                println!("branch {b}");
-            }
-        }
-        OutputMode::Human => {
-            let prefix = if dry_run { "would remove" } else { "removed" };
-            println!(
-                "cvg fleet cleanup — {} {} orphan worktree(s), {} stale branch(es).",
-                prefix,
-                report.orphan_worktrees.len(),
-                report.stale_branches.len(),
-            );
-            for p in &report.orphan_worktrees {
-                println!("  worktree  {}", p.display());
-            }
-            for b in &report.stale_branches {
-                println!("  branch    {b}");
-            }
-            if !dry_run && report.prune_ran {
-                println!("  (git worktree prune ran)");
-            }
-            println!(
-                "  note: agent_processes rows in state.db are reconciled by the daemon reaper."
-            );
-        }
-    }
 }
 
 /// Walk up from `cwd` until a `.git` is found.
@@ -180,6 +164,12 @@ fn run_git(repo_root: &Path, args: &[&str]) -> Result<String> {
         .args(args)
         .output()
         .with_context(|| format!("git {} failed", args.join(" ")))?;
+    if !out.status.success() {
+        let stderr = String::from_utf8_lossy(&out.stderr).trim().to_string();
+        let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
+        let detail = if stderr.is_empty() { stdout } else { stderr };
+        anyhow::bail!("git {} failed: {}", args.join(" "), detail);
+    }
     Ok(String::from_utf8_lossy(&out.stdout).into_owned())
 }
 
@@ -248,5 +238,44 @@ mod tests {
             .unwrap();
         let report = sweep(&repo, true).expect("sweep");
         assert!(report.stale_branches.iter().any(|b| b == "agent/foo"));
+    }
+
+    /// Regression guard for the crates/convergio-cli audit
+    /// follow-up (T828d03c, MEDIUM finding on
+    /// fleet_cleanup.rs:70): when a worktree directory under
+    /// `.claude/worktrees/agent-*` is NOT actually a registered git
+    /// worktree, \`git worktree remove --force\` fails. The original
+    /// code swallowed that failure with \`let _ = run_git(...)\`
+    /// while still pushing the path to \`orphan_worktrees\`, so the
+    /// report told the operator "removed" when the directory was
+    /// still on disk. The sweep must record the failure instead.
+    #[test]
+    fn sweep_records_failure_when_worktree_remove_fails() {
+        let (_tmp, repo) = init_repo();
+        // Create an orphan directory under .claude/worktrees/agent-X
+        // that is NOT a registered git worktree: `git worktree
+        // remove` will refuse it.
+        let wt_dir = repo.join(".claude/worktrees/agent-fake");
+        fs::create_dir_all(&wt_dir).unwrap();
+        fs::write(wt_dir.join("placeholder"), "not-a-worktree").unwrap();
+
+        let report = sweep(&repo, false).expect("sweep");
+
+        // The path must not be reported as successfully removed —
+        // either it does not appear in orphan_worktrees at all, or
+        // the report carries an explicit failure entry. Either way
+        // the directory must still exist on disk because the
+        // underlying git command refused the operation.
+        assert!(
+            wt_dir.exists(),
+            "git worktree remove should have refused; dir gone — test setup broke"
+        );
+        let claims_removed = report.orphan_worktrees.iter().any(|p| p == &wt_dir);
+        let records_failure = report.failures.iter().any(|(p, _)| p == &wt_dir);
+        assert!(
+            !claims_removed || records_failure,
+            "sweep claimed to remove {wt_dir:?} but the directory still exists \
+             and no failure was recorded"
+        );
     }
 }
