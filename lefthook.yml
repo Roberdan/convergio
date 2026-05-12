@@ -50,6 +50,14 @@ pre-commit:
 pre-push:
   parallel: true
   commands:
+    workspace-integrity:
+      # 2026-05-12 incident: a broad `git checkout --theirs` during
+      # merge-cascade marked 457 files (incl. Cargo.toml) as deleted.
+      # CI caught it, but only after the push round-trip. This local
+      # gate refuses any push that breaks workspace skeleton.
+      glob: "**/*"
+      run: ./scripts/check-workspace-integrity.sh
+      fail_text: "workspace skeleton broken — see ./scripts/check-workspace-integrity.sh output"
     docs-auto-blocks:
       # Block pushes that would introduce drift in `<!-- BEGIN AUTO:... -->` blocks.
       glob: "**/*"
