@@ -31,7 +31,7 @@ pub enum TaskType {
 }
 
 /// Required evidence kinds per task type (see ADR-0044).
-fn required_kinds(t: &TaskType) -> &'static [&'static str] {
+pub(crate) fn required_kinds(t: &TaskType) -> &'static [&'static str] {
     match t {
         TaskType::Code => &["context_pack", "ci_run", "merge_record"],
         TaskType::DocOnly => &["ci_run", "merge_record"],
@@ -39,7 +39,7 @@ fn required_kinds(t: &TaskType) -> &'static [&'static str] {
     }
 }
 
-fn infer_type(evidence_kinds: &HashSet<String>) -> TaskType {
+pub(crate) fn infer_type(evidence_kinds: &HashSet<String>) -> TaskType {
     if evidence_kinds.contains("code") || evidence_kinds.contains("merge_record") {
         TaskType::Code
     } else if evidence_kinds.contains("adr") {
@@ -108,7 +108,11 @@ pub async fn run(
     Ok(())
 }
 
-async fn build_report(client: &reqwest::Client, daemon: &str, plan_id: &str) -> Result<Report> {
+pub(crate) async fn build_report(
+    client: &reqwest::Client,
+    daemon: &str,
+    plan_id: &str,
+) -> Result<Report> {
     let all_tasks = scan::fetch_tasks(client, daemon, plan_id).await?;
     let closed: Vec<_> = all_tasks
         .into_iter()

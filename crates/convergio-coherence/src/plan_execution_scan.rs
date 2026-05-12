@@ -114,3 +114,51 @@ pub(crate) async fn fetch_bus_messages(
         _ => vec![],
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::{routing::get, Json, Router};
+    use tokio::net::TcpListener;
+
+    async fn spawn(router: Router) -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            axum::serve(listener, router).await.unwrap();
+        });
+        format!("http://{addr}")
+    }
+
+    // Regression test for audit finding `plan_execution_scan.rs:108`:
+    // `GET /v1/plans/:plan_id/messages` returns a JSON array, not NDJSON,
+    // so per-line parsing always yields an empty vec and `bus_ok` is
+    // permanently false. With the fix this returns one decoded message.
+    #[tokio::test]
+    async fn fetch_bus_messages_decodes_json_array() {
+        let router = Router::new().route(
+            "/v1/plans/:plan_id/messages",
+            get(|| async {
+                Json(serde_json::json!([
+                    {
+                        "id": "msg-1",
+                        "seq": 1,
+                        "plan_id": "plan-1",
+                        "topic": "task.done",
+                        "sender": "agent-a",
+                        "payload": {},
+                        "consumed_at": null,
+                        "consumed_by": null,
+                        "created_at": "2026-01-01T00:00:00Z"
+                    }
+                ]))
+            }),
+        );
+        let base = spawn(router).await;
+        let client = reqwest::Client::new();
+        let msgs = fetch_bus_messages(&client, &base, "plan-1").await;
+        assert_eq!(msgs.len(), 1, "expected 1 message decoded from JSON array");
+        assert_eq!(msgs[0].sender, "agent-a");
+        assert_eq!(msgs[0].topic, "task.done");
+    }
+}

@@ -202,4 +202,32 @@ mod tests {
         let fallback = parse_since("garbage").unwrap();
         assert!((now - fallback).num_days() >= 6 && (now - fallback).num_days() <= 8);
     }
+
+    // Regression test for audit finding `close_post_hoc_scan.rs:36`:
+    // when the audit page fetch failed, scan_audit returned a partial
+    // clean Ok(hits) instead of surfacing the failure, so the verifier
+    // could report "no close-post-hoc rows" even when it never reached
+    // the daemon. With the fix the HTTP failure propagates as Err.
+    #[tokio::test]
+    async fn scan_audit_propagates_page_fetch_failure() {
+        use axum::{routing::get, Router};
+        use tokio::net::TcpListener;
+
+        let router = Router::new().route(
+            "/v1/audit/events",
+            get(|| async { (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "boom") }),
+        );
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            axum::serve(listener, router).await.unwrap();
+        });
+        let base = format!("http://{addr}");
+        let client = reqwest::Client::new();
+        let res = scan_audit(&client, &base, Utc::now() - Duration::days(7)).await;
+        assert!(
+            res.is_err(),
+            "expected scan_audit to surface HTTP 500 as Err, got {res:?}"
+        );
+    }
 }

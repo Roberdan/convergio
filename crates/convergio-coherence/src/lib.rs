@@ -47,6 +47,8 @@ mod handshake_tests;
 mod parse;
 pub mod plan_execution;
 mod plan_execution_scan;
+#[cfg(test)]
+mod plan_execution_tests;
 mod routes;
 mod routes_diff;
 mod routes_parse;
