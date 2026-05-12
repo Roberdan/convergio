@@ -99,3 +99,26 @@ pub(super) fn file_loc(path: &str) -> u64 {
         Err(_) => 0,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Regression: silently returning `0` for unreadable files makes
+    /// "file deleted" and "file empty" indistinguishable. The audit
+    /// 2026-05 follow-up requires `file_loc` to surface the I/O
+    /// failure so callers can log + skip explicitly.
+    #[test]
+    fn file_loc_distinguishes_missing_from_empty() {
+        // After the fix `file_loc` returns `Result<u64>` and this
+        // becomes `expect_err`. Today it returns `0` and the assertion
+        // fails — that's the failing red state we want for commit 1.
+        let dir = tempfile::tempdir().unwrap();
+        let missing = dir.path().join("does-not-exist.rs");
+        let n = file_loc(missing.to_str().unwrap());
+        assert_ne!(
+            n, 0,
+            "missing file must not be reported indistinguishably from an empty file"
+        );
+    }
+}
