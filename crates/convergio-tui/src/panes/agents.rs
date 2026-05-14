@@ -171,17 +171,7 @@ fn heartbeat_age(last: Option<&str>) -> String {
     }
 }
 
-fn short(s: &str, max: usize) -> &str {
-    if s.len() <= max {
-        s
-    } else {
-        let mut end = max;
-        while !s.is_char_boundary(end) && end > 0 {
-            end -= 1;
-        }
-        &s[..end]
-    }
-}
+use crate::text_util::truncate as short;
 
 #[cfg(test)]
 mod tests {

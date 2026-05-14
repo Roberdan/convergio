@@ -24,6 +24,7 @@
 //! the existing branch into a fresh worktree.
 
 use crate::error::{ExecutorError, Result};
+use convergio_durability::WorktreeHolder;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -54,12 +55,15 @@ pub fn worktree_path(repo_root: &Path, task_id: &str) -> PathBuf {
 /// exists we re-add a fresh worktree on it. Errors fail the
 /// dispatch — better than spawning into the main checkout.
 ///
-/// Before any filesystem mutation we run [`crate::guards::enforce`]
-/// so a runaway dispatcher cannot fill the disk with parallel
-/// worktrees (incident 2026-05-08, see post-mortem in
-/// `docs/incidents/`).
-pub fn prepare(repo_root: &Path, task_id: &str) -> Result<PathBuf> {
-    crate::guards::enforce(repo_root)?;
+/// Before any filesystem mutation we run
+/// [`crate::guards::enforce_with_holders`] so a runaway dispatcher
+/// cannot fill the disk with parallel worktrees (incident
+/// 2026-05-08, see post-mortem in `docs/incidents/`). `holders`
+/// is forwarded to the guard so the refusal message names the
+/// blocking tasks; callers without access to a Durability handle
+/// safely pass `&[]`.
+pub fn prepare(repo_root: &Path, task_id: &str, holders: &[WorktreeHolder]) -> Result<PathBuf> {
+    crate::guards::enforce_with_holders(repo_root, holders)?;
     let path = worktree_path(repo_root, task_id);
     if path.exists() {
         // The reaper or a previous tick already prepared this

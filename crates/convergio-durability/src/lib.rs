@@ -98,3 +98,4 @@ pub use store::{NewPlanPrLink, PlanPrLink, PlanPrLinksStore};
 pub use store::{
     NewWorkspaceLease, NewWorkspaceResource, WorkspaceLease, WorkspaceResource, WorkspaceStore,
 };
+pub use store::{WorktreeHolder, WorktreeStore};

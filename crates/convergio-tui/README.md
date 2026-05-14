@@ -1,8 +1,8 @@
 # convergio-tui (`cvg dash`)
 
-Terminal dashboard for the local Convergio daemon. A single 4-pane
-console — Plans, Active Tasks, Agents, PRs — that refreshes on a tick
-and gives you the state of the system at a glance.
+Terminal dashboard for the local Convergio daemon. A single 5-pane
+console — Plans, Active Tasks, Agents, PRs, Bus — that refreshes on a
+tick and gives you the state of the system at a glance.
 
 ```bash
 cvg dash                            # default refresh 5s
@@ -30,10 +30,14 @@ CONVERGIO_URL=http://host:8420 cvg dash  # remote daemon
 
 | Key | Action |
 |-----|--------|
-| `q`, `Esc`, `Ctrl+C` | quit |
+| `q`, `Ctrl+C` | quit |
+| `Enter` | drill-down into the focused pane (scope filter, or detail panel for Bus) |
+| `Esc` | step back: leave detail / clear scope / quit when already at top |
 | `r` | refresh now (skip tick wait) |
 | `Tab` / `Shift+Tab` | next / previous pane |
 | `j` / `k`, `↓` / `↑` | scroll within pane |
+| `e` | toggle exited agents in the Agents pane |
+| `t` | toggle terminal-status tasks (`done`/`failed`) in the Tasks pane |
 
 ## Configuration
 
@@ -68,11 +72,12 @@ each pane owns its own renderer:
 | `src/client.rs` | `reqwest` fetcher (read-only) + `gh` shell-out |
 | `src/tick.rs` | refresh interval driver |
 | `src/keymap.rs` | key dispatch |
-| `src/render.rs` | top-level 4-pane layout + footer |
+| `src/render.rs` | top-level multi-pane layout + footer |
 | `src/panes/plans.rs`  | Plans pane renderer |
 | `src/panes/tasks.rs`  | Active tasks pane renderer |
 | `src/panes/agents.rs` | Agents pane renderer |
 | `src/panes/prs.rs`    | PRs pane renderer |
+| `src/panes/bus.rs`    | Bus pane renderer |
 
 Read [`AGENTS.md`](./AGENTS.md) before editing.
 
@@ -92,7 +97,8 @@ and `convergio-mcp` (MCP bridge) also installs the TUI as part of
 
 ## Status
 
-- **MVP**: 4 panes, refresh tick, quit, scroll. No actions.
-- **Next** (separate ADR/PR if/when needed): `Enter` to drill-down
-  into a pane (full-screen detail view), `:command` interactive mode
-  for state-changing actions.
+- **Shipped**: 5 panes (Plans, Tasks, Agents, PRs, Bus), tick refresh,
+  quit, scroll, `Enter`/`Esc` drill-down + scope filter, `e`/`t`
+  visibility toggles, live SSE Bus tail with polling fallback.
+- **Next** (separate ADR/PR if/when needed): `:command` interactive
+  mode for state-changing actions.

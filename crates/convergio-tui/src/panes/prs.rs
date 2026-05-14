@@ -129,17 +129,7 @@ fn ci_style(ci: &str) -> Style {
     }
 }
 
-fn short(s: &str, max: usize) -> &str {
-    if s.len() <= max {
-        s
-    } else {
-        let mut end = max;
-        while !s.is_char_boundary(end) && end > 0 {
-            end -= 1;
-        }
-        &s[..end]
-    }
-}
+use crate::text_util::truncate as short;
 
 fn time_or_dash(raw: Option<&str>) -> String {
     raw.map(|s| s.get(..10).unwrap_or(s).to_string())

@@ -6,7 +6,7 @@ use crate::error::Result;
 use crate::gates::{self, Pipeline};
 use crate::model::{NewPlan, NewTask, Plan, PlanStatus, Task, TaskStatus};
 use crate::store::{
-    CrdtStore, EvidenceStore, PlanPrLinksStore, PlanStore, TaskStore, WorkspaceStore,
+    CrdtStore, EvidenceStore, PlanPrLinksStore, PlanStore, TaskStore, WorkspaceStore, WorktreeStore,
 };
 use chrono::Utc;
 use convergio_db::Pool;
@@ -63,6 +63,13 @@ impl Durability {
     /// Workspace coordination store accessor.
     pub fn workspace(&self) -> WorkspaceStore {
         WorkspaceStore::new(self.pool.clone())
+    }
+
+    /// Worktree-to-task reverse lookup store (used by the executor
+    /// dispatch guard to enumerate active holders in refusal
+    /// messages).
+    pub fn worktrees(&self) -> WorktreeStore {
+        WorktreeStore::new(self.pool.clone())
     }
 
     /// Plan↔PR link store accessor (P2-3 / F47).
