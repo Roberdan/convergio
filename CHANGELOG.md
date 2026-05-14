@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.25](https://github.com/Roberdan/convergio/compare/convergio-v0.3.24...convergio-v0.3.25) (2026-05-14)
+
+
+### Features
+
+* **executor:** enumerate worktree holders in guard refusal messages ([2192e3e](https://github.com/Roberdan/convergio/commit/2192e3e5b24a45aa77f009442d3d8febfece6dc4))
+
+
+### Bug Fixes
+
+* **durability:** validate worktree slug charset before like lookup ([3b2ca18](https://github.com/Roberdan/convergio/commit/3b2ca187589565be04b3b2c59422b6bce5d32653))
+* **mcp:** preserve not-found mapping on plain-text 404 from daemon ([2fac01f](https://github.com/Roberdan/convergio/commit/2fac01fa86db9358cbfd1ec54f33bb304bd7583a))
+* **repo:** drop glob from pre-push guards so root files trigger them ([9d52c92](https://github.com/Roberdan/convergio/commit/9d52c929e53c75dfe84ad0e8ff997dc53ff8d70e))
+* **tui:** retry reqwest client init instead of panicking fallback ([fcb243c](https://github.com/Roberdan/convergio/commit/fcb243c2997355d1f87673f45e750d9ea1a09640))
+
 ## [0.3.24](https://github.com/Roberdan/convergio/compare/convergio-v0.3.23...convergio-v0.3.24) (2026-05-12)
 
 
