@@ -89,7 +89,65 @@ impl PlanShape {
                     "task #{i}: wave must be >= 1"
                 )));
             }
+            if t.sequence < 1 {
+                return Err(PlannerError::OpusOutputInvalid(format!(
+                    "task #{i}: sequence must be >= 1"
+                )));
+            }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn shape_with(wave: i64, sequence: i64) -> PlanShape {
+        PlanShape {
+            title: "p".into(),
+            description: None,
+            tasks: vec![TaskShape {
+                wave,
+                sequence,
+                title: "t".into(),
+                description: None,
+                evidence_required: vec![],
+                runner_kind: None,
+                profile: None,
+                max_budget_usd: None,
+            }],
+        }
+    }
+
+    #[test]
+    fn validate_accepts_one_indexed_wave_and_sequence() {
+        shape_with(1, 1).validate().unwrap();
+    }
+
+    #[test]
+    fn validate_rejects_wave_zero() {
+        let err = shape_with(0, 1).validate().unwrap_err();
+        assert!(matches!(err, PlannerError::OpusOutputInvalid(_)));
+    }
+
+    // Regression: schema documents sequence as 1-indexed but
+    // validate() used to accept sequence == 0 (or negative) and
+    // let it through to durability writes.
+    #[test]
+    fn validate_rejects_sequence_zero() {
+        let err = shape_with(1, 0).validate().unwrap_err();
+        let msg = format!("{err}");
+        assert!(matches!(err, PlannerError::OpusOutputInvalid(_)));
+        assert!(
+            msg.contains("sequence"),
+            "error must mention sequence: {msg}"
+        );
+    }
+
+    #[test]
+    fn validate_rejects_negative_sequence() {
+        let err = shape_with(1, -1).validate().unwrap_err();
+        assert!(matches!(err, PlannerError::OpusOutputInvalid(_)));
     }
 }

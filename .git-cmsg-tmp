@@ -1,0 +1,18 @@
+refactor(fleet): extract batch and similar tests to sibling files
+
+batch.rs and similar.rs were both bumping the 300-line cap because
+their unit tests lived inline with the implementation. Move them
+out to batch_tests.rs and similar_tests.rs and wire them in via
+#[path = "..."] mod tests;
+the same pattern already used by patterns / duplicates / recall in
+this crate.
+
+No test was removed; cargo test -p convergio-fleet still reports
+the same passing counts.
+
+Refs: docs/reviews/crate-audits/convergio-fleet.md (LOW findings,
+src/batch.rs:139 and src/similar.rs:173).
+
+Tracks: T7fbd94e0-1d0f-4b8b-a07c-8c3094687ecb
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
