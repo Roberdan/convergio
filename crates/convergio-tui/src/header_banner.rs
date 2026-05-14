@@ -15,6 +15,7 @@
 //! back to ratatui's nearest 256-colour mapping (CONSTITUTION P3:
 //! information conveyed by colour is also conveyed by glyph/label).
 
+use crate::theme;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
@@ -90,9 +91,7 @@ fn render_stacked(f: &mut Frame, area: Rect, stats: &[String]) {
     let mut lines = banner_lines();
     lines.push(Line::from(Span::styled(
         stats.join("  ·  "),
-        Style::default()
-            .fg(Color::DarkGray)
-            .add_modifier(Modifier::BOLD),
+        theme::dim().add_modifier(Modifier::BOLD),
     )));
     f.render_widget(Paragraph::new(lines), area);
 }
@@ -107,12 +106,7 @@ fn render_compact(f: &mut Frame, area: Rect, stats: &[String]) {
                 .add_modifier(Modifier::BOLD),
         ),
         Span::raw("  "),
-        Span::styled(
-            stats.join("  "),
-            Style::default()
-                .fg(Color::DarkGray)
-                .add_modifier(Modifier::BOLD),
-        ),
+        Span::styled(stats.join("  "), theme::dim().add_modifier(Modifier::BOLD)),
     ]);
     f.render_widget(Paragraph::new(line), area);
 }
@@ -136,9 +130,7 @@ fn banner_lines() -> Vec<Line<'static>> {
 /// fall back to a single right-aligned `·`-joined line so nothing
 /// is dropped.
 fn stats_inline(stats: &[String], height: usize) -> Paragraph<'static> {
-    let style = Style::default()
-        .fg(Color::DarkGray)
-        .add_modifier(Modifier::BOLD);
+    let style = theme::dim().add_modifier(Modifier::BOLD);
     let mut lines: Vec<Line<'static>> = Vec::with_capacity(height);
     if height >= stats.len() {
         for s in stats {

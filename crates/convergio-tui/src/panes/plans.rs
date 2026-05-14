@@ -167,17 +167,7 @@ fn short_time(raw: &str) -> String {
     raw.get(..16).unwrap_or(raw).replace('T', " ")
 }
 
-fn truncate(s: &str, max: usize) -> &str {
-    if s.len() <= max {
-        s
-    } else {
-        let mut end = max;
-        while !s.is_char_boundary(end) && end > 0 {
-            end -= 1;
-        }
-        &s[..end]
-    }
-}
+use crate::text_util::truncate;
 
 #[cfg(test)]
 mod tests {

@@ -2,6 +2,7 @@
 
 use crate::defaults::{RunnerDefaults, SpawnTemplate};
 use crate::error::{ExecutorError, Result};
+use crate::graph_seed::build_graph_seed;
 use crate::{heartbeat, worktree};
 use convergio_durability::{Durability, TaskStatus};
 use convergio_lifecycle::{SpawnSpec, Supervisor};
@@ -136,7 +137,8 @@ impl Executor {
         // tasks to Failed under disk pressure (convergio-edu bug
         // 2026-05-12). Claim+compensate stays for real spawn errors.
         if let Some(repo_root) = self.repo_path.as_ref() {
-            if let Err(e) = crate::guards::enforce(repo_root) {
+            let holders = crate::holders::collect(&self.durability, repo_root).await;
+            if let Err(e) = crate::guards::enforce_with_holders(repo_root, &holders) {
                 tracing::debug!(task_id, plan_id, error = %e, "skipping dispatch — guard refused");
                 return Ok(());
             }
@@ -234,7 +236,8 @@ impl Executor {
                 "CONVERGIO_REPO_PATH not configured — refusing to spawn runner".into(),
             )
         })?;
-        let cwd = worktree::prepare(repo_path, &task.id)?;
+        let holders = crate::holders::collect(&self.durability, repo_path).await;
+        let cwd = worktree::prepare(repo_path, &task.id, &holders)?;
         info!(task_id = %task.id, cwd = %cwd.display(), "prepared agent worktree");
         let ctx = SpawnContext {
             task,
@@ -287,14 +290,5 @@ impl Executor {
             .await
             .ok()?;
         serde_json::to_string_pretty(&pack).ok()
-    }
-}
-
-/// Synthesize the seed text the graph layer ranks against. Concat
-/// title + description (when present) so both signal sources count.
-fn build_graph_seed(task: &convergio_durability::Task) -> String {
-    match task.description.as_deref() {
-        Some(d) if !d.is_empty() => format!("{}\n\n{}", task.title, d),
-        _ => task.title.clone(),
     }
 }

@@ -20,10 +20,8 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-mcp` stats:** 9 `*.rs` files / 0 public items / 1337 lines (under `src/`).
+**`convergio-mcp` stats:** 14 `*.rs` files / 0 public items / 1700 lines (under `src/`).
 
 Files approaching the 300-line cap:
-- `src/actions.rs` (287 lines)
-- `src/help.rs` (273 lines)
-- `src/bridge.rs` (254 lines)
+- `src/help_actions.rs` (267 lines)
 <!-- END AUTO -->

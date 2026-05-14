@@ -35,6 +35,7 @@ pub mod render;
 pub mod scope;
 pub mod state;
 pub mod state_lifecycle;
+pub mod text_util;
 pub mod theme;
 pub mod tick;
 pub mod time_fmt;

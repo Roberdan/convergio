@@ -67,7 +67,14 @@ async fn fetch_prs_with_args(
     let out = Command::new("gh").args(&args).output().await;
     let out = match out {
         Ok(o) if o.status.success() => o,
-        _ => return Ok(Vec::new()),
+        Ok(o) => {
+            return Err(anyhow::anyhow!(
+                "gh pr list exited {}: {}",
+                o.status,
+                String::from_utf8_lossy(&o.stderr).trim()
+            ));
+        }
+        Err(e) => return Err(anyhow::anyhow!("could not spawn gh: {e}")),
     };
     let raw: Vec<serde_json::Value> = serde_json::from_slice(&out.stdout)?;
     let mut prs = Vec::with_capacity(raw.len());

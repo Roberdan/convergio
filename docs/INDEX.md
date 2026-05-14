@@ -19,7 +19,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
 | `.pr-body.md` | - | - | - | 83 |
-| `AGENTS.md` | agent-rules | - | - | 554 |
+| `AGENTS.md` | agent-rules | - | - | 587 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
 | `CHANGELOG.md` | release | - | - | 1235 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -51,7 +51,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-db/README.md` | crate-readme | - | - | 26 |
 | `crates/convergio-durability/AGENTS.md` | crate-rules | - | - | 95 |
 | `crates/convergio-embed/AGENTS.md` | crate-rules | - | - | 73 |
-| `crates/convergio-executor/AGENTS.md` | crate-rules | - | - | 27 |
+| `crates/convergio-executor/AGENTS.md` | crate-rules | - | - | 28 |
 | `crates/convergio-executor/README.md` | crate-readme | - | - | 10 |
 | `crates/convergio-fleet/AGENTS.md` | crate-rules | - | - | 75 |
 | `crates/convergio-fleet/CLAUDE.md` | crate-rules | - | - | 3 |
@@ -60,7 +60,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-i18n/README.md` | crate-readme | - | - | 43 |
 | `crates/convergio-lifecycle/AGENTS.md` | crate-rules | - | - | 27 |
 | `crates/convergio-lifecycle/README.md` | crate-readme | - | - | 46 |
-| `crates/convergio-mcp/AGENTS.md` | crate-rules | - | - | 29 |
+| `crates/convergio-mcp/AGENTS.md` | crate-rules | - | - | 27 |
 | `crates/convergio-mcp/README.md` | crate-readme | - | - | 12 |
 | `crates/convergio-parse-multi/AGENTS.md` | crate-rules | - | - | 53 |
 | `crates/convergio-parse-multi/CLAUDE.md` | crate-rules | - | - | 1 |
@@ -71,8 +71,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-server/README.md` | crate-readme | - | - | 70 |
 | `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 22 |
-| `crates/convergio-tui/AGENTS.md` | crate-rules | - | - | 116 |
-| `crates/convergio-tui/README.md` | crate-readme | - | - | 98 |
+| `crates/convergio-tui/AGENTS.md` | crate-rules | - | - | 121 |
+| `crates/convergio-tui/README.md` | crate-readme | - | - | 104 |
 | `docs/AGENTS.md` | - | - | - | 63 |
 | `docs/INDEX.md` | - | - | - | - |
 | `docs/OPTIMIZATIONS.md` | - | - | - | 314 |

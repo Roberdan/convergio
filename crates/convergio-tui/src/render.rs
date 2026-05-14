@@ -96,6 +96,7 @@ fn draw_footer(f: &mut Frame, area: Rect, state: &AppState) {
     let conn = match state.connection {
         Connection::Initial => Span::styled("connecting", Style::default().fg(theme::WARNING)),
         Connection::Connected => Span::styled("connected", Style::default().fg(theme::SUCCESS)),
+        Connection::Degraded => Span::styled("degraded", Style::default().fg(theme::WARNING)),
         Connection::Disconnected => {
             Span::styled("disconnected", Style::default().fg(theme::DANGER))
         }
