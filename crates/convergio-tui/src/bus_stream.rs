@@ -100,9 +100,21 @@ async fn supervisor(
     buffer: Arc<Mutex<VecDeque<BusMessage>>>,
     transport: Arc<Mutex<Transport>>,
 ) {
-    let client = match reqwest::Client::builder().build() {
-        Ok(c) => c,
-        Err(_) => return,
+    // Building the reqwest client only fails on TLS init / OS resource
+    // exhaustion. Loop with backoff instead of falling back to
+    // `Client::new()` — that helper panics on the same init failures,
+    // which would kill this supervisor task and never let the
+    // dashboard recover. Surface Reconnecting between attempts so the
+    // footer reflects reality.
+    let client = loop {
+        match reqwest::Client::builder().build() {
+            Ok(c) => break c,
+            Err(e) => {
+                tracing::warn!(error = %e, "reqwest client init failed; retrying");
+                set_transport(&transport, Transport::Reconnecting);
+                tokio::time::sleep(RECONNECT_DELAY).await;
+            }
+        }
     };
     loop {
         let plan_id = plan_rx.borrow().clone();
