@@ -7,6 +7,7 @@
 
 use crate::app::AppState;
 use crate::error::ApiError;
+use crate::routes::limits::{validate_message_limit, MAX_MESSAGE_LIMIT};
 use crate::sse::{poll_stream, StreamEvent};
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
@@ -14,8 +15,6 @@ use axum::routing::{get, post};
 use axum::{Json, Router};
 use convergio_bus::{Message, NewMessage, TopicSummary};
 use serde::Deserialize;
-
-const MAX_MESSAGE_LIMIT: i64 = 100;
 
 /// Mount Layer 2 routes.
 pub fn router() -> Router<AppState> {
@@ -55,14 +54,7 @@ fn default_limit() -> i64 {
 }
 
 fn validate_limit(limit: i64) -> Result<i64, ApiError> {
-    if (1..=MAX_MESSAGE_LIMIT).contains(&limit) {
-        Ok(limit)
-    } else {
-        Err(ApiError::BadRequest {
-            code: "invalid_message_limit",
-            message: format!("limit must be between 1 and {MAX_MESSAGE_LIMIT}"),
-        })
-    }
+    validate_message_limit(limit, "invalid_message_limit", "limit")
 }
 
 #[derive(Deserialize)]
@@ -162,7 +154,9 @@ struct StreamQuery {
     since: Option<i64>,
 }
 
-const MESSAGE_STREAM_BATCH_LIMIT: i64 = 100;
+// Batch size for SSE streaming reads. Tracks `MAX_MESSAGE_LIMIT` —
+// both are bounded the same way by the underlying SQL paging.
+const MESSAGE_STREAM_BATCH_LIMIT: i64 = MAX_MESSAGE_LIMIT;
 
 async fn stream(
     State(state): State<AppState>,

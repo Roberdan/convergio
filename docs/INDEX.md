@@ -21,7 +21,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `.pr-body.md` | - | - | - | 83 |
 | `AGENTS.md` | agent-rules | - | - | 554 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
-| `CHANGELOG.md` | release | - | - | 1107 |
+| `CHANGELOG.md` | release | - | - | 1235 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 176 |
@@ -68,7 +68,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-planner/README.md` | crate-readme | - | - | 23 |
 | `crates/convergio-runner/AGENTS.md` | crate-rules | - | - | 53 |
 | `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 29 |
-| `crates/convergio-server/README.md` | crate-readme | - | - | 58 |
+| `crates/convergio-server/README.md` | crate-readme | - | - | 70 |
 | `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 24 |
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 22 |
 | `crates/convergio-tui/AGENTS.md` | crate-rules | - | - | 116 |
