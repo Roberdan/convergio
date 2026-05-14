@@ -31,9 +31,20 @@ Configuration:
 
 ## API surface
 
+The table below is a **quickstart subset** of the mounted routes. For
+the full, always-current surface use the generated action catalog —
+`GET /v1/api/actions` or `cvg actions list --output json` — and the
+gate-precondition catalog at `GET /v1/gates/preconditions`. The root
+`AGENTS.md` § *MCP tools available* lists every endpoint family
+including status, context, CRDT, workspace, graph, embed, fleet,
+telemetry, actions and gates.
+
 | Method | Path | What it does | Layer |
 |--------|------|--------------|-------|
 | `GET` | `/v1/health` | liveness + version | shell |
+| `GET` | `/v1/status` | dashboard summary (active plans, recent done) | shell |
+| `GET` | `/v1/api/actions` | generated action catalog (full surface) | shell |
+| `GET` | `/v1/gates/preconditions` | gate evidence requirements | 1 |
 | `POST` | `/v1/plans` | create a plan | 1 |
 | `GET` | `/v1/plans` | list plans (`?limit=`) | 1 |
 | `GET` | `/v1/plans/:id` | get one plan | 1 |
@@ -49,6 +60,7 @@ Configuration:
 | `GET` | `/v1/plans/:plan_id/messages` | poll messages | 2 |
 | `POST` | `/v1/messages/:id/ack` | consumer ack | 2 |
 | `POST` | `/v1/agents/spawn` | spawn tracked local process | 3 |
+| `POST` | `/v1/agents/spawn-runner` | spawn a vendor-CLI runner against a task (ADR-0032) | 3 |
 | `GET` | `/v1/agents/:id` | get process row | 3 |
 | `POST` | `/v1/agents/:id/heartbeat` | touch process heartbeat | 3 |
 | `POST` | `/v1/solve` | create plan from mission | 4 |

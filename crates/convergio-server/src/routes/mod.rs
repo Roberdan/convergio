@@ -15,6 +15,7 @@ pub(crate) mod fleet_duplicates;
 pub mod gate_preconditions;
 pub mod graph;
 pub mod health;
+pub(crate) mod limits;
 pub mod messages;
 pub mod plans;
 pub mod pr_links;
