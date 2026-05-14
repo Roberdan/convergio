@@ -55,17 +55,21 @@ pre-push:
       # merge-cascade marked 457 files (incl. Cargo.toml) as deleted.
       # CI caught it, but only after the push round-trip. This local
       # gate refuses any push that breaks workspace skeleton.
-      glob: "**/*"
+      # No `glob:` — gobwas's `**/*` skips root files (Cargo.toml,
+      # AGENTS.md, lefthook.yml), which is exactly the file class
+      # this guard exists to protect. Run on every push.
       run: ./scripts/check-workspace-integrity.sh
       fail_text: "workspace skeleton broken — see ./scripts/check-workspace-integrity.sh output"
     docs-auto-blocks:
       # Block pushes that would introduce drift in `<!-- BEGIN AUTO:... -->` blocks.
-      glob: "**/*"
+      # No `glob:` — drift in root-level AGENTS.md or in `auto-regenerated`
+      # tables anywhere in the tree is repo-global state, not push-scoped.
       run: cvg docs regenerate --root . --check
       fail_text: "stale AUTO blocks — run `cvg docs regenerate --root .` and commit"
     docs-index:
       # Tier-1 retrieval entry point (CONSTITUTION § 16): keep docs/INDEX.md fresh.
-      glob: "**/*"
+      # No `glob:` — INDEX line counts include root files; gobwas's `**/*`
+      # would skip pushes that only touch root and let drift through.
       run: ./scripts/generate-docs-index.sh --check
       fail_text: "docs/INDEX.md is stale — run `./scripts/generate-docs-index.sh` and commit"
 
