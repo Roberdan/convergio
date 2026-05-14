@@ -69,17 +69,38 @@ async fn holders_for_slugs_resolves_matching_task_and_plan() {
 }
 
 #[tokio::test]
-async fn holders_for_slugs_marks_orphans() {
+async fn holders_for_slugs_marks_orphans_and_rejects_wildcards() {
+    // Missing or wildcard-bearing slugs must come back as orphans —
+    // otherwise `LIKE 'agent-%'` mis-attributes slots to real tasks.
     let (dur, _g) = fresh().await;
-    let holders = dur
-        .worktrees()
-        .holders_for_slugs(&["deadbee"])
+    let plan = dur
+        .create_plan(NewPlan {
+            title: "P".into(),
+            project: Some("p".into()),
+            description: None,
+        })
         .await
-        .expect("lookup");
-    assert_eq!(holders.len(), 1);
-    assert!(holders[0].task_id.is_none());
-    assert!(holders[0].plan_id.is_none());
-    assert_eq!(holders[0].slug, "deadbee");
+        .unwrap();
+    dur.create_task(
+        &plan.id,
+        NewTask {
+            title: "real".into(),
+            description: None,
+            wave: 1,
+            sequence: 1,
+            evidence_required: vec![],
+            runner_kind: None,
+            profile: None,
+            max_budget_usd: None,
+        },
+    )
+    .await
+    .unwrap();
+    for slug in ["deadbee", "%", "ab%def", "ABCDEFG"] {
+        let h = dur.worktrees().holders_for_slugs(&[slug]).await.unwrap();
+        assert!(h[0].task_id.is_none(), "slug {slug:?}");
+        assert_eq!(h[0].slug, slug);
+    }
 }
 
 #[tokio::test]

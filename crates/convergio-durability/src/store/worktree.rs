@@ -78,6 +78,11 @@ impl WorktreeStore {
     }
 
     async fn holder_for_slug(&self, slug: &str) -> Result<WorktreeHolder> {
+        // Slugs are 7-char hex UUID prefixes. `%` or `_` in a slug
+        // would become LIKE wildcards and match unrelated tasks.
+        if slug.is_empty() || !slug.chars().all(|c| c.is_ascii_hexdigit()) {
+            return Ok(orphan_holder(slug));
+        }
         let like = format!("{slug}%");
         let row = sqlx::query_as::<_, HolderRow>(
             "SELECT t.id AS task_id, t.status, t.plan_id, t.started_at, t.agent_id, \
@@ -108,16 +113,20 @@ impl WorktreeStore {
                 started_at: r.started_at.as_deref().and_then(parse_ts),
                 agent_id: r.agent_id,
             },
-            None => WorktreeHolder {
-                slug: slug.to_string(),
-                task_id: None,
-                task_status: None,
-                plan_id: None,
-                plan_number: None,
-                started_at: None,
-                agent_id: None,
-            },
+            None => orphan_holder(slug),
         })
+    }
+}
+
+fn orphan_holder(slug: &str) -> WorktreeHolder {
+    WorktreeHolder {
+        slug: slug.to_string(),
+        task_id: None,
+        task_status: None,
+        plan_id: None,
+        plan_number: None,
+        started_at: None,
+        agent_id: None,
     }
 }
 
