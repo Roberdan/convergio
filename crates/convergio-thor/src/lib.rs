@@ -7,9 +7,12 @@
 //!
 //! ## MVP rules
 //!
-//! - **Pass** iff every task in the plan has `status = done`
-//!   AND every kind in `evidence_required` has at least one matching
-//!   evidence row.
+//! - **Pass** iff every task in the plan has `status = submitted` or
+//!   `status = done` AND every kind in `evidence_required` has at
+//!   least one matching evidence row. On a passing verdict, every
+//!   still-`submitted` task is atomically promoted to `done` through
+//!   `Durability::complete_validated_tasks` (CONSTITUTION §6,
+//!   ADR-0011) — Thor is the **only** path to `done`.
 //! - **Fail** otherwise; the verdict carries a `Vec<String>` of
 //!   reasons (one per failing task).
 //!

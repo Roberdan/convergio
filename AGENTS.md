@@ -236,7 +236,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 1149 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 1186 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
@@ -506,6 +506,39 @@ The launchd plist at `~/Library/LaunchAgents/com.convergio.v3.plist`
 is also expected to set `KeepAlive=false` and `RunAtLoad=false` so
 that a dying daemon stays dead instead of being respawned every few
 seconds — this was the second half of the 2026-05-08 incident.
+
+## Merge-cascade safety
+
+Standard `docs/INDEX.md` cascade rebases happen after every PR
+merge. The 2026-05-12 incident on `agent/5c9b25f` showed how the
+recipe can silently turn into a workspace-killer: a broad
+`git checkout --theirs` during conflict resolution marked **457
+files (including `Cargo.toml`)** as deleted. CI rejected the push
+(good) but no local guard tripped before the round-trip.
+
+Hard rules now enforced by `lefthook` `pre-push`:
+
+1. **Never** `git checkout --theirs .` or `--theirs <dir>`. Only
+   individual files: `git checkout --theirs docs/INDEX.md`.
+2. **Always** run `./scripts/post-rebase-smoke.sh` between
+   conflict resolution and `git commit`. It refuses to proceed
+   when the workspace skeleton is broken.
+3. Prefer the orchestrated script for batch rebases:
+   `./scripts/rebase-cascade.sh agent/foo agent/bar` — one
+   branch at a time, only touches known cascade files, aborts on
+   anything else.
+4. The `workspace-integrity` pre-push step
+   (`./scripts/check-workspace-integrity.sh`) refuses to push
+   when sentinel files (`Cargo.toml`, `AGENTS.md`,
+   `ARCHITECTURE.md`, `CONSTITUTION.md`,
+   `rust-toolchain.toml`, `lefthook.yml`, `Cargo.lock`) are
+   missing or when more than
+   `CONVERGIO_MAX_DELETIONS_VS_MAIN` (default 50) files are
+   deleted vs `origin/main`.
+
+If you genuinely need a large deletion (rare), override with
+`CONVERGIO_MAX_DELETIONS_VS_MAIN=<N> git push ...` — explicit
+override is the audit trail.
 
 ## Definition of Done
 

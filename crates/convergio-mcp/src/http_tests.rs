@@ -49,3 +49,33 @@ async fn spawn_garbage_daemon() -> String {
     });
     format!("http://{address}")
 }
+
+#[tokio::test]
+async fn daemon_plaintext_404_maps_to_not_found_not_error() {
+    // Framework-default 404 bodies are plain text. The early-return
+    // on JSON decode failure must still honour status == NOT_FOUND
+    // so callers can distinguish "endpoint missing" from "daemon
+    // returned a malformed payload".
+    let url = spawn_plaintext_404_daemon().await;
+    let bridge = Bridge::new(url);
+    let response = bridge.get("/v1/missing").await;
+    assert!(!response.ok);
+    assert_eq!(response.code, AgentCode::NotFound);
+}
+
+async fn spawn_plaintext_404_daemon() -> String {
+    async fn not_found() -> impl IntoResponse {
+        (
+            StatusCode::NOT_FOUND,
+            [(header::CONTENT_TYPE, "text/plain; charset=utf-8")],
+            "not found",
+        )
+    }
+    let app = Router::new().fallback(not_found);
+    let listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+    let address = listener.local_addr().unwrap();
+    tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap();
+    });
+    format!("http://{address}")
+}

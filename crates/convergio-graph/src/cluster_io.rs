@@ -91,11 +91,35 @@ pub(super) async fn file_uses_edges(
 }
 
 /// Approximate LOC of a file via `read_to_string().lines().count()`.
-/// Returns 0 on I/O error so `cluster_for_crate` keeps working when a
-/// listed file has been deleted out from under the daemon.
-pub(super) fn file_loc(path: &str) -> u64 {
-    match std::fs::read_to_string(path) {
-        Ok(s) => s.lines().count() as u64,
-        Err(_) => 0,
+/// Returns `Err` on I/O failure so callers can distinguish a
+/// genuinely empty file from a deleted or unreadable one (audit
+/// 2026-05 follow-up: silent `0` hid disk-state bugs).
+pub(super) fn file_loc(path: &str) -> Result<u64> {
+    let s = std::fs::read_to_string(path).map_err(crate::error::GraphError::Io)?;
+    Ok(s.lines().count() as u64)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Regression: silently returning `0` for unreadable files makes
+    /// "file deleted" and "file empty" indistinguishable. The audit
+    /// 2026-05 follow-up requires `file_loc` to surface the I/O
+    /// failure so callers can log + skip explicitly.
+    #[test]
+    fn file_loc_distinguishes_missing_from_empty() {
+        let dir = tempfile::tempdir().unwrap();
+        let missing = dir.path().join("does-not-exist.rs");
+        let err = file_loc(missing.to_str().unwrap()).expect_err("must surface I/O error");
+        assert!(matches!(err, crate::error::GraphError::Io(_)));
+    }
+
+    #[test]
+    fn file_loc_counts_lines_for_real_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("x.rs");
+        std::fs::write(&p, "a\nb\nc\n").unwrap();
+        assert_eq!(file_loc(p.to_str().unwrap()).unwrap(), 3);
     }
 }

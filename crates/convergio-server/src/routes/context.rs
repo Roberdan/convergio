@@ -2,6 +2,7 @@
 
 use crate::app::AppState;
 use crate::error::ApiError;
+use crate::routes::limits::validate_message_limit as validate_limit;
 use axum::extract::{Path, State};
 use axum::routing::post;
 use axum::{Json, Router};
@@ -10,7 +11,6 @@ use convergio_durability::{AgentRecord, DurabilityError, Evidence, Plan, Task};
 use serde::{Deserialize, Serialize};
 use std::path::{Path as FsPath, PathBuf};
 
-const MAX_MESSAGE_LIMIT: i64 = 100;
 const MAX_AGENT_DOC_CHARS: usize = 8_000;
 
 /// Mount context packet routes.
@@ -90,14 +90,7 @@ fn default_message_limit() -> i64 {
 }
 
 fn validate_message_limit(limit: i64) -> Result<i64, ApiError> {
-    if (1..=MAX_MESSAGE_LIMIT).contains(&limit) {
-        Ok(limit)
-    } else {
-        Err(ApiError::BadRequest {
-            code: "invalid_context_limit",
-            message: format!("message_limit must be between 1 and {MAX_MESSAGE_LIMIT}"),
-        })
-    }
+    validate_limit(limit, "invalid_context_limit", "message_limit")
 }
 
 fn agent_docs(path: &str) -> Result<Vec<AgentInstruction>, ApiError> {

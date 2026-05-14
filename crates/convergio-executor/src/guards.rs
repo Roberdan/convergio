@@ -23,6 +23,7 @@
 //! the audit log captures it.
 
 use crate::error::{ExecutorError, Result};
+use convergio_durability::WorktreeHolder;
 use std::path::Path;
 use tracing::warn;
 
@@ -32,6 +33,35 @@ const KILL_SWITCH_ENV: &str = "CONVERGIO_DISPATCH_DISABLED";
 const COUNT_CAP_ENV: &str = "CONVERGIO_GUARD_MAX_WORKTREES";
 const BYTES_CAP_ENV: &str = "CONVERGIO_GUARD_MAX_WORKTREES_BYTES";
 
+/// List the worktree directory slugs (basename without the
+/// `agent-` prefix) currently present under
+/// `<repo_root>/.claude/worktrees/`.
+///
+/// Returns an empty vec when the parent directory does not exist
+/// yet. Entries that are not directories or whose name does not
+/// start with `agent-` are ignored — those are not produced by the
+/// executor and we should not blame anyone for them.
+pub fn list_worktree_slugs(repo_root: &Path) -> Vec<String> {
+    let worktrees = repo_root.join(".claude").join("worktrees");
+    let iter = match std::fs::read_dir(&worktrees) {
+        Ok(it) => it,
+        Err(_) => return Vec::new(),
+    };
+    let mut out = Vec::new();
+    for entry in iter.flatten() {
+        if !entry.file_type().map(|t| t.is_dir()).unwrap_or(false) {
+            continue;
+        }
+        let name = entry.file_name();
+        let Some(name) = name.to_str() else { continue };
+        if let Some(slug) = name.strip_prefix("agent-") {
+            out.push(slug.to_string());
+        }
+    }
+    out.sort();
+    out
+}
+
 /// Refuse new runner spawn when any guard rail trips.
 ///
 /// `repo_root` is the operator's repo root — same value
@@ -39,7 +69,25 @@ const BYTES_CAP_ENV: &str = "CONVERGIO_GUARD_MAX_WORKTREES_BYTES";
 /// The function inspects `<repo_root>/.claude/worktrees/`; if that
 /// directory does not exist yet the guards are vacuously satisfied
 /// (first dispatch wins).
+///
+/// Convenience wrapper that passes no enrichment — equivalent to
+/// [`enforce_with_holders(repo_root, &[])`]. The error message will
+/// still list the worktree count and the recovery steps, but it
+/// won't be able to name the blocking task/plan because no caller
+/// looked them up.
 pub fn enforce(repo_root: &Path) -> Result<()> {
+    enforce_with_holders(repo_root, &[])
+}
+
+/// Same as [`enforce`] but enriches the refusal message with the
+/// task/plan currently holding each on-disk worktree.
+///
+/// `holders` is expected to be the output of
+/// `Durability::worktrees().holders_for_slugs(&list_worktree_slugs(repo_root))`.
+/// Callers that cannot reach the database safely pass `&[]` — the
+/// guard still trips on the same counts, just without the
+/// per-worktree blame line.
+pub fn enforce_with_holders(repo_root: &Path, holders: &[WorktreeHolder]) -> Result<()> {
     if std::env::var(KILL_SWITCH_ENV).as_deref() == Ok("1") {
         return Err(ExecutorError::Worktree(format!(
             "dispatch refused: {KILL_SWITCH_ENV}=1 (kill switch active)"
@@ -56,14 +104,19 @@ pub fn enforce(repo_root: &Path) -> Result<()> {
 
     let count = count_subdirs(&worktrees);
     if count >= cap_count {
+        let holders_render = crate::guards_format::render_holders(holders);
+        let suffix = if holders_render.is_empty() {
+            String::new()
+        } else {
+            format!(" In use: {holders_render}.")
+        };
         return Err(ExecutorError::Worktree(format!(
-            "dispatch refused: {count} worktrees ≥ cap {cap_count} ({COUNT_CAP_ENV}). \
+            "dispatch refused: {count}/{cap_count} worktrees in use ({COUNT_CAP_ENV}).{suffix} \
              To recover: \
-             (1) `git -C {} worktree list` to inspect, \
-             (2) `git -C {} worktree remove --force <path>` for stale ones, \
+             (1) `git -C {repo} worktree list` to inspect, \
+             (2) `git -C {repo} worktree remove --force <path>` for stale ones, \
              or (3) raise the cap with `launchctl setenv {COUNT_CAP_ENV} N` + daemon restart.",
-            repo_root.display(),
-            repo_root.display(),
+            repo = repo_root.display(),
         )));
     }
 
@@ -168,5 +221,55 @@ mod tests {
         let result = enforce(tmp.path());
         env::remove_var(COUNT_CAP_ENV);
         assert!(result.is_err(), "3 worktrees with cap 2 must refuse");
+    }
+
+    #[test]
+    fn list_worktree_slugs_strips_prefix_and_sorts() {
+        let tmp = fresh_repo();
+        let wt = tmp.path().join(".claude").join("worktrees");
+        std::fs::create_dir_all(wt.join("agent-zzz9999")).expect("mkdir");
+        std::fs::create_dir_all(wt.join("agent-aaa1111")).expect("mkdir");
+        std::fs::create_dir_all(wt.join("not-an-agent-dir")).expect("mkdir");
+        let slugs = list_worktree_slugs(tmp.path());
+        assert_eq!(slugs, vec!["aaa1111".to_string(), "zzz9999".to_string()]);
+    }
+
+    #[test]
+    fn count_cap_error_enumerates_holders() {
+        let tmp = fresh_repo();
+        let wt = tmp.path().join(".claude").join("worktrees");
+        std::fs::create_dir_all(wt.join("agent-abc1234")).expect("mkdir");
+        std::fs::create_dir_all(wt.join("agent-def5678")).expect("mkdir");
+        env::remove_var(KILL_SWITCH_ENV);
+        env::set_var(COUNT_CAP_ENV, "2");
+        let holders = vec![
+            WorktreeHolder {
+                slug: "abc1234".into(),
+                task_id: Some("abc12340-0000-0000-0000-000000000000".into()),
+                task_status: Some("in_progress".into()),
+                plan_id: Some("plan-id".into()),
+                plan_number: Some(7),
+                started_at: Some(chrono::Utc::now() - chrono::Duration::minutes(45)),
+                agent_id: None,
+            },
+            WorktreeHolder {
+                slug: "def5678".into(),
+                task_id: None,
+                task_status: None,
+                plan_id: None,
+                plan_number: None,
+                started_at: None,
+                agent_id: None,
+            },
+        ];
+        let result = enforce_with_holders(tmp.path(), &holders);
+        env::remove_var(COUNT_CAP_ENV);
+        let err = result.expect_err("must refuse");
+        let msg = err.to_string();
+        assert!(msg.contains("2/2 worktrees in use"), "got: {msg}");
+        assert!(msg.contains("agent-abc1234"), "got: {msg}");
+        assert!(msg.contains("plan #7"), "got: {msg}");
+        assert!(msg.contains("agent-def5678"), "got: {msg}");
+        assert!(msg.contains("orphan"), "got: {msg}");
     }
 }

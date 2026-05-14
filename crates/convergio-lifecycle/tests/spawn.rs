@@ -145,6 +145,84 @@ async fn mark_exited_records_exit_code() {
     assert!(after.ended_at.is_some());
 }
 
+/// Unknown persisted status values must surface as a typed error
+/// rather than being silently coerced to `Failed`. The silent
+/// coercion (the pre-fix behaviour at supervisor.rs:277) hides
+/// database invariant drift from operators -- a P1 (zero-tolerance)
+/// reliability concern.
+#[tokio::test]
+async fn unknown_persisted_status_surfaces_typed_error() {
+    let (sup, _dir) = fresh_supervisor().await;
+    let id = uuid::Uuid::new_v4().to_string();
+    sqlx::query(
+        "INSERT INTO agent_processes (id, kind, command, plan_id, task_id, pid, \
+         status, exit_code, last_heartbeat_at, started_at, ended_at) \
+         VALUES (?, 'shell', '/bin/echo', NULL, NULL, NULL, ?, NULL, NULL, ?, NULL)",
+    )
+    .bind(&id)
+    .bind("zombie")
+    .bind(chrono::Utc::now().to_rfc3339())
+    .execute(sup.pool().inner())
+    .await
+    .unwrap();
+
+    let err = sup
+        .get(&id)
+        .await
+        .expect_err("unknown status must surface as an error, not status='failed'");
+    let msg = format!("{err}");
+    assert!(
+        msg.contains("zombie"),
+        "error must mention the offending value, got: {msg}"
+    );
+    let err_list = sup
+        .list(10)
+        .await
+        .expect_err("list must also surface drift, not silently coerce");
+    let msg_list = format!("{err_list}");
+    assert!(
+        msg_list.contains("zombie"),
+        "list error must mention the offending value, got: {msg_list}"
+    );
+}
+
+/// `/usr/bin/false` exits immediately without reading stdin, so a
+/// `stdin_payload` larger than the OS pipe buffer is guaranteed to
+/// hit EPIPE before `write_all` completes. The supervisor must
+/// propagate that as a spawn failure and persist the row as `failed`
+/// — silently swallowing it (the pre-fix behaviour) would mean a
+/// vendor-CLI runner can miss its prompt while the API still
+/// reports success.
+#[tokio::test]
+async fn spawn_with_failed_stdin_write_marks_process_failed() {
+    let (sup, _dir) = fresh_supervisor().await;
+    // 8 MiB > any default pipe buffer on macOS / Linux.
+    let payload = "x".repeat(8 * 1024 * 1024);
+    let err = sup
+        .spawn(SpawnSpec {
+            kind: "shell".into(),
+            command: "/usr/bin/false".into(),
+            args: vec![],
+            env: vec![],
+            plan_id: None,
+            task_id: None,
+            cwd: None,
+            stdin_payload: Some(payload),
+        })
+        .await
+        .expect_err("expected stdin write failure to surface");
+    assert!(
+        matches!(err, LifecycleError::SpawnFailed(ref m) if m.contains("stdin")),
+        "got {err:?}"
+    );
+    let (status,): (String,) =
+        sqlx::query_as("SELECT status FROM agent_processes ORDER BY started_at DESC LIMIT 1")
+            .fetch_one(sup.pool().inner())
+            .await
+            .unwrap();
+    assert_eq!(status, "failed");
+}
+
 #[tokio::test]
 async fn invalid_started_timestamp_is_data_error_not_not_found() {
     let (sup, _dir) = fresh_supervisor().await;

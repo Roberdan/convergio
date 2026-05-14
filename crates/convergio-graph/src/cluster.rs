@@ -79,7 +79,16 @@ pub async fn cluster_for_crate(
     let mut loc_per_file: BTreeMap<String, u64> = BTreeMap::new();
     let mut total_loc: u64 = 0;
     for f in &files {
-        let l = file_loc(f);
+        let l = match file_loc(f) {
+            Ok(l) => l,
+            Err(err) => {
+                // A file listed in graph_nodes may have been deleted
+                // since the last parse — keep the cluster intact but
+                // surface the skip so operators see disk drift.
+                tracing::warn!(file = %f, error = %err, "cluster: file_loc failed, treating as 0 LOC");
+                0
+            }
+        };
         loc_per_file.insert(f.clone(), l);
         total_loc += l;
     }
