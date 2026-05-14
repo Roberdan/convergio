@@ -1,15 +1,18 @@
 //! Constrained `convergio.act` action dispatch.
 
+use crate::action_params::{
+    audit_path, caller_task_id, memory_task_id, remove_key, required_str, resolve_agent_id,
+};
 use crate::bridge::Bridge;
 use crate::help;
-use crate::http::{invalid, mismatch, ok};
+use crate::http::ok;
 use convergio_api::{ActRequest, Action, AgentResponse, NextHint, SCHEMA_VERSION};
 use serde_json::{json, Value};
 
 impl Bridge {
     pub(crate) async fn dispatch(&self, request: ActRequest) -> AgentResponse {
         if request.schema_version != SCHEMA_VERSION {
-            return mismatch(request.schema_version);
+            return crate::http::mismatch(request.schema_version);
         }
 
         let action = request.action;
@@ -51,7 +54,7 @@ impl Bridge {
             Action::ProcessMergeQueue => self.post("/v1/workspace/merge/next", json!({})).await,
             Action::ListMergeQueue => self.get("/v1/workspace/merge-queue").await,
             Action::ListWorkspaceConflicts => self.get("/v1/workspace/conflicts").await,
-            Action::ExplainLastRefusal => self.explain_last_refusal().await,
+            Action::ExplainLastRefusal => self.explain_last_refusal(request.params).await,
             Action::AgentPrompt => ok("agent prompt", help::agent_prompt(), None),
         };
         self.log_action(action, &response);
@@ -208,12 +211,9 @@ impl Bridge {
         self.get(&format!("/v1/capabilities/{name}")).await
     }
 
-    async fn explain_last_refusal(&self) -> AgentResponse {
+    async fn explain_last_refusal(&self, params: Value) -> AgentResponse {
         let local = self.last_refusal.lock().await.clone();
-        let task_id = local
-            .as_ref()
-            .and_then(|v| v.get("task_id"))
-            .and_then(Value::as_str);
+        let task_id = caller_task_id(&params).or_else(|| memory_task_id(local.as_ref()));
         let path = match task_id {
             Some(task_id) => format!("/v1/audit/refusals/latest?task_id={task_id}"),
             None => "/v1/audit/refusals/latest".into(),
@@ -234,54 +234,5 @@ impl Bridge {
             ),
             None => ok("no gate refusal recorded", json!({ "refusal": null }), None),
         }
-    }
-}
-
-/// ADR-0043: `id` is canonical for entity-self; `agent_id` is a deprecated alias.
-pub(crate) fn resolve_agent_id(params: &mut Value) -> Result<String, AgentResponse> {
-    for key in ["id", "agent_id"] {
-        if let Some(v) = params
-            .get(key)
-            .and_then(Value::as_str)
-            .map(ToOwned::to_owned)
-        {
-            if key == "agent_id" {
-                tracing::warn!("deprecated 'agent_id'; use 'id' (ADR-0043, removed 0.4.0)");
-            }
-            remove_key(params, key);
-            return Ok(v);
-        }
-    }
-    Err(invalid("missing string param: id".to_owned()))
-}
-
-pub(crate) fn required_str(params: &Value, key: &str) -> Result<String, AgentResponse> {
-    params
-        .get(key)
-        .and_then(Value::as_str)
-        .map(ToOwned::to_owned)
-        .ok_or_else(|| invalid(format!("missing string param: {key}")))
-}
-
-pub(crate) fn audit_path(params: &Value) -> Result<String, AgentResponse> {
-    let mut query = Vec::new();
-    for key in ["from", "to"] {
-        if let Some(value) = params.get(key) {
-            let number = value
-                .as_i64()
-                .ok_or_else(|| invalid(format!("{key} must be an integer")))?;
-            query.push(format!("{key}={number}"));
-        }
-    }
-    if query.is_empty() {
-        Ok("/v1/audit/verify".into())
-    } else {
-        Ok(format!("/v1/audit/verify?{}", query.join("&")))
-    }
-}
-
-pub(crate) fn remove_key(value: &mut Value, key: &str) {
-    if let Value::Object(map) = value {
-        map.remove(key);
     }
 }

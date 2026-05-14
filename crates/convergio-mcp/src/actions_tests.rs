@@ -1,5 +1,5 @@
 //! Unit tests for `actions` — split to stay under the 300-line cap.
-use crate::actions::{audit_path, remove_key, resolve_agent_id};
+use crate::action_params::{audit_path, remove_key, resolve_agent_id};
 use crate::bridge::Bridge;
 use convergio_api::{ActRequest, Action, AgentCode, NextHint};
 use serde_json::json;
