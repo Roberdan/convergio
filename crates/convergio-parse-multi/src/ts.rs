@@ -33,6 +33,11 @@ use crate::{
 /// The returned `Vec<Node>` always contains at least one entry: the
 /// `Module` node for the file. `Vec<Edge>` contains one `Declares` edge
 /// per extracted item.
+///
+/// **Partial-parse semantics**: when tree-sitter reports
+/// `root.has_error()` this function logs `warn!` and still returns
+/// the nodes/edges extractable from the partial AST. See
+/// [`ParseError`](crate::ParseError) for the rationale.
 pub fn parse_ts(repo_name: &str, file_path: &str, source: &[u8]) -> Result<(Vec<Node>, Vec<Edge>)> {
     let mut parser = Parser::new();
     parser
