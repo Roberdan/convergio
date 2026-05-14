@@ -12,13 +12,12 @@
 
 use crate::app::AppState;
 use crate::error::ApiError;
+use crate::routes::limits::validate_message_limit;
 use axum::extract::{Query, State};
 use axum::routing::get;
 use axum::{Json, Router};
 use convergio_bus::{Message, NewSystemMessage};
 use serde::Deserialize;
-
-const MAX_MESSAGE_LIMIT: i64 = 100;
 
 /// Mount the system-message routes.
 pub fn router() -> Router<AppState> {
@@ -47,14 +46,7 @@ fn default_limit() -> i64 {
 }
 
 fn validate_limit(limit: i64) -> Result<i64, ApiError> {
-    if (1..=MAX_MESSAGE_LIMIT).contains(&limit) {
-        Ok(limit)
-    } else {
-        Err(ApiError::BadRequest {
-            code: "invalid_message_limit",
-            message: format!("limit must be between 1 and {MAX_MESSAGE_LIMIT}"),
-        })
-    }
+    validate_message_limit(limit, "invalid_message_limit", "limit")
 }
 
 async fn publish(

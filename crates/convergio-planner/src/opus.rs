@@ -75,26 +75,22 @@ fn extract_inner_payload(raw: &str) -> Result<String> {
     Ok(trimmed.to_string())
 }
 
-/// Find the first `{ ... }` JSON object in `s` (greedy by depth
-/// counting). Tolerates leading prose / markdown fences from the
-/// model.
+/// Find the first JSON object in `s` and return the byte slice
+/// containing it. Tolerates leading prose / markdown fences and
+/// trailing text the model may emit. Uses [`serde_json`]'s
+/// streaming deserializer so `{` / `}` inside JSON strings do not
+/// truncate the payload (regression fixed in 0.3.x — the previous
+/// byte-level brace counter was string-unaware).
 fn extract_json_object(s: &str) -> Option<&str> {
-    let bytes = s.as_bytes();
-    let start = bytes.iter().position(|&b| b == b'{')?;
-    let mut depth: i32 = 0;
-    for (i, &b) in bytes.iter().enumerate().skip(start) {
-        match b {
-            b'{' => depth += 1,
-            b'}' => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some(&s[start..=i]);
-                }
-            }
-            _ => {}
-        }
-    }
-    None
+    let start = s.find('{')?;
+    let tail = &s[start..];
+    let mut stream = serde_json::Deserializer::from_str(tail).into_iter::<serde_json::Value>();
+    // We only care that a value parses; on parse error there is no
+    // recoverable object so signal None and let callers raise the
+    // higher-quality `OpusOutputInvalid` with the original error.
+    let _ = stream.next()?.ok()?;
+    let end = stream.byte_offset();
+    Some(&tail[..end])
 }
 
 async fn spawn_claude_opus(prompt: &str) -> Result<String> {
@@ -242,5 +238,41 @@ mod tests {
         let raw = r#"{"title":"x","tasks":[]}"#;
         let err = parse_response(raw).unwrap_err();
         assert!(matches!(err, PlannerError::OpusOutputInvalid(_)));
+    }
+
+    // Regression: brace counter must respect JSON strings.
+    // A `}` inside a quoted title used to terminate the object
+    // early, truncating the payload and failing schema parse.
+    #[test]
+    fn parse_response_tolerates_braces_inside_strings() {
+        let raw = r#"
+        {
+          "title": "Refactor closing brace } in code samples",
+          "description": "Map `match x { _ => () }` arms (unbalanced { only here)",
+          "tasks": [
+            {
+              "wave": 1,
+              "sequence": 1,
+              "title": "Document the `}` rendering",
+              "evidence_required": ["cargo test passes"]
+            }
+          ]
+        }"#;
+        let shape = parse_response(raw).expect("braces-in-strings JSON must parse");
+        assert_eq!(shape.title, "Refactor closing brace } in code samples");
+        assert_eq!(shape.tasks.len(), 1);
+        assert_eq!(shape.tasks[0].title, "Document the `}` rendering");
+    }
+
+    // Regression: trailing prose after the JSON object must not
+    // confuse the parser (this already worked before, kept here
+    // to lock the new serde-based extractor's behavior).
+    #[test]
+    fn parse_response_tolerates_trailing_prose() {
+        let raw = r#"{"title":"x","tasks":[{"wave":1,"sequence":1,"title":"t","evidence_required":[]}]}
+
+Let me know if you want to iterate."#;
+        let shape = parse_response(raw).expect("trailing prose must be ignored");
+        assert_eq!(shape.title, "x");
     }
 }
