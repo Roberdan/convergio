@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.26](https://github.com/Roberdan/convergio/compare/convergio-v0.3.25...convergio-v0.3.26) (2026-05-17)
+
+
+### Bug Fixes
+
+* **lifecycle:** log stdout relay read errors before terminating ([1bf761f](https://github.com/Roberdan/convergio/commit/1bf761f1b819a18b1700321be984d434d4cd3383))
+
+
+### Documentation
+
+* **lifecycle:** readme spawnspec surface and heartbeat ownership ([4fef518](https://github.com/Roberdan/convergio/commit/4fef5189498ab55856715095e6fd8e0164d0a9b9))
+
 ## [0.3.25](https://github.com/Roberdan/convergio/compare/convergio-v0.3.24...convergio-v0.3.25) (2026-05-14)
 
 
