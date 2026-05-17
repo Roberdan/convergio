@@ -1,13 +1,15 @@
 //! Heartbeat sidecar for runner-spawned agents.
 //!
 //! Vendor CLIs in non-interactive mode (`gh copilot --yolo`,
-//! `claude -p`) do not call `cvg agent heartbeat` themselves, no
+//! `claude -p`) do not call `cvg task heartbeat <id>` themselves, no
 //! matter what the prompt says. Without an external heartbeat
 //! `tasks.last_heartbeat_at` stays NULL and the reaper (correctly)
 //! flips the row back to `pending` after its timeout window — the
 //! dispatcher then re-spawns and the system accumulates 100+ zombie
 //! children in a few minutes (real incident on the first 51-task
-//! run).
+//! run). (There is no `cvg agent heartbeat` subcommand; agent-side
+//! heartbeats go through `cvg task heartbeat` or
+//! `POST /v1/tasks/:id/heartbeat`.)
 //!
 //! For every runner spawn the executor starts a tokio task here:
 //! every 60s while `kill -0 <pid>` succeeds the task ticks
