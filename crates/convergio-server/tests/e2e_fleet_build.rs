@@ -42,6 +42,7 @@ async fn boot() -> (String, Arc<FleetStore>, Arc<EmbedStore>, tempfile::TempDir)
         durability: Arc::new(Durability::new(pool.clone())),
         bus: Arc::new(Bus::new(pool.clone())),
         fleet: fleet.clone(),
+        fleet_plans: Arc::new(convergio_fleet::FleetPlanStore::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool)),
         graph,
         embed: embed.clone(),

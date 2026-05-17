@@ -33,6 +33,15 @@ pub enum FleetError {
     #[error("repo '{0}' not found in the fleet")]
     RepoNotFound(String),
 
+    /// Generic "not found" for fleet entities other than repos
+    /// (e.g. `fleet_plan <id>`).
+    #[error("not found: {0}")]
+    NotFound(String),
+
+    /// Caller supplied invalid input (empty title, malformed scope).
+    #[error("invalid input: {0}")]
+    InvalidInput(String),
+
     /// Error propagated from the embeddings layer.
     #[error("embed error: {0}")]
     Embed(#[from] convergio_embed::EmbedError),

@@ -241,11 +241,15 @@ impl IntoResponse for ApiError {
                     "not_found",
                     format!("fleet repo '{n}' not found"),
                 ),
+                FleetError::NotFound(what) => (StatusCode::NOT_FOUND, "not_found", what.clone()),
                 FleetError::RepoDuplicate(n) => (
                     StatusCode::CONFLICT,
                     "repo_duplicate",
                     format!("repo '{n}' already exists in the fleet"),
                 ),
+                FleetError::InvalidInput(msg) => {
+                    (StatusCode::BAD_REQUEST, "invalid_input", msg.clone())
+                }
                 _ => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "fleet_error",

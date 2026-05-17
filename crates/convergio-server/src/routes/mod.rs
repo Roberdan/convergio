@@ -12,6 +12,7 @@ pub mod embed;
 pub mod evidence;
 pub mod fleet;
 pub(crate) mod fleet_duplicates;
+pub mod fleet_plans;
 pub mod gate_preconditions;
 pub mod graph;
 pub mod health;

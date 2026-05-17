@@ -85,6 +85,7 @@ async fn context_packet_collects_task_state_messages_agents_and_agent_docs() {
         embed: Arc::new(convergio_embed::EmbedStore::new(pool.clone())),
         embedder: Arc::new(convergio_embed::embedder::testing::DeterministicTestEmbedder::new(8)),
         fleet: Arc::new(convergio_fleet::FleetStore::new(pool.clone())),
+        fleet_plans: Arc::new(convergio_fleet::FleetPlanStore::new(pool.clone())),
         audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let listener = TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], 0)))
