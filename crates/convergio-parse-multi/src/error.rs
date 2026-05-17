@@ -3,15 +3,16 @@
 use thiserror::Error;
 
 /// Errors produced by the parsing layer.
+///
+/// **Syntax errors are not exposed as a variant.** All three parsers
+/// (`parse`, `parse_ts`, `parse_py`) use partial-parse semantics:
+/// when tree-sitter reports `root.has_error()`, the parser logs a
+/// `warn!` and continues, returning whichever nodes were extractable.
+/// Graph build / fleet retrieval want best-effort coverage, not a
+/// hard-fail on a single malformed file. An earlier `SyntaxError`
+/// variant was unused (no caller could observe it) and was removed.
 #[derive(Debug, Error)]
 pub enum ParseError {
-    /// tree-sitter returned an error node at the root.
-    #[error("parse error in {file}: tree-sitter reported syntax errors")]
-    SyntaxError {
-        /// Source file path.
-        file: String,
-    },
-
     /// Source bytes are not valid UTF-8.
     #[error("source file {file} is not valid UTF-8: {source}")]
     Encoding {

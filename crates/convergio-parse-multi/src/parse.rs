@@ -12,6 +12,12 @@ use crate::{
 ///
 /// Only direct children of the root node are returned; the caller
 /// decides how deep to recurse for fleet-graph ingestion.
+///
+/// **Partial-parse semantics**: when tree-sitter reports
+/// `root.has_error()` (malformed source, mid-edit file, …) this
+/// function logs `warn!` and still returns the extractable nodes
+/// rather than failing. Graph callers want best-effort coverage;
+/// a single broken file must not blank an entire build.
 pub fn parse(lang: Lang, source: &[u8], file: &str) -> Result<Vec<ParsedNode>> {
     let mut parser = Parser::new();
     parser

@@ -12,10 +12,19 @@ handling grammar internals.
 
 ## Invariants
 
-- **`parse()` is the single entry point.** Callers do not instantiate
-  `tree_sitter::Parser` directly; grammar selection is internal.
-- **Top-level nodes only.** `parse()` returns only direct children of
-  the root. Recursive traversal belongs to the fleet graph builder.
+- **Three entry points: `parse()`, `parse_ts()`, `parse_py()`.**
+  `parse()` is the lightweight Rust path returning top-level
+  [`ParsedNode`]s; `parse_ts()` and `parse_py()` are graph-shaped
+  paths emitting `(Vec<Node>, Vec<Edge>)` directly for the fleet
+  graph builder. Callers never instantiate `tree_sitter::Parser`;
+  grammar selection is internal.
+- **Top-level nodes only (lightweight path).** `parse()` returns only
+  direct children of the root. Recursive traversal belongs to the
+  fleet graph builder.
+- **Partial-parse on syntax errors.** Every entry point logs `warn!`
+  and continues when tree-sitter reports `root.has_error()`; there
+  is no `SyntaxError` variant. Callers receive the best-effort node
+  set so a single malformed file cannot blank an entire build.
 - **No DB access.** This crate is pure parsing; persistence lives in
   `convergio-graph` and `convergio-fleet`.
 - **Migration range 900-999** reserved by ADR-0003 for this crate.
@@ -30,15 +39,17 @@ handling grammar internals.
 |------|------|
 | `lang.rs`    | [`Lang`] discriminant + grammar resolution |
 | `node.rs`    | [`ParsedNode`] + [`NodeKind`] |
-| `parse.rs`   | [`parse()`] — core bytes → nodes routine |
+| `parse.rs`   | [`parse()`] — lightweight Rust bytes → nodes |
+| `ts.rs`      | [`parse_ts()`] — TypeScript → graph nodes/edges |
+| `py.rs`      | [`parse_py()`] — Python → graph nodes/edges |
 | `error.rs`   | [`ParseError`] |
 | `migrate.rs` | Migration entry point (900-999, ADR-0003) |
 
 ## Tests
 
-- Per-module `#[cfg(test)] mod tests` covers grammar loading, node
-  extraction, and kind mapping.
-- Integration tests live in `tests/` (cargo convention).
+- Per-module `#[cfg(test)] mod tests` covers grammar loading and
+  kind mapping for `parse.rs` and `lang.rs`. `ts.rs` and `py.rs`
+  rely on integration tests under `tests/` (real source fixtures).
 
 ## Crate stats
 
@@ -46,8 +57,8 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-parse-multi` stats:** 8 `*.rs` files / 20 public items / 856 lines (under `src/`).
+**`convergio-parse-multi` stats:** 8 `*.rs` files / 20 public items / 873 lines (under `src/`).
 
 Files approaching the 300-line cap:
-- `src/py.rs` (294 lines)
+- `src/py.rs` (299 lines)
 <!-- END AUTO -->
