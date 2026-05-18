@@ -226,28 +226,38 @@ async fn validate(
     // I/O-bound (durability calls) so latency is max(per-repo), not
     // sum. Each branch is wrapped in tokio::time::timeout so a stuck
     // gate cannot block the aggregate result.
+    //
+    // Collect the JoinHandles eagerly with `.collect::<Vec<_>>()`
+    // BEFORE awaiting any of them — otherwise the lazy `.map()`
+    // iterator only spawns a worker when we pull the next item, and
+    // the `for h in handles { h.await }` loop would serialise the
+    // whole thing into spawn-await-spawn-await with latency
+    // = sum(per-repo) instead of max(per-repo). Codex P1 on #375.
     let durability: Durability = (*state.durability).clone();
-    let handles = links.into_iter().map(|link| {
-        let dur = durability.clone();
-        let secs = timeout_secs;
-        tokio::spawn(async move {
-            let thor = Thor::new(dur);
-            let outcome =
-                match tokio::time::timeout(timeout, thor.validate(&link.repo_plan_id)).await {
-                    Ok(Ok(Verdict::Pass)) => RepoOutcome::Pass,
-                    Ok(Ok(Verdict::Fail { reasons })) => RepoOutcome::Fail { reasons },
-                    Ok(Err(e)) => RepoOutcome::Fail {
-                        reasons: vec![format!("thor error: {e}")],
-                    },
-                    Err(_) => RepoOutcome::Timeout { secs },
-                };
-            RepoVerdict {
-                repo: link.repo,
-                repo_plan_id: link.repo_plan_id,
-                verdict: outcome,
-            }
+    let handles: Vec<_> = links
+        .into_iter()
+        .map(|link| {
+            let dur = durability.clone();
+            let secs = timeout_secs;
+            tokio::spawn(async move {
+                let thor = Thor::new(dur);
+                let outcome =
+                    match tokio::time::timeout(timeout, thor.validate(&link.repo_plan_id)).await {
+                        Ok(Ok(Verdict::Pass)) => RepoOutcome::Pass,
+                        Ok(Ok(Verdict::Fail { reasons })) => RepoOutcome::Fail { reasons },
+                        Ok(Err(e)) => RepoOutcome::Fail {
+                            reasons: vec![format!("thor error: {e}")],
+                        },
+                        Err(_) => RepoOutcome::Timeout { secs },
+                    };
+                RepoVerdict {
+                    repo: link.repo,
+                    repo_plan_id: link.repo_plan_id,
+                    verdict: outcome,
+                }
+            })
         })
-    });
+        .collect();
     let mut verdicts = Vec::new();
     for h in handles {
         match h.await {
