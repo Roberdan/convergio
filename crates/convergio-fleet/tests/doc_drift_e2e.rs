@@ -113,3 +113,73 @@ async fn doc_drift_finds_seeded_drift() {
     assert!((row.snapshot_score - 1.0).abs() < 0.05);
     assert!(row.current_score.abs() < 0.05);
 }
+
+// Codex P2 regression (PR #381 review): `claims`/`mentions` edges to
+// non-code nodes (e.g. doc→doc) must not be counted as drift signal.
+// Editing a referenced ADR must not surface the citing doc.
+#[tokio::test]
+async fn doc_to_doc_links_excluded_from_drift() {
+    let (fleet, embed, graph, _t) = boot().await;
+    fleet.add_repo(&repo("eng")).await.unwrap();
+    graph.upsert_node(&adr("0042", "eng")).await.unwrap();
+    graph.upsert_node(&adr("0043", "eng")).await.unwrap();
+    graph
+        .upsert_edge(&Edge {
+            src: "0042".into(),
+            dst: "0043".into(),
+            kind: EdgeKind::Mentions,
+            weight: 1,
+        })
+        .await
+        .unwrap();
+    embed
+        .upsert("eng", "0042", MODEL, &[1.0, 0.0], "h")
+        .await
+        .unwrap();
+    embed
+        .upsert("eng", "0043", MODEL, &[1.0, 0.0], "h")
+        .await
+        .unwrap();
+    let snap = snapshot_doc_alignment(&fleet, &embed, MODEL).await.unwrap();
+    assert_eq!(
+        snap.nodes_snapshotted, 0,
+        "doc→doc mention must not produce a snapshot"
+    );
+
+    // Rewrite the cited ADR's embedding — the citing ADR must NOT drift.
+    embed
+        .upsert("eng", "0043", MODEL, &[0.0, 1.0], "h")
+        .await
+        .unwrap();
+    let out = find_doc_drift(&fleet, &embed, MODEL, 0.2, None)
+        .await
+        .unwrap();
+    assert!(
+        out.is_empty(),
+        "doc→doc edits must not surface drift: {out:?}"
+    );
+}
+
+// Codex P2 regression (PR #381 review): the repo-filtered drift path
+// joins `graph_nodes`. On a fresh DB where the graph store has not
+// migrated yet, the call must degrade to an empty result instead of
+// returning a 500 — same behaviour as the unfiltered path.
+#[tokio::test]
+async fn repo_filter_without_graph_migration_returns_empty() {
+    let tmp = tempfile::NamedTempFile::new().unwrap();
+    let url = format!("sqlite://{}", tmp.path().display());
+    let pool = convergio_db::Pool::connect(&url).await.unwrap();
+    convergio_fleet::init(&pool).await.unwrap();
+    convergio_embed::init(&pool).await.unwrap();
+    // intentionally skip GraphStore::migrate
+    let fleet = FleetStore::new(pool.clone());
+    let embed = EmbedStore::new(pool);
+
+    let out = find_doc_drift(&fleet, &embed, MODEL, 0.2, Some("eng"))
+        .await
+        .unwrap();
+    assert!(
+        out.is_empty(),
+        "repo-filtered call before graph migration must degrade to empty: {out:?}"
+    );
+}

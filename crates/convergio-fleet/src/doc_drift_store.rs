@@ -67,10 +67,14 @@ pub(super) async fn load_doc_meta(fleet: &FleetStore) -> Result<HashMap<String, 
 pub(super) async fn load_doc_links(
     fleet: &FleetStore,
 ) -> Result<HashMap<String, Vec<(String, String)>>> {
+    // Restrict to *code* destinations (codex P2): doc→doc mentions
+    // are noise for the docs-vs-code signal — editing a referenced
+    // ADR should not produce a drift candidate for the citing doc.
     let rows = match sqlx::query(
         "SELECT e.src AS src, e.dst AS dst, n.repo AS repo \
          FROM graph_edges e JOIN graph_nodes n ON n.id = e.dst \
-         WHERE e.kind IN ('claims', 'mentions')",
+         WHERE e.kind IN ('claims', 'mentions') \
+           AND n.kind IN ('crate', 'module', 'item')",
     )
     .fetch_all(fleet.pool().inner())
     .await
@@ -111,10 +115,19 @@ pub(super) async fn load_snapshots(
         )
         .bind(model)
     };
-    let rows = q
-        .fetch_all(fleet.pool().inner())
-        .await
-        .map_err(crate::error::FleetError::Db)?;
+    // Codex P2: the repo-filtered SQL JOINs `graph_nodes`. On a fresh
+    // instance where graph migrations have not yet run, that table is
+    // absent and the unfiltered advisory path (which catches the
+    // "no such table" error elsewhere) already degrades gracefully.
+    // Mirror that here so /v1/fleet/doc-drift?repo=... behaves the
+    // same way before the graph is initialised.
+    let rows = match q.fetch_all(fleet.pool().inner()).await {
+        Ok(r) => r,
+        Err(sqlx::Error::Database(ref e)) if e.message().contains("no such table") => {
+            return Ok(Vec::new())
+        }
+        Err(e) => return Err(crate::error::FleetError::Db(e)),
+    };
     Ok(rows
         .into_iter()
         .map(|row| {
