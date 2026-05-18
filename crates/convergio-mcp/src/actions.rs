@@ -56,6 +56,9 @@ impl Bridge {
             Action::ListWorkspaceConflicts => self.get("/v1/workspace/conflicts").await,
             Action::ExplainLastRefusal => self.explain_last_refusal(request.params).await,
             Action::AgentPrompt => ok("agent prompt", help::agent_prompt(), None),
+            Action::FleetPlanCreate => self.post("/v1/fleet/plans", request.params).await,
+            Action::FleetPlanShow => self.fleet_plan_show(request.params).await,
+            Action::FleetPlanValidate => self.fleet_plan_validate(request.params).await,
         };
         self.log_action(action, &response);
         response
@@ -153,6 +156,42 @@ impl Bridge {
             Err(response) => return response,
         };
         self.get(&path).await
+    }
+
+    async fn fleet_plan_show(&self, params: Value) -> AgentResponse {
+        let id = match required_str(&params, "fleet_plan_id") {
+            Ok(v) => v,
+            Err(r) => return r,
+        };
+        self.get(&format!("/v1/fleet/plans/{id}")).await
+    }
+
+    async fn fleet_plan_validate(&self, mut params: Value) -> AgentResponse {
+        let id = match required_str(&params, "fleet_plan_id") {
+            Ok(v) => v,
+            Err(r) => return r,
+        };
+        remove_key(&mut params, "fleet_plan_id");
+        // Optional but strictly typed: a string "30" or negative
+        // value must fail fast rather than fall back to the 60s
+        // default, otherwise the caller can't tell their input was
+        // ignored (Codex P2 on #378). Same shape as audit_path.
+        let timeout = match params.get("per_repo_timeout_secs") {
+            None => 60u64,
+            Some(v) => match v.as_u64() {
+                Some(n) if n > 0 => n,
+                _ => {
+                    return crate::http::invalid(
+                        "per_repo_timeout_secs must be a positive integer".into(),
+                    );
+                }
+            },
+        };
+        self.post(
+            &format!("/v1/fleet/plans/{id}/validate?per_repo_timeout_secs={timeout}"),
+            json!({}),
+        )
+        .await
     }
 
     async fn release_workspace_lease(&self, params: Value) -> AgentResponse {
