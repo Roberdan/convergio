@@ -29,6 +29,10 @@ cd "$repo_root"
 #             12_000 → 13_000 (2026-05, P1-3 + P2-9 absorbed by cli;
 #             cli-split ADR pending — agent_*, fleet, setup, update,
 #             coherence subcommands are all candidates for extraction).
+#             13_000 → 14_000 (2026-05, F47 usage rollups, commit 82b1d5c).
+#             14_000 → 14_500 (2026-05, F3-5 + F3-6 fleet routes;
+#             server route extraction ADR pending — fleet_*, fleet_rot,
+#             fleet_doc_drift could move into a sibling routing crate).
 #     The shape of that crate (audit chain + plans + tasks + evidence +
 #     workspace + capabilities + crdt + gates + agent-reaper) is
 #     intentional and a real split needs ADR work — track it under
@@ -38,7 +42,7 @@ cd "$repo_root"
 RS_HARD=300
 NON_RS_SOFT=500
 CRATE_SOFT=5000
-CRATE_HARD=14000
+CRATE_HARD=14500
 
 hard_fail=0
 soft_warn=0

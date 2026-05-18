@@ -7,6 +7,7 @@
 //! - `POST   /v1/fleet/build`        — parse + embed (idempotent)
 //! - `GET    /v1/fleet/patterns`     — cross-repo cluster detection
 //! - `GET    /v1/fleet/duplicates`   — near-exact cross-repo duplicate pairs
+//! - `GET    /v1/fleet/rot`          — semantic dead-code candidates
 
 use crate::app::AppState;
 use crate::error::ApiError;
@@ -30,6 +31,7 @@ pub fn router() -> Router<AppState> {
             "/v1/fleet/duplicates",
             axum::routing::get(super::fleet_duplicates::duplicates),
         )
+        .route("/v1/fleet/rot", axum::routing::get(super::fleet_rot::rot))
 }
 
 #[derive(Debug, Deserialize)]

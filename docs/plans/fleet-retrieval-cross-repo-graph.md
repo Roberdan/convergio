@@ -130,7 +130,7 @@ fleet-aware MCP actions.
 | F3-2 | `cvg fleet plan create / show / ls / add-task` | F3-1 | per-repo plan rows linked under one fleet_plan_id; rollup status JSON | E2E `fleet_plan_fanout_to_three_repos` |
 | F3-3 | `cvg fleet validate <plan-id>` runs gate pipeline per touched repo | F3-2 | green only when all touched repos pass; per-repo verdicts surfaced | E2E `fleet_validate_returns_409_on_one_repo_fail` |
 | F3-4 | `cvg audit verify --fleet <plan-id>` walks all touched chains | F3-1 | derived view, never mutates per-repo chain (D11) | E2E `audit_verify_fleet_detects_tampering` |
-| F3-5 | `cvg fleet rot` (semantic dead-code with role-aware thresholds) | F2 go, D-5 | output respects `--threshold` + `--explain <id>`; advisory only | E2E `fleet_rot_ranks_unreachable_with_low_cosine` |
+| F3-5 | `cvg fleet rot` (semantic dead-code with role-aware thresholds) | F2 go, D-5 | output respects `--threshold` + `--explain <id>`; advisory only | E2E `fleet_rot_ranks_unreachable_with_low_cosine` — **landed**: `convergio_fleet::find_rot` + `GET /v1/fleet/rot`; CLI verb deferred. |
 | F3-6 | `cvg fleet doc-drift` with snapshot embeddings | F2 go, D-6 | ADR/README candidates surfaced with semantic delta summary | E2E `doc_drift_finds_seeded_drift` |
 | F3-7 | MCP fleet actions (`convergio.fleet.for_task`, `convergio.fleet.validate`) | F3-2, F3-3 | typed action additions in `convergio-api`; `convergio-mcp` exposes them | E2E `mcp_fleet_action_round_trip` |
 | F3-8 | F3 go/no-go report → ADR-0038 decision log | F3-7 | one real cross-repo task executed end-to-end on Roberto's fleet, fleet audit green, daily incremental rebuild < 5 min for 5 repos | F3 retrospective ADR |
