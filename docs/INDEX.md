@@ -125,7 +125,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0046-stdout-relay-to-bus.md` | adr | [convergio-lifecycle, convergio-server] | accepted | 77 |
 | `docs/adr/0047-action-type-registry-actions-json.md` | adr | [convergio-api, convergio-server, convergio-mcp] | proposed | 59 |
 | `docs/adr/0048-compensating-action-types.md` | adr | [convergio-durability, convergio-server] | proposed | 65 |
-| `docs/adr/README.md` | adr | - | - | 69 |
+| `docs/adr/0049-f3-fleet-retrospective.md` | adr | [convergio-fleet, convergio-embed, convergio-graph, convergio-server, convergio-mcp, convergio-api] | accepted | 148 |
+| `docs/adr/README.md` | adr | - | - | 70 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |

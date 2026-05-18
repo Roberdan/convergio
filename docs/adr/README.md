@@ -66,4 +66,5 @@ do not edit between the markers.
 | [0046](./0046-stdout-relay-to-bus.md) | -0046 — Sub-agent stdout relay to the plan bus | accepted |
 | [0047](./0047-action-type-registry-actions-json.md) | 0047. Generate a discoverable action type registry (actions.json) | proposed |
 | [0048](./0048-compensating-action-types.md) | 0048. Add compensating action types | proposed |
+| [0049](./0049-f3-fleet-retrospective.md) | 0049. F3 fleet-grade orchestration — retrospective | accepted |
 <!-- END AUTO -->
