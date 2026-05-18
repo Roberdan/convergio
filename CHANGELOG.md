@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.27](https://github.com/Roberdan/convergio/compare/convergio-v0.3.26...convergio-v0.3.27) (2026-05-18)
+
+
+### Features
+
+* **convergio-fleet:** F3-2 fleet plans + per-repo task fan-out ([cd42d92](https://github.com/Roberdan/convergio/commit/cd42d92bf85e7c0e3fb7e8381356c2f616e0d04c))
+* **fleet:** F3-2 — fleet plans CRUD + per-repo task fan-out ([2f9cb4b](https://github.com/Roberdan/convergio/commit/2f9cb4ba349134fd7f987968aa61f883825a3b47))
+
+
+### Bug Fixes
+
+* **fleet:** reject mismatched relinks and validate repo_plan_id ([1ce5f99](https://github.com/Roberdan/convergio/commit/1ce5f993e1f4645d30425b84603197c141afe96e))
+
 ## [0.3.26](https://github.com/Roberdan/convergio/compare/convergio-v0.3.25...convergio-v0.3.26) (2026-05-17)
 
 
