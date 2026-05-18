@@ -71,6 +71,16 @@ async fn link_repo(
     Path(id): Path<String>,
     Json(input): Json<LinkRepoInput>,
 ) -> Result<Json<Value>, ApiError> {
+    // The fleet plan must exist; surface 404 here rather than letting
+    // the link table accept a parent-less link (no FK to fleet_plans
+    // on the row schema; the integrity check lives at this layer).
+    state.fleet_plans.get(&id).await?;
+    // The per-repo plan must exist in convergio-durability. Without
+    // this check a typo would produce a dangling link that only
+    // surfaces later when `add-task` tries to create the task on a
+    // non-existent plan. fleet_plan_repos has no FK to plans, so
+    // validate here.
+    state.durability.plans().get(&input.repo_plan_id).await?;
     let link = FleetPlanRepoLink {
         fleet_plan_id: id,
         repo: input.repo,

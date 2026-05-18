@@ -172,4 +172,50 @@ async fn fleet_plan_lifecycle_roundtrip() {
         .await
         .expect("POST bad task");
     assert_eq!(bad.status().as_u16(), 404);
+
+    // --- error: link_repo with an unknown repo_plan_id → 404 ---
+    // The link table has no FK to plans, so the route validates at
+    // request time to refuse dangling links up front.
+    let dangling = http
+        .post(format!("{base}/v1/fleet/plans/{fleet_plan_id}/repos"))
+        .json(&json!({ "repo": "convergio", "repo_plan_id": "does-not-exist" }))
+        .send()
+        .await
+        .expect("POST dangling link");
+    assert_eq!(dangling.status().as_u16(), 404);
+
+    // --- error: link_repo re-targeting same repo to a different
+    //     repo_plan_id must 400 (not silently dropped). Create a
+    //     second per-repo plan and try to overwrite the existing
+    //     link. The store keeps the original target. ---
+    let other_repo_plan = durability
+        .create_plan(NewPlan {
+            title: "convergio: alternate".into(),
+            project: Some("convergio".into()),
+            description: None,
+        })
+        .await
+        .expect("alternate repo plan");
+    let mismatched = http
+        .post(format!("{base}/v1/fleet/plans/{fleet_plan_id}/repos"))
+        .json(&json!({ "repo": "convergio", "repo_plan_id": other_repo_plan.id }))
+        .send()
+        .await
+        .expect("POST mismatched link");
+    assert_eq!(mismatched.status().as_u16(), 400);
+    let view: Value = http
+        .get(format!("{base}/v1/fleet/plans/{fleet_plan_id}"))
+        .send()
+        .await
+        .expect("GET show after refused relink")
+        .json()
+        .await
+        .expect("decode view");
+    let links_after = view.get("links").and_then(|v| v.as_array()).expect("links");
+    assert_eq!(links_after.len(), 1);
+    assert_eq!(
+        links_after[0].get("repo_plan_id").and_then(|v| v.as_str()),
+        Some(repo_plan.id.as_str()),
+        "refused relink must leave the original target intact"
+    );
 }

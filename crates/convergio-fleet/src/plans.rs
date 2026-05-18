@@ -1,17 +1,9 @@
-//! Fleet plans — one logical plan spanning multiple repos.
-//!
-//! ADR-0038 § F3-2. Schema lives in [`crate::migrate`] (migration
-//! `0800_fleet.sql`); this module is the CRUD surface for
-//! `fleet_plans` and `fleet_plan_repos`. The per-repo plan rows
-//! themselves live in `convergio-durability`'s `plans` table — this
-//! module only records the **link** between a fleet-scoped plan and
-//! the per-repo plans it fans out to.
-//!
-//! Status rollup is **derived at query time**, not stored. A
-//! fleet-plan is `done` when every linked per-repo plan is `done`;
-//! `in_progress` if any per-repo plan is in flight; `draft`
-//! otherwise. This avoids drift between an aggregate column and the
-//! authoritative per-repo state.
+//! Fleet plans — one logical plan spanning multiple repos
+//! (ADR-0038 § F3-2). Schema in `0800_fleet.sql`. This module is the
+//! CRUD surface for `fleet_plans` and `fleet_plan_repos`; the
+//! per-repo plan rows themselves live in `convergio-durability`.
+//! Status rollup is **derived at query time**, never stored —
+//! prevents drift from the per-repo source of truth.
 
 use crate::error::{FleetError, Result};
 use convergio_db::Pool;
@@ -130,12 +122,31 @@ impl FleetPlanStore {
     }
 
     /// Link a per-repo plan into a fleet plan. Idempotent on the
-    /// `(fleet_plan_id, repo)` primary key — a duplicate insert
-    /// returns the existing link.
+    /// same target; mismatched re-link returns
+    /// [`FleetError::InvalidInput`] (silent overwrite would fan
+    /// `add-task` out to a stale plan).
     pub async fn link_repo(&self, link: &FleetPlanRepoLink) -> Result<()> {
+        let existing: Option<(String,)> = sqlx::query_as(
+            "SELECT repo_plan_id FROM fleet_plan_repos \
+             WHERE fleet_plan_id = ? AND repo = ?",
+        )
+        .bind(&link.fleet_plan_id)
+        .bind(&link.repo)
+        .fetch_optional(self.pool.inner())
+        .await?;
+        if let Some((current,)) = existing {
+            if current == link.repo_plan_id {
+                return Ok(());
+            }
+            return Err(FleetError::InvalidInput(format!(
+                "repo '{}' already linked to fleet_plan '{}' (current='{current}', \
+                 new='{}'); delete the link first to re-target",
+                link.repo, link.fleet_plan_id, link.repo_plan_id,
+            )));
+        }
         sqlx::query(
-            "INSERT OR IGNORE INTO fleet_plan_repos \
-             (fleet_plan_id, repo, repo_plan_id) VALUES (?, ?, ?)",
+            "INSERT INTO fleet_plan_repos (fleet_plan_id, repo, repo_plan_id) \
+             VALUES (?, ?, ?)",
         )
         .bind(&link.fleet_plan_id)
         .bind(&link.repo)
@@ -249,9 +260,23 @@ mod tests {
             repo_plan_id: "repo-plan-1".into(),
         };
         store.link_repo(&link).await.unwrap();
-        store.link_repo(&link).await.unwrap(); // idempotent
+        store.link_repo(&link).await.unwrap(); // idempotent on same target
         let links = store.links(&p.id).await.unwrap();
-        assert_eq!(links, vec![link]);
+        assert_eq!(links, vec![link.clone()]);
+
+        // Re-linking the same repo to a *different* repo_plan_id must
+        // refuse instead of silently dropping the change — operators
+        // would otherwise believe the mapping was updated while
+        // `add-task` fanned out to the stale plan.
+        let conflicting = FleetPlanRepoLink {
+            fleet_plan_id: p.id.clone(),
+            repo: "r1".into(),
+            repo_plan_id: "repo-plan-2".into(),
+        };
+        let err = store.link_repo(&conflicting).await.unwrap_err();
+        assert!(matches!(err, FleetError::InvalidInput(_)));
+        let links = store.links(&p.id).await.unwrap();
+        assert_eq!(links, vec![link]); // unchanged
     }
 
     #[tokio::test]
