@@ -51,7 +51,10 @@ impl Action {
             | Self::ListWorkspaceConflicts
             | Self::ExplainLastRefusal
             | Self::AgentPrompt
-            | Self::AuditAppend => None,
+            | Self::AuditAppend
+            | Self::FleetPlanCreate
+            | Self::FleetPlanShow
+            | Self::FleetPlanValidate => None,
         }
     }
 

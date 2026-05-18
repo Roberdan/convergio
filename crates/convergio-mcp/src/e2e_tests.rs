@@ -158,3 +158,112 @@ async fn latest_refusal(State(daemon): State<Arc<StubDaemon>>) -> Json<Value> {
         "message": "persisted refusal"
     }))
 }
+
+#[tokio::test]
+async fn fleet_plan_actions_round_trip_to_expected_paths() {
+    // F3-7 acceptance: each of the three fleet actions must reach the
+    // matching daemon HTTP path with the right verb and payload.
+    use std::sync::Mutex as StdMutex;
+    #[derive(Default)]
+    struct Calls {
+        log: StdMutex<Vec<(String, String, Value)>>,
+    }
+    let calls = Arc::new(Calls::default());
+    let state = calls.clone();
+    let app = Router::new()
+        .route(
+            "/v1/fleet/plans",
+            post(
+                |State(s): State<Arc<Calls>>, Json(body): Json<Value>| async move {
+                    s.log
+                        .lock()
+                        .unwrap()
+                        .push(("POST".into(), "/v1/fleet/plans".into(), body));
+                    Json(json!({"id": "fp-1", "title": "x", "scope": "fleet"}))
+                },
+            ),
+        )
+        .route(
+            "/v1/fleet/plans/:id",
+            get(
+                |State(s): State<Arc<Calls>>, Path(id): Path<String>| async move {
+                    s.log.lock().unwrap().push((
+                        "GET".into(),
+                        format!("/v1/fleet/plans/{id}"),
+                        json!({}),
+                    ));
+                    Json(json!({"plan": {"id": id}, "links": []}))
+                },
+            ),
+        )
+        .route(
+            "/v1/fleet/plans/:id/validate",
+            post(
+                |State(s): State<Arc<Calls>>,
+                 Path(id): Path<String>,
+                 axum::extract::RawQuery(q),
+                 Json(body): Json<Value>| async move {
+                    s.log.lock().unwrap().push((
+                        "POST".into(),
+                        format!("/v1/fleet/plans/{id}/validate?{}", q.unwrap_or_default()),
+                        body,
+                    ));
+                    Json(json!({"fleet_plan_id": id, "passing": true, "verdicts": []}))
+                },
+            ),
+        )
+        .with_state(state);
+    let listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+    let url = format!("http://{}", listener.local_addr().unwrap());
+    tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+    let bridge = Bridge::new(url);
+
+    let create = bridge
+        .dispatch(ActRequest {
+            schema_version: SCHEMA_VERSION.into(),
+            action: Action::FleetPlanCreate,
+            params: json!({"title": "fleet x", "scope": "fleet"}),
+        })
+        .await;
+    assert!(create.ok, "create: {create:?}");
+
+    let show = bridge
+        .dispatch(ActRequest {
+            schema_version: SCHEMA_VERSION.into(),
+            action: Action::FleetPlanShow,
+            params: json!({"fleet_plan_id": "fp-1"}),
+        })
+        .await;
+    assert!(show.ok, "show: {show:?}");
+
+    let validate = bridge
+        .dispatch(ActRequest {
+            schema_version: SCHEMA_VERSION.into(),
+            action: Action::FleetPlanValidate,
+            params: json!({"fleet_plan_id": "fp-1", "per_repo_timeout_secs": 30}),
+        })
+        .await;
+    assert!(validate.ok, "validate: {validate:?}");
+
+    let log = calls.log.lock().unwrap().clone();
+    assert_eq!(log.len(), 3, "{log:?}");
+    assert_eq!(log[0].0, "POST");
+    assert_eq!(log[0].1, "/v1/fleet/plans");
+    assert_eq!(log[0].2["title"], "fleet x");
+    assert_eq!(log[1].0, "GET");
+    assert_eq!(log[1].1, "/v1/fleet/plans/fp-1");
+    assert_eq!(log[2].0, "POST");
+    assert_eq!(
+        log[2].1,
+        "/v1/fleet/plans/fp-1/validate?per_repo_timeout_secs=30"
+    );
+
+    let bad = bridge
+        .dispatch(ActRequest {
+            schema_version: SCHEMA_VERSION.into(),
+            action: Action::FleetPlanShow,
+            params: json!({}),
+        })
+        .await;
+    assert!(!bad.ok, "missing fleet_plan_id must be a typed error");
+}

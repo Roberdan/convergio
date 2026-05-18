@@ -83,6 +83,12 @@ pub enum Action {
     ExplainLastRefusal,
     /// Return the canonical prompt addendum for agents.
     AgentPrompt,
+    /// Create a fleet plan (cross-repo, ADR-0038 F3-2).
+    FleetPlanCreate,
+    /// Show a fleet plan with its per-repo links.
+    FleetPlanShow,
+    /// Run the gate pipeline across every linked repo (F3-3, read-only).
+    FleetPlanValidate,
 }
 
 impl Action {
@@ -124,6 +130,9 @@ impl Action {
         Self::ListWorkspaceConflicts,
         Self::ExplainLastRefusal,
         Self::AgentPrompt,
+        Self::FleetPlanCreate,
+        Self::FleetPlanShow,
+        Self::FleetPlanValidate,
     ];
 
     /// Stable snake_case action name.
@@ -165,6 +174,9 @@ impl Action {
             Self::ListWorkspaceConflicts => "list_workspace_conflicts",
             Self::ExplainLastRefusal => "explain_last_refusal",
             Self::AgentPrompt => "agent_prompt",
+            Self::FleetPlanCreate => "fleet_plan_create",
+            Self::FleetPlanShow => "fleet_plan_show",
+            Self::FleetPlanValidate => "fleet_plan_validate",
         }
     }
 
@@ -198,6 +210,7 @@ impl Action {
             | Self::ListMergeQueue
             | Self::ListWorkspaceConflicts => "workspace",
             Self::PublishMessage | Self::PollMessages | Self::AckMessage => "validation",
+            Self::FleetPlanCreate | Self::FleetPlanShow | Self::FleetPlanValidate => "fleet",
         }
     }
 
@@ -240,6 +253,11 @@ impl Action {
             Self::ListWorkspaceConflicts => "List open workspace conflicts.",
             Self::ExplainLastRefusal => "Explain the most recent gate refusal for a task.",
             Self::AgentPrompt => "Return the canonical agent prompt addendum.",
+            Self::FleetPlanCreate => "Create a cross-repo fleet plan (ADR-0038 F3-2).",
+            Self::FleetPlanShow => "Show a fleet plan with its per-repo links.",
+            Self::FleetPlanValidate => {
+                "Run the gate pipeline across every linked repo (read-only)."
+            }
         }
     }
 }

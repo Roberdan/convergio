@@ -56,6 +56,9 @@ impl Bridge {
             Action::ListWorkspaceConflicts => self.get("/v1/workspace/conflicts").await,
             Action::ExplainLastRefusal => self.explain_last_refusal(request.params).await,
             Action::AgentPrompt => ok("agent prompt", help::agent_prompt(), None),
+            Action::FleetPlanCreate => self.post("/v1/fleet/plans", request.params).await,
+            Action::FleetPlanShow => self.fleet_plan_show(request.params).await,
+            Action::FleetPlanValidate => self.fleet_plan_validate(request.params).await,
         };
         self.log_action(action, &response);
         response
@@ -153,6 +156,31 @@ impl Bridge {
             Err(response) => return response,
         };
         self.get(&path).await
+    }
+
+    async fn fleet_plan_show(&self, params: Value) -> AgentResponse {
+        let id = match required_str(&params, "fleet_plan_id") {
+            Ok(v) => v,
+            Err(r) => return r,
+        };
+        self.get(&format!("/v1/fleet/plans/{id}")).await
+    }
+
+    async fn fleet_plan_validate(&self, mut params: Value) -> AgentResponse {
+        let id = match required_str(&params, "fleet_plan_id") {
+            Ok(v) => v,
+            Err(r) => return r,
+        };
+        remove_key(&mut params, "fleet_plan_id");
+        let timeout = params
+            .get("per_repo_timeout_secs")
+            .and_then(Value::as_u64)
+            .unwrap_or(60);
+        self.post(
+            &format!("/v1/fleet/plans/{id}/validate?per_repo_timeout_secs={timeout}"),
+            json!({}),
+        )
+        .await
     }
 
     async fn release_workspace_lease(&self, params: Value) -> AgentResponse {
