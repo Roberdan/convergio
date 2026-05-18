@@ -87,3 +87,93 @@ async fn fleet_rot_ranks_unreachable_with_low_cosine() {
     assert_eq!(out[0].role, "engine");
     assert!(out[0].confidence > 0.0);
 }
+
+async fn boot() -> (FleetStore, EmbedStore, GraphStore, tempfile::NamedTempFile) {
+    let tmp = tempfile::NamedTempFile::new().unwrap();
+    let url = format!("sqlite://{}", tmp.path().display());
+    let pool = convergio_db::Pool::connect(&url).await.unwrap();
+    convergio_fleet::init(&pool).await.unwrap();
+    convergio_embed::init(&pool).await.unwrap();
+    let graph = GraphStore::new(pool.clone());
+    graph.migrate().await.unwrap();
+    let fleet = FleetStore::new(pool.clone());
+    let embed = EmbedStore::new(pool);
+    (fleet, embed, graph, tmp)
+}
+
+fn repo(name: &str) -> RepoEntry {
+    RepoEntry {
+        name: name.into(),
+        path: format!("/repos/{name}"),
+        language: "rust".into(),
+        parser: "syn".into(),
+        role: RepoRole::Engine,
+        derives_from: None,
+    }
+}
+
+// Codex P1 regression (PR #380 review): a node with no embedding row
+// must not appear as a strong rot candidate. Without similarity data
+// we cannot tell isolation from "simply unscored". `--explain` still
+// surfaces it with a "no embedding stored" reason.
+#[tokio::test]
+async fn missing_embedding_is_not_flagged() {
+    let (fleet, embed, graph, _t) = boot().await;
+    fleet.add_repo(&repo("engine")).await.unwrap();
+    graph
+        .upsert_node(&item("unembedded", "u", "engine"))
+        .await
+        .unwrap();
+
+    let out = find_rot(&fleet, &embed, MODEL, 0.3, None, None)
+        .await
+        .unwrap();
+    assert!(
+        out.iter().all(|c| c.node_id != "unembedded"),
+        "unembedded node must not be flagged: {out:?}"
+    );
+
+    let explained = find_rot(&fleet, &embed, MODEL, 0.3, None, Some("unembedded"))
+        .await
+        .unwrap();
+    assert_eq!(explained.len(), 1);
+    assert!(explained[0]
+        .reasons
+        .iter()
+        .any(|r| r.contains("no embedding stored")));
+}
+
+// Codex P1 regression (PR #380 review): the best-similarity cache key
+// must include repo. If two repos share a node_id (path-like IDs,
+// non-hash-derived), scores must not cross-contaminate.
+#[tokio::test]
+async fn same_node_id_across_repos_keeps_separate_scores() {
+    let (fleet, embed, graph, _t) = boot().await;
+    fleet.add_repo(&repo("a")).await.unwrap();
+    fleet.add_repo(&repo("b")).await.unwrap();
+    graph
+        .upsert_node(&item("a-shared", "f", "a"))
+        .await
+        .unwrap();
+    graph
+        .upsert_node(&item("b-shared", "f", "b"))
+        .await
+        .unwrap();
+    // Distinct repo, identical short id — must not collide in the cache.
+    embed
+        .upsert("a", "shared", MODEL, &[1.0, 0.0], "h")
+        .await
+        .unwrap();
+    embed
+        .upsert("b", "shared", MODEL, &[1.0, 0.0], "h")
+        .await
+        .unwrap();
+
+    let out = find_rot(&fleet, &embed, MODEL, 0.3, None, None)
+        .await
+        .unwrap();
+    assert!(
+        out.is_empty(),
+        "no graph node has matching embedding rows: {out:?}"
+    );
+}

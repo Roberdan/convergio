@@ -1,13 +1,10 @@
 //! Semantic dead-code detection (ADR-0038, F3-5).
 //!
-//! [`find_rot`] ranks `item`-kind graph nodes that look like dead-code
-//! candidates: no inbound `uses` / `re_exports` / `mentions` edges
-//! AND a maximum cosine similarity to any other embedding below the
-//! supplied threshold. Confidence is weighted by the owning repo's
-//! role — engine repos signal more strongly than sandboxes.
-//!
-//! Results are advisory only. Callers (`cvg fleet rot`, MCP) surface
-//! them to humans, who decide what to remove.
+//! [`find_rot`] ranks `item`-kind graph nodes with no inbound
+//! `uses`/`re_exports`/`mentions` edges and a best cross-node cosine
+//! below the supplied threshold. Confidence is role-weighted
+//! (engine, library, downstream, sandbox in descending order).
+//! Advisory only — humans decide what to remove.
 
 use crate::error::Result;
 use crate::store::FleetStore;
@@ -23,11 +20,6 @@ use std::collections::HashMap;
 /// keep a node as a rot candidate.
 pub const DEFAULT_ROT_THRESHOLD: f32 = 0.3;
 
-/// Role-weight applied to confidence when ranking candidates.
-///
-/// Engine repos are deliberate code — their dead items are the
-/// highest-signal removals. Sandboxes are by definition experimental,
-/// so we suppress noise from them.
 fn role_weight(role: &str) -> f32 {
     match role {
         "engine" => 1.0,
@@ -93,45 +85,27 @@ pub async fn find_rot(
     let mut out = Vec::new();
     for n in nodes {
         let inbound_uses = inbound.get(&n.id).copied().unwrap_or(0);
-        let best_score = best.get(&n.id).copied().unwrap_or(0.0);
+        let is_explained = explain_node.is_some_and(|id| id == n.id);
         let role = roles
             .get(&n.repo)
             .cloned()
             .unwrap_or_else(|| "downstream".to_owned());
 
-        let qualifies = inbound_uses == 0 && best_score < threshold;
-        let is_explained = explain_node.is_some_and(|id| id == n.id);
-        if !qualifies && !is_explained {
-            continue;
+        let score = best.get(&(n.repo.clone(), n.id.clone())).copied();
+        let qualifies = score.is_some_and(|s| inbound_uses == 0 && s < threshold);
+        // Unscored nodes (pre-build or EmbedPolicy-excluded) are
+        // silently dropped from the default listing; `--explain`
+        // still surfaces them with a clear reason trail.
+        if qualifies || is_explained {
+            out.push(make_candidate(
+                n,
+                role,
+                inbound_uses,
+                score,
+                threshold,
+                is_explained,
+            ));
         }
-
-        let weight = role_weight(&role);
-        let raw = (1.0 - best_score).clamp(0.0, 1.0) * weight;
-        let confidence = if inbound_uses == 0 { raw } else { 0.0 };
-
-        let reasons = build_reasons(
-            inbound_uses,
-            best_score,
-            threshold,
-            &role,
-            weight,
-            is_explained,
-        );
-
-        out.push(RotCandidate {
-            repo: n.repo,
-            node_id: n.id,
-            name: n.name,
-            kind: n.kind,
-            item_kind: n.item_kind,
-            crate_name: n.crate_name,
-            file_path: n.file_path,
-            role,
-            inbound_uses,
-            best_similar_score: best_score,
-            confidence,
-            reasons,
-        });
     }
 
     out.sort_by(|a, b| {
@@ -224,11 +198,19 @@ async fn load_roles(fleet: &FleetStore) -> Result<HashMap<String, String>> {
     Ok(repos.into_iter().map(|r| (r.name, r.role)).collect())
 }
 
-async fn compute_best_similar(embed: &EmbedStore, model: &str) -> Result<HashMap<String, f32>> {
+async fn compute_best_similar(
+    embed: &EmbedStore,
+    model: &str,
+) -> Result<HashMap<(String, String), f32>> {
     let rows = embed.all_for_model(model).await?;
-    let mut out: HashMap<String, f32> = HashMap::with_capacity(rows.len());
+    // Key by `(repo, node_id)` so two repos that happen to share a
+    // node_id (path-like IDs, identical hash collisions) keep their
+    // own scores. Even though current node IDs encode repo into the
+    // hash, the storage contract is (repo, node_id, model) — mirror
+    // that here to stay collision-proof.
+    let mut out: HashMap<(String, String), f32> = HashMap::with_capacity(rows.len());
     let norms: Vec<f32> = rows.iter().map(|(_, _, v)| vec_norm(v)).collect();
-    for (i, (_, id_i, vi)) in rows.iter().enumerate() {
+    for (i, (repo_i, id_i, vi)) in rows.iter().enumerate() {
         if norms[i] == 0.0 {
             continue;
         }
@@ -242,13 +224,7 @@ async fn compute_best_similar(embed: &EmbedStore, model: &str) -> Result<HashMap
                 best = s;
             }
         }
-        out.entry(id_i.clone())
-            .and_modify(|v| {
-                if best > *v {
-                    *v = best
-                }
-            })
-            .or_insert(best);
+        out.insert((repo_i.clone(), id_i.clone()), best);
     }
     Ok(out)
 }
@@ -266,25 +242,55 @@ fn cosine_with_norm(a: &[f32], b: &[f32], na: f32, nb: f32) -> f32 {
     (dot / denom).clamp(-1.0, 1.0)
 }
 
-fn build_reasons(
-    inbound: u32,
-    best_score: f32,
+fn make_candidate(
+    n: ItemNode,
+    role: String,
+    inbound_uses: u32,
+    score: Option<f32>,
     threshold: f32,
-    role: &str,
-    weight: f32,
     explained: bool,
-) -> Vec<String> {
-    let mut r = Vec::new();
-    r.push(format!("inbound uses/re_exports/mentions = {inbound}"));
-    r.push(format!("best cross-node cosine = {best_score:.3}"));
-    r.push(format!(
-        "threshold = {threshold:.3} (below = semantically isolated)"
-    ));
-    r.push(format!("role = {role} (weight = {weight:.2})"));
-    if explained && (inbound > 0 || best_score >= threshold) {
-        r.push("explain: returned because of --explain; would not normally qualify".to_owned());
+) -> RotCandidate {
+    let weight = role_weight(&role);
+    let (best_similar_score, confidence, reasons) = match score {
+        Some(s) => {
+            let raw = (1.0 - s).clamp(0.0, 1.0) * weight;
+            let confidence = if inbound_uses == 0 { raw } else { 0.0 };
+            let mut r = vec![
+                format!("inbound uses/re_exports/mentions = {inbound_uses}"),
+                format!("best cross-node cosine = {s:.3}"),
+                format!("threshold = {threshold:.3} (below = semantically isolated)"),
+                format!("role = {role} (weight = {weight:.2})"),
+            ];
+            if explained && (inbound_uses > 0 || s >= threshold) {
+                r.push(
+                    "explain: returned because of --explain; would not normally qualify".to_owned(),
+                );
+            }
+            (s, confidence, r)
+        }
+        None => (
+            0.0,
+            0.0,
+            vec![
+                format!("inbound uses/re_exports/mentions = {inbound_uses}"),
+                "no embedding stored for this node (skipped from default listing)".to_owned(),
+            ],
+        ),
+    };
+    RotCandidate {
+        repo: n.repo,
+        node_id: n.id,
+        name: n.name,
+        kind: n.kind,
+        item_kind: n.item_kind,
+        crate_name: n.crate_name,
+        file_path: n.file_path,
+        role,
+        inbound_uses,
+        best_similar_score,
+        confidence,
+        reasons,
     }
-    r
 }
 
 #[cfg(test)]
