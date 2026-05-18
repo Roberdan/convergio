@@ -1,8 +1,7 @@
-//! `cvg fleet ...` — fleet repo management (ADR-0038, F2-6/F2-7/F2-9/F2-10).
-//! Pure HTTP. The daemon owns the fleet store; the CLI just renders.
-//! Subcommands: `add`, `ls`, `enable`, `disable`, `build`, `patterns`, `duplicates`.
+//! `cvg fleet ...` — fleet repo + plan management (ADR-0038, F2/F3).
+//! Pure HTTP; the daemon owns the stores.
 
-use super::{Client, OutputMode};
+use super::{fleet_plan::FleetPlanCommand, Client, OutputMode};
 use anyhow::{Context, Result};
 use clap::Subcommand;
 use serde_json::{json, Value};
@@ -69,6 +68,9 @@ pub enum FleetCommand {
         #[arg(long, default_value_t = 2)]
         min_repos: usize,
     },
+    /// Cross-repo plan management (ADR-0038, F3-2).
+    #[command(subcommand)]
+    Plan(FleetPlanCommand),
     /// List cross-repo near-exact duplicate pairs (cosine ≥ threshold).
     Duplicates {
         /// Cosine similarity threshold (default 0.95).
@@ -116,6 +118,7 @@ pub async fn run(client: &Client, output: OutputMode, cmd: FleetCommand) -> Resu
         FleetCommand::Patterns { min_repos } => {
             super::fleet_patterns::run(client, output, min_repos).await
         }
+        FleetCommand::Plan(cmd) => super::fleet_plan::run(client, output, cmd).await,
         FleetCommand::Duplicates {
             cosine,
             repo_pair,

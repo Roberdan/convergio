@@ -5,7 +5,7 @@ use convergio_bus::Bus;
 use convergio_durability::audit::VerifyReport;
 use convergio_durability::Durability;
 use convergio_embed::{EmbedStore, Embedder};
-use convergio_fleet::FleetStore;
+use convergio_fleet::{FleetPlanStore, FleetStore};
 use convergio_graph::Store as GraphStore;
 use convergio_lifecycle::Supervisor;
 use std::sync::{Arc, Mutex};
@@ -32,6 +32,9 @@ pub struct AppState {
     pub embedder: Arc<dyn Embedder>,
     /// Fleet repo registry (ADR-0038, F2-6).
     pub fleet: Arc<FleetStore>,
+    /// Fleet plan store (ADR-0038, F3-2): cross-repo plans with
+    /// per-repo plan links.
+    pub fleet_plans: Arc<FleetPlanStore>,
     /// Memoised full-chain audit verify result. Keyed by tail `seq`; auto-
     /// invalidated when a new audit row is appended (tail advances). Shared
     /// across all clones via `Arc` — one warm call benefits every concurrent
@@ -64,6 +67,7 @@ pub fn router(state: AppState) -> Router {
         .merge(crate::routes::graph::router())
         .merge(crate::routes::embed::router())
         .merge(crate::routes::fleet::router())
+        .merge(crate::routes::fleet_plans::router())
         .merge(crate::routes::telemetry::router())
         .merge(crate::routes::api_actions::router())
         .merge(crate::routes::gate_preconditions::router())

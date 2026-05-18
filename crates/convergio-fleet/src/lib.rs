@@ -53,6 +53,7 @@ pub mod duplicates;
 pub mod error;
 pub mod migrate;
 pub mod patterns;
+pub mod plans;
 pub mod recall;
 pub mod similar;
 pub mod store;
@@ -63,6 +64,7 @@ pub use duplicates::{find_duplicates, DuplicatePair};
 pub use error::{FleetError, Result};
 pub use migrate::init;
 pub use patterns::{find_patterns, ClusterMember, PatternCluster};
+pub use plans::{FleetPlan, FleetPlanRepoLink, FleetPlanStore, FleetPlanView, NewFleetPlan};
 pub use recall::{
     distinct_repo_prefixes, recall_at_k, repo_prefix, strip_repo_prefix, FleetFixture,
     FleetRecallReport,
