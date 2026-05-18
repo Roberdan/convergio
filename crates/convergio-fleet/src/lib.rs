@@ -55,6 +55,7 @@ pub mod migrate;
 pub mod patterns;
 pub mod plans;
 pub mod recall;
+pub mod rot;
 pub mod similar;
 pub mod store;
 
@@ -69,5 +70,6 @@ pub use recall::{
     distinct_repo_prefixes, recall_at_k, repo_prefix, strip_repo_prefix, FleetFixture,
     FleetRecallReport,
 };
+pub use rot::{find_rot, RotCandidate, DEFAULT_ROT_THRESHOLD};
 pub use similar::{SimilarEdge, DUPLICATES_THRESHOLD, SIMILAR_TO_THRESHOLD};
 pub use store::{FleetRepo, FleetStore};

@@ -13,6 +13,7 @@ pub mod evidence;
 pub mod fleet;
 pub(crate) mod fleet_duplicates;
 pub mod fleet_plans;
+pub(crate) mod fleet_rot;
 pub mod gate_preconditions;
 pub mod graph;
 pub mod health;
