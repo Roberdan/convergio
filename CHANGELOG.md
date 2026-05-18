@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.28](https://github.com/Roberdan/convergio/compare/convergio-v0.3.27...convergio-v0.3.28) (2026-05-18)
+
+
+### Features
+
+* **convergio-server:** F3-3 cross-repo validate via Thor ([30b080e](https://github.com/Roberdan/convergio/commit/30b080ec7d445e418fd80ca5c4a056524a01de7e))
+* **convergio-server:** F3-4 cross-repo audit-chain verify ([6f49e30](https://github.com/Roberdan/convergio/commit/6f49e306aacf6600b4b9ef4da480f7cef6d5ff34))
+* **fleet:** F3-3 — cross-repo validate via Thor (HTTP) ([1489a51](https://github.com/Roberdan/convergio/commit/1489a51844e77bab099ee70f14122e856288332d))
+* **fleet:** F3-4 — cross-repo audit-chain verify ([62894ec](https://github.com/Roberdan/convergio/commit/62894ecaec1f329cd483856ef0d22849b5f2381f))
+
+
+### Bug Fixes
+
+* **fleet:** collect spawn handles eagerly so validators run in parallel ([292f1ae](https://github.com/Roberdan/convergio/commit/292f1ae1924b1902fd26f1b65f40f7409e8bb906))
+* **server:** empty links must not mask tampered chain in fleet audit-verify ([50942f4](https://github.com/Roberdan/convergio/commit/50942f499a410a81d95187f27c5059710549fd08))
+* **thor:** add dry-run path so cross-repo validate is read-only ([ac4349a](https://github.com/Roberdan/convergio/commit/ac4349abac63503aca6df13d4dff8917c90e52fb))
+
 ## [0.3.27](https://github.com/Roberdan/convergio/compare/convergio-v0.3.26...convergio-v0.3.27) (2026-05-18)
 
 
