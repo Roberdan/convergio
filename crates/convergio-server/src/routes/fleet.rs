@@ -8,6 +8,8 @@
 //! - `GET    /v1/fleet/patterns`     — cross-repo cluster detection
 //! - `GET    /v1/fleet/duplicates`   — near-exact cross-repo duplicate pairs
 //! - `GET    /v1/fleet/rot`          — semantic dead-code candidates
+//! - `GET    /v1/fleet/doc-drift`    — ADR/Doc drift candidates
+//! - `POST   /v1/fleet/doc-drift/snapshot` — refresh drift snapshots
 
 use crate::app::AppState;
 use crate::error::ApiError;
@@ -32,6 +34,14 @@ pub fn router() -> Router<AppState> {
             axum::routing::get(super::fleet_duplicates::duplicates),
         )
         .route("/v1/fleet/rot", axum::routing::get(super::fleet_rot::rot))
+        .route(
+            "/v1/fleet/doc-drift",
+            axum::routing::get(super::fleet_doc_drift::drift),
+        )
+        .route(
+            "/v1/fleet/doc-drift/snapshot",
+            post(super::fleet_doc_drift::snapshot),
+        )
 }
 
 #[derive(Debug, Deserialize)]

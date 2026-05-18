@@ -49,6 +49,8 @@
 
 pub mod batch;
 pub mod config;
+pub mod doc_drift;
+mod doc_drift_store;
 pub mod duplicates;
 pub mod error;
 pub mod migrate;
@@ -61,6 +63,10 @@ pub mod store;
 
 pub use batch::{run_similarity_batch, BatchReport};
 pub use config::{FleetConfig, FleetSection, RepoEntry, RepoRole, RetrievalSection};
+pub use doc_drift::{
+    find_doc_drift, snapshot_doc_alignment, DocDriftCandidate, SnapshotReport,
+    DEFAULT_DOC_DRIFT_THRESHOLD,
+};
 pub use duplicates::{find_duplicates, DuplicatePair};
 pub use error::{FleetError, Result};
 pub use migrate::init;
