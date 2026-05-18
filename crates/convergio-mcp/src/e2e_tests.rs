@@ -266,4 +266,26 @@ async fn fleet_plan_actions_round_trip_to_expected_paths() {
         })
         .await;
     assert!(!bad.ok, "missing fleet_plan_id must be a typed error");
+
+    // Codex P2: invalid timeout values must fail fast, not silently
+    // fall back to the 60s default.
+    for bad_value in [
+        json!("30"), // string instead of integer
+        json!(-1),   // negative
+        json!(0),    // zero (per_repo_timeout_secs must be positive)
+        json!(true), // wrong type
+    ] {
+        let r = bridge
+            .dispatch(ActRequest {
+                schema_version: SCHEMA_VERSION.into(),
+                action: Action::FleetPlanValidate,
+                params: json!({
+                    "fleet_plan_id": "fp-1",
+                    "per_repo_timeout_secs": bad_value
+                }),
+            })
+            .await;
+        assert!(!r.ok, "bad timeout {bad_value} must reject: {r:?}");
+        assert_eq!(r.code, AgentCode::InvalidRequest);
+    }
 }

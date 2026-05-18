@@ -172,10 +172,21 @@ impl Bridge {
             Err(r) => return r,
         };
         remove_key(&mut params, "fleet_plan_id");
-        let timeout = params
-            .get("per_repo_timeout_secs")
-            .and_then(Value::as_u64)
-            .unwrap_or(60);
+        // Optional but strictly typed: a string "30" or negative
+        // value must fail fast rather than fall back to the 60s
+        // default, otherwise the caller can't tell their input was
+        // ignored (Codex P2 on #378). Same shape as audit_path.
+        let timeout = match params.get("per_repo_timeout_secs") {
+            None => 60u64,
+            Some(v) => match v.as_u64() {
+                Some(n) if n > 0 => n,
+                _ => {
+                    return crate::http::invalid(
+                        "per_repo_timeout_secs must be a positive integer".into(),
+                    );
+                }
+            },
+        };
         self.post(
             &format!("/v1/fleet/plans/{id}/validate?per_repo_timeout_secs={timeout}"),
             json!({}),
