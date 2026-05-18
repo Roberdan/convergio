@@ -241,8 +241,12 @@ async fn validate(
             let secs = timeout_secs;
             tokio::spawn(async move {
                 let thor = Thor::new(dur);
+                // Read-only: cross-repo validate is "report only". A
+                // pass here doesn't promote tasks; that stays per-plan
+                // via `cvg plan validate` so multi-repo state cannot
+                // half-promote. See ADR-0038 F3-3 decisions.
                 let outcome =
-                    match tokio::time::timeout(timeout, thor.validate(&link.repo_plan_id)).await {
+                    match tokio::time::timeout(timeout, thor.dry_run(&link.repo_plan_id)).await {
                         Ok(Ok(Verdict::Pass)) => RepoOutcome::Pass,
                         Ok(Ok(Verdict::Fail { reasons })) => RepoOutcome::Fail { reasons },
                         Ok(Err(e)) => RepoOutcome::Fail {

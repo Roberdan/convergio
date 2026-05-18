@@ -125,6 +125,33 @@ impl Thor {
     /// The verdict is idempotent: validating a plan whose tasks are
     /// already all `done` simply returns `Pass` with zero promotions.
     pub async fn validate_wave(&self, plan_id: &str, wave: Option<i64>) -> Result<Verdict> {
+        let (verdict, to_promote) = self.compute_verdict(plan_id, wave).await?;
+        if matches!(verdict, Verdict::Pass) {
+            // Pass: promote every still-submitted task to done atomically.
+            // Empty list is a no-op (idempotent re-validate).
+            self.durability
+                .complete_validated_tasks(&to_promote)
+                .await?;
+        }
+        Ok(verdict)
+    }
+
+    /// Read-only verdict — same rules as [`Self::validate_wave`] but
+    /// never promotes `submitted → done`. Safe to call in parallel
+    /// (no write-lock contention on the SQLite pool), which is the
+    /// shape `cvg fleet validate` needs to fan out across N repos.
+    /// Promotion stays per-plan via [`Self::validate`] so a multi-
+    /// repo "all pass" stays atomic-by-operator, not implicit.
+    pub async fn dry_run(&self, plan_id: &str) -> Result<Verdict> {
+        let (verdict, _) = self.compute_verdict(plan_id, None).await?;
+        Ok(verdict)
+    }
+
+    async fn compute_verdict(
+        &self,
+        plan_id: &str,
+        wave: Option<i64>,
+    ) -> Result<(Verdict, Vec<String>)> {
         // Confirm the plan exists — yields NotFound otherwise.
         self.durability.plans().get(plan_id).await?;
 
@@ -138,9 +165,12 @@ impl Thor {
                 Some(w) => format!("plan has no tasks in wave {w}"),
                 None => "plan has no tasks".into(),
             };
-            return Ok(Verdict::Fail {
-                reasons: vec![reason],
-            });
+            return Ok((
+                Verdict::Fail {
+                    reasons: vec![reason],
+                },
+                vec![],
+            ));
         }
 
         let mut reasons = Vec::new();
@@ -182,29 +212,23 @@ impl Thor {
         }
 
         if !reasons.is_empty() {
-            return Ok(Verdict::Fail { reasons });
+            return Ok((Verdict::Fail { reasons }, vec![]));
         }
 
         // T3.02 / ADR-0012: smart Thor runs the project's pipeline
         // before promoting. Pipeline failure reuses the same
         // `Verdict::Fail` shape so callers do not need a third status.
-        // The pipeline tail (last 4 KiB of merged stdout + stderr) goes
-        // into the reason so the agent can see what broke without
-        // re-running it. A truncation marker is included when the tail
-        // is cut.
         if let Some(pipeline) = &self.pipeline {
             if let Some(reason) = pipeline::run(pipeline).await {
-                return Ok(Verdict::Fail {
-                    reasons: vec![reason],
-                });
+                return Ok((
+                    Verdict::Fail {
+                        reasons: vec![reason],
+                    },
+                    vec![],
+                ));
             }
         }
 
-        // Pass: promote every still-submitted task to done atomically.
-        // Empty list is a no-op (idempotent re-validate).
-        self.durability
-            .complete_validated_tasks(&to_promote)
-            .await?;
-        Ok(Verdict::Pass)
+        Ok((Verdict::Pass, to_promote))
     }
 }

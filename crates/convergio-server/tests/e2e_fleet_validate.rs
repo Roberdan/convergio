@@ -211,18 +211,38 @@ async fn fleet_validate_aggregates_per_repo_verdicts() {
     );
     let verdicts = report["verdicts"].as_array().unwrap();
     assert_eq!(verdicts.len(), 3, "every linked repo must report a verdict");
-    // Verdicts are returned in repo-name alphabetical order.
-    assert_eq!(verdicts[0]["repo"].as_str(), Some("convergio"));
-    assert_eq!(verdicts[0]["verdict"].as_str(), Some("pass"));
-    assert_eq!(verdicts[1]["repo"].as_str(), Some("convergio-edu"));
-    assert_eq!(verdicts[1]["verdict"].as_str(), Some("fail"));
+    // Verdicts are returned in repo-name alphabetical order. Dump the
+    // full body in any assertion failure — local runs pass but CI
+    // surfaced an intermittent "fail" on convergio that we want to
+    // be able to triage from the log alone.
+    let dump = || format!("verdicts dump: {}", serde_json::to_string(&report).unwrap());
+    assert_eq!(
+        verdicts[0]["repo"].as_str(),
+        Some("convergio"),
+        "{}",
+        dump()
+    );
+    assert_eq!(verdicts[0]["verdict"].as_str(), Some("pass"), "{}", dump());
+    assert_eq!(
+        verdicts[1]["repo"].as_str(),
+        Some("convergio-edu"),
+        "{}",
+        dump()
+    );
+    assert_eq!(verdicts[1]["verdict"].as_str(), Some("fail"), "{}", dump());
     let reasons = verdicts[1]["reasons"].as_array().unwrap();
     assert!(
         !reasons.is_empty(),
-        "fail verdict must carry at least one reason"
+        "fail verdict must carry at least one reason: {}",
+        dump()
     );
-    assert_eq!(verdicts[2]["repo"].as_str(), Some("convergio-ui"));
-    assert_eq!(verdicts[2]["verdict"].as_str(), Some("pass"));
+    assert_eq!(
+        verdicts[2]["repo"].as_str(),
+        Some("convergio-ui"),
+        "{}",
+        dump()
+    );
+    assert_eq!(verdicts[2]["verdict"].as_str(), Some("pass"), "{}", dump());
 }
 
 #[tokio::test]
