@@ -1,6 +1,7 @@
 //! `/v1/audit/verify` — recompute the chain.
 //! `/v1/audit/append` — agent-emitted custom audit rows (P2-2, ADR-0002 § Custom kinds).
 //! `/v1/audit/stream` — Server-Sent Events tail (P1.1).
+//! `/v1/fleet/plans/:id/audit-verify` — F3-4 cross-repo wrapper.
 
 mod append;
 mod compensate;
@@ -8,12 +9,13 @@ mod compensate;
 use crate::app::AppState;
 use crate::error::ApiError;
 use crate::sse::{poll_stream, StreamEvent};
-use axum::extract::{Query, State};
+use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use convergio_durability::audit::{AuditEntry, VerifyReport};
 use serde::Deserialize;
+use serde_json::{json, Value};
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -29,6 +31,38 @@ pub fn router() -> Router<AppState> {
         )
         .route("/v1/audit/stream", get(stream))
         .route("/v1/audit/append", post(append::append))
+        .route("/v1/fleet/plans/:id/audit-verify", get(fleet_audit_verify))
+}
+
+/// F3-4: cross-repo audit verify. Single-daemon shares one chain
+/// today — run verify once, replicate per linked repo. Read-only.
+async fn fleet_audit_verify(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<Json<Value>, ApiError> {
+    state.fleet_plans.get(&id).await?;
+    let mut links = state.fleet_plans.links(&id).await?;
+    links.sort_by(|a, b| a.repo.cmp(&b.repo));
+    let chain = state.durability.audit().verify(None, None).await?;
+    // `passing` mirrors the chain — empty links must not mask tamper.
+    let verdicts: Vec<Value> = links
+        .into_iter()
+        .map(|l| {
+            let mut v = json!({
+                "repo": l.repo,
+                "repo_plan_id": l.repo_plan_id,
+                "ok": chain.ok,
+                "checked": chain.checked,
+            });
+            if let Some(b) = chain.broken_at {
+                v["broken_at"] = b.into();
+            }
+            v
+        })
+        .collect();
+    Ok(Json(
+        json!({ "fleet_plan_id": id, "passing": chain.ok, "verdicts": verdicts }),
+    ))
 }
 
 #[derive(Deserialize)]
