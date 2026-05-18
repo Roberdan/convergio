@@ -11,6 +11,7 @@ pub mod dispatch;
 pub mod embed;
 pub mod evidence;
 pub mod fleet;
+pub mod fleet_audit;
 pub(crate) mod fleet_duplicates;
 pub mod fleet_plans;
 pub mod gate_preconditions;
