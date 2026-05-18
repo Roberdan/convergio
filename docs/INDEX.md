@@ -31,7 +31,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `STATUS.md` | - | - | - | 40 |
 | `assets/branding/README.md` | - | - | - | 57 |
 | `crates/AGENTS.md` | - | - | - | 30 |
-| `crates/convergio-api/AGENTS.md` | crate-rules | - | - | 33 |
+| `crates/convergio-api/AGENTS.md` | crate-rules | - | - | 34 |
 | `crates/convergio-api/README.md` | crate-readme | - | - | 7 |
 | `crates/convergio-brand/AGENTS.md` | crate-rules | - | - | 45 |
 | `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 31 |
@@ -60,7 +60,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-i18n/README.md` | crate-readme | - | - | 43 |
 | `crates/convergio-lifecycle/AGENTS.md` | crate-rules | - | - | 27 |
 | `crates/convergio-lifecycle/README.md` | crate-readme | - | - | 63 |
-| `crates/convergio-mcp/AGENTS.md` | crate-rules | - | - | 27 |
+| `crates/convergio-mcp/AGENTS.md` | crate-rules | - | - | 29 |
 | `crates/convergio-mcp/README.md` | crate-readme | - | - | 12 |
 | `crates/convergio-parse-multi/AGENTS.md` | crate-rules | - | - | 64 |
 | `crates/convergio-parse-multi/CLAUDE.md` | crate-rules | - | - | 1 |
