@@ -6,7 +6,9 @@ use convergio_i18n::Bundle;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::time::Duration;
 
+use super::service_port::{daemon_port, kill_pid, pid_on_port, wait_for_port_release};
 use super::service_unit::{launchd_plist, systemd_unit};
 
 pub(super) const LABEL: &str = "com.convergio.v3";
@@ -139,13 +141,39 @@ impl ServiceSpec {
     }
 
     fn stop(&self) -> Result<()> {
-        match self.kind {
+        // Phase 1: ask the service manager. With the post-2026-05-08
+        // hardened plist (`KeepAlive=false`, `RunAtLoad=false`),
+        // `launchctl bootout` removes the *registration* but does
+        // not touch orphan PIDs launched outside launchd. We
+        // therefore treat the manager call as best-effort and rely
+        // on the port-release check below as the real contract.
+        // See `docs/incidents/2026-05-19-cvg-service-stop-orphan.md`.
+        let _ = match self.kind {
             ServiceKind::Launchd => run_cmd(
                 "launchctl",
                 &["bootout", &format!("gui/{}", uid()?), path_str(&self.path)?],
             ),
             ServiceKind::Systemd => run_cmd("systemctl", &["--user", "stop", SERVICE]),
+        };
+
+        // Phase 2: verify the daemon port is actually released.
+        let port = daemon_port();
+        if wait_for_port_release(port, Duration::from_secs(3)) {
+            return Ok(());
         }
+        if let Some(pid) = pid_on_port(port) {
+            eprintln!("warning: daemon PID {pid} survived service manager stop; sending SIGTERM");
+            let _ = kill_pid(pid, "-TERM");
+            if wait_for_port_release(port, Duration::from_secs(3)) {
+                return Ok(());
+            }
+            eprintln!("warning: PID {pid} still bound after SIGTERM; escalating to SIGKILL");
+            let _ = kill_pid(pid, "-KILL");
+            if wait_for_port_release(port, Duration::from_secs(2)) {
+                return Ok(());
+            }
+        }
+        bail!("daemon port {port} still bound after stop")
     }
 
     fn stop_best_effort(&self) {
