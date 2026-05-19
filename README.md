@@ -138,8 +138,23 @@ All six are implemented in the local runtime. The current release line
 also includes signed local capability install/remove, a `planner.solve`
 capability action, a constrained local shell runner proof, `shell`,
 `claude`, and `copilot` runner kinds, the MCP bridge, the code graph,
-the executor loop, and the `cvg dash` terminal dashboard. Remote
-capability registry and ACP bridge remain roadmap work.
+the executor loop, and the `cvg dash` terminal dashboard.
+
+Since v0.3.29 the **fleet abstraction** (ADR-0038, F3 closed in
+[ADR-0049](./docs/adr/0049-f3-fleet-retrospective.md)) lets one
+daemon orchestrate multiple repos. The advisory-only surface today:
+cross-repo plans with per-repo task fan-out
+(`POST /v1/fleet/plans` + `cvg fleet plan create`), Thor-driven
+fleet validation (`POST /v1/fleet/plans/:id/validate`), derived
+fleet audit-chain walk (`cvg audit verify --fleet <id>`), semantic
+dead-code candidates with role-aware thresholds
+(`GET /v1/fleet/rot`), and semantic doc-vs-code drift via snapshot
+embeddings (`GET /v1/fleet/doc-drift` +
+`POST /v1/fleet/doc-drift/snapshot`). MCP fleet actions
+(`fleet_plan_create`, `fleet_plan_show`, `fleet_plan_validate`)
+expose the same operations over stdio. CLI verbs for `fleet rot` /
+`fleet doc-drift` are deferred until the `convergio-cli` split.
+Remote capability registry and ACP bridge remain roadmap work.
 
 See [docs/vision.md](./docs/vision.md) for the product vision.
 

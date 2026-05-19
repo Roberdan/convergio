@@ -8,7 +8,9 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::time::Duration;
 
-use super::service_port::{daemon_port, kill_pid, pid_on_port, wait_for_port_release};
+use super::service_port::{
+    daemon_port, kill_pid, pid_on_port, wait_for_port_bound, wait_for_port_release,
+};
 use super::service_unit::{launchd_plist, systemd_unit};
 
 pub(super) const LABEL: &str = "com.convergio.v3";
@@ -124,20 +126,52 @@ impl ServiceSpec {
 
     fn start(&self) -> Result<()> {
         self.install(false)?;
-        match self.kind {
-            ServiceKind::Launchd => run_cmd(
-                "launchctl",
-                &[
-                    "bootstrap",
-                    &format!("gui/{}", uid()?),
-                    path_str(&self.path)?,
-                ],
-            ),
+        let port = daemon_port();
+
+        // Phase 1: register the service with the manager.
+        // `launchctl bootstrap` only *registers* the spec — with the
+        // post-2026-05-08 hardened plist (`RunAtLoad=false`,
+        // `KeepAlive=false`) it does not actually spawn the process.
+        // Pre-fix the CLI returned "Service started." here, the port
+        // stayed unbound, and operators only found out via the next
+        // failing `curl /v1/health`.
+        // See `docs/incidents/2026-05-19-cvg-service-start-orphan.md`.
+        let domain = match self.kind {
+            ServiceKind::Launchd => {
+                let d = format!("gui/{}", uid()?);
+                // bootstrap is idempotent only if the service isn't
+                // already loaded; ignore "already bootstrapped" errors
+                // and rely on the kickstart below.
+                let _ = run_cmd("launchctl", &["bootstrap", &d, path_str(&self.path)?]);
+                Some(d)
+            }
             ServiceKind::Systemd => {
                 run_cmd("systemctl", &["--user", "daemon-reload"])?;
-                run_cmd("systemctl", &["--user", "enable", "--now", SERVICE])
+                run_cmd("systemctl", &["--user", "enable", "--now", SERVICE])?;
+                None
             }
+        };
+
+        // Phase 2: if the port is already bound (e.g. the operator
+        // ran `convergio start` from a terminal earlier, or a previous
+        // bootstrap is still serving), nothing else to do.
+        if wait_for_port_bound(port, Duration::from_secs(1)) {
+            return Ok(());
         }
+
+        // Phase 3: actively kick the service. For launchd we need
+        // `kickstart` because `RunAtLoad=false`; for systemd
+        // `--now` already started it.
+        if let Some(domain) = domain {
+            let _ = run_cmd("launchctl", &["kickstart", &format!("{domain}/{LABEL}")]);
+        }
+
+        // Phase 4: verify the daemon actually came up. If not, the
+        // operator sees an error instead of the previous Ok lie.
+        if wait_for_port_bound(port, Duration::from_secs(5)) {
+            return Ok(());
+        }
+        bail!("daemon port {port} did not bind after service start")
     }
 
     fn stop(&self) -> Result<()> {

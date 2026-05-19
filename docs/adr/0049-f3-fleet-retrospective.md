@@ -140,6 +140,27 @@ that Roberto runs the live fleet task before declaring F4 ready.
 | ~~ADR for extracting `fleet_*` routes from `convergio-server`~~ | ~~F4~~ | **landed (2026-05-19)**: pure mechanical split — no separate ADR needed. New crates `convergio-fleet-routes` + `convergio-server-core` (the latter holds the shared `AppState` + `ApiError`). `convergio-server` dropped from 14150 → 13075 lines; the 14000 → 14500 cap bump from F3-5 was rolled back. |
 | 5-repo daily-rebuild < 5 min measurement | observability | v0.4 milestone |
 
+## Adjacent operator-friction fixes that landed in this milestone
+
+These were not part of F3, but surfaced during the F3 redeploy and
+got the same urgency:
+
+- `cvg service stop` no longer silently leaves the daemon running
+  when the PID was launched outside launchd (incident
+  [2026-05-19-cvg-service-stop-orphan]).
+- `cvg service start` no longer silently leaves the daemon down
+  after `launchctl bootstrap` (incident
+  [2026-05-19-cvg-service-start-orphan]). The CLI now polls the
+  daemon port and `launchctl kickstart`s when needed.
+
+Both fixes share a new `service_port` helper for port-bound /
+port-free polling. They complete the response to the
+2026-05-08 plist hardening (`KeepAlive=false`, `RunAtLoad=false`):
+the plist stayed minimal, the CLI now verifies outcomes.
+
+[2026-05-19-cvg-service-stop-orphan]: ../incidents/2026-05-19-cvg-service-stop-orphan.md
+[2026-05-19-cvg-service-start-orphan]: ../incidents/2026-05-19-cvg-service-start-orphan.md
+
 ## Links
 
 - ADR-0038 — original fleet retrieval & cross-repo graph plan.

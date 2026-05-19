@@ -37,13 +37,25 @@ pub(super) fn parse_daemon_port(url: Option<&str>) -> u16 {
 /// listening), up to `timeout`. Returns `true` on free, `false` on
 /// timeout.
 pub(super) fn wait_for_port_release(port: u16, timeout: Duration) -> bool {
+    poll_port(port, timeout, false)
+}
+
+/// Inverse of [`wait_for_port_release`]: poll until *someone* is
+/// listening on `127.0.0.1:port`. Used by `cvg service start` to
+/// verify the daemon actually came up after `launchctl kickstart` /
+/// `systemctl --now`.
+pub(super) fn wait_for_port_bound(port: u16, timeout: Duration) -> bool {
+    poll_port(port, timeout, true)
+}
+
+fn poll_port(port: u16, timeout: Duration, want_bound: bool) -> bool {
     let deadline = Instant::now() + timeout;
     loop {
-        if !port_in_use(port) {
+        if port_in_use(port) == want_bound {
             return true;
         }
         if Instant::now() >= deadline {
-            return !port_in_use(port);
+            return port_in_use(port) == want_bound;
         }
         std::thread::sleep(Duration::from_millis(150));
     }
