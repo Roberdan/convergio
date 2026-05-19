@@ -134,6 +134,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
 | `docs/agents/README.md` | agent-docs | - | - | 101 |
 | `docs/incidents/2026-05-08-dirty-state-postmortem.md` | - | - | - | 230 |
+| `docs/incidents/2026-05-19-cvg-service-stop-orphan.md` | - | - | - | 93 |
 | `docs/multi-agent-operating-model.md` | - | - | - | 485 |
 | `docs/plans/2026-05-01-triage-pass.md` | plan | - | - | 75 |
 | `docs/plans/AGENTS.md` | plan | - | - | 22 |

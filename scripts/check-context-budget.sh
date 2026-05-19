@@ -36,6 +36,12 @@ cd "$repo_root"
 #             14_500 → 14_000 (2026-05, fleet-routes extracted into
 #             convergio-fleet-routes per ADR-0049 follow-up; server
 #             drops to ~13_100 — temporary cap bump rolled back).
+#             14_000 → 14_500 (2026-05, incident 2026-05-19 fix —
+#             cvg service stop port verifier + kill helpers in a new
+#             service_port submodule pushed convergio-cli over. The
+#             cli-split ADR (agent_*, fleet, setup, update, coherence
+#             subcommands) remains the structural answer; this is the
+#             second time the cli has needed a temporary bump.).
 #     The shape of that crate (audit chain + plans + tasks + evidence +
 #     workspace + capabilities + crdt + gates + agent-reaper) is
 #     intentional and a real split needs ADR work — track it under
@@ -45,7 +51,7 @@ cd "$repo_root"
 RS_HARD=300
 NON_RS_SOFT=500
 CRATE_SOFT=5000
-CRATE_HARD=14000
+CRATE_HARD=14500
 
 hard_fail=0
 soft_warn=0

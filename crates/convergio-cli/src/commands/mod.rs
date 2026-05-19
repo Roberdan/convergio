@@ -55,6 +55,7 @@ mod plan_run;
 mod plan_triage;
 pub mod pr;
 pub mod service;
+pub(crate) mod service_port;
 pub(crate) mod service_unit;
 pub mod session;
 pub mod setup;
