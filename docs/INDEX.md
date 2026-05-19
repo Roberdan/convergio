@@ -25,7 +25,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 176 |
-| `README.md` | entry | - | - | 383 |
+| `README.md` | entry | - | - | 398 |
 | `ROADMAP.md` | roadmap | - | - | 479 |
 | `SECURITY.md` | governance | - | - | 57 |
 | `STATUS.md` | - | - | - | 40 |
@@ -42,7 +42,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-cli-pr/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 61 |
 | `crates/convergio-cli-session/README.md` | crate-readme | - | - | 33 |
-| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 41 |
+| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 42 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 38 |
 | `crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
 | `crates/convergio-coherence/AGENTS.md` | crate-rules | - | - | 80 |
@@ -127,13 +127,14 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0046-stdout-relay-to-bus.md` | adr | [convergio-lifecycle, convergio-server] | accepted | 77 |
 | `docs/adr/0047-action-type-registry-actions-json.md` | adr | [convergio-api, convergio-server, convergio-mcp] | proposed | 59 |
 | `docs/adr/0048-compensating-action-types.md` | adr | [convergio-durability, convergio-server] | proposed | 65 |
-| `docs/adr/0049-f3-fleet-retrospective.md` | adr | [convergio-fleet, convergio-embed, convergio-graph, convergio-server, convergio-mcp, convergio-api] | accepted | 148 |
+| `docs/adr/0049-f3-fleet-retrospective.md` | adr | [convergio-fleet, convergio-embed, convergio-graph, convergio-server, convergio-mcp, convergio-api] | accepted | 169 |
 | `docs/adr/README.md` | adr | - | - | 70 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
 | `docs/agents/README.md` | agent-docs | - | - | 101 |
 | `docs/incidents/2026-05-08-dirty-state-postmortem.md` | - | - | - | 230 |
+| `docs/incidents/2026-05-19-cvg-service-start-orphan.md` | - | - | - | 76 |
 | `docs/incidents/2026-05-19-cvg-service-stop-orphan.md` | - | - | - | 93 |
 | `docs/multi-agent-operating-model.md` | - | - | - | 485 |
 | `docs/plans/2026-05-01-triage-pass.md` | plan | - | - | 75 |
