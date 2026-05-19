@@ -5,11 +5,11 @@
 //! - `POST /v1/fleet/doc-drift/snapshot` — recompute and persist the
 //!   ADR↔code alignment snapshot for every doc node.
 
-use crate::app::AppState;
-use crate::error::ApiError;
 use axum::extract::{Query, State};
 use axum::Json;
 use convergio_fleet::{find_doc_drift, snapshot_doc_alignment, DEFAULT_DOC_DRIFT_THRESHOLD};
+use convergio_server_core::ApiError;
+use convergio_server_core::AppState;
 use serde::Deserialize;
 use serde_json::{json, Value};
 

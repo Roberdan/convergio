@@ -112,6 +112,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-embed` — Embeddings storage and pluggable embedder trait for Convergio Tier-3 retrieval (ADR-0038, F1)
 - `convergio-executor` — Layer 4 (reference) of Convergio: dispatcher loop that picks ready tasks and spawns agents
 - `convergio-fleet` — Fleet abstraction for Convergio: fleet
+- `convergio-fleet-routes` — Fleet HTTP route module (ADR-0038) — extracted from convergio-server
 - `convergio-graph` — Tier-3 code-graph layer for Convergio (ADR-0014)
 - `convergio-i18n` — Internationalization (P5) — Fluent-backed message bundles for every user-facing string in Convergio
 - `convergio-lifecycle` — Layer 3 of Convergio: spawn, supervise, heartbeat and reap long-running agent processes
@@ -120,6 +121,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-planner` — Layer 4 (reference) of Convergio: turns a natural-language mission into a structured plan
 - `convergio-runner` — Vendor-CLI runners for Convergio agents (Claude Code + GitHub Copilot CLI)
 - `convergio-server` — Local HTTP daemon for Convergio
+- `convergio-server-core` — Shared HTTP-layer primitives for the Convergio daemon: AppState + ApiError + IntoResponse mapping
 - `convergio-thor` — Layer 4 (reference) of Convergio: validator agent that audits completed tasks before close
 - `convergio-tui` — TUI dashboard for Convergio (cvg dash)
 <!-- END AUTO -->

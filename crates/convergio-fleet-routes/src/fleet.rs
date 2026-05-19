@@ -11,13 +11,13 @@
 //! - `GET    /v1/fleet/doc-drift`    — ADR/Doc drift candidates
 //! - `POST   /v1/fleet/doc-drift/snapshot` — refresh drift snapshots
 
-use crate::app::AppState;
-use crate::error::ApiError;
 use axum::extract::{Path, Query, State};
 use axum::routing::{patch, post};
 use axum::{Json, Router};
 use convergio_embed::{collect_files, ingest, DEFAULT_MAX_LINES};
 use convergio_fleet::{find_patterns, run_similarity_batch, FleetRepo, RepoEntry, RepoRole};
+use convergio_server_core::ApiError;
+use convergio_server_core::AppState;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::PathBuf;

@@ -33,6 +33,8 @@ module.exports = {
         'coherence',
         'parse-multi',
         'fleet',
+        'fleet-routes',
+        'server-core',
         // meta scopes
         'docs',
         'ci',
