@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.30](https://github.com/Roberdan/convergio/compare/convergio-v0.3.29...convergio-v0.3.30) (2026-05-19)
+
+
+### Bug Fixes
+
+* **cli:** cvg service start actually starts the daemon ([95e13eb](https://github.com/Roberdan/convergio/commit/95e13ebbc00f2f14ec4472b868b417997c8385ab))
+* **cli:** cvg service start actually starts the daemon ([007ba84](https://github.com/Roberdan/convergio/commit/007ba84b35f86e6d41ef46dda736d71d2e605f9d))
+* **cli:** cvg service stop now verifies the daemon port is released ([107f115](https://github.com/Roberdan/convergio/commit/107f11542dde5df5ecddcf0dba99ad683275abef))
+* **cli:** cvg service stop verifies the daemon port is released ([df4fffc](https://github.com/Roberdan/convergio/commit/df4fffc77bdd1f7f40b2a5cd09f19e31c5365dc0))
+
 ## [0.3.29](https://github.com/Roberdan/convergio/compare/convergio-v0.3.28...convergio-v0.3.29) (2026-05-19)
 
 
