@@ -33,6 +33,9 @@ cd "$repo_root"
 #             14_000 → 14_500 (2026-05, F3-5 + F3-6 fleet routes;
 #             server route extraction ADR pending — fleet_*, fleet_rot,
 #             fleet_doc_drift could move into a sibling routing crate).
+#             14_500 → 14_000 (2026-05, fleet-routes extracted into
+#             convergio-fleet-routes per ADR-0049 follow-up; server
+#             drops to ~13_100 — temporary cap bump rolled back).
 #     The shape of that crate (audit chain + plans + tasks + evidence +
 #     workspace + capabilities + crdt + gates + agent-reaper) is
 #     intentional and a real split needs ADR work — track it under
@@ -42,7 +45,7 @@ cd "$repo_root"
 RS_HARD=300
 NON_RS_SOFT=500
 CRATE_SOFT=5000
-CRATE_HARD=14500
+CRATE_HARD=14000
 
 hard_fail=0
 soft_warn=0

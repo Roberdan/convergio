@@ -824,6 +824,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "convergio-fleet-routes"
+version = "0.3.28"
+dependencies = [
+ "axum",
+ "convergio-durability",
+ "convergio-embed",
+ "convergio-fleet",
+ "convergio-server-core",
+ "convergio-thor",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "convergio-graph"
 version = "0.3.28"
 dependencies = [
@@ -959,10 +975,12 @@ dependencies = [
  "convergio-embed",
  "convergio-executor",
  "convergio-fleet",
+ "convergio-fleet-routes",
  "convergio-graph",
  "convergio-i18n",
  "convergio-lifecycle",
  "convergio-planner",
+ "convergio-server-core",
  "convergio-thor",
  "ed25519-dalek",
  "flate2",
@@ -983,6 +1001,22 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "uuid",
+]
+
+[[package]]
+name = "convergio-server-core"
+version = "0.3.28"
+dependencies = [
+ "axum",
+ "convergio-bus",
+ "convergio-durability",
+ "convergio-embed",
+ "convergio-fleet",
+ "convergio-graph",
+ "convergio-lifecycle",
+ "convergio-planner",
+ "convergio-thor",
+ "serde_json",
 ]
 
 [[package]]

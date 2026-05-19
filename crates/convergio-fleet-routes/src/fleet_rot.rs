@@ -3,11 +3,11 @@
 //! Returns advisory rot candidates ranked by descending confidence.
 //! Confidence weighting follows the owning repo's role.
 
-use crate::app::AppState;
-use crate::error::ApiError;
 use axum::extract::{Query, State};
 use axum::Json;
 use convergio_fleet::{find_rot, DEFAULT_ROT_THRESHOLD};
+use convergio_server_core::ApiError;
+use convergio_server_core::AppState;
 use serde::Deserialize;
 use serde_json::{json, Value};
 

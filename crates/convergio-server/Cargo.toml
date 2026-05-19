@@ -36,6 +36,8 @@ convergio-executor = { workspace = true }
 convergio-graph = { workspace = true }
 convergio-embed = { workspace = true }
 convergio-fleet = { workspace = true }
+convergio-fleet-routes = { workspace = true }
+convergio-server-core = { workspace = true }
 
 axum = { workspace = true }
 clap = { workspace = true }

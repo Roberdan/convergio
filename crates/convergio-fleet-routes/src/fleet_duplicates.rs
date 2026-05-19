@@ -1,10 +1,10 @@
 //! `GET /v1/fleet/duplicates` — cross-repo near-exact duplicate pairs (ADR-0038, F2-10).
 
-use crate::app::AppState;
-use crate::error::ApiError;
 use axum::extract::{Query, State};
 use axum::Json;
 use convergio_fleet::find_duplicates;
+use convergio_server_core::ApiError;
+use convergio_server_core::AppState;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
