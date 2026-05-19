@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.29](https://github.com/Roberdan/convergio/compare/convergio-v0.3.28...convergio-v0.3.29) (2026-05-19)
+
+
+### Features
+
+* **api:** F3-7 — MCP fleet plan actions (create/show/validate) ([e821149](https://github.com/Roberdan/convergio/commit/e8211494537e3a8676cf34f3ac7ade9f7c889fd9))
+* **convergio-api,mcp:** F3-7 fleet plan MCP actions ([a911205](https://github.com/Roberdan/convergio/commit/a911205870726e222ba504c79a62b53bdea387d5))
+* **fleet:** F3-5 — semantic dead-code (cvg fleet rot) ([6437629](https://github.com/Roberdan/convergio/commit/6437629cb1829176af88bd6e0dde37a673929cf6))
+* **fleet:** F3-5 — semantic dead-code detection (cvg fleet rot) ([f5da771](https://github.com/Roberdan/convergio/commit/f5da7714b1aaf98856e16998384f991de52e2312))
+* **fleet:** F3-6 - semantic doc-drift detection (cvg fleet doc-drift) ([62ce91d](https://github.com/Roberdan/convergio/commit/62ce91d6d37661546eafd78f3939ac50d37b548a))
+* **fleet:** F3-6 — semantic doc-drift (cvg fleet doc-drift) ([8033bc9](https://github.com/Roberdan/convergio/commit/8033bc9360cf5a2937487ed7954567939306817b))
+
+
+### Bug Fixes
+
+* **fleet:** doc-drift - address codex p2 review on pr 381 ([bceb421](https://github.com/Roberdan/convergio/commit/bceb421e05bf88299da87a7b60466f9e303faefa))
+* **fleet:** rot - address codex p1 review on pr 380 ([bc7147e](https://github.com/Roberdan/convergio/commit/bc7147ea943cf715562e4bebedbd68daf7fcd9d7))
+* **mcp:** fleet_plan_validate rejects invalid timeout values ([7f77408](https://github.com/Roberdan/convergio/commit/7f77408522472189b126dfcc39b49afe2a9f4702))
+
+
+### Refactoring
+
+* **server:** extract fleet routes into sibling crate ([eb9b843](https://github.com/Roberdan/convergio/commit/eb9b8434a160f8d11c3a15a86b639361da19ac49))
+* **server:** extract fleet routes into sibling crate ([331203a](https://github.com/Roberdan/convergio/commit/331203a13aa6b600e7fe7505d9c201cdd02ae6f1))
+
+
+### Documentation
+
+* **repo:** F3-8 - F3 fleet-grade orchestration retrospective ADR ([514c0e0](https://github.com/Roberdan/convergio/commit/514c0e0d968dfc18bce3956dd46f810f097052f2))
+* **repo:** F3-8 — F3 fleet retrospective ADR (close F3 phase) ([93b457c](https://github.com/Roberdan/convergio/commit/93b457c33a2e52b5728666260809ab610ffd30cd))
+* **server-core:** add crate-local agents and claude files ([c87cf3c](https://github.com/Roberdan/convergio/commit/c87cf3cec43d57494e4e9945ac2f7296cd1f61a7))
+
 ## [0.3.28](https://github.com/Roberdan/convergio/compare/convergio-v0.3.27...convergio-v0.3.28) (2026-05-18)
 
 
