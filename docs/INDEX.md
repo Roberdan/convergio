@@ -21,7 +21,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `.pr-body.md` | - | - | - | 83 |
 | `AGENTS.md` | agent-rules | - | - | 589 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
-| `CHANGELOG.md` | release | - | - | 1334 |
+| `CHANGELOG.md` | release | - | - | 1343 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 176 |
