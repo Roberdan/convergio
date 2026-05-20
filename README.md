@@ -5,6 +5,10 @@
 <p align="center"><strong>Convergio — Make machines prove it.</strong><br>
 <em>The machine that builds machines — and proves they work.</em></p>
 
+<p align="center">
+  <img src="assets/branding/demo-gate-refusal.gif" alt="cvg demo — a dirty task is refused with HTTP 409 gate_refused, then a clean task passes Thor and the audit chain is verified" width="780">
+</p>
+
 # Convergio
 
 [![CI](https://github.com/Roberdan/convergio/actions/workflows/ci.yml/badge.svg)](https://github.com/Roberdan/convergio/actions/workflows/ci.yml)
