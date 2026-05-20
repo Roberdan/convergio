@@ -7,59 +7,34 @@
 
 # Convergio
 
-> **Convergio is a personal open-source project.** It is not a Microsoft
-> product, not affiliated with Microsoft, and not endorsed by Microsoft.
-> References to the
-> [ISE Engineering Fundamentals Playbook](https://microsoft.github.io/code-with-engineering-playbook/ISE/)
-> (CC BY 4.0) and to [`microsoft/hve-core`](https://github.com/microsoft/hve-core)
-> (MIT) are use of those projects under their public licences and reflect
-> the author's reading of public documentation, not any internal
-> position of any organisation. References to
-> [`garrytan/gstack`](https://github.com/garrytan/gstack) (MIT) are
-> likewise public-licence use, with a courtesy-notice obligation
-> documented in [ADR-0019](./docs/adr/0019-thinking-stack-gstack-vendored.md).
-
 [![CI](https://github.com/Roberdan/convergio/actions/workflows/ci.yml/badge.svg)](https://github.com/Roberdan/convergio/actions/workflows/ci.yml)
 [![Release](https://github.com/Roberdan/convergio/actions/workflows/release.yml/badge.svg)](https://github.com/Roberdan/convergio/actions/workflows/release.yml)
 [![License: Convergio Community](https://img.shields.io/badge/license-Convergio%20Community-blue)](https://github.com/Roberdan/convergio/blob/main/LICENSE)
 [![Rust](https://img.shields.io/badge/rust-stable-orange)](https://www.rust-lang.org/)
 [![Zero Warnings](https://img.shields.io/badge/warnings-0-brightgreen)](#)
 
-> **Make machines prove it.** *The machine that builds machines —
-> and proves they work.*
->
-> The trustable autonomous executor for AI coding agents — a
-> local Rust daemon that turns plans into per-task vendor-CLI
-> spawns (Claude Code, Copilot CLI, Qwen, Codex, Gemini), routes
-> each task to the right model under a permission profile, and
-> refuses every `submitted` / `done` whose evidence does not
-> match the claim. Every refusal lands in a hash-chained audit
-> log you can verify from outside.
+> **Make machines prove it.** A local Rust daemon that refuses an AI
+> coding agent's "done" when the evidence doesn't match the claim.
 
-Convergio runs on your machine, sits between your agent runner and
-your codebase, and does three things:
+## The 30-second pitch
 
-1. **Executes** plans by dispatching tasks to vendor CLIs via the
-   `convergio-runner` crate (no raw API calls, no API keys —
-   ADR-0032). Each task carries its own `runner_kind`
-   (`claude:opus`, `copilot:gpt-5.2`, `qwen:qwen3-coder`, …),
-   `profile` (`standard`, `read_only`, `sandbox` — ADR-0033),
-   and optional `max_budget_usd` (ADR-0034). Custom vendors are
-   declared in `~/.convergio/runners.toml` — no recompile needed
-   (ADR-0035).
-2. **Plans** missions with `claude:opus` running in
-   `--permission-mode plan` (ADR-0036). The planner picks
-   `runner_kind` and `profile` per task to optimize PR
-   cardinality, cost vs quality, safety and wave parallelism.
-3. **Refuses** unsafe `submitted` / `done` transitions through
-   server-side gates: debt markers, scaffolding tells, non-clean
-   build signals, credential leaks. Every refusal is appended to
-   a hash-chained audit log.
+You let an AI agent code for you. It says **"done"**. You check —
+TODOs, `unwrap()`, skipped tests, hardcoded strings. You redo it.
 
-The honest mechanism, in one line: Convergio cannot make an agent
-truthful, but it raises the cost of lying, routes the work to the
-right model under the right leash, and makes every refusal
-non-falsifiable.
+Convergio fixes that loop:
+
+- 🛑 **Refuses unsafe `done`** — server-side gates reject the
+  transition with HTTP 409 when evidence contains debt markers,
+  scaffolding tells, secrets, or a non-clean build.
+- 📒 **Tamper-evident audit** — every refusal lands in a
+  hash-chained log you can verify from outside the daemon.
+- 🔌 **Vendor-agnostic** — drives Claude Code, Copilot CLI, Qwen,
+  Codex, Gemini, or your own runner. No API keys, no SaaS.
+
+100% local. SQLite-only. Try it in 60 seconds → [Quickstart](#quickstart).
+
+Convergio cannot make an agent truthful — but it raises the cost of
+lying, and makes every refusal non-falsifiable.
 
 ## What Convergio is — and is not
 
@@ -71,48 +46,10 @@ non-falsifiable.
 | **Vendor-agnostic** — claude, copilot, qwen, codex, gemini. | Tied to a single vendor. |
 | **Composable** — drives any framework that emits a plan. | An agent framework. |
 
-### How Convergio composes with gstack and gbrain
-
-Convergio is the *machine that builds machines, safely*. A
-typical full stack looks like:
-
-| Layer | Tool | What it owns |
-|---|---|---|
-| **Strategic** | [`gstack`](https://github.com/garrytan/gstack) — *the preferred partner* | `/autoplan`, `/office-hours`, `/plan-eng-review`, design + eng review. |
-| **Memory** | gbrain (PGLite + Supabase, opt-in) | Long-term context, lessons, vault. |
-| **Execution** | **Convergio** | Per-task runner routing, audit, gates, lifecycle, MCP / HTTP / CLI surface. |
-
-You can drive Convergio with gstack's `/autoplan` (recommended),
-with another planner, or by writing the plan yourself — it works
-with anything that produces a mission. **gstack is the preferred
-partner**: same author philosophy, same engineering-fundamentals
-framing, complementary scopes. Convergio works without it; the
-two are designed to compose.
-
-See [ADR-0019](./docs/adr/0019-thinking-stack-gstack-vendored.md)
-for the courtesy-notice obligations and the optional
-thinking-stack capability bundle.
-
-**Where Convergio sits in the engineering-fundamentals landscape:**
-the [ISE Engineering Fundamentals Playbook](https://microsoft.github.io/code-with-engineering-playbook/ISE/)
-prescribes engineering practices in checklists; community projects
-like [`microsoft/hve-core`](https://github.com/microsoft/hve-core)
-transmit such practices to Copilot agents via prompts and skills.
-Convergio is the runtime enforcer of the principles ISE
-Engineering Fundamentals describes in checklists and hve-core
-transmits via Copilot prompts: gates that refuse with HTTP 409,
-an audit chain that proves the refusal, an OODA loop that lets
-agent and validator converge or escalate. See
-[ADR-0017](./docs/adr/0017-ise-hve-alignment.md) for the mapping.
-Convergio remains a personal project (see disclaimer above), not a
-Microsoft offering — the alignment is technical, not
-organisational.
-
-**Why we exist:** see [`docs/vision.md`](./docs/vision.md) for the
-long-tail thesis and the urbanism frame (Convergio is an urban
-code, not a master plan — Le Corbusier modularity + Jane Jacobs
-emergence). See [`ROADMAP.md`](./ROADMAP.md) for the four waves
-that materialise it.
+> Composes with planners like [`gstack`](https://github.com/garrytan/gstack)
+> (strategic layer) and aligns technically with the
+> [ISE Engineering Fundamentals Playbook](https://microsoft.github.io/code-with-engineering-playbook/ISE/).
+> See [Composability and alignment](#composability-and-alignment) below for the full picture.
 
 ## Why Convergio
 
@@ -392,6 +329,58 @@ E2E workflows.
 - [ROADMAP.md](./ROADMAP.md) - focused local-first roadmap
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - development workflow
 - [docs/adr/](./docs/adr/) - architecture decision records
+
+## Composability and alignment
+
+Convergio is the *machine that builds machines, safely*. A typical
+full stack looks like:
+
+| Layer | Tool | What it owns |
+|---|---|---|
+| **Strategic** | [`gstack`](https://github.com/garrytan/gstack) — *preferred partner* | `/autoplan`, `/office-hours`, `/plan-eng-review`, design + eng review. |
+| **Memory** | gbrain (PGLite + Supabase, opt-in) | Long-term context, lessons, vault. |
+| **Execution** | **Convergio** | Per-task runner routing, audit, gates, lifecycle, MCP / HTTP / CLI surface. |
+
+You can drive Convergio with gstack's `/autoplan` (recommended),
+with another planner, or by writing the plan yourself — it works
+with anything that produces a mission. **gstack is the preferred
+partner**: same author philosophy, same engineering-fundamentals
+framing, complementary scopes. Convergio works without it; the
+two are designed to compose. See
+[ADR-0019](./docs/adr/0019-thinking-stack-gstack-vendored.md) for the
+courtesy-notice obligations and the optional thinking-stack capability
+bundle.
+
+**Where Convergio sits in the engineering-fundamentals landscape:**
+the [ISE Engineering Fundamentals Playbook](https://microsoft.github.io/code-with-engineering-playbook/ISE/)
+prescribes engineering practices in checklists; community projects like
+[`microsoft/hve-core`](https://github.com/microsoft/hve-core) transmit
+such practices to Copilot agents via prompts and skills. Convergio is
+the runtime enforcer of the principles ISE Engineering Fundamentals
+describes in checklists and hve-core transmits via Copilot prompts:
+gates that refuse with HTTP 409, an audit chain that proves the
+refusal, an OODA loop that lets agent and validator converge or
+escalate. See [ADR-0017](./docs/adr/0017-ise-hve-alignment.md) for the
+mapping.
+
+**Why we exist:** see [`docs/vision.md`](./docs/vision.md) for the
+long-tail thesis and the urbanism frame (Convergio is an urban code,
+not a master plan — Le Corbusier modularity + Jane Jacobs emergence).
+See [`ROADMAP.md`](./ROADMAP.md) for the four waves that materialise it.
+
+## Notices and credits
+
+**Convergio is a personal open-source project.** It is not a Microsoft
+product, not affiliated with Microsoft, and not endorsed by Microsoft.
+References to the
+[ISE Engineering Fundamentals Playbook](https://microsoft.github.io/code-with-engineering-playbook/ISE/)
+(CC BY 4.0) and to [`microsoft/hve-core`](https://github.com/microsoft/hve-core)
+(MIT) are use of those projects under their public licences and reflect
+the author's reading of public documentation, not any internal position
+of any organisation. References to
+[`garrytan/gstack`](https://github.com/garrytan/gstack) (MIT) are
+likewise public-licence use, with a courtesy-notice obligation
+documented in [ADR-0019](./docs/adr/0019-thinking-stack-gstack-vendored.md).
 
 ## License
 
