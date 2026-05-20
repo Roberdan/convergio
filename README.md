@@ -113,10 +113,13 @@ README does not claim more than the code does.
 3. **P3 — Accessibility first.** `planned`. No `A11yGate` yet. CLI
    strives to remain screen-reader friendly without color, but this
    is convention rather than enforcement until the gate ships.
-4. **P4 — No scaffolding only.** `enforced` for self-admitted stubs.
-   `NoStubGate` refuses evidence that says it is a stub, placeholder,
-   skeleton, or not wired. `WireCheckGate` (proves new symbols have
-   real callers in the diff) remains roadmap.
+4. **P4 — No scaffolding only.** `enforced`. Two gates ship in
+   `default_pipeline()`: `NoStubGate` refuses evidence that says it is
+   a stub, placeholder, skeleton, or not wired; `WireCheckGate`
+   (opt-in via a structured `wire_check` evidence row) verifies that
+   every claimed HTTP route and CLI subcommand actually exists in the
+   workspace tree. A future `ClaimCheckGate` (F55-B) will force the
+   opt-in `wire_check` row to be present.
 5. **P5 — Internationalization first.** `enforced`. CLI user-facing
    strings go through Fluent bundles with English and Italian
    shipped together; a coverage test refuses partial locales.
