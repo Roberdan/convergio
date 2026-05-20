@@ -52,3 +52,4 @@ Thumbs.db
 # the operator can't tell apart from real edits.
 .cargohome/
 **/.cargohome/
+.gstack/
