@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## [0.3.31](https://github.com/Roberdan/convergio/compare/convergio-v0.3.30...convergio-v0.3.31) (2026-05-20)
+
+
+### Documentation
+
+* **repo:** correct wirecheckgate status from roadmap to shipped ([#388](https://github.com/Roberdan/convergio/issues/388)) ([9ed46ff](https://github.com/Roberdan/convergio/commit/9ed46ff403a0ca8c1dcfccd6da63a3c6299054c6))
+* **repo:** embed cvg demo gif at the top of readme ([#390](https://github.com/Roberdan/convergio/issues/390)) ([70fecfb](https://github.com/Roberdan/convergio/commit/70fecfb26ea250a5057c7ebe9aef92fce4d98498))
+* **repo:** lead readme with the 30-second pitch ([#387](https://github.com/Roberdan/convergio/issues/387)) ([78d7227](https://github.com/Roberdan/convergio/commit/78d722731ca059a5181555c6b40cb27a9d2ee419))
+
 ## [0.3.30](https://github.com/Roberdan/convergio/compare/convergio-v0.3.29...convergio-v0.3.30) (2026-05-19)
 
 
