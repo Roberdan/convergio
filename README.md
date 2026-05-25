@@ -116,9 +116,13 @@ README does not claim more than the code does.
    prompt-injection rule families over every evidence payload at
    `submitted`/`done`; see ADR-0050) are shipped. `DepsAuditGate`
    and HMAC middleware for non-loopback bind remain roadmap.
-3. **P3 — Accessibility first.** `planned`. No `A11yGate` yet. CLI
-   strives to remain screen-reader friendly without color, but this
-   is convention rather than enforcement until the gate ships.
+3. **P3 — Accessibility first.** `enforced (phase 1)`. `A11yGate`
+   ships built-in checks (heading order, image alt, descriptive
+   link text, color-only emphasis, ANSI color-only signal, bidi
+   spoofing) at every `submitted`/`done` transition; see ADR-0051.
+   Phase 2 (capability `a11y.axe`, axe-core wrap) remains roadmap.
+   The CLI remains screen-reader friendly without color by
+   convention; the gate enforces the evidence side.
 4. **P4 — No scaffolding only.** `enforced`. Two gates ship in
    `default_pipeline()`: `NoStubGate` refuses evidence that says it is
    a stub, placeholder, skeleton, or not wired; `WireCheckGate`
