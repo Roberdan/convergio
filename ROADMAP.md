@@ -18,6 +18,18 @@ release-train numbers (v0.1.x / v0.2.0 / v0.3 / v0.4) map onto the
 waves; the wave is the unit we communicate, the version is the
 unit we tag.
 
+> **Current released line: v0.3.31** (2026-05). v0.2.x is closed
+> with two follow-ups deferred (PR-stack i18n, file-trim cleanup).
+> Wave 0a docs are in. Wave 0b (Claude Code adapter) is partially
+> done — skill scaffolding is in the repo, hooks + registration
+> are not. v0.3 also shipped a **fleet abstraction** that was not
+> in the original 4-wave plan — see "Shipped in v0.3.x beyond the
+> original plan" below. Run `cvg session resume` for live state.
+>
+> **For the v1.0 production-ready plan** (12 workstream, ~13
+> weeks with 3 parallel agents) see
+> [`docs/plans/v1.0-production-ready.md`](./docs/plans/v1.0-production-ready.md).
+
 ---
 
 ## Shipped — v0.1.x and v0.2.0
@@ -62,21 +74,59 @@ office-hours dogfood session proved was missing.
 - [x] **ADR-0015**: documentation as derived state
       (workspace-members + test-count auto-regen)
 
-## Closing now — v0.2.x finishing
+## Closed — v0.2.x → v0.3.31
 
-Small, scoped, immediate. Lands in parallel with Wave 0a (pure
-docs); Wave 0b (PRD-001 code) does not land until v0.2.x is
-green.
+These all landed; current released line is **v0.3.31**.
 
-- [ ] **T2.04** auto-close plan task on PR merge
-      (`cvg pr sync <plan>` parses merged PRs for `Tracks` lines)
+- [x] **T2.04** auto-close plan task on PR merge
+      (`cvg pr sync <plan>` — `crates/convergio-cli-pr/src/pr_sync.rs`)
+- [x] **T1.17** Tier-2 retrieval: YAML frontmatter on every ADR
+      + `cvg coherence check` (`crates/convergio-coherence/`)
 - [ ] `cvg pr stack` localised EN/IT and validating manifest
       against the real diff (paused branch
       `fix/cvg-pr-stack-i18n-and-manifest-validation`)
-- [ ] **T1.17** Tier-2 retrieval: machine-readable YAML
-      frontmatter on every ADR + `cvg coherence check`
 - [ ] **T3.08** trim 12 Rust files in 250–300 LOC range to leave
       headroom under the 300-line cap
+
+## Shipped in v0.3.x beyond the original plan
+
+Work that was not on the original 4-wave plan but landed under
+v0.3 because the dogfood loop demanded it. ADR coverage in
+parentheses.
+
+- [x] **Fleet abstraction** — one daemon orchestrating multiple
+      repos: cross-repo plans + fan-out, Thor fleet validation,
+      derived fleet audit-chain walk, semantic dead-code
+      (`cvg fleet rot`), semantic doc-vs-code drift
+      (`cvg fleet doc-drift`), MCP fleet actions (ADR-0038,
+      ADR-0041, ADR-0049 retrospective)
+- [x] **`convergio-embed`** — embeddings store + pluggable
+      embedder trait (ONNX/fastembed feature) for Tier-3 retrieval
+      (ADR-0038, F1)
+- [x] **`convergio-parse-multi`** — Tree-sitter adapters for
+      TypeScript + Python feeding the cross-repo graph (ADR-0038,
+      F2)
+- [x] **`convergio-coherence`** — `cvg coherence check / routes /
+      adrs / agents / fleet / handshake / plan-execution` suite
+      (ADR-0040)
+- [x] **`convergio-tui`** — `cvg dash` four-pane terminal
+      dashboard (Plans, Tasks, Agents, PRs) (ADR-0029)
+- [x] **`convergio-server-core` + `convergio-cli-*` splits** — PR,
+      session, plan-run extracted from monolith CLI to stay under
+      the 300-LOC cap (ADR-0041 et al.)
+- [x] **Vendor-CLI runners**: `claude`, `copilot` built-in;
+      `qwen`, `codex`, `gemini` via `~/.convergio/runners.toml`
+      with no recompile (ADR-0028, ADR-0032, ADR-0035)
+- [x] **Permission profiles** `standard` / `read_only` / `sandbox`
+      (ADR-0033) + per-task `runner_kind` / `profile` /
+      `max_budget_usd` (ADR-0034)
+- [x] **Compensating actions** — `GET /v1/audit/events/:seq/compensate`,
+      `cvg audit compensate` (ADR-0048)
+- [x] **Generated action surface** — `GET /v1/api/actions` +
+      `cvg actions list` byte-identical with MCP discovery
+      (ADR-0047)
+- [x] **Gate preconditions introspection** — `GET /v1/gates/preconditions`
+      + `cvg gates show` (P3-2)
 
 ---
 
@@ -133,12 +183,15 @@ of the original 4-day estimate). Includes a small bus schema
 migration to allow `plan_id IS NULL` for the new
 `system.session-events` topic.
 
-- [ ] Skill `/cvg-attach` + hooks (SessionStart / PreToolUse /
-      PostToolUse / Stop) wired against
-      `POST /v1/agent-registry/agents` (the *registration*
-      endpoint, distinct from `/v1/agents/spawn`)
+- [~] Skill `/cvg-attach` — scaffolding present in
+      `examples/skills/cvg-attach/` and `cvg-attach-cursor/`, but
+      the four Claude Code hooks (SessionStart / PreToolUse /
+      PostToolUse / Stop) and registration against
+      `POST /v1/agent-registry/agents` are **not yet wired**
 - [ ] Bus schema migration for system topic + small ADR
-- [ ] `cvg status --agents` flag with EN/IT i18n
+- [ ] `cvg status --agents` flag with EN/IT i18n (string is
+      referenced in `setup_readme.rs` docs but the flag is not
+      implemented in `status` command)
 - [ ] E2E test exercising two ephemeral agent registrations
 - [ ] `cvg setup claude-code` installer
 - [ ] README section in `examples/skills/cvg-attach/` showing the
@@ -199,9 +252,13 @@ migration to allow `plan_id IS NULL` for the new
       `component_render`) by running axe-core. Wave 1 phase 1
       covers the constitutional commitment; Wave 2 phase 2
       hardens UI coverage.
-- [ ] **WireCheckGate (P4)** — refuses scaffolding that compiles
-      but is not actually wired into a calling path (graph-engine
-      drift signal v1).
+- [x] **WireCheckGate (P4)** — **shipped** in v0.3.x. Refuses
+      scaffolding via structured `wire_check` evidence row that
+      verifies every claimed HTTP route and CLI subcommand
+      actually exists in the workspace tree
+      (`crates/convergio-durability/src/gates/wire_check_gate.rs`).
+      A future `ClaimCheckGate` (F55-B) will force the opt-in
+      `wire_check` row to be present.
 - [ ] **PromptInjectionGate (P2)** — refuses evidence containing
       known prompt injection patterns; baseline list curated.
 

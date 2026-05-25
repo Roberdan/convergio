@@ -25,8 +25,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 176 |
-| `README.md` | entry | - | - | 394 |
-| `ROADMAP.md` | roadmap | - | - | 479 |
+| `README.md` | entry | - | - | 408 |
+| `ROADMAP.md` | roadmap | - | - | 536 |
 | `SECURITY.md` | governance | - | - | 57 |
 | `STATUS.md` | - | - | - | 40 |
 | `assets/branding/README.md` | - | - | - | 57 |
@@ -145,6 +145,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
 | `docs/plans/v0.2-friction-log.md` | plan | - | - | 207 |
+| `docs/plans/v1.0-production-ready.md` | plan | - | - | 743 |
 | `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
 | `docs/release.md` | - | - | - | 106 |
 | `docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |

@@ -314,6 +314,20 @@ Current scope:
 - `planner.solve` as the first installed capability-gated action
 - executor tick, Thor validator, guided demo
 - English/Italian CLI messages for the localized surfaces
+- `cvg coherence` suite — Tier-2 cross-checks for routes, ADRs,
+  agents, fleet plans, handshakes, and plan-execution (ADR-0040)
+- fleet abstraction — one daemon orchestrates multiple repos:
+  cross-repo plans, semantic dead-code (`cvg fleet rot`), semantic
+  doc-drift (`cvg fleet doc-drift`), fleet audit-chain walk
+  (ADR-0038, ADR-0049 retrospective)
+- compensating actions — `cvg audit compensate <seq> [--apply]`
+  to invert any audit row that has a defined inverse (ADR-0048)
+- generated action surface — `cvg actions list` and
+  `GET /v1/api/actions` are byte-identical with MCP discovery
+  (ADR-0047)
+- gate preconditions introspection — `cvg gates show` /
+  `GET /v1/gates/preconditions` to ask "what evidence does this
+  gate need?" before bouncing off a refused submit
 
 Out of scope for this MVP:
 
