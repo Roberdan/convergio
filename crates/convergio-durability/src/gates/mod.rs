@@ -6,7 +6,8 @@
 //!
 //! ```text
 //! plan_status → evidence → crdt_conflict → no_debt → no_stub
-//! → wire_check → no_secrets → zero_warnings → wave_sequence
+//! → wire_check → no_secrets → prompt_injection → zero_warnings
+//! → wave_sequence
 //! ```
 //!
 //! Adding a gate:
@@ -22,6 +23,7 @@ mod no_secrets_gate;
 mod no_stub_gate;
 mod plan_status_gate;
 mod pr_link_gate;
+mod prompt_injection_gate;
 mod wave_sequence_gate;
 mod wire_check_gate;
 mod zero_warnings_gate;
@@ -33,6 +35,7 @@ pub use no_secrets_gate::{NoSecretsGate, SecretRule};
 pub use no_stub_gate::{NoStubGate, StubRule};
 pub use plan_status_gate::PlanStatusGate;
 pub use pr_link_gate::PrLinkGate;
+pub use prompt_injection_gate::{InjectionRule, PromptInjectionGate};
 pub use wave_sequence_gate::WaveSequenceGate;
 pub use wire_check_gate::WireCheckGate;
 pub use zero_warnings_gate::ZeroWarningsGate;
@@ -90,9 +93,12 @@ pub type Pipeline = Vec<Arc<dyn Gate>>;
 ///    routes / CLI paths against the workspace tree (after the
 ///    cheap regex, before the rest).
 /// 7. `NoSecretsGate` (P2) — common credential leaks in payloads.
-/// 8. `ZeroWarningsGate` (P1) — build/lint/test signal must be clean.
-/// 9. `WaveSequenceGate` (queries dependencies in the same plan).
-/// 10. `PrLinkGate` last (only fires on `done`, cheap when it does
+/// 8. `PromptInjectionGate` (P2) — LLM prompt-injection patterns in
+///    evidence payload strings; runs right after secrets so payload
+///    scans are co-located.
+/// 9. `ZeroWarningsGate` (P1) — build/lint/test signal must be clean.
+/// 10. `WaveSequenceGate` (queries dependencies in the same plan).
+/// 11. `PrLinkGate` last (only fires on `done`, cheap when it does
 ///     fire — single `COUNT(*)` against `plan_pr_links`).
 pub fn default_pipeline() -> Pipeline {
     vec![
@@ -103,6 +109,7 @@ pub fn default_pipeline() -> Pipeline {
         Arc::new(NoStubGate::default()),
         Arc::new(WireCheckGate),
         Arc::new(NoSecretsGate::default()),
+        Arc::new(PromptInjectionGate::default()),
         Arc::new(ZeroWarningsGate),
         Arc::new(WaveSequenceGate),
         Arc::new(PrLinkGate),
