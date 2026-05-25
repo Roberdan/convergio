@@ -96,4 +96,36 @@ impl Store {
         })
         .transpose()
     }
+
+    /// List the latest revision of every `PropertyType` whose owner
+    /// is the given `(object_name)` — used by exporters that need to
+    /// flatten an `ObjectType` into one schema document.
+    ///
+    /// `owner_schema_version` is accepted for forward-compatibility
+    /// (later waves may filter properties by the owner snapshot);
+    /// W1 returns the highest known revision per property name.
+    pub async fn list_object_properties(
+        &self,
+        object_name: &str,
+        _owner_schema_version: i64,
+    ) -> Result<Vec<PropertyTypeRecord>> {
+        let rows = sqlx::query(
+            "SELECT name, MAX(schema_version) AS max_v \
+             FROM ontology_property_types \
+             WHERE owner_kind = 'object' AND owner_name = ? \
+             GROUP BY name ORDER BY name ASC",
+        )
+        .bind(object_name)
+        .fetch_all(self.pool.inner())
+        .await?;
+        let mut out = Vec::with_capacity(rows.len());
+        for r in rows {
+            let name: String = r.try_get("name")?;
+            let v: i64 = r.try_get("max_v")?;
+            if let Some(rec) = self.get_property(&name, v).await? {
+                out.push(rec);
+            }
+        }
+        Ok(out)
+    }
 }

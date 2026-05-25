@@ -38,6 +38,7 @@
 
 mod error;
 mod hash;
+mod jsonschema;
 mod model;
 mod reads;
 mod semantic;
@@ -45,6 +46,9 @@ mod store;
 
 pub use error::{Error, Result};
 pub use hash::content_hash;
+pub use jsonschema::{
+    build_object_schema_bytes, datatype_fragment, export_object_schema, JSON_SCHEMA_DRAFT,
+};
 pub use model::{
     LinkTypeRecord, ObjectTypeRecord, OwnerKind, PropertyTypeRecord, TypeKind, TypeRecordRef,
 };
