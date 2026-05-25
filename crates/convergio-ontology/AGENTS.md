@@ -25,10 +25,11 @@ schemas as JSON-Schema and SHACL.
   librarian. Convergio ships zero built-in `ObjectType` instances;
   the concrete shapes come from verticals (`convergio-edu`,
   `convergio-research`, ...).
-- **Persistence lives in `convergio-db`.** The SQLite tables for
-  the registry are owned by `convergio-db` migrations (per
-  ADR-0003 the migration version belongs to that crate's range).
-  This crate consumes the pool, it does not run migrations.
+- **Persistence is owned by this crate.** SQLite tables live in
+  `migrations/1000_*.sql` (range 1000-1099 per ADR-0003). This
+  crate consumes the shared pool from `convergio-db`; per
+  ADR-0003 each layer crate owns its own migration range, so we
+  do not stash schema in `convergio-db` itself.
 - **No runtime IO outside the daemon process.** The library
   compiles into the server; CLI flows go through the daemon HTTP
   surface like every other capability (ADR-0001, ADR-0043).
@@ -64,7 +65,7 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-ontology` stats:** 1 `*.rs` files / 0 public items / 36 lines (under `src/`).
+**`convergio-ontology` stats:** 7 `*.rs` files / 15 public items / 792 lines (under `src/`).
 
 No files within 50 lines of the 300-line cap.
 <!-- END AUTO -->

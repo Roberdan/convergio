@@ -19,11 +19,12 @@
 //!
 //! # Status
 //!
-//! W1 scaffold only. This file intentionally exposes no public API;
-//! later tasks in the same plan add the schema tables (W1 task 2,
-//! owned by `convergio-db`), the deterministic exporters (W1 tasks
-//! 3 and 4), the `cvg ontology` CLI surface (W1 task 5), and the
-//! MCP `ontology.*` actions (W1 task 6).
+//! W1 task 2 adds the SQLite schema (`migrations/1000_*.sql`,
+//! range 1000-1099 per ADR-0003) and the [`Store`] handle that
+//! upserts and reads `ObjectType` / `LinkType` / `PropertyType`
+//! rows. Later tasks add the deterministic exporters (W1 tasks 3
+//! and 4), the `cvg ontology` CLI surface (W1 task 5), and the MCP
+//! `ontology.*` actions (W1 task 6).
 //!
 //! # Determinism
 //!
@@ -34,3 +35,17 @@
 //! surface.
 
 #![forbid(unsafe_code)]
+
+mod error;
+mod hash;
+mod model;
+mod reads;
+mod semantic;
+mod store;
+
+pub use error::{Error, Result};
+pub use hash::content_hash;
+pub use model::{
+    LinkTypeRecord, ObjectTypeRecord, OwnerKind, PropertyTypeRecord, TypeKind, TypeRecordRef,
+};
+pub use store::Store;
