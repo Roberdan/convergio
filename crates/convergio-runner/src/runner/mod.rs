@@ -13,9 +13,11 @@
 
 mod claude;
 mod copilot;
+mod openai;
 
 pub use claude::ClaudeRunner;
 pub use copilot::CopilotRunner;
+pub use openai::{OpenaiRunner, DEFAULT_OPENAI_CLI, OPENAI_CLI_BIN_ENV};
 
 use crate::command::PreparedCommand;
 use crate::error::{Result, RunnerError};
@@ -84,6 +86,9 @@ pub fn for_kind_with_registry(
             Family::Copilot => Box::new(CopilotRunner {
                 model: kind.model.clone(),
             }),
+            Family::Openai => Box::new(OpenaiRunner {
+                model: kind.model.clone(),
+            }),
         });
     }
     let spec = registry
@@ -129,6 +134,7 @@ mod tests {
         // resolves both vendors without panicking.
         for_kind(&RunnerKind::claude_sonnet()).unwrap();
         for_kind(&RunnerKind::copilot_gpt()).unwrap();
+        for_kind(&RunnerKind::openai_gpt()).unwrap();
     }
 
     #[test]

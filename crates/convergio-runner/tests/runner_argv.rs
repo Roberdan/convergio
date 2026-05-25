@@ -196,3 +196,64 @@ fn assert_cli_on_path_rejects_when_binary_missing_from_explicit_path() {
     let found = std::env::split_paths(bogus).any(|p| p.join(cli).is_file());
     assert!(!found);
 }
+
+#[test]
+fn openai_argv_has_model_and_p_flag() {
+    let task = task();
+    let ctx = ctx_with(&task, PermissionProfile::Standard);
+    let runner = convergio_runner::OpenaiRunner {
+        model: "gpt-4.1".into(),
+    };
+    let prepared = runner.prepare(&ctx).unwrap();
+    let a: Vec<String> = prepared
+        .args
+        .iter()
+        .map(|s| s.to_string_lossy().into())
+        .collect();
+    assert!(a.iter().any(|s| s == "-p"));
+    assert!(a.iter().any(|s| s == "--model"));
+    assert!(a.iter().any(|s| s == "gpt-4.1"));
+    // Standard profile -> permission-mode flag is emitted.
+    assert!(a.iter().any(|s| s == "--permission-mode"));
+    assert!(a.iter().any(|s| s == "--max-budget-usd"));
+    // Default program when env unset.
+    assert_eq!(
+        prepared.program,
+        OsString::from(convergio_runner::DEFAULT_OPENAI_CLI)
+    );
+}
+
+#[test]
+fn openai_sandbox_profile_skips_permission_mode_flag() {
+    let task = task();
+    let ctx = ctx_with(&task, PermissionProfile::Sandbox);
+    let runner = convergio_runner::OpenaiRunner {
+        model: "gpt-4.1".into(),
+    };
+    let prepared = runner.prepare(&ctx).unwrap();
+    let a: Vec<String> = prepared
+        .args
+        .iter()
+        .map(|s| s.to_string_lossy().into())
+        .collect();
+    assert!(
+        !a.iter().any(|s| s == "--permission-mode"),
+        "Sandbox must not emit --permission-mode; got {a:?}"
+    );
+}
+
+#[test]
+fn openai_for_kind_dispatches_to_openai_runner() {
+    let task = task();
+    let ctx = ctx_with(&task, PermissionProfile::Standard);
+    let runner = for_kind(&RunnerKind::openai_gpt()).unwrap();
+    let prepared = runner.prepare(&ctx).unwrap();
+    // Program is whatever OPENAI_CLI_BIN says, or the default.
+    assert!(
+        prepared
+            .program
+            .to_string_lossy()
+            .contains(convergio_runner::DEFAULT_OPENAI_CLI)
+            || std::env::var_os(convergio_runner::OPENAI_CLI_BIN_ENV).is_some()
+    );
+}
