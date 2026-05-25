@@ -25,6 +25,7 @@ members = [
     "crates/convergio-fleet",
     "crates/convergio-fleet-routes",
     "crates/convergio-server-core",
+    "crates/convergio-ontology",
 ]
 resolver = "2"
 
@@ -138,6 +139,7 @@ convergio-parse-multi = { path = "crates/convergio-parse-multi" }
 convergio-fleet = { path = "crates/convergio-fleet" }
 convergio-fleet-routes = { path = "crates/convergio-fleet-routes" }
 convergio-server-core = { path = "crates/convergio-server-core" }
+convergio-ontology = { path = "crates/convergio-ontology" }
 
 [workspace.lints.rust]
 missing_docs = "warn"

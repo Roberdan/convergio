@@ -53,3 +53,6 @@ Thumbs.db
 .cargohome/
 **/.cargohome/
 .gstack/
+
+# Local worktrees outside .claude/worktrees/ (operator choice)
+/worktrees/

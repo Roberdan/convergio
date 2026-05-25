@@ -117,6 +117,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-i18n` — Internationalization (P5) — Fluent-backed message bundles for every user-facing string in Convergio
 - `convergio-lifecycle` — Layer 3 of Convergio: spawn, supervise, heartbeat and reap long-running agent processes
 - `convergio-mcp` — MCP bridge for local Convergio daemon
+- `convergio-ontology` — Ontology Runtime Core for Convergio — schema registry of typed domain objects, links, and properties (ADR-0051)
 - `convergio-parse-multi` — Multi-language AST parsing layer for Convergio fleet retrieval (ADR-0038, F2)
 - `convergio-planner` — Layer 4 (reference) of Convergio: turns a natural-language mission into a structured plan
 - `convergio-runner` — Vendor-CLI runners for Convergio agents (Claude Code + GitHub Copilot CLI)
