@@ -146,6 +146,7 @@ async fn reaper_clears_current_task_for_stale_owner() {
             tick_interval: chrono::Duration::seconds(60),
             agent_reaper_enabled: false,
             agent_threshold: chrono::Duration::seconds(3600),
+            on_reap: None,
         },
     )
     .await
@@ -193,6 +194,7 @@ async fn reaper_does_not_disturb_agent_on_a_different_task() {
             tick_interval: chrono::Duration::seconds(60),
             agent_reaper_enabled: false,
             agent_threshold: chrono::Duration::seconds(3600),
+            on_reap: None,
         },
     )
     .await

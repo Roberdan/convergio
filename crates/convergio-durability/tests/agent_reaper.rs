@@ -54,6 +54,7 @@ async fn agent_reaper_retires_stale_agents() {
             tick_interval: Duration::seconds(60),
             agent_reaper_enabled: true,
             agent_threshold: Duration::seconds(3600),
+            on_reap: None,
         },
     )
     .await
@@ -107,6 +108,7 @@ async fn agent_reaper_skips_fresh_agents() {
             tick_interval: Duration::seconds(60),
             agent_reaper_enabled: true,
             agent_threshold: Duration::seconds(3600),
+            on_reap: None,
         },
     )
     .await
@@ -138,6 +140,7 @@ async fn agent_reaper_disabled_does_not_retire_stale_agents() {
             tick_interval: Duration::seconds(60),
             agent_reaper_enabled: false,
             agent_threshold: Duration::seconds(3600),
+            on_reap: None,
         },
     )
     .await
