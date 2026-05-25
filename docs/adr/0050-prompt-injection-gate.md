@@ -67,17 +67,34 @@ freely on `in_progress` evidence.
 
 Legitimate quotation (this gate's own tests, security documentation
 that cites payload literals, training material) needs an escape
-hatch. The gate honours two:
+hatch. The gate honours a **single, structural** opt-out:
 
-1. JSON key `"pi_gate_exempt": true` at any depth in the evidence
-   payload.
-2. String marker `__prompt_injection_gate_exempt__` anywhere in
-   any string leaf of the payload.
+- JSON key `"pi_gate_exempt": true` at any depth in the evidence
+  payload. The value MUST be the literal boolean `true` — `false`,
+  `null`, strings (`"true"`), and numbers are all ignored.
 
-Either marker short-circuits scanning for that *single* evidence
-row. Other rows on the same task still get scanned. The marker is
+The opt-out short-circuits scanning for that *single* evidence row.
+Other rows on the same task still get scanned. The exemption is
 audited as part of the row payload itself — the audit chain
 remembers exactly which evidence opted out.
+
+> **Why no string-marker opt-out?** An earlier draft of this gate
+> also honoured a `__prompt_injection_gate_exempt__` substring in
+> any string leaf. That was rejected during PR #398 review (Codex
+> P1) on threat-model grounds: evidence payload text is, by
+> definition, untrusted. A hostile artifact (a README fetched from
+> the web, a malicious comment in a third-party dependency) could
+> simply embed the marker alongside its injection text and
+> self-bypass the gate, defeating the entire point. Opt-outs travel
+> only through the structural JSON key that the *agent* must
+> explicitly emit as part of the wrapper object it controls.
+>
+> Similarly, the JSON key tolerated any value in that draft. PR #398
+> review (Codex P2) flagged this as an accidental-bypass surface:
+> a payload that happened to carry `"pi_gate_exempt": false` (or
+> `null`) would disable the gate exactly when it was supposed to be
+> on. Requiring literal `true` keeps the exemption explicit and
+> auditable.
 
 ## Consequences
 

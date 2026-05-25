@@ -128,7 +128,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0047-action-type-registry-actions-json.md` | adr | [convergio-api, convergio-server, convergio-mcp] | proposed | 59 |
 | `docs/adr/0048-compensating-action-types.md` | adr | [convergio-durability, convergio-server] | proposed | 65 |
 | `docs/adr/0049-f3-fleet-retrospective.md` | adr | [convergio-fleet, convergio-embed, convergio-graph, convergio-server, convergio-mcp, convergio-api] | accepted | 169 |
-| `docs/adr/0050-prompt-injection-gate.md` | adr | [convergio-durability] | accepted | 110 |
+| `docs/adr/0050-prompt-injection-gate.md` | adr | [convergio-durability] | accepted | 127 |
 | `docs/adr/README.md` | adr | - | - | 71 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
