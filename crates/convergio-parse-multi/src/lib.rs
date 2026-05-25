@@ -33,6 +33,7 @@ pub mod migrate;
 pub mod node;
 pub mod parse;
 pub mod py;
+pub mod py_extract;
 pub mod ts;
 
 pub use error::{ParseError, Result};
