@@ -6,8 +6,8 @@
 //!
 //! ```text
 //! plan_status → evidence → crdt_conflict → no_debt → no_stub
-//! → wire_check → no_secrets → prompt_injection → zero_warnings
-//! → wave_sequence
+//! → wire_check → no_secrets → prompt_injection → a11y → zero_warnings
+//! → wave_sequence → pr_link
 //! ```
 //!
 //! Adding a gate:
@@ -16,6 +16,7 @@
 //! 2. Register it in [`default_pipeline`].
 //! 3. Document the rationale in an ADR.
 
+mod a11y_gate;
 mod crdt_conflict_gate;
 mod evidence_gate;
 mod no_debt_gate;
@@ -28,6 +29,7 @@ mod wave_sequence_gate;
 mod wire_check_gate;
 mod zero_warnings_gate;
 
+pub use a11y_gate::A11yGate;
 pub use crdt_conflict_gate::CrdtConflictGate;
 pub use evidence_gate::EvidenceGate;
 pub use no_debt_gate::{DebtRule, NoDebtGate};
@@ -96,9 +98,11 @@ pub type Pipeline = Vec<Arc<dyn Gate>>;
 /// 8. `PromptInjectionGate` (P2) — LLM prompt-injection patterns in
 ///    evidence payload strings; runs right after secrets so payload
 ///    scans are co-located.
-/// 9. `ZeroWarningsGate` (P1) — build/lint/test signal must be clean.
-/// 10. `WaveSequenceGate` (queries dependencies in the same plan).
-/// 11. `PrLinkGate` last (only fires on `done`, cheap when it does
+/// 9. `A11yGate` phase 1 (P3) — built-in accessibility checks on
+///    markdown / CLI evidence payloads.
+/// 10. `ZeroWarningsGate` (P1) — build/lint/test signal must be clean.
+/// 11. `WaveSequenceGate` (queries dependencies in the same plan).
+/// 12. `PrLinkGate` last (only fires on `done`, cheap when it does
 ///     fire — single `COUNT(*)` against `plan_pr_links`).
 pub fn default_pipeline() -> Pipeline {
     vec![
@@ -110,6 +114,7 @@ pub fn default_pipeline() -> Pipeline {
         Arc::new(WireCheckGate),
         Arc::new(NoSecretsGate::default()),
         Arc::new(PromptInjectionGate::default()),
+        Arc::new(A11yGate::default()),
         Arc::new(ZeroWarningsGate),
         Arc::new(WaveSequenceGate),
         Arc::new(PrLinkGate),

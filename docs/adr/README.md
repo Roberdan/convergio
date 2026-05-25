@@ -68,4 +68,5 @@ do not edit between the markers.
 | [0048](./0048-compensating-action-types.md) | 0048. Add compensating action types | proposed |
 | [0049](./0049-f3-fleet-retrospective.md) | 0049. F3 fleet-grade orchestration — retrospective | accepted |
 | [0050](./0050-prompt-injection-gate.md) | 0050. PromptInjectionGate (P2 phase 1) | accepted |
+| [0051](./0051-a11y-gate-phase-1.md) | 0051. A11yGate phase 1 — built-in accessibility checks on evidence | accepted |
 <!-- END AUTO -->

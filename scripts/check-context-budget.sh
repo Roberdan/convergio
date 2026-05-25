@@ -42,6 +42,14 @@ cd "$repo_root"
 #             cli-split ADR (agent_*, fleet, setup, update, coherence
 #             subcommands) remains the structural answer; this is the
 #             second time the cli has needed a temporary bump.).
+#             14_500 → 15_500 (2026-05-25, v1.0 W2 + W1 — two new
+#             gates landed in the same milestone (PromptInjectionGate
+#             and A11yGate, ADR-0050 + ADR-0051). Each gate is ~200
+#             LOC of source + ~150 LOC of integration tests; the cap
+#             pre-dates both. A "durability gates split" ADR is the
+#             real answer (gates/ could be a sibling crate exposing
+#             only the Gate trait + default_pipeline ctor), tracked
+#             alongside the existing durability split.).
 #     The shape of that crate (audit chain + plans + tasks + evidence +
 #     workspace + capabilities + crdt + gates + agent-reaper) is
 #     intentional and a real split needs ADR work — track it under
@@ -51,7 +59,7 @@ cd "$repo_root"
 RS_HARD=300
 NON_RS_SOFT=500
 CRATE_SOFT=5000
-CRATE_HARD=14500
+CRATE_HARD=15500
 
 hard_fail=0
 soft_warn=0
