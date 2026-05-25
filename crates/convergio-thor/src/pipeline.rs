@@ -1,78 +1,257 @@
-//! Trusted-local Thor pipeline execution.
+//! Smart Thor pipeline execution (T3.02, ADR-0052).
+//!
+//! Thor still treats the pipeline command as trusted-local
+//! configuration (operator-owned, never copied from plans, evidence,
+//! agent output or HTTP requests). What changed in T3.02:
+//!
+//! 1. A built-in recipe sentinel — `cargo:auto` — runs `cargo fmt
+//!    --check`, `clippy -D warnings`, and `cargo test --workspace` as
+//!    separate steps. Each step gets its own truncated tail so a
+//!    failing clippy doesn't drown a separately failing test.
+//! 2. Timeout is configurable via
+//!    `CONVERGIO_THOR_PIPELINE_TIMEOUT_SECS` (still defaults to 600s).
+//! 3. Every run — pass or fail — appends a `pipeline.run` audit row
+//!    so verifiable history exists even when Thor passes silently.
+//! 4. Skip-when-trusted: if every task in the validated set already
+//!    carries a `pipeline_run` evidence row whose `worktree_rev`
+//!    matches the current working tree revision
+//!    (`CONVERGIO_THOR_WORKTREE_REV`), the pipeline is treated as
+//!    pre-validated and Thor returns `Pass` immediately. This is the
+//!    seam fleet runs use to avoid re-running cargo on every repo.
 
+use convergio_durability::{audit::EntityKind, Durability};
+use serde::Serialize;
 use std::{process::Stdio, time::Duration};
 use tokio::{process::Command, time::timeout};
 
-/// Trusted-local pipeline command environment variable name.
 pub(crate) const PIPELINE_ENV: &str = "CONVERGIO_THOR_PIPELINE_CMD";
-/// Default maximum wall-clock runtime for a pipeline command.
+pub(crate) const PIPELINE_TIMEOUT_ENV: &str = "CONVERGIO_THOR_PIPELINE_TIMEOUT_SECS";
+pub(crate) const WORKTREE_REV_ENV: &str = "CONVERGIO_THOR_WORKTREE_REV";
 pub(crate) const DEFAULT_PIPELINE_TIMEOUT_SECS: u64 = 600;
+pub(crate) const CARGO_AUTO_SENTINEL: &str = "cargo:auto";
 
 const PIPELINE_TAIL_BYTES: usize = 4096;
 
 /// Normalized Thor pipeline configuration.
 #[derive(Clone)]
 pub(crate) struct Config {
-    command: String,
+    recipe: Recipe,
     timeout: Duration,
 }
 
-/// Return the default pipeline timeout.
-pub(crate) fn default_timeout() -> Duration {
-    Duration::from_secs(DEFAULT_PIPELINE_TIMEOUT_SECS)
+#[derive(Clone)]
+enum Recipe {
+    /// One-shot shell command (back-compat for operators who already
+    /// configured `CONVERGIO_THOR_PIPELINE_CMD=make ci`).
+    Shell(String),
+    /// Built-in multi-step cargo recipe.
+    CargoAuto,
 }
 
-/// Build pipeline configuration from process environment.
+/// One step of a multi-step recipe.
+struct Step {
+    name: &'static str,
+    program: &'static str,
+    args: &'static [&'static str],
+}
+
+const CARGO_AUTO_STEPS: &[Step] = &[
+    Step {
+        name: "fmt",
+        program: "cargo",
+        args: &["fmt", "--all", "--check"],
+    },
+    Step {
+        name: "clippy",
+        program: "cargo",
+        args: &[
+            "clippy",
+            "--workspace",
+            "--all-targets",
+            "--",
+            "-D",
+            "warnings",
+        ],
+    },
+    Step {
+        name: "test",
+        program: "cargo",
+        args: &["test", "--workspace"],
+    },
+];
+
+/// Structured outcome of one pipeline run (canonicalized into the
+/// `pipeline.run` audit row).
+#[derive(Serialize)]
+pub(crate) struct RunReport {
+    recipe: &'static str,
+    ok: bool,
+    failing_step: Option<String>,
+    duration_ms: u128,
+    steps_attempted: usize,
+}
+
+pub(crate) fn default_timeout() -> Duration {
+    let secs = std::env::var(PIPELINE_TIMEOUT_ENV)
+        .ok()
+        .and_then(|s| s.parse::<u64>().ok())
+        .unwrap_or(DEFAULT_PIPELINE_TIMEOUT_SECS);
+    Duration::from_secs(secs)
+}
+
 pub(crate) fn from_env() -> Option<Config> {
     from_command(std::env::var(PIPELINE_ENV).ok(), default_timeout())
 }
 
-/// Build pipeline configuration from an explicit command.
 pub(crate) fn from_command(command: Option<String>, timeout: Duration) -> Option<Config> {
     command
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty())
-        .map(|command| Config { command, timeout })
+        .map(|s| {
+            let recipe = if s == CARGO_AUTO_SENTINEL {
+                Recipe::CargoAuto
+            } else {
+                Recipe::Shell(s)
+            };
+            Config { recipe, timeout }
+        })
 }
 
-/// Run the configured pipeline and return a verdict reason on failure.
-pub(crate) async fn run(pipeline: &Config) -> Option<String> {
+/// Run the configured pipeline, emit a `pipeline.run` audit row, and
+/// return a verdict reason on failure.
+pub(crate) async fn run(pipeline: &Config, dur: &Durability, plan_id: &str) -> Option<String> {
+    let start = std::time::Instant::now();
+    let (failing, attempted, recipe_label) = match &pipeline.recipe {
+        Recipe::Shell(cmd) => {
+            let res = run_shell(cmd, pipeline.timeout).await;
+            (res, 1, "shell")
+        }
+        Recipe::CargoAuto => {
+            let mut failing: Option<String> = None;
+            let mut attempted = 0;
+            for step in CARGO_AUTO_STEPS {
+                attempted += 1;
+                if let Some(reason) = run_step(step, pipeline.timeout).await {
+                    failing = Some(reason);
+                    break;
+                }
+            }
+            (failing, attempted, "cargo:auto")
+        }
+    };
+
+    let report = RunReport {
+        recipe: recipe_label,
+        ok: failing.is_none(),
+        failing_step: failing
+            .as_ref()
+            .and_then(|r| r.split(':').next().map(|s| s.trim().to_string())),
+        duration_ms: start.elapsed().as_millis(),
+        steps_attempted: attempted,
+    };
+    let _ = dur
+        .audit()
+        .append(EntityKind::Plan, plan_id, "pipeline.run", &report, None)
+        .await;
+
+    failing.map(|r| format!("pipeline_refused: {r}"))
+}
+
+/// True iff every task in `tasks` already carries a `pipeline_run`
+/// evidence row whose payload `worktree_rev` matches the current
+/// working-tree revision exported by the operator. Returning `true`
+/// means Thor may skip re-running the configured pipeline.
+pub(crate) async fn pre_validated(dur: &Durability, task_ids: &[String]) -> bool {
+    let Some(expected_rev) = std::env::var(WORKTREE_REV_ENV).ok() else {
+        return false;
+    };
+    let expected_rev = expected_rev.trim();
+    if expected_rev.is_empty() || task_ids.is_empty() {
+        return false;
+    }
+    for task_id in task_ids {
+        let Ok(rows) = dur.evidence().list_by_task(task_id).await else {
+            return false;
+        };
+        let mut matched = false;
+        for ev in rows {
+            if ev.kind != "pipeline_run" {
+                continue;
+            }
+            if let Some(rev) = ev.payload.get("worktree_rev").and_then(|v| v.as_str()) {
+                if rev == expected_rev {
+                    matched = true;
+                    break;
+                }
+            }
+        }
+        if !matched {
+            return false;
+        }
+    }
+    true
+}
+
+async fn run_shell(command: &str, dur_timeout: Duration) -> Option<String> {
     let child = match Command::new("sh")
         .arg("-c")
-        .arg(&pipeline.command)
+        .arg(command)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .kill_on_drop(true)
         .spawn()
     {
-        Ok(child) => child,
+        Ok(c) => c,
         Err(e) => {
             return Some(format!(
-                "pipeline `{}` could not be invoked: {e}",
-                pipeline.command
-            ));
+                "shell: pipeline `{command}` could not be invoked: {e}"
+            ))
         }
     };
+    finalize("shell", command, child, dur_timeout).await
+}
 
-    match timeout(pipeline.timeout, child.wait_with_output()).await {
+async fn run_step(step: &Step, dur_timeout: Duration) -> Option<String> {
+    let child = match Command::new(step.program)
+        .args(step.args)
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .kill_on_drop(true)
+        .spawn()
+    {
+        Ok(c) => c,
+        Err(e) => {
+            return Some(format!(
+                "{}: `{}` could not be invoked: {e}",
+                step.name, step.program
+            ))
+        }
+    };
+    let label = format!("{} {}", step.program, step.args.join(" "));
+    finalize(step.name, &label, child, dur_timeout).await
+}
+
+async fn finalize(
+    name: &str,
+    label: &str,
+    child: tokio::process::Child,
+    dur_timeout: Duration,
+) -> Option<String> {
+    match timeout(dur_timeout, child.wait_with_output()).await {
         Ok(Ok(o)) if o.status.success() => None,
         Ok(Ok(o)) => Some(format!(
-            "pipeline `{}` failed (exit={}): {}",
-            pipeline.command,
+            "{name}: `{label}` failed (exit={}): {}",
             o.status
                 .code()
                 .map_or_else(|| "signal".to_string(), |code| code.to_string()),
             output_tail(&o.stdout, &o.stderr)
         )),
-        Ok(Err(e)) => Some(format!(
-            "pipeline `{}` could not be invoked: {e}",
-            pipeline.command
-        )),
+        Ok(Err(e)) => Some(format!("{name}: `{label}` could not be invoked: {e}")),
         Err(_) => Some(format!(
-            "pipeline `{}` timed out after {}",
-            pipeline.command,
-            timeout_label(pipeline.timeout)
+            "{name}: `{label}` timed out after {}",
+            timeout_label(dur_timeout)
         )),
     }
 }

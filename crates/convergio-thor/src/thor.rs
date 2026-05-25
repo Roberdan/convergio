@@ -219,13 +219,15 @@ impl Thor {
         // before promoting. Pipeline failure reuses the same
         // `Verdict::Fail` shape so callers do not need a third status.
         if let Some(pipeline) = &self.pipeline {
-            if let Some(reason) = pipeline::run(pipeline).await {
-                return Ok((
-                    Verdict::Fail {
-                        reasons: vec![reason],
-                    },
-                    vec![],
-                ));
+            if !pipeline::pre_validated(&self.durability, &to_promote).await {
+                if let Some(reason) = pipeline::run(pipeline, &self.durability, plan_id).await {
+                    return Ok((
+                        Verdict::Fail {
+                            reasons: vec![reason],
+                        },
+                        vec![],
+                    ));
+                }
             }
         }
 
