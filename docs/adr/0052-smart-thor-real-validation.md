@@ -1,3 +1,9 @@
+---
+status: accepted
+date: 2026-05-25
+deciders: roberdan
+---
+
 # ADR-0052 — Smart Thor: real validation, audited pipeline runs, and skip-when-trusted
 
 - Status: accepted

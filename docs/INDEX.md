@@ -130,7 +130,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0049-f3-fleet-retrospective.md` | adr | [convergio-fleet, convergio-embed, convergio-graph, convergio-server, convergio-mcp, convergio-api] | accepted | 169 |
 | `docs/adr/0050-prompt-injection-gate.md` | adr | [convergio-durability] | accepted | 127 |
 | `docs/adr/0051-a11y-gate-phase-1.md` | adr | [convergio-durability] | accepted | 97 |
-| `docs/adr/0052-smart-thor-real-validation.md` | adr | - | accepted | 105 |
+| `docs/adr/0052-smart-thor-real-validation.md` | adr | - | accepted | 111 |
 | `docs/adr/README.md` | adr | - | - | 73 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
