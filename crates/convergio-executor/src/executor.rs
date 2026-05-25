@@ -102,11 +102,17 @@ impl Executor {
         Ok(dispatched)
     }
 
+    /// Count tasks actively held by an agent. Excludes phantom
+    /// `in_progress` rows with null `agent_id` that would
+    /// otherwise zero the dispatch budget (#405).
     async fn count_in_progress(&self) -> Result<usize> {
-        let row: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tasks WHERE status = 'in_progress'")
-            .fetch_one(self.durability.pool().inner())
-            .await
-            .map_err(convergio_durability::DurabilityError::from)?;
+        let row: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM tasks \
+             WHERE status = 'in_progress' AND agent_id IS NOT NULL",
+        )
+        .fetch_one(self.durability.pool().inner())
+        .await
+        .map_err(convergio_durability::DurabilityError::from)?;
         Ok(row.0 as usize)
     }
 
