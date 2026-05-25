@@ -67,4 +67,5 @@ do not edit between the markers.
 | [0047](./0047-action-type-registry-actions-json.md) | 0047. Generate a discoverable action type registry (actions.json) | proposed |
 | [0048](./0048-compensating-action-types.md) | 0048. Add compensating action types | proposed |
 | [0049](./0049-f3-fleet-retrospective.md) | 0049. F3 fleet-grade orchestration — retrospective | accepted |
+| [0050](./0050-prompt-injection-gate.md) | 0050. PromptInjectionGate (P2 phase 1) | accepted |
 <!-- END AUTO -->

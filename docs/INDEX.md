@@ -25,7 +25,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `CONSTITUTION.md` | constitution | - | - | 437 |
 | `CONTRIBUTING.md` | governance | - | - | 176 |
-| `README.md` | entry | - | - | 408 |
+| `README.md` | entry | - | - | 410 |
 | `ROADMAP.md` | roadmap | - | - | 536 |
 | `SECURITY.md` | governance | - | - | 57 |
 | `STATUS.md` | - | - | - | 40 |
@@ -49,7 +49,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-coherence/README.md` | crate-readme | - | - | 40 |
 | `crates/convergio-db/AGENTS.md` | crate-rules | - | - | 29 |
 | `crates/convergio-db/README.md` | crate-readme | - | - | 26 |
-| `crates/convergio-durability/AGENTS.md` | crate-rules | - | - | 95 |
+| `crates/convergio-durability/AGENTS.md` | crate-rules | - | - | 96 |
 | `crates/convergio-embed/AGENTS.md` | crate-rules | - | - | 73 |
 | `crates/convergio-executor/AGENTS.md` | crate-rules | - | - | 28 |
 | `crates/convergio-executor/README.md` | crate-readme | - | - | 10 |
@@ -128,7 +128,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0047-action-type-registry-actions-json.md` | adr | [convergio-api, convergio-server, convergio-mcp] | proposed | 59 |
 | `docs/adr/0048-compensating-action-types.md` | adr | [convergio-durability, convergio-server] | proposed | 65 |
 | `docs/adr/0049-f3-fleet-retrospective.md` | adr | [convergio-fleet, convergio-embed, convergio-graph, convergio-server, convergio-mcp, convergio-api] | accepted | 169 |
-| `docs/adr/README.md` | adr | - | - | 70 |
+| `docs/adr/0050-prompt-injection-gate.md` | adr | [convergio-durability] | accepted | 110 |
+| `docs/adr/README.md` | adr | - | - | 71 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |

@@ -111,8 +111,10 @@ README does not claim more than the code does.
    evidence contains debt markers, scaffolding tells, or non-clean
    build/lint/test signals.
 2. **P2 — Security first, local first.** `partial`. Localhost-by-default
-   bind, evidence-as-untrusted-input, and `NoSecretsGate` (gitleaks
-   pattern set) are shipped. `DepsAuditGate`, `PromptInjectionGate`,
+   bind, evidence-as-untrusted-input, `NoSecretsGate` (gitleaks
+   pattern set), and `PromptInjectionGate` (eight LLM
+   prompt-injection rule families over every evidence payload at
+   `submitted`/`done`; see ADR-0050) are shipped. `DepsAuditGate`
    and HMAC middleware for non-loopback bind remain roadmap.
 3. **P3 — Accessibility first.** `planned`. No `A11yGate` yet. CLI
    strives to remain screen-reader friendly without color, but this
