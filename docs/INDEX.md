@@ -145,7 +145,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0058-llm-gateway-primitive.md` | adr | [convergio-api, convergio-server, convergio-ontology] | proposed | 142 |
 | `docs/adr/0059-tui-ontology-inspector.md` | adr | [convergio-tui, convergio-ontology, convergio-api] | proposed | 149 |
 | `docs/adr/0060-deterministic-graph-output.md` | adr | [convergio-ontology, convergio-cli] | proposed | 118 |
-| `docs/adr/README.md` | adr | - | - | 87 |
+| `docs/adr/0061-capability-search-local.md` | adr | - | accepted | 74 |
+| `docs/adr/README.md` | adr | - | - | 88 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
