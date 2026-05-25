@@ -71,4 +71,5 @@ do not edit between the markers.
 | [0051](./0051-a11y-gate-phase-1.md) | 0051. A11yGate phase 1 — built-in accessibility checks on evidence | accepted |
 | [0052](./0052-smart-thor-real-validation.md) | -0052 — Smart Thor: real validation, audited pipeline runs, and skip-when-trusted | accepted |
 | [0053](./0053-ai-openai-runner-adapter.md) | 0053 — OpenAI vendor runner adapter | accepted |
+| [0054](./0054-cvg-status-agents.md) | 0054 — `cvg status --agents` live agent listing | accepted |
 <!-- END AUTO -->

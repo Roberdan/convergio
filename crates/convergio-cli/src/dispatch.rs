@@ -26,18 +26,23 @@ pub(crate) async fn run(
             all,
             show_waves,
             mine,
+            agents,
         } => {
-            commands::status::run(
-                &client,
-                &bundle,
-                output,
-                completed_limit,
-                project,
-                all,
-                show_waves,
-                mine,
-            )
-            .await
+            if agents {
+                commands::status_agents::run(&client, output).await
+            } else {
+                commands::status::run(
+                    &client,
+                    &bundle,
+                    output,
+                    completed_limit,
+                    project,
+                    all,
+                    show_waves,
+                    mine,
+                )
+                .await
+            }
         }
         Command::Plan { sub } => commands::plan::run(&client, &bundle, output, sub).await,
         Command::Task { sub } => commands::task::run(&client, &bundle, output, sub).await,
