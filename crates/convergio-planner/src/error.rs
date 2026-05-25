@@ -31,6 +31,11 @@ pub enum PlannerError {
     /// drifted from the schema.
     #[error("opus output is not valid plan JSON: {0}")]
     OpusOutputInvalid(String),
+
+    /// Template rendering failed (missing parameter, unknown
+    /// placeholder, malformed body).
+    #[error("template error: {0}")]
+    Template(String),
 }
 
 /// Convenience alias.

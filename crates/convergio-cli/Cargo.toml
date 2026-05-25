@@ -25,6 +25,7 @@ convergio-cli-session = { workspace = true }
 convergio-coherence = { workspace = true }
 convergio-durability = { workspace = true }
 convergio-i18n = { workspace = true }
+convergio-planner = { workspace = true }
 convergio-runner = { workspace = true }
 convergio-tui = { workspace = true }
 chrono = { workspace = true }

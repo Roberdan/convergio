@@ -77,6 +77,12 @@ pub(crate) enum Command {
         #[command(subcommand)]
         sub: commands::plan::PlanCommand,
     },
+    /// Parametric plan templates (list / show / render; W6, ADR-0056).
+    #[command(name = "plan-templates")]
+    PlanTemplates {
+        #[command(subcommand)]
+        sub: commands::plan_templates::PlanTemplatesCommand,
+    },
     /// Task operations.
     Task {
         #[command(subcommand)]

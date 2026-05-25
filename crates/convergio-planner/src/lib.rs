@@ -44,6 +44,7 @@ mod heuristic;
 pub mod opus;
 mod planner;
 pub mod schema;
+pub mod templates;
 
 pub use error::{PlannerError, Result};
 pub use planner::{Planner, PlannerMode};

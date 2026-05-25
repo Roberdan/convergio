@@ -79,6 +79,7 @@ do not edit between the markers.
 | [0055](./0055-entity-resolution-service.md) | 0055. Entity Resolution Service with Explainability | proposed |
 | [0055](./0055-entity-resolution-service.md) | -0055 — Plan objectives table and PlanCoherenceGate | accepted |
 | [0056](./0056-scenario-branching-workshop.md) | 0056. Scenario Branching (Workshop primitives) | proposed |
+| [0056](./0056-scenario-branching-workshop.md) | -0056 — Parametric plan templates and `cvg plan-templates` | accepted |
 | [0057](./0057-connector-sdk-federated-query.md) | 0057. Connector SDK + Federated Query | proposed |
 | [0058](./0058-llm-gateway-primitive.md) | 0058. LLM Gateway primitive (typed, ontology-aware) | proposed |
 | [0059](./0059-tui-ontology-inspector.md) | 0059. TUI Ontology Inspector (read-only) | proposed |
