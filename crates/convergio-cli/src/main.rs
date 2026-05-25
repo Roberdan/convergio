@@ -68,6 +68,9 @@ pub(crate) enum Command {
         /// Filter `next` tasks to caller (id from `CONVERGIO_AGENT_ID` env).
         #[arg(long)]
         mine: bool,
+        /// Show live agents from the registry instead of plans.
+        #[arg(long)]
+        agents: bool,
     },
     /// Plan operations.
     Plan {

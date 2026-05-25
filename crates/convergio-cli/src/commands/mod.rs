@@ -68,6 +68,7 @@ mod setup_scripts;
 pub(crate) mod setup_self_check;
 pub mod solve;
 pub mod status;
+pub mod status_agents;
 mod status_render;
 pub mod task;
 mod task_complete;
