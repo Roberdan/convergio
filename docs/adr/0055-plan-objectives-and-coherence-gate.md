@@ -66,3 +66,4 @@ gate scaffold so subsequent work can build on stable primitives.
 - Plan: `/Users/Roberdan/Desktop/convergio-production-ready-plan.md` W4
 - Sibling gates: ADR-0050 (PromptInjectionGate), ADR-0051 (A11yGate)
 - Migration: `crates/convergio-durability/migrations/0015_plan_objectives.sql`
+
