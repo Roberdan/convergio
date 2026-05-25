@@ -33,6 +33,7 @@ mod docs_generators_crate;
 mod docs_merge_driver;
 mod docs_rewrite;
 pub mod doctor;
+mod doctor_env;
 mod doctor_zombies;
 pub mod embed;
 pub mod evidence;
