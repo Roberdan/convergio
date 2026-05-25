@@ -72,4 +72,5 @@ do not edit between the markers.
 | [0052](./0052-smart-thor-real-validation.md) | -0052 — Smart Thor: real validation, audited pipeline runs, and skip-when-trusted | accepted |
 | [0053](./0053-ai-openai-runner-adapter.md) | 0053 — OpenAI vendor runner adapter | accepted |
 | [0054](./0054-cvg-status-agents.md) | 0054 — `cvg status --agents` live agent listing | accepted |
+| [0055](./0055-plan-objectives-and-coherence-gate.md) | -0055 — Plan objectives table and PlanCoherenceGate | accepted |
 <!-- END AUTO -->
