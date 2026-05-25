@@ -166,8 +166,12 @@ impl Executor {
             return Ok(());
         };
         let spawn_result = if is_legacy_shell {
+            crate::dispatch_choice::record_for_task(&self.durability, &task, plan_id, &kind, true)
+                .await;
             self.spawn_legacy(task_id, plan_id).await
         } else {
+            crate::dispatch_choice::record_for_task(&self.durability, &task, plan_id, &kind, false)
+                .await;
             self.spawn_via_runner(&task, plan_id).await
         };
         if let Err(err) = spawn_result {
