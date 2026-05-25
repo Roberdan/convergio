@@ -1,3 +1,9 @@
+---
+status: accepted
+date: 2026-05-25
+deciders: Roberdan, Copilot
+---
+
 # ADR-0062 — Dispatch-choice audit row (W8 slice)
 
 * Status: Accepted
