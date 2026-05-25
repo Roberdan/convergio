@@ -24,8 +24,9 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-planner` stats:** 6 `*.rs` files / 16 public items / 693 lines (under `src/`).
+**`convergio-planner` stats:** 7 `*.rs` files / 25 public items / 973 lines (under `src/`).
 
 Files approaching the 300-line cap:
 - `src/opus.rs` (278 lines)
+- `src/templates.rs` (274 lines)
 <!-- END AUTO -->

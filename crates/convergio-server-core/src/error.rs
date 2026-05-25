@@ -93,6 +93,10 @@ impl From<convergio_planner::PlannerError> for ApiError {
                 code: "planner_opus_output_invalid",
                 message: msg,
             },
+            convergio_planner::PlannerError::Template(msg) => Self::BadRequest {
+                code: "planner_template",
+                message: msg,
+            },
         }
     }
 }

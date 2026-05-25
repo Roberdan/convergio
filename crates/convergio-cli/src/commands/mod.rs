@@ -52,6 +52,7 @@ pub mod mcp;
 pub mod monitor;
 pub mod plan;
 mod plan_run;
+pub mod plan_templates;
 mod plan_triage;
 pub mod pr;
 pub mod service;

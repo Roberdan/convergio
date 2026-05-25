@@ -19,7 +19,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
 | `.pr-body.md` | - | - | - | 83 |
-| `AGENTS.md` | agent-rules | - | - | 590 |
+| `AGENTS.md` | agent-rules | - | - | 591 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
 | `CHANGELOG.md` | release | - | - | 1343 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -42,7 +42,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-cli-pr/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 61 |
 | `crates/convergio-cli-session/README.md` | crate-readme | - | - | 33 |
-| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 42 |
+| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 43 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 38 |
 | `crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
 | `crates/convergio-coherence/AGENTS.md` | crate-rules | - | - | 80 |
@@ -65,7 +65,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-mcp/README.md` | crate-readme | - | - | 12 |
 | `crates/convergio-parse-multi/AGENTS.md` | crate-rules | - | - | 64 |
 | `crates/convergio-parse-multi/CLAUDE.md` | crate-rules | - | - | 1 |
-| `crates/convergio-planner/AGENTS.md` | crate-rules | - | - | 31 |
+| `crates/convergio-planner/AGENTS.md` | crate-rules | - | - | 32 |
 | `crates/convergio-planner/README.md` | crate-readme | - | - | 23 |
 | `crates/convergio-runner/AGENTS.md` | crate-rules | - | - | 53 |
 | `crates/convergio-server-core/AGENTS.md` | crate-rules | - | - | 58 |
@@ -139,12 +139,13 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0054-provenance-bundle-purpose-registry.md` | adr | [convergio-ontology, convergio-durability, convergio-api] | proposed | 136 |
 | `docs/adr/0055-entity-resolution-service.md` | adr | [convergio-ontology, convergio-api] | proposed | 134 |
 | `docs/adr/0055-plan-objectives-and-coherence-gate.md` | adr | - | accepted | 69 |
+| `docs/adr/0056-plan-templates.md` | adr | - | accepted | 90 |
 | `docs/adr/0056-scenario-branching-workshop.md` | adr | [convergio-ontology, convergio-durability] | proposed | 123 |
 | `docs/adr/0057-connector-sdk-federated-query.md` | adr | [convergio-ontology, convergio-api] | proposed | 134 |
 | `docs/adr/0058-llm-gateway-primitive.md` | adr | [convergio-api, convergio-server, convergio-ontology] | proposed | 142 |
 | `docs/adr/0059-tui-ontology-inspector.md` | adr | [convergio-tui, convergio-ontology, convergio-api] | proposed | 149 |
 | `docs/adr/0060-deterministic-graph-output.md` | adr | [convergio-ontology, convergio-cli] | proposed | 118 |
-| `docs/adr/README.md` | adr | - | - | 76 |
+| `docs/adr/README.md` | adr | - | - | 87 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
@@ -203,362 +204,6 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `examples/skills/cvg-attach-cursor/rules.md` | - | - | - | 92 |
 | `examples/skills/cvg-attach/README.md` | example | - | - | 158 |
 | `examples/skills/cvg-attach/SKILL.md` | - | - | - | 87 |
-| `worktrees/ontology-scaffold/.claude/skills/cvg-spawn/SKILL.md` | - | - | - | 131 |
-| `worktrees/ontology-scaffold/.github/pull_request_template.md` | - | - | - | 64 |
-| `worktrees/ontology-scaffold/.pr-body.md` | - | - | - | 83 |
-| `worktrees/ontology-scaffold/AGENTS.md` | - | - | - | 590 |
-| `worktrees/ontology-scaffold/ARCHITECTURE.md` | - | - | - | 271 |
-| `worktrees/ontology-scaffold/CHANGELOG.md` | - | - | - | 1343 |
-| `worktrees/ontology-scaffold/CODE_OF_CONDUCT.md` | - | - | - | 40 |
-| `worktrees/ontology-scaffold/CONSTITUTION.md` | - | - | - | 437 |
-| `worktrees/ontology-scaffold/CONTRIBUTING.md` | - | - | - | 176 |
-| `worktrees/ontology-scaffold/README.md` | - | - | - | 414 |
-| `worktrees/ontology-scaffold/ROADMAP.md` | - | - | - | 536 |
-| `worktrees/ontology-scaffold/SECURITY.md` | - | - | - | 57 |
-| `worktrees/ontology-scaffold/STATUS.md` | - | - | - | 40 |
-| `worktrees/ontology-scaffold/assets/branding/README.md` | - | - | - | 57 |
-| `worktrees/ontology-scaffold/crates/AGENTS.md` | - | - | - | 30 |
-| `worktrees/ontology-scaffold/crates/convergio-api/AGENTS.md` | - | - | - | 34 |
-| `worktrees/ontology-scaffold/crates/convergio-api/README.md` | - | - | - | 7 |
-| `worktrees/ontology-scaffold/crates/convergio-brand/AGENTS.md` | - | - | - | 45 |
-| `worktrees/ontology-scaffold/crates/convergio-bus/AGENTS.md` | - | - | - | 31 |
-| `worktrees/ontology-scaffold/crates/convergio-bus/README.md` | - | - | - | 56 |
-| `worktrees/ontology-scaffold/crates/convergio-cli-plan-run/AGENTS.md` | - | - | - | 17 |
-| `worktrees/ontology-scaffold/crates/convergio-cli-plan-run/README.md` | - | - | - | 5 |
-| `worktrees/ontology-scaffold/crates/convergio-cli-pr/AGENTS.md` | - | - | - | 12 |
-| `worktrees/ontology-scaffold/crates/convergio-cli-pr/README.md` | - | - | - | 5 |
-| `worktrees/ontology-scaffold/crates/convergio-cli-session/AGENTS.md` | - | - | - | 61 |
-| `worktrees/ontology-scaffold/crates/convergio-cli-session/README.md` | - | - | - | 33 |
-| `worktrees/ontology-scaffold/crates/convergio-cli/AGENTS.md` | - | - | - | 42 |
-| `worktrees/ontology-scaffold/crates/convergio-cli/README.md` | - | - | - | 38 |
-| `worktrees/ontology-scaffold/crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
-| `worktrees/ontology-scaffold/crates/convergio-coherence/AGENTS.md` | - | - | - | 80 |
-| `worktrees/ontology-scaffold/crates/convergio-coherence/README.md` | - | - | - | 40 |
-| `worktrees/ontology-scaffold/crates/convergio-db/AGENTS.md` | - | - | - | 29 |
-| `worktrees/ontology-scaffold/crates/convergio-db/README.md` | - | - | - | 26 |
-| `worktrees/ontology-scaffold/crates/convergio-durability/AGENTS.md` | - | - | - | 96 |
-| `worktrees/ontology-scaffold/crates/convergio-embed/AGENTS.md` | - | - | - | 73 |
-| `worktrees/ontology-scaffold/crates/convergio-executor/AGENTS.md` | - | - | - | 28 |
-| `worktrees/ontology-scaffold/crates/convergio-executor/README.md` | - | - | - | 10 |
-| `worktrees/ontology-scaffold/crates/convergio-fleet-routes/AGENTS.md` | - | - | - | 34 |
-| `worktrees/ontology-scaffold/crates/convergio-fleet/AGENTS.md` | - | - | - | 78 |
-| `worktrees/ontology-scaffold/crates/convergio-fleet/CLAUDE.md` | - | - | - | 3 |
-| `worktrees/ontology-scaffold/crates/convergio-graph/AGENTS.md` | - | - | - | 64 |
-| `worktrees/ontology-scaffold/crates/convergio-i18n/AGENTS.md` | - | - | - | 25 |
-| `worktrees/ontology-scaffold/crates/convergio-i18n/README.md` | - | - | - | 43 |
-| `worktrees/ontology-scaffold/crates/convergio-lifecycle/AGENTS.md` | - | - | - | 27 |
-| `worktrees/ontology-scaffold/crates/convergio-lifecycle/README.md` | - | - | - | 63 |
-| `worktrees/ontology-scaffold/crates/convergio-mcp/AGENTS.md` | - | - | - | 29 |
-| `worktrees/ontology-scaffold/crates/convergio-mcp/README.md` | - | - | - | 12 |
-| `worktrees/ontology-scaffold/crates/convergio-ontology/AGENTS.md` | - | - | - | 70 |
-| `worktrees/ontology-scaffold/crates/convergio-ontology/README.md` | - | - | - | 21 |
-| `worktrees/ontology-scaffold/crates/convergio-parse-multi/AGENTS.md` | - | - | - | 64 |
-| `worktrees/ontology-scaffold/crates/convergio-parse-multi/CLAUDE.md` | - | - | - | 1 |
-| `worktrees/ontology-scaffold/crates/convergio-planner/AGENTS.md` | - | - | - | 31 |
-| `worktrees/ontology-scaffold/crates/convergio-planner/README.md` | - | - | - | 23 |
-| `worktrees/ontology-scaffold/crates/convergio-runner/AGENTS.md` | - | - | - | 53 |
-| `worktrees/ontology-scaffold/crates/convergio-server-core/AGENTS.md` | - | - | - | 58 |
-| `worktrees/ontology-scaffold/crates/convergio-server/AGENTS.md` | - | - | - | 27 |
-| `worktrees/ontology-scaffold/crates/convergio-server/README.md` | - | - | - | 70 |
-| `worktrees/ontology-scaffold/crates/convergio-thor/AGENTS.md` | - | - | - | 25 |
-| `worktrees/ontology-scaffold/crates/convergio-thor/README.md` | - | - | - | 22 |
-| `worktrees/ontology-scaffold/crates/convergio-tui/AGENTS.md` | - | - | - | 121 |
-| `worktrees/ontology-scaffold/crates/convergio-tui/README.md` | - | - | - | 104 |
-| `worktrees/ontology-scaffold/docs/AGENTS.md` | - | - | - | 63 |
-| `worktrees/ontology-scaffold/docs/INDEX.md` | - | - | - | 220 |
-| `worktrees/ontology-scaffold/docs/OPTIMIZATIONS.md` | - | - | - | 314 |
-| `worktrees/ontology-scaffold/docs/adr/0000-template.md` | - | [] | proposed \| accepted \| deprecated \| superseded by [NNNN](NNNN-title.md) | 55 |
-| `worktrees/ontology-scaffold/docs/adr/0001-four-layer-architecture.md` | - | [] | accepted | 77 |
-| `worktrees/ontology-scaffold/docs/adr/0002-audit-hash-chain.md` | - | [] | accepted | 121 |
-| `worktrees/ontology-scaffold/docs/adr/0003-migration-coexistence.md` | - | [] | accepted | 132 |
-| `worktrees/ontology-scaffold/docs/adr/0004-three-sacred-principles.md` | - | [] | accepted | 104 |
-| `worktrees/ontology-scaffold/docs/adr/0005-internationalization-first.md` | - | [] | accepted | 119 |
-| `worktrees/ontology-scaffold/docs/adr/0006-crdt-storage.md` | - | [convergio-durability, convergio-server, convergio-api] | accepted | 209 |
-| `worktrees/ontology-scaffold/docs/adr/0007-workspace-coordination.md` | - | [convergio-durability, convergio-server, convergio-api] | accepted | 192 |
-| `worktrees/ontology-scaffold/docs/adr/0008-downloadable-capabilities.md` | - | [] | proposed | 403 |
-| `worktrees/ontology-scaffold/docs/adr/0009-agent-client-protocol-adapter.md` | - | [] | proposed | 100 |
-| `worktrees/ontology-scaffold/docs/adr/0010-retire-convergio-worktree-crate.md` | - | [] | accepted | 92 |
-| `worktrees/ontology-scaffold/docs/adr/0011-thor-only-done.md` | - | [] | accepted | 195 |
-| `worktrees/ontology-scaffold/docs/adr/0012-ooda-aware-validation.md` | - | [] | accepted | 283 |
-| `worktrees/ontology-scaffold/docs/adr/0013-split-durability-into-three-crates.md` | - | [convergio-durability, convergio-server, convergio-api] | proposed | 205 |
-| `worktrees/ontology-scaffold/docs/adr/0014-code-graph-tier3-retrieval.md` | - | [convergio-graph, convergio-cli, convergio-server, convergio-durability] | accepted | 274 |
-| `worktrees/ontology-scaffold/docs/adr/0015-documentation-as-derived-state.md` | - | [convergio-cli] | accepted | 211 |
-| `worktrees/ontology-scaffold/docs/adr/0016-long-tail-vertical-accelerators.md` | - | [] | proposed | 227 |
-| `worktrees/ontology-scaffold/docs/adr/0017-ise-hve-alignment.md` | - | [convergio-durability] | proposed | 253 |
-| `worktrees/ontology-scaffold/docs/adr/0018-urbanism-over-architecture.md` | - | [] | proposed | 303 |
-| `worktrees/ontology-scaffold/docs/adr/0019-thinking-stack-gstack-vendored.md` | - | [convergio-mcp, convergio-cli] | proposed | 261 |
-| `worktrees/ontology-scaffold/docs/adr/0020-model-evaluation-framework.md` | - | [convergio-durability, convergio-executor, convergio-mcp] | proposed | 281 |
-| `worktrees/ontology-scaffold/docs/adr/0021-okr-on-plans.md` | - | [convergio-durability, convergio-cli, convergio-thor] | proposed | 321 |
-| `worktrees/ontology-scaffold/docs/adr/0022-adversarial-review-service.md` | - | [convergio-mcp, convergio-cli, convergio-durability] | proposed | 269 |
-| `worktrees/ontology-scaffold/docs/adr/0023-observability-tier.md` | - | [convergio-server, convergio-durability, convergio-cli, convergio-cli-pr, convergio-bus] | proposed | 245 |
-| `worktrees/ontology-scaffold/docs/adr/0024-bus-poll-exclude-sender.md` | - | [convergio-bus, convergio-server, convergio-cli] | accepted | 133 |
-| `worktrees/ontology-scaffold/docs/adr/0025-system-session-events-topic.md` | - | [convergio-bus, convergio-server, convergio-mcp, convergio-api] | accepted | 285 |
-| `worktrees/ontology-scaffold/docs/adr/0026-plan-wave-milestone-vocabulary.md` | - | [convergio-durability, convergio-server, convergio-cli] | accepted | 206 |
-| `worktrees/ontology-scaffold/docs/adr/0027-executor-loop-wired-in-daemon.md` | - | [convergio-server, convergio-executor] | accepted | 127 |
-| `worktrees/ontology-scaffold/docs/adr/0028-runner-kinds-shell-claude-copilot.md` | - | [convergio-server, convergio-mcp] | accepted | 136 |
-| `worktrees/ontology-scaffold/docs/adr/0029-tui-dashboard-crate-separation.md` | - | [convergio-cli, convergio-tui] | accepted | 222 |
-| `worktrees/ontology-scaffold/docs/adr/0030-crate-versioning-policy.md` | - | [] | accepted | 105 |
-| `worktrees/ontology-scaffold/docs/adr/0031-materialised-timing-cache.md` | - | [convergio-durability, convergio-tui] | accepted | 83 |
-| `worktrees/ontology-scaffold/docs/adr/0032-vendor-cli-runners.md` | - | [convergio-runner, convergio-executor, convergio-cli] | accepted | 122 |
-| `worktrees/ontology-scaffold/docs/adr/0033-runner-permission-profiles.md` | - | [convergio-runner, convergio-cli] | accepted | 119 |
-| `worktrees/ontology-scaffold/docs/adr/0034-per-task-runner-fields.md` | - | [convergio-durability, convergio-executor, convergio-runner, convergio-cli, convergio-planner, convergio-server] | accepted | 94 |
-| `worktrees/ontology-scaffold/docs/adr/0035-runner-registry-toml.md` | - | [convergio-runner, convergio-executor, convergio-cli] | accepted | 100 |
-| `worktrees/ontology-scaffold/docs/adr/0036-opus-backed-planner.md` | - | [convergio-planner, convergio-server] | accepted | 101 |
-| `worktrees/ontology-scaffold/docs/adr/0037-brand-kit-and-claim.md` | - | [convergio-brand, convergio-cli, convergio-tui, convergio-server, convergio-i18n] | accepted | 91 |
-| `worktrees/ontology-scaffold/docs/adr/0038-fleet-retrieval-cross-repo-graph.md` | - | [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api] | accepted | 1159 |
-| `worktrees/ontology-scaffold/docs/adr/0039-doc-coherence-sweep.md` | - | [convergio-cli, convergio-coherence, convergio-server, convergio-durability, convergio-graph] | accepted | 259 |
-| `worktrees/ontology-scaffold/docs/adr/0040-split-coherence-into-its-own-crate.md` | - | [convergio-cli, convergio-coherence] | accepted | 186 |
-| `worktrees/ontology-scaffold/docs/adr/0041-split-session-into-its-own-crate.md` | - | [convergio-cli, convergio-cli-session] | accepted | 200 |
-| `worktrees/ontology-scaffold/docs/adr/0042-wave-sequence-gate-parallel-safe.md` | - | [convergio-durability, convergio-server, convergio-api, convergio-cli] | accepted | 262 |
-| `worktrees/ontology-scaffold/docs/adr/0043-api-id-and-payload-consistency.md` | - | [convergio-server, convergio-api, convergio-mcp, convergio-cli] | accepted | 154 |
-| `worktrees/ontology-scaffold/docs/adr/0044-plan-execution-contract.md` | - | [convergio-cli, convergio-coherence] | accepted | 110 |
-| `worktrees/ontology-scaffold/docs/adr/0045-per-host-realtime-context-push.md` | - | [convergio-cli-session] | accepted | 113 |
-| `worktrees/ontology-scaffold/docs/adr/0046-stdout-relay-to-bus.md` | - | [convergio-lifecycle, convergio-server] | accepted | 77 |
-| `worktrees/ontology-scaffold/docs/adr/0047-action-type-registry-actions-json.md` | - | [convergio-api, convergio-server, convergio-mcp] | proposed | 59 |
-| `worktrees/ontology-scaffold/docs/adr/0048-compensating-action-types.md` | - | [convergio-durability, convergio-server] | proposed | 65 |
-| `worktrees/ontology-scaffold/docs/adr/0049-f3-fleet-retrospective.md` | - | [convergio-fleet, convergio-embed, convergio-graph, convergio-server, convergio-mcp, convergio-api] | accepted | 169 |
-| `worktrees/ontology-scaffold/docs/adr/0050-prompt-injection-gate.md` | - | [convergio-durability] | accepted | 127 |
-| `worktrees/ontology-scaffold/docs/adr/0051-a11y-gate-phase-1.md` | - | [convergio-durability] | accepted | 97 |
-| `worktrees/ontology-scaffold/docs/adr/0052-smart-thor-real-validation.md` | - | - | accepted | 111 |
-| `worktrees/ontology-scaffold/docs/adr/0053-ontology-runtime-core.md` | - | [convergio-ontology, convergio-db, convergio-graph, convergio-api] | proposed | 130 |
-| `worktrees/ontology-scaffold/docs/adr/0060-deterministic-graph-output.md` | - | [convergio-ontology, convergio-cli] | proposed | 119 |
-| `worktrees/ontology-scaffold/docs/adr/README.md` | - | - | - | 75 |
-| `worktrees/ontology-scaffold/docs/agent-instruction-guidelines.md` | - | - | - | 123 |
-| `worktrees/ontology-scaffold/docs/agent-protocol.md` | - | - | - | 131 |
-| `worktrees/ontology-scaffold/docs/agent-resume-packet.md` | - | - | - | 301 |
-| `worktrees/ontology-scaffold/docs/agents/README.md` | - | - | - | 101 |
-| `worktrees/ontology-scaffold/docs/incidents/2026-05-08-dirty-state-postmortem.md` | - | - | - | 230 |
-| `worktrees/ontology-scaffold/docs/incidents/2026-05-19-cvg-service-start-orphan.md` | - | - | - | 76 |
-| `worktrees/ontology-scaffold/docs/incidents/2026-05-19-cvg-service-stop-orphan.md` | - | - | - | 93 |
-| `worktrees/ontology-scaffold/docs/multi-agent-operating-model.md` | - | - | - | 485 |
-| `worktrees/ontology-scaffold/docs/plans/2026-05-01-triage-pass.md` | - | - | - | 75 |
-| `worktrees/ontology-scaffold/docs/plans/AGENTS.md` | - | - | - | 22 |
-| `worktrees/ontology-scaffold/docs/plans/README.md` | - | - | - | 31 |
-| `worktrees/ontology-scaffold/docs/plans/convergio-local-public-readiness.md` | - | - | Published v0.1.0 | 244 |
-| `worktrees/ontology-scaffold/docs/plans/fleet-retrieval-cross-repo-graph.md` | - | - | F1 complete (α/β/γ/δ/ε/ζ landed); 30-fixture curated bench done; F2 GO | 174 |
-| `worktrees/ontology-scaffold/docs/plans/v0.1.x-friction-log.md` | - | - | - | 257 |
-| `worktrees/ontology-scaffold/docs/plans/v0.2-fresh-eyes-test-result.md` | - | - | - | 168 |
-| `worktrees/ontology-scaffold/docs/plans/v0.2-friction-log.md` | - | - | - | 207 |
-| `worktrees/ontology-scaffold/docs/plans/v1.0-production-ready.md` | - | - | - | 743 |
-| `worktrees/ontology-scaffold/docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
-| `worktrees/ontology-scaffold/docs/release.md` | - | - | - | 106 |
-| `worktrees/ontology-scaffold/docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |
-| `worktrees/ontology-scaffold/docs/reviews/PRD-001-pre-PR-review-v1.md` | - | - | - | 114 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-api.md` | - | - | - | 24 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-brand.md` | - | - | - | 29 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-bus.md` | - | - | - | 34 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-cli-plan-run.md` | - | - | - | 28 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-cli-pr.md` | - | - | - | 36 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-cli-session.md` | - | - | - | 33 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-cli.md` | - | - | - | 38 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-coherence.md` | - | - | - | 39 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-db.md` | - | - | - | 25 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-durability.md` | - | - | - | 35 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-embed.md` | - | - | - | 31 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-executor.md` | - | - | - | 32 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-fleet.md` | - | - | - | 28 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-graph.md` | - | - | - | 40 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-i18n.md` | - | - | - | 31 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-lifecycle.md` | - | - | - | 33 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-mcp.md` | - | - | - | 33 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-parse-multi.md` | - | - | - | 39 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-planner.md` | - | - | - | 31 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-runner.md` | - | - | - | 31 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-server.md` | - | - | - | 37 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-thor.md` | - | - | - | 26 |
-| `worktrees/ontology-scaffold/docs/reviews/crate-audits/convergio-tui.md` | - | - | - | 40 |
-| `worktrees/ontology-scaffold/docs/setup.md` | - | - | - | 102 |
-| `worktrees/ontology-scaffold/docs/spec/README.md` | - | - | - | 10 |
-| `worktrees/ontology-scaffold/docs/spec/f2-13-measurement.md` | - | - | - | 89 |
-| `worktrees/ontology-scaffold/docs/spec/fleet-retrieval-cross-repo-graph.md` | - | - | - | 697 |
-| `worktrees/ontology-scaffold/docs/spec/fleet-retrieval-golden-methodology.md` | - | - | - | 264 |
-| `worktrees/ontology-scaffold/docs/spec/v3-durability-layer.md` | - | - | - | 145 |
-| `worktrees/ontology-scaffold/docs/templates/adversarial-challenge.md` | - | - | - | 139 |
-| `worktrees/ontology-scaffold/docs/vision.md` | - | - | - | 426 |
-| `worktrees/ontology-scaffold/docs/wip-commit-template.md` | - | - | - | 98 |
-| `worktrees/ontology-scaffold/examples/claude-skill-quickstart/README.md` | - | - | - | 131 |
-| `worktrees/ontology-scaffold/examples/skills/cvg-attach-cursor/README.md` | - | - | - | 57 |
-| `worktrees/ontology-scaffold/examples/skills/cvg-attach-cursor/rules.md` | - | - | - | 92 |
-| `worktrees/ontology-scaffold/examples/skills/cvg-attach/README.md` | - | - | - | 158 |
-| `worktrees/ontology-scaffold/examples/skills/cvg-attach/SKILL.md` | - | - | - | 87 |
-| `worktrees/ontology-schema/.claude/skills/cvg-spawn/SKILL.md` | - | - | - | 131 |
-| `worktrees/ontology-schema/.github/pull_request_template.md` | - | - | - | 64 |
-| `worktrees/ontology-schema/.pr-body.md` | - | - | - | 83 |
-| `worktrees/ontology-schema/AGENTS.md` | - | - | - | 590 |
-| `worktrees/ontology-schema/ARCHITECTURE.md` | - | - | - | 271 |
-| `worktrees/ontology-schema/CHANGELOG.md` | - | - | - | 1343 |
-| `worktrees/ontology-schema/CODE_OF_CONDUCT.md` | - | - | - | 40 |
-| `worktrees/ontology-schema/CONSTITUTION.md` | - | - | - | 437 |
-| `worktrees/ontology-schema/CONTRIBUTING.md` | - | - | - | 176 |
-| `worktrees/ontology-schema/README.md` | - | - | - | 414 |
-| `worktrees/ontology-schema/ROADMAP.md` | - | - | - | 536 |
-| `worktrees/ontology-schema/SECURITY.md` | - | - | - | 57 |
-| `worktrees/ontology-schema/STATUS.md` | - | - | - | 40 |
-| `worktrees/ontology-schema/assets/branding/README.md` | - | - | - | 57 |
-| `worktrees/ontology-schema/crates/AGENTS.md` | - | - | - | 30 |
-| `worktrees/ontology-schema/crates/convergio-api/AGENTS.md` | - | - | - | 34 |
-| `worktrees/ontology-schema/crates/convergio-api/README.md` | - | - | - | 7 |
-| `worktrees/ontology-schema/crates/convergio-brand/AGENTS.md` | - | - | - | 45 |
-| `worktrees/ontology-schema/crates/convergio-bus/AGENTS.md` | - | - | - | 31 |
-| `worktrees/ontology-schema/crates/convergio-bus/README.md` | - | - | - | 56 |
-| `worktrees/ontology-schema/crates/convergio-cli-plan-run/AGENTS.md` | - | - | - | 17 |
-| `worktrees/ontology-schema/crates/convergio-cli-plan-run/README.md` | - | - | - | 5 |
-| `worktrees/ontology-schema/crates/convergio-cli-pr/AGENTS.md` | - | - | - | 12 |
-| `worktrees/ontology-schema/crates/convergio-cli-pr/README.md` | - | - | - | 5 |
-| `worktrees/ontology-schema/crates/convergio-cli-session/AGENTS.md` | - | - | - | 61 |
-| `worktrees/ontology-schema/crates/convergio-cli-session/README.md` | - | - | - | 33 |
-| `worktrees/ontology-schema/crates/convergio-cli/AGENTS.md` | - | - | - | 42 |
-| `worktrees/ontology-schema/crates/convergio-cli/README.md` | - | - | - | 38 |
-| `worktrees/ontology-schema/crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
-| `worktrees/ontology-schema/crates/convergio-coherence/AGENTS.md` | - | - | - | 80 |
-| `worktrees/ontology-schema/crates/convergio-coherence/README.md` | - | - | - | 40 |
-| `worktrees/ontology-schema/crates/convergio-db/AGENTS.md` | - | - | - | 29 |
-| `worktrees/ontology-schema/crates/convergio-db/README.md` | - | - | - | 26 |
-| `worktrees/ontology-schema/crates/convergio-durability/AGENTS.md` | - | - | - | 96 |
-| `worktrees/ontology-schema/crates/convergio-embed/AGENTS.md` | - | - | - | 73 |
-| `worktrees/ontology-schema/crates/convergio-executor/AGENTS.md` | - | - | - | 28 |
-| `worktrees/ontology-schema/crates/convergio-executor/README.md` | - | - | - | 10 |
-| `worktrees/ontology-schema/crates/convergio-fleet-routes/AGENTS.md` | - | - | - | 34 |
-| `worktrees/ontology-schema/crates/convergio-fleet/AGENTS.md` | - | - | - | 78 |
-| `worktrees/ontology-schema/crates/convergio-fleet/CLAUDE.md` | - | - | - | 3 |
-| `worktrees/ontology-schema/crates/convergio-graph/AGENTS.md` | - | - | - | 64 |
-| `worktrees/ontology-schema/crates/convergio-i18n/AGENTS.md` | - | - | - | 25 |
-| `worktrees/ontology-schema/crates/convergio-i18n/README.md` | - | - | - | 43 |
-| `worktrees/ontology-schema/crates/convergio-lifecycle/AGENTS.md` | - | - | - | 27 |
-| `worktrees/ontology-schema/crates/convergio-lifecycle/README.md` | - | - | - | 63 |
-| `worktrees/ontology-schema/crates/convergio-mcp/AGENTS.md` | - | - | - | 29 |
-| `worktrees/ontology-schema/crates/convergio-mcp/README.md` | - | - | - | 12 |
-| `worktrees/ontology-schema/crates/convergio-ontology/AGENTS.md` | - | - | - | 72 |
-| `worktrees/ontology-schema/crates/convergio-ontology/README.md` | - | - | - | 21 |
-| `worktrees/ontology-schema/crates/convergio-parse-multi/AGENTS.md` | - | - | - | 64 |
-| `worktrees/ontology-schema/crates/convergio-parse-multi/CLAUDE.md` | - | - | - | 1 |
-| `worktrees/ontology-schema/crates/convergio-planner/AGENTS.md` | - | - | - | 31 |
-| `worktrees/ontology-schema/crates/convergio-planner/README.md` | - | - | - | 23 |
-| `worktrees/ontology-schema/crates/convergio-runner/AGENTS.md` | - | - | - | 53 |
-| `worktrees/ontology-schema/crates/convergio-server-core/AGENTS.md` | - | - | - | 58 |
-| `worktrees/ontology-schema/crates/convergio-server/AGENTS.md` | - | - | - | 27 |
-| `worktrees/ontology-schema/crates/convergio-server/README.md` | - | - | - | 70 |
-| `worktrees/ontology-schema/crates/convergio-thor/AGENTS.md` | - | - | - | 25 |
-| `worktrees/ontology-schema/crates/convergio-thor/README.md` | - | - | - | 22 |
-| `worktrees/ontology-schema/crates/convergio-tui/AGENTS.md` | - | - | - | 121 |
-| `worktrees/ontology-schema/crates/convergio-tui/README.md` | - | - | - | 104 |
-| `worktrees/ontology-schema/docs/AGENTS.md` | - | - | - | 63 |
-| `worktrees/ontology-schema/docs/INDEX.md` | - | - | - | 220 |
-| `worktrees/ontology-schema/docs/OPTIMIZATIONS.md` | - | - | - | 314 |
-| `worktrees/ontology-schema/docs/adr/0000-template.md` | - | [] | proposed \| accepted \| deprecated \| superseded by [NNNN](NNNN-title.md) | 55 |
-| `worktrees/ontology-schema/docs/adr/0001-four-layer-architecture.md` | - | [] | accepted | 77 |
-| `worktrees/ontology-schema/docs/adr/0002-audit-hash-chain.md` | - | [] | accepted | 121 |
-| `worktrees/ontology-schema/docs/adr/0003-migration-coexistence.md` | - | [] | accepted | 133 |
-| `worktrees/ontology-schema/docs/adr/0004-three-sacred-principles.md` | - | [] | accepted | 104 |
-| `worktrees/ontology-schema/docs/adr/0005-internationalization-first.md` | - | [] | accepted | 119 |
-| `worktrees/ontology-schema/docs/adr/0006-crdt-storage.md` | - | [convergio-durability, convergio-server, convergio-api] | accepted | 209 |
-| `worktrees/ontology-schema/docs/adr/0007-workspace-coordination.md` | - | [convergio-durability, convergio-server, convergio-api] | accepted | 192 |
-| `worktrees/ontology-schema/docs/adr/0008-downloadable-capabilities.md` | - | [] | proposed | 403 |
-| `worktrees/ontology-schema/docs/adr/0009-agent-client-protocol-adapter.md` | - | [] | proposed | 100 |
-| `worktrees/ontology-schema/docs/adr/0010-retire-convergio-worktree-crate.md` | - | [] | accepted | 92 |
-| `worktrees/ontology-schema/docs/adr/0011-thor-only-done.md` | - | [] | accepted | 195 |
-| `worktrees/ontology-schema/docs/adr/0012-ooda-aware-validation.md` | - | [] | accepted | 283 |
-| `worktrees/ontology-schema/docs/adr/0013-split-durability-into-three-crates.md` | - | [convergio-durability, convergio-server, convergio-api] | proposed | 205 |
-| `worktrees/ontology-schema/docs/adr/0014-code-graph-tier3-retrieval.md` | - | [convergio-graph, convergio-cli, convergio-server, convergio-durability] | accepted | 274 |
-| `worktrees/ontology-schema/docs/adr/0015-documentation-as-derived-state.md` | - | [convergio-cli] | accepted | 211 |
-| `worktrees/ontology-schema/docs/adr/0016-long-tail-vertical-accelerators.md` | - | [] | proposed | 227 |
-| `worktrees/ontology-schema/docs/adr/0017-ise-hve-alignment.md` | - | [convergio-durability] | proposed | 253 |
-| `worktrees/ontology-schema/docs/adr/0018-urbanism-over-architecture.md` | - | [] | proposed | 303 |
-| `worktrees/ontology-schema/docs/adr/0019-thinking-stack-gstack-vendored.md` | - | [convergio-mcp, convergio-cli] | proposed | 261 |
-| `worktrees/ontology-schema/docs/adr/0020-model-evaluation-framework.md` | - | [convergio-durability, convergio-executor, convergio-mcp] | proposed | 281 |
-| `worktrees/ontology-schema/docs/adr/0021-okr-on-plans.md` | - | [convergio-durability, convergio-cli, convergio-thor] | proposed | 321 |
-| `worktrees/ontology-schema/docs/adr/0022-adversarial-review-service.md` | - | [convergio-mcp, convergio-cli, convergio-durability] | proposed | 269 |
-| `worktrees/ontology-schema/docs/adr/0023-observability-tier.md` | - | [convergio-server, convergio-durability, convergio-cli, convergio-cli-pr, convergio-bus] | proposed | 245 |
-| `worktrees/ontology-schema/docs/adr/0024-bus-poll-exclude-sender.md` | - | [convergio-bus, convergio-server, convergio-cli] | accepted | 133 |
-| `worktrees/ontology-schema/docs/adr/0025-system-session-events-topic.md` | - | [convergio-bus, convergio-server, convergio-mcp, convergio-api] | accepted | 285 |
-| `worktrees/ontology-schema/docs/adr/0026-plan-wave-milestone-vocabulary.md` | - | [convergio-durability, convergio-server, convergio-cli] | accepted | 206 |
-| `worktrees/ontology-schema/docs/adr/0027-executor-loop-wired-in-daemon.md` | - | [convergio-server, convergio-executor] | accepted | 127 |
-| `worktrees/ontology-schema/docs/adr/0028-runner-kinds-shell-claude-copilot.md` | - | [convergio-server, convergio-mcp] | accepted | 136 |
-| `worktrees/ontology-schema/docs/adr/0029-tui-dashboard-crate-separation.md` | - | [convergio-cli, convergio-tui] | accepted | 222 |
-| `worktrees/ontology-schema/docs/adr/0030-crate-versioning-policy.md` | - | [] | accepted | 105 |
-| `worktrees/ontology-schema/docs/adr/0031-materialised-timing-cache.md` | - | [convergio-durability, convergio-tui] | accepted | 83 |
-| `worktrees/ontology-schema/docs/adr/0032-vendor-cli-runners.md` | - | [convergio-runner, convergio-executor, convergio-cli] | accepted | 122 |
-| `worktrees/ontology-schema/docs/adr/0033-runner-permission-profiles.md` | - | [convergio-runner, convergio-cli] | accepted | 119 |
-| `worktrees/ontology-schema/docs/adr/0034-per-task-runner-fields.md` | - | [convergio-durability, convergio-executor, convergio-runner, convergio-cli, convergio-planner, convergio-server] | accepted | 94 |
-| `worktrees/ontology-schema/docs/adr/0035-runner-registry-toml.md` | - | [convergio-runner, convergio-executor, convergio-cli] | accepted | 100 |
-| `worktrees/ontology-schema/docs/adr/0036-opus-backed-planner.md` | - | [convergio-planner, convergio-server] | accepted | 101 |
-| `worktrees/ontology-schema/docs/adr/0037-brand-kit-and-claim.md` | - | [convergio-brand, convergio-cli, convergio-tui, convergio-server, convergio-i18n] | accepted | 91 |
-| `worktrees/ontology-schema/docs/adr/0038-fleet-retrieval-cross-repo-graph.md` | - | [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api] | accepted | 1159 |
-| `worktrees/ontology-schema/docs/adr/0039-doc-coherence-sweep.md` | - | [convergio-cli, convergio-coherence, convergio-server, convergio-durability, convergio-graph] | accepted | 259 |
-| `worktrees/ontology-schema/docs/adr/0040-split-coherence-into-its-own-crate.md` | - | [convergio-cli, convergio-coherence] | accepted | 186 |
-| `worktrees/ontology-schema/docs/adr/0041-split-session-into-its-own-crate.md` | - | [convergio-cli, convergio-cli-session] | accepted | 200 |
-| `worktrees/ontology-schema/docs/adr/0042-wave-sequence-gate-parallel-safe.md` | - | [convergio-durability, convergio-server, convergio-api, convergio-cli] | accepted | 262 |
-| `worktrees/ontology-schema/docs/adr/0043-api-id-and-payload-consistency.md` | - | [convergio-server, convergio-api, convergio-mcp, convergio-cli] | accepted | 154 |
-| `worktrees/ontology-schema/docs/adr/0044-plan-execution-contract.md` | - | [convergio-cli, convergio-coherence] | accepted | 110 |
-| `worktrees/ontology-schema/docs/adr/0045-per-host-realtime-context-push.md` | - | [convergio-cli-session] | accepted | 113 |
-| `worktrees/ontology-schema/docs/adr/0046-stdout-relay-to-bus.md` | - | [convergio-lifecycle, convergio-server] | accepted | 77 |
-| `worktrees/ontology-schema/docs/adr/0047-action-type-registry-actions-json.md` | - | [convergio-api, convergio-server, convergio-mcp] | proposed | 59 |
-| `worktrees/ontology-schema/docs/adr/0048-compensating-action-types.md` | - | [convergio-durability, convergio-server] | proposed | 65 |
-| `worktrees/ontology-schema/docs/adr/0049-f3-fleet-retrospective.md` | - | [convergio-fleet, convergio-embed, convergio-graph, convergio-server, convergio-mcp, convergio-api] | accepted | 169 |
-| `worktrees/ontology-schema/docs/adr/0050-prompt-injection-gate.md` | - | [convergio-durability] | accepted | 127 |
-| `worktrees/ontology-schema/docs/adr/0051-a11y-gate-phase-1.md` | - | [convergio-durability] | accepted | 97 |
-| `worktrees/ontology-schema/docs/adr/0052-smart-thor-real-validation.md` | - | - | accepted | 111 |
-| `worktrees/ontology-schema/docs/adr/0053-ontology-runtime-core.md` | - | [convergio-ontology, convergio-db, convergio-graph, convergio-api] | proposed | 130 |
-| `worktrees/ontology-schema/docs/adr/0060-deterministic-graph-output.md` | - | [convergio-ontology, convergio-cli] | proposed | 119 |
-| `worktrees/ontology-schema/docs/adr/README.md` | - | - | - | 75 |
-| `worktrees/ontology-schema/docs/agent-instruction-guidelines.md` | - | - | - | 123 |
-| `worktrees/ontology-schema/docs/agent-protocol.md` | - | - | - | 131 |
-| `worktrees/ontology-schema/docs/agent-resume-packet.md` | - | - | - | 301 |
-| `worktrees/ontology-schema/docs/agents/README.md` | - | - | - | 101 |
-| `worktrees/ontology-schema/docs/incidents/2026-05-08-dirty-state-postmortem.md` | - | - | - | 230 |
-| `worktrees/ontology-schema/docs/incidents/2026-05-19-cvg-service-start-orphan.md` | - | - | - | 76 |
-| `worktrees/ontology-schema/docs/incidents/2026-05-19-cvg-service-stop-orphan.md` | - | - | - | 93 |
-| `worktrees/ontology-schema/docs/multi-agent-operating-model.md` | - | - | - | 485 |
-| `worktrees/ontology-schema/docs/plans/2026-05-01-triage-pass.md` | - | - | - | 75 |
-| `worktrees/ontology-schema/docs/plans/AGENTS.md` | - | - | - | 22 |
-| `worktrees/ontology-schema/docs/plans/README.md` | - | - | - | 31 |
-| `worktrees/ontology-schema/docs/plans/convergio-local-public-readiness.md` | - | - | Published v0.1.0 | 244 |
-| `worktrees/ontology-schema/docs/plans/fleet-retrieval-cross-repo-graph.md` | - | - | F1 complete (α/β/γ/δ/ε/ζ landed); 30-fixture curated bench done; F2 GO | 174 |
-| `worktrees/ontology-schema/docs/plans/v0.1.x-friction-log.md` | - | - | - | 257 |
-| `worktrees/ontology-schema/docs/plans/v0.2-fresh-eyes-test-result.md` | - | - | - | 168 |
-| `worktrees/ontology-schema/docs/plans/v0.2-friction-log.md` | - | - | - | 207 |
-| `worktrees/ontology-schema/docs/plans/v1.0-production-ready.md` | - | - | - | 743 |
-| `worktrees/ontology-schema/docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
-| `worktrees/ontology-schema/docs/release.md` | - | - | - | 106 |
-| `worktrees/ontology-schema/docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |
-| `worktrees/ontology-schema/docs/reviews/PRD-001-pre-PR-review-v1.md` | - | - | - | 114 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-api.md` | - | - | - | 24 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-brand.md` | - | - | - | 29 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-bus.md` | - | - | - | 34 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-cli-plan-run.md` | - | - | - | 28 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-cli-pr.md` | - | - | - | 36 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-cli-session.md` | - | - | - | 33 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-cli.md` | - | - | - | 38 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-coherence.md` | - | - | - | 39 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-db.md` | - | - | - | 25 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-durability.md` | - | - | - | 35 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-embed.md` | - | - | - | 31 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-executor.md` | - | - | - | 32 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-fleet.md` | - | - | - | 28 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-graph.md` | - | - | - | 40 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-i18n.md` | - | - | - | 31 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-lifecycle.md` | - | - | - | 33 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-mcp.md` | - | - | - | 33 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-parse-multi.md` | - | - | - | 39 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-planner.md` | - | - | - | 31 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-runner.md` | - | - | - | 31 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-server.md` | - | - | - | 37 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-thor.md` | - | - | - | 26 |
-| `worktrees/ontology-schema/docs/reviews/crate-audits/convergio-tui.md` | - | - | - | 40 |
-| `worktrees/ontology-schema/docs/setup.md` | - | - | - | 102 |
-| `worktrees/ontology-schema/docs/spec/README.md` | - | - | - | 10 |
-| `worktrees/ontology-schema/docs/spec/f2-13-measurement.md` | - | - | - | 89 |
-| `worktrees/ontology-schema/docs/spec/fleet-retrieval-cross-repo-graph.md` | - | - | - | 697 |
-| `worktrees/ontology-schema/docs/spec/fleet-retrieval-golden-methodology.md` | - | - | - | 264 |
-| `worktrees/ontology-schema/docs/spec/v3-durability-layer.md` | - | - | - | 145 |
-| `worktrees/ontology-schema/docs/templates/adversarial-challenge.md` | - | - | - | 139 |
-| `worktrees/ontology-schema/docs/vision.md` | - | - | - | 426 |
-| `worktrees/ontology-schema/docs/wip-commit-template.md` | - | - | - | 98 |
-| `worktrees/ontology-schema/examples/claude-skill-quickstart/README.md` | - | - | - | 131 |
-| `worktrees/ontology-schema/examples/skills/cvg-attach-cursor/README.md` | - | - | - | 57 |
-| `worktrees/ontology-schema/examples/skills/cvg-attach-cursor/rules.md` | - | - | - | 92 |
-| `worktrees/ontology-schema/examples/skills/cvg-attach/README.md` | - | - | - | 158 |
-| `worktrees/ontology-schema/examples/skills/cvg-attach/SKILL.md` | - | - | - | 87 |
 
 ## How to add a doc
 

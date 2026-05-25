@@ -644,6 +644,7 @@ dependencies = [
  "convergio-coherence",
  "convergio-durability",
  "convergio-i18n",
+ "convergio-planner",
  "convergio-runner",
  "convergio-tui",
  "futures-util",
