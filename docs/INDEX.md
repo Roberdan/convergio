@@ -133,7 +133,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0052-smart-thor-real-validation.md` | adr | - | accepted | 111 |
 | `docs/adr/0053-ai-openai-runner-adapter.md` | adr | - | accepted | 84 |
 | `docs/adr/0054-cvg-status-agents.md` | adr | - | accepted | 53 |
-| `docs/adr/README.md` | adr | - | - | 75 |
+| `docs/adr/0055-plan-objectives-and-coherence-gate.md` | adr | - | accepted | 68 |
+| `docs/adr/README.md` | adr | - | - | 76 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |

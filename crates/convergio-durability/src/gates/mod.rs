@@ -22,6 +22,7 @@ mod evidence_gate;
 mod no_debt_gate;
 mod no_secrets_gate;
 mod no_stub_gate;
+mod plan_coherence_gate;
 mod plan_status_gate;
 mod pr_link_gate;
 mod prompt_injection_gate;
@@ -35,6 +36,7 @@ pub use evidence_gate::EvidenceGate;
 pub use no_debt_gate::{DebtRule, NoDebtGate};
 pub use no_secrets_gate::{NoSecretsGate, SecretRule};
 pub use no_stub_gate::{NoStubGate, StubRule};
+pub use plan_coherence_gate::PlanCoherenceGate;
 pub use plan_status_gate::PlanStatusGate;
 pub use pr_link_gate::PrLinkGate;
 pub use prompt_injection_gate::{InjectionRule, PromptInjectionGate};
@@ -107,6 +109,7 @@ pub type Pipeline = Vec<Arc<dyn Gate>>;
 pub fn default_pipeline() -> Pipeline {
     vec![
         Arc::new(PlanStatusGate),
+        Arc::new(PlanCoherenceGate::new()),
         Arc::new(EvidenceGate),
         Arc::new(CrdtConflictGate),
         Arc::new(NoDebtGate::default()),
