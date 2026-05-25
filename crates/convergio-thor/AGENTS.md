@@ -18,7 +18,8 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-thor` stats:** 4 `*.rs` files / 11 public items / 401 lines (under `src/`).
+**`convergio-thor` stats:** 4 `*.rs` files / 11 public items / 582 lines (under `src/`).
 
-No files within 50 lines of the 300-line cap.
+Files approaching the 300-line cap:
+- `src/pipeline.rs` (279 lines)
 <!-- END AUTO -->

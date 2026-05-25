@@ -71,7 +71,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-server-core/AGENTS.md` | crate-rules | - | - | 58 |
 | `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 27 |
 | `crates/convergio-server/README.md` | crate-readme | - | - | 70 |
-| `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 24 |
+| `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 22 |
 | `crates/convergio-tui/AGENTS.md` | crate-rules | - | - | 121 |
 | `crates/convergio-tui/README.md` | crate-readme | - | - | 104 |
@@ -130,7 +130,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0049-f3-fleet-retrospective.md` | adr | [convergio-fleet, convergio-embed, convergio-graph, convergio-server, convergio-mcp, convergio-api] | accepted | 169 |
 | `docs/adr/0050-prompt-injection-gate.md` | adr | [convergio-durability] | accepted | 127 |
 | `docs/adr/0051-a11y-gate-phase-1.md` | adr | [convergio-durability] | accepted | 97 |
-| `docs/adr/README.md` | adr | - | - | 72 |
+| `docs/adr/0052-smart-thor-real-validation.md` | adr | - | accepted | 111 |
+| `docs/adr/README.md` | adr | - | - | 73 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
