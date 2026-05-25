@@ -29,6 +29,12 @@ pub enum CapabilityCommand {
         /// Capability name.
         name: String,
     },
+    /// Substring search across locally-installed capabilities (W9
+    /// local-only slice; remote registry is a follow-up — ADR-0057).
+    Search {
+        /// Lowercased substring matched against name / version / status.
+        query: String,
+    },
     /// Remove a disabled capability from disk and registry.
     Remove {
         /// Capability name.
@@ -72,6 +78,7 @@ pub async fn run(
             trusted_keys,
         } => install_file(client, bundle, output, package, signature, trusted_keys).await,
         CapabilityCommand::Disable { name } => disable(client, bundle, output, &name).await,
+        CapabilityCommand::Search { query } => search(client, output, &query).await,
         CapabilityCommand::Remove { name } => remove(client, output, &name).await,
         CapabilityCommand::VerifySignature {
             name,
@@ -175,6 +182,43 @@ async fn list(client: &Client, bundle: &Bundle, output: OutputMode) -> Result<()
         OutputMode::Human => {
             let caps: Vec<Capability> = serde_json::from_value(body)?;
             render_human(bundle, &caps);
+        }
+    }
+    Ok(())
+}
+
+async fn search(client: &Client, output: OutputMode, query: &str) -> Result<()> {
+    let body: Value = client.get("/v1/capabilities").await?;
+    let caps: Vec<Capability> = serde_json::from_value(body)?;
+    let needle = query.to_lowercase();
+    let hits: Vec<&Capability> = caps
+        .iter()
+        .filter(|c| {
+            c.name.to_lowercase().contains(&needle)
+                || c.version.to_lowercase().contains(&needle)
+                || c.status.to_lowercase().contains(&needle)
+        })
+        .collect();
+    match output {
+        OutputMode::Json => println!("{}", serde_json::to_string_pretty(&hits)?),
+        OutputMode::Plain => {
+            for c in &hits {
+                println!("{}\t{}\t{}", c.name, c.version, c.status);
+            }
+        }
+        OutputMode::Human => {
+            if hits.is_empty() {
+                println!("no local capabilities match `{query}`");
+            } else {
+                println!(
+                    "matched {} of {} local capabilities:",
+                    hits.len(),
+                    caps.len()
+                );
+                for c in &hits {
+                    println!("  - {}@{} ({})", c.name, c.version, c.status);
+                }
+            }
         }
     }
     Ok(())

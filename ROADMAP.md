@@ -219,7 +219,7 @@ migration to allow `plan_id IS NULL` for the new
 
 ### Smart Thor + outcome reliability (from ADR-0012)
 
-- [ ] **T3.02** smart Thor — `cvg validate` runs the project's
+- [x] **T3.02** smart Thor — `cvg validate` runs the project's
       actual pipeline (cargo fmt / clippy / test / doc-check /
       ADR coherence) before Pass
 - [ ] **T3.03** agent ↔ Thor negotiation via
