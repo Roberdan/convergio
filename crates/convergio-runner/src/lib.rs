@@ -52,7 +52,7 @@ pub use kind::{Family, RunnerKind};
 pub use profile::PermissionProfile;
 pub use registry::{ProfileSpec, PromptVia, RunnerRegistry, RunnerSpec};
 pub use runner::{
-    assert_cli_on_path, for_kind, for_kind_with_registry, ClaudeRunner, CopilotRunner, Runner,
-    SpawnContext,
+    assert_cli_on_path, for_kind, for_kind_with_registry, ClaudeRunner, CopilotRunner,
+    OpenaiRunner, Runner, SpawnContext, DEFAULT_OPENAI_CLI, OPENAI_CLI_BIN_ENV,
 };
 pub use runner_config::ConfigRunner;

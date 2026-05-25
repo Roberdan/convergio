@@ -19,9 +19,9 @@ use std::str::FromStr;
 /// Built-in vendor families with hardcoded runner implementations.
 ///
 /// New vendors should be added through the runner registry (ADR-0035)
-/// rather than this enum — the enum exists only so the two reference
-/// implementations (`ClaudeRunner`, `CopilotRunner`) can be matched
-/// without going through the registry.
+/// rather than this enum — the enum exists only so the reference
+/// implementations (`ClaudeRunner`, `CopilotRunner`, `OpenaiRunner`)
+/// can be matched without going through the registry.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Family {
@@ -29,14 +29,21 @@ pub enum Family {
     Claude,
     /// GitHub Copilot CLI (`copilot -p ...` aka `gh copilot`).
     Copilot,
+    /// OpenAI-compatible vendor CLI (`openai-cli`, configurable via
+    /// `OPENAI_CLI_BIN`). Added in W7 / ADR-0053.
+    Openai,
 }
 
 impl Family {
-    /// Binary name expected on `PATH`.
+    /// Binary name expected on `PATH`. For [`Family::Openai`] this is
+    /// only the default — the runner consults `OPENAI_CLI_BIN` at
+    /// `prepare` time so operators can point at any compatible binary
+    /// without rebuilding Convergio.
     pub fn cli(self) -> &'static str {
         match self {
             Family::Claude => "claude",
             Family::Copilot => "copilot",
+            Family::Openai => "openai-cli",
         }
     }
 
@@ -45,6 +52,7 @@ impl Family {
         match self {
             Family::Claude => "claude",
             Family::Copilot => "copilot",
+            Family::Openai => "openai",
         }
     }
 
@@ -54,6 +62,7 @@ impl Family {
         match tag {
             "claude" => Some(Family::Claude),
             "copilot" => Some(Family::Copilot),
+            "openai" => Some(Family::Openai),
             _ => None,
         }
     }
@@ -98,6 +107,11 @@ impl RunnerKind {
     /// Copilot with GitHub's default GPT model.
     pub fn copilot_gpt() -> Self {
         Self::new("copilot", "gpt-5.2")
+    }
+
+    /// OpenAI vendor CLI with a default GPT model (W7).
+    pub fn openai_gpt() -> Self {
+        Self::new("openai", "gpt-4.1")
     }
 
     /// Resolve to a built-in [`Family`], if the vendor name matches
@@ -153,6 +167,15 @@ mod tests {
         assert_eq!(k.vendor, "qwen");
         assert_eq!(k.model, "qwen3-coder");
         assert_eq!(k.family(), None);
+    }
+
+    #[test]
+    fn round_trip_openai_gpt() {
+        let k: RunnerKind = "openai:gpt-4.1".parse().unwrap();
+        assert_eq!(k.family(), Some(Family::Openai));
+        assert_eq!(k.model, "gpt-4.1");
+        assert_eq!(Family::Openai.cli(), "openai-cli");
+        assert_eq!(Family::Openai.tag(), "openai");
     }
 
     #[test]

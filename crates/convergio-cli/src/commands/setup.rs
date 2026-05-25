@@ -46,6 +46,9 @@ pub enum AgentHost {
     CopilotLocal,
     /// GitHub Copilot cloud agent repository hint.
     CopilotCloud,
+    /// OpenAI-compatible vendor CLI host (W7 / ADR-0053).
+    /// Concrete binary configurable via `OPENAI_CLI_BIN`.
+    Openai,
     /// Cursor.
     Cursor,
     /// Cline.
@@ -67,6 +70,7 @@ impl AgentHost {
             Self::OpusOvernight => "opus-overnight",
             Self::CopilotLocal => "copilot-local",
             Self::CopilotCloud => "copilot-cloud",
+            Self::Openai => "openai",
             Self::Cursor => "cursor",
             Self::Cline => "cline",
             Self::Continue => "continue",
