@@ -138,10 +138,6 @@ impl Executor {
     }
 
     async fn dispatch_one(&self, task_id: &str, plan_id: &str) -> Result<()> {
-        // W1-B atomic claim + pre-check guards: cap-exceeded is
-        // transient, so skip claim+compensate to avoid flipping
-        // tasks to Failed under disk pressure (convergio-edu bug
-        // 2026-05-12). Claim+compensate stays for real spawn errors.
         if let Some(repo_root) = self.repo_path.as_ref() {
             let holders = crate::holders::collect(&self.durability, repo_root).await;
             if let Err(e) = crate::guards::enforce_with_holders(repo_root, &holders) {
