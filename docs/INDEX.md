@@ -69,7 +69,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-planner/README.md` | crate-readme | - | - | 23 |
 | `crates/convergio-runner/AGENTS.md` | crate-rules | - | - | 53 |
 | `crates/convergio-server-core/AGENTS.md` | crate-rules | - | - | 58 |
-| `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 27 |
+| `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 28 |
 | `crates/convergio-server/README.md` | crate-readme | - | - | 70 |
 | `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 22 |
@@ -147,7 +147,9 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0060-deterministic-graph-output.md` | adr | [convergio-ontology, convergio-cli] | proposed | 118 |
 | `docs/adr/0061-capability-search-local.md` | adr | - | accepted | 74 |
 | `docs/adr/0062-dispatch-choice-audit-row.md` | adr | - | accepted | 70 |
-| `docs/adr/README.md` | adr | - | - | 89 |
+| `docs/adr/0063-task-taxonomy-eval-skeleton.md` | adr | - | accepted | 68 |
+| `docs/adr/0064-eu-sovereign-pivot.md` | adr | [] | accepted | 121 |
+| `docs/adr/README.md` | adr | - | - | 91 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
