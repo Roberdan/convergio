@@ -35,6 +35,7 @@ async fn refuses_when_earlier_wave_open() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -50,6 +51,7 @@ async fn refuses_when_earlier_wave_open() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -66,6 +68,7 @@ async fn refuses_when_earlier_wave_open() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -96,6 +99,7 @@ async fn treats_failed_as_terminal() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -111,6 +115,7 @@ async fn treats_failed_as_terminal() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -136,6 +141,7 @@ async fn treats_failed_as_terminal() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -155,6 +161,7 @@ async fn passes_for_first_wave() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -170,6 +177,7 @@ async fn passes_for_first_wave() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

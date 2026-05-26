@@ -58,6 +58,7 @@ async fn fleet_validate_aggregates_per_repo_verdicts() {
             title: "convergio: ok".into(),
             project: Some("convergio".into()),
             description: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -73,6 +74,7 @@ async fn fleet_validate_aggregates_per_repo_verdicts() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -102,6 +104,7 @@ async fn fleet_validate_aggregates_per_repo_verdicts() {
             title: "convergio-edu: fail".into(),
             project: Some("convergio-edu".into()),
             description: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -123,6 +126,7 @@ async fn fleet_validate_aggregates_per_repo_verdicts() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -137,6 +141,7 @@ async fn fleet_validate_aggregates_per_repo_verdicts() {
             title: "convergio-ui: ok".into(),
             project: Some("convergio-ui".into()),
             description: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -152,6 +157,7 @@ async fn fleet_validate_aggregates_per_repo_verdicts() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

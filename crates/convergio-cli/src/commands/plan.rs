@@ -19,6 +19,12 @@ pub enum PlanCommand {
         /// Optional project or repository this plan belongs to.
         #[arg(long)]
         project: Option<String>,
+        /// Tracker-only default (A.2): every task created under this
+        /// plan inherits `no_dispatch = true` unless its own request
+        /// body explicitly overrides it. Use for plans that mirror
+        /// work shipping from another repository.
+        #[arg(long)]
+        no_dispatch: bool,
     },
     /// List plans.
     List {
@@ -130,11 +136,13 @@ pub async fn run(
             title,
             description,
             project,
+            no_dispatch,
         } => {
             let body = json!({
                 "title": title,
                 "description": description,
                 "project": project,
+                "no_dispatch_default": no_dispatch,
             });
             let plan: Value = client.post("/v1/plans", &body).await?;
             let id = plan.get("id").and_then(Value::as_str).unwrap_or("?");

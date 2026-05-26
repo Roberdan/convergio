@@ -144,6 +144,7 @@ async fn add_task(
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await?;

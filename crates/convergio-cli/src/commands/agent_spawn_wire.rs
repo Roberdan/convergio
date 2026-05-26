@@ -35,6 +35,8 @@ pub(crate) struct TaskWire {
     profile: Option<String>,
     #[serde(default)]
     max_budget_usd: Option<f32>,
+    #[serde(default)]
+    no_dispatch: bool,
 }
 
 impl TaskWire {
@@ -69,6 +71,7 @@ impl TaskWire {
             runner_kind: self.runner_kind,
             profile: self.profile,
             max_budget_usd: self.max_budget_usd,
+            no_dispatch: self.no_dispatch,
         })
     }
 }

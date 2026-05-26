@@ -21,6 +21,7 @@ async fn holders_for_slugs_resolves_matching_task_and_plan() {
             title: "P".into(),
             project: Some("convergio-local".into()),
             description: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -36,6 +37,7 @@ async fn holders_for_slugs_resolves_matching_task_and_plan() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -78,6 +80,7 @@ async fn holders_for_slugs_marks_orphans_and_rejects_wildcards() {
             title: "P".into(),
             project: Some("p".into()),
             description: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -92,6 +95,7 @@ async fn holders_for_slugs_marks_orphans_and_rejects_wildcards() {
             runner_kind: None,
             profile: None,
             max_budget_usd: None,
+            no_dispatch: None,
         },
     )
     .await
@@ -120,6 +124,7 @@ async fn holders_for_slugs_prefers_in_progress_over_done_collisions() {
             title: "P".into(),
             project: Some("p".into()),
             description: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -135,6 +140,7 @@ async fn holders_for_slugs_prefers_in_progress_over_done_collisions() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

@@ -25,6 +25,7 @@ async fn task_with_evidence(
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -40,6 +41,7 @@ async fn task_with_evidence(
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

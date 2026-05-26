@@ -22,6 +22,7 @@ async fn fresh_dur_with_some_history() -> (Durability, tempfile::TempDir) {
             title: format!("plan {i}"),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -118,6 +119,7 @@ async fn concurrent_writes_keep_a_contiguous_chain() {
                 title: format!("plan {i}"),
                 description: None,
                 project: None,
+                no_dispatch_default: false,
             })
             .await
             .unwrap();

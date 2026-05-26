@@ -33,6 +33,7 @@ pub async fn solve(durability: &Durability, mission: &str) -> Result<String> {
             title,
             description,
             project: None,
+            no_dispatch_default: false,
         })
         .await?;
 
@@ -49,6 +50,7 @@ pub async fn solve(durability: &Durability, mission: &str) -> Result<String> {
                     runner_kind: None,
                     profile: None,
                     max_budget_usd: None,
+                    no_dispatch: None,
                 },
             )
             .await?;

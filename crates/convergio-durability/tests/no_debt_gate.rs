@@ -27,6 +27,7 @@ async fn make_task_with_evidence(
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -42,6 +43,7 @@ async fn make_task_with_evidence(
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -196,6 +198,7 @@ async fn fires_through_full_facade_pipeline() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -211,6 +214,7 @@ async fn fires_through_full_facade_pipeline() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

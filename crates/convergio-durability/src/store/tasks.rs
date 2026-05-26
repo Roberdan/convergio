@@ -40,13 +40,14 @@ impl TaskStore {
             runner_kind: input.runner_kind,
             profile: input.profile,
             max_budget_usd: input.max_budget_usd,
+            no_dispatch: input.no_dispatch.unwrap_or(false),
         };
 
         sqlx::query(
             "INSERT INTO tasks (id, plan_id, wave, sequence, title, description, status, \
              agent_id, evidence_required, last_heartbeat_at, created_at, updated_at, \
-             runner_kind, profile, max_budget_usd) \
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+             runner_kind, profile, max_budget_usd, no_dispatch) \
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&task.id)
         .bind(&task.plan_id)
@@ -63,6 +64,7 @@ impl TaskStore {
         .bind(&task.runner_kind)
         .bind(&task.profile)
         .bind(task.max_budget_usd)
+        .bind(task.no_dispatch as i64)
         .execute(self.pool.inner())
         .await?;
 
@@ -173,19 +175,19 @@ impl TaskStore {
 const SELECT_TASK: &str =
     "SELECT id, plan_id, wave, sequence, title, description, status, agent_id, \
      evidence_required, last_heartbeat_at, created_at, updated_at, \
-     started_at, ended_at, duration_ms, runner_kind, profile, max_budget_usd \
+     started_at, ended_at, duration_ms, runner_kind, profile, max_budget_usd, no_dispatch \
      FROM tasks WHERE id = ? LIMIT 1";
 
 const LIST_BY_PLAN: &str =
     "SELECT id, plan_id, wave, sequence, title, description, status, agent_id, \
      evidence_required, last_heartbeat_at, created_at, updated_at, \
-     started_at, ended_at, duration_ms, runner_kind, profile, max_budget_usd \
+     started_at, ended_at, duration_ms, runner_kind, profile, max_budget_usd, no_dispatch \
      FROM tasks WHERE plan_id = ? ORDER BY wave ASC, sequence ASC";
 
 const LIST_STALE_BY_PLAN: &str =
     "SELECT id, plan_id, wave, sequence, title, description, status, agent_id, \
      evidence_required, last_heartbeat_at, created_at, updated_at, \
-     started_at, ended_at, duration_ms, runner_kind, profile, max_budget_usd \
+     started_at, ended_at, duration_ms, runner_kind, profile, max_budget_usd, no_dispatch \
      FROM tasks WHERE plan_id = ? AND status IN ('pending', 'failed') \
      AND updated_at < ? ORDER BY wave ASC, sequence ASC";
 
@@ -209,6 +211,7 @@ struct TaskRow {
     runner_kind: Option<String>,
     profile: Option<String>,
     max_budget_usd: Option<f32>,
+    no_dispatch: i64,
 }
 
 #[derive(sqlx::FromRow)]
@@ -254,6 +257,7 @@ impl TryFrom<TaskRow> for Task {
             runner_kind: r.runner_kind,
             profile: r.profile,
             max_budget_usd: r.max_budget_usd,
+            no_dispatch: r.no_dispatch != 0,
         })
     }
 }

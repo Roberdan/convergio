@@ -86,6 +86,7 @@ async fn reaps_tasks_with_stale_heartbeat() {
             title: "reaper test".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -102,6 +103,7 @@ async fn reaps_tasks_with_stale_heartbeat() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -153,6 +155,7 @@ async fn does_not_reap_fresh_tasks() {
             title: "fresh".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -168,6 +171,7 @@ async fn does_not_reap_fresh_tasks() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -203,6 +207,7 @@ async fn reaps_tasks_that_never_heartbeat() {
             title: "never heartbeat".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -218,6 +223,7 @@ async fn reaps_tasks_that_never_heartbeat() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

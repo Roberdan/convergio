@@ -20,6 +20,7 @@ async fn facade_persists_gate_refusal_for_explanation() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -35,6 +36,7 @@ async fn facade_persists_gate_refusal_for_explanation() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

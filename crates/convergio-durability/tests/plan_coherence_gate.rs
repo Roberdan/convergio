@@ -21,6 +21,7 @@ async fn make_task(dur: &Durability) -> (String, convergio_durability::Task) {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -36,6 +37,7 @@ async fn make_task(dur: &Durability) -> (String, convergio_durability::Task) {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

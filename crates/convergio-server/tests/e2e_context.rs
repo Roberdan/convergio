@@ -29,6 +29,7 @@ async fn context_packet_collects_task_state_messages_agents_and_agent_docs() {
             title: "ship context".into(),
             description: Some("keep worker prompt small".into()),
             project: Some("convergio-local".into()),
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -44,6 +45,7 @@ async fn context_packet_collects_task_state_messages_agents_and_agent_docs() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

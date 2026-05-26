@@ -98,6 +98,7 @@ mod tests {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .expect("plan")
@@ -133,6 +134,7 @@ mod tests {
             runner_kind: None,
             profile: None,
             max_budget_usd: None,
+            no_dispatch: false,
         }
     }
 

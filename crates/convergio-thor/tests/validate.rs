@@ -21,6 +21,7 @@ async fn plan_with_one_task(dur: &Durability, evidence_required: Vec<String>) ->
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -36,6 +37,7 @@ async fn plan_with_one_task(dur: &Durability, evidence_required: Vec<String>) ->
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -128,6 +130,7 @@ async fn fail_when_plan_has_no_tasks() {
             title: "empty".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();

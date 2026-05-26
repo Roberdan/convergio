@@ -25,6 +25,7 @@ async fn status_negative_completed_limit_is_clamped() {
                 title: format!("done-{i}"),
                 description: None,
                 project: None,
+                no_dispatch_default: false,
             })
             .await
             .expect("create plan");

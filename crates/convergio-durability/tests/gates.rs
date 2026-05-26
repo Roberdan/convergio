@@ -37,6 +37,7 @@ async fn plan_status_gate_refuses_when_plan_completed() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -52,6 +53,7 @@ async fn plan_status_gate_refuses_when_plan_completed() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -85,6 +87,7 @@ async fn plan_status_gate_passes_for_active_plan() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -100,6 +103,7 @@ async fn plan_status_gate_passes_for_active_plan() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -119,6 +123,7 @@ async fn evidence_gate_refuses_when_kind_missing() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -134,6 +139,7 @@ async fn evidence_gate_refuses_when_kind_missing() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -164,6 +170,7 @@ async fn evidence_gate_passes_when_all_kinds_present() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -179,6 +186,7 @@ async fn evidence_gate_passes_when_all_kinds_present() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -204,6 +212,7 @@ async fn evidence_gate_no_op_for_in_progress_target() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -219,6 +228,7 @@ async fn evidence_gate_no_op_for_in_progress_target() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

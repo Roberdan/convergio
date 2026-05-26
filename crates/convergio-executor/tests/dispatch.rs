@@ -16,6 +16,7 @@ async fn tick_skips_failing_task_and_dispatches_next() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -32,6 +33,7 @@ async fn tick_skips_failing_task_and_dispatches_next() {
                 runner_kind: Some("copilot".into()),
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -48,6 +50,7 @@ async fn tick_skips_failing_task_and_dispatches_next() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -77,6 +80,7 @@ async fn tick_skips_later_waves_until_earlier_done() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -92,6 +96,7 @@ async fn tick_skips_later_waves_until_earlier_done() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -108,6 +113,7 @@ async fn tick_skips_later_waves_until_earlier_done() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -132,6 +138,7 @@ async fn tick_dispatches_later_wave_after_earlier_failed() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -147,6 +154,7 @@ async fn tick_dispatches_later_wave_after_earlier_failed() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -163,6 +171,7 @@ async fn tick_dispatches_later_wave_after_earlier_failed() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -230,6 +239,7 @@ async fn tick_marks_task_failed_when_spawn_fails() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -245,6 +255,7 @@ async fn tick_marks_task_failed_when_spawn_fails() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

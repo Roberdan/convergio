@@ -37,6 +37,7 @@ async fn unresolved_task_crdt_conflict_blocks_submit() {
             title: "crdt plan".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -52,6 +53,7 @@ async fn unresolved_task_crdt_conflict_blocks_submit() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

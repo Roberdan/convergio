@@ -129,6 +129,7 @@ mod tests {
             runner_kind: None,
             profile: None,
             max_budget_usd: None,
+            no_dispatch: false,
         }
     }
 

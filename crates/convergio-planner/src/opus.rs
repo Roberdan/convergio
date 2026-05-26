@@ -142,6 +142,7 @@ async fn persist(durability: &Durability, shape: PlanShape) -> Result<String> {
             title: shape.title,
             description: shape.description,
             project: None,
+            no_dispatch_default: false,
         })
         .await?;
     for t in shape.tasks {
@@ -157,6 +158,7 @@ async fn persist(durability: &Durability, shape: PlanShape) -> Result<String> {
                     runner_kind: t.runner_kind,
                     profile: t.profile,
                     max_budget_usd: t.max_budget_usd,
+                    no_dispatch: None,
                 },
             )
             .await?;

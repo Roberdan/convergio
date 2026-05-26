@@ -41,6 +41,7 @@ async fn make_titled_task(
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -56,6 +57,7 @@ async fn make_titled_task(
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

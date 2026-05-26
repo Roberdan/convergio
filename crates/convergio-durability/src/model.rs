@@ -72,6 +72,12 @@ pub struct Plan {
     /// Materialised cache (ADR-0031): `ended_at - started_at` in ms.
     #[serde(default)]
     pub duration_ms: Option<i64>,
+    /// Tracker-only default for tasks created under this plan
+    /// (A.2 / multi-repo dispatch). When `true`, the executor skips
+    /// every task under this plan whose own `no_dispatch` resolves
+    /// to `true`; per-task overrides on `NewTask` still win.
+    #[serde(default)]
+    pub no_dispatch_default: bool,
 }
 
 /// Input for [`crate::Durability::create_plan`].
@@ -84,6 +90,11 @@ pub struct NewPlan {
     /// Optional project or repository this plan belongs to.
     #[serde(default)]
     pub project: Option<String>,
+    /// Plan-level tracker-only default (A.2). Persisted on the plan
+    /// row and inherited by every task whose own `no_dispatch` value
+    /// is absent on the request body.
+    #[serde(default)]
+    pub no_dispatch_default: bool,
 }
 
 /// Lifecycle of a task.
@@ -182,6 +193,13 @@ pub struct Task {
     /// ⇒ no cap.
     #[serde(default)]
     pub max_budget_usd: Option<f32>,
+    /// Tracker-only marker (A.2). When `true`, the executor's
+    /// `find_dispatchable` predicate skips this task across every
+    /// tick — it stays `pending` until an operator drives it
+    /// manually. Use this to mirror work that ships from another
+    /// repository so the local plan still records progress.
+    #[serde(default)]
+    pub no_dispatch: bool,
 }
 
 /// Recently completed task with plan context for dashboards.
@@ -226,6 +244,11 @@ pub struct NewTask {
     /// Optional session budget cap (USD).
     #[serde(default)]
     pub max_budget_usd: Option<f32>,
+    /// Tracker-only override (A.2). `None` ⇒ inherit
+    /// `Plan::no_dispatch_default`; `Some(true)/Some(false)` is an
+    /// explicit per-task choice that always wins.
+    #[serde(default)]
+    pub no_dispatch: Option<bool>,
 }
 
 fn default_one() -> i64 {

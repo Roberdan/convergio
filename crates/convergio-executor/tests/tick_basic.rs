@@ -13,6 +13,7 @@ async fn tick_dispatches_pending_tasks_in_first_wave() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -28,6 +29,7 @@ async fn tick_dispatches_pending_tasks_in_first_wave() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

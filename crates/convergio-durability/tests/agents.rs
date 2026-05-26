@@ -137,6 +137,7 @@ async fn usage_evidence_aggregates_into_agent_metadata() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -152,6 +153,7 @@ async fn usage_evidence_aggregates_into_agent_metadata() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

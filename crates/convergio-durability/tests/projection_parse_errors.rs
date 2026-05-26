@@ -28,6 +28,7 @@ async fn seed_task(dur: &Durability) -> String {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -44,6 +45,7 @@ async fn seed_task(dur: &Durability) -> String {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

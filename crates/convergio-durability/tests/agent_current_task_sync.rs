@@ -37,6 +37,7 @@ async fn make_task(dur: &Durability, plan_title: &str) -> String {
             title: plan_title.into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -51,6 +52,7 @@ async fn make_task(dur: &Durability, plan_title: &str) -> String {
             runner_kind: None,
             profile: None,
             max_budget_usd: None,
+            no_dispatch: None,
         },
     )
     .await

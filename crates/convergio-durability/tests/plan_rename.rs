@@ -22,6 +22,7 @@ async fn rename_updates_title_and_writes_audit_row() {
             title: "Wave 0 — Vision".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -56,6 +57,7 @@ async fn rename_trims_whitespace_and_refuses_blank() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();

@@ -40,6 +40,7 @@
 //!     title: "first plan".into(),
 //!     description: None,
 //!     project: None,
+//!     no_dispatch_default: false,
 //! }).await?;
 //! println!("created plan {}", plan.id);
 //! # Ok(())

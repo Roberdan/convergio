@@ -20,6 +20,7 @@ async fn make_task(dur: &Durability, payload: serde_json::Value) -> convergio_du
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -35,6 +36,7 @@ async fn make_task(dur: &Durability, payload: serde_json::Value) -> convergio_du
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

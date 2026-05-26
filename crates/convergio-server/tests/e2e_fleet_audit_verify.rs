@@ -39,6 +39,7 @@ async fn fleet_audit_verify_detects_tampering() {
                 title: format!("{repo}: audit"),
                 project: Some(repo.into()),
                 description: None,
+                no_dispatch_default: false,
             })
             .await
             .unwrap();

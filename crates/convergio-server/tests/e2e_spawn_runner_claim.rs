@@ -28,6 +28,7 @@ async fn second_spawn_runner_on_same_task_is_refused_with_claim_conflict() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -43,6 +44,7 @@ async fn second_spawn_runner_on_same_task_is_refused_with_claim_conflict() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

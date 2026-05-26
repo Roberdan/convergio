@@ -82,6 +82,7 @@ async fn fleet_plan_lifecycle_roundtrip() {
             title: "convergio: cross-repo refactor".into(),
             project: Some("convergio".into()),
             description: None,
+            no_dispatch_default: false,
         })
         .await
         .expect("repo plan");
@@ -193,6 +194,7 @@ async fn fleet_plan_lifecycle_roundtrip() {
             title: "convergio: alternate".into(),
             project: Some("convergio".into()),
             description: None,
+            no_dispatch_default: false,
         })
         .await
         .expect("alternate repo plan");

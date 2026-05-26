@@ -77,6 +77,7 @@ async fn task_timing_cache_tracks_in_progress_then_done() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -193,6 +194,7 @@ async fn close_post_hoc_writes_timing_cache() {
             title: "post-hoc-timing".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -209,6 +211,7 @@ async fn close_post_hoc_writes_timing_cache() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

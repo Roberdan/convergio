@@ -21,6 +21,7 @@ async fn task_with_diff(dur: &Durability, diff: &str) -> convergio_durability::T
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -36,6 +37,7 @@ async fn task_with_diff(dur: &Durability, diff: &str) -> convergio_durability::T
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -251,6 +253,7 @@ async fn fires_through_full_facade_pipeline() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -266,6 +269,7 @@ async fn fires_through_full_facade_pipeline() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

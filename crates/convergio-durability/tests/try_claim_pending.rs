@@ -33,6 +33,7 @@ async fn concurrent_claims_exactly_one_winner() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -48,6 +49,7 @@ async fn concurrent_claims_exactly_one_winner() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -109,6 +111,7 @@ async fn second_claim_is_none_after_first_wins() {
             title: "p".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -124,6 +127,7 @@ async fn second_claim_is_none_after_first_wins() {
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await

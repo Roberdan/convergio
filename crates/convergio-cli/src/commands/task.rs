@@ -48,6 +48,11 @@ pub enum TaskCommand {
         /// Optional session budget cap in USD (Claude only).
         #[arg(long)]
         max_budget_usd: Option<f32>,
+        /// Tracker-only mode (A.2): create the task in `pending` but
+        /// flag it so the executor never auto-dispatches it. Use to
+        /// mirror work that ships from another repository.
+        #[arg(long)]
+        no_dispatch: bool,
     },
     /// List tasks of a plan.
     List {
@@ -163,6 +168,7 @@ pub async fn run(
             runner,
             profile,
             max_budget_usd,
+            no_dispatch,
         } => {
             let evidence_required = resolve_evidence(evidence_required, template);
             let body = json!({
@@ -174,6 +180,7 @@ pub async fn run(
                 "runner_kind": runner,
                 "profile": profile,
                 "max_budget_usd": max_budget_usd,
+                "no_dispatch": if no_dispatch { Some(true) } else { None::<bool> },
             });
             let task: Value = client
                 .post(&format!("/v1/plans/{plan_id}/tasks"), &body)

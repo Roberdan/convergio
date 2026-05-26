@@ -38,6 +38,7 @@ async fn add_task_in_wave(
                 runner_kind: None,
                 profile: None,
                 max_budget_usd: None,
+                no_dispatch: None,
             },
         )
         .await
@@ -71,6 +72,7 @@ async fn validate_wave_promotes_only_named_wave() {
             title: "wave-scoped".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -105,6 +107,7 @@ async fn validate_wave_fails_if_named_wave_has_pending_task() {
             title: "wave-scoped-fail".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -128,6 +131,7 @@ async fn validate_wave_returns_fail_when_wave_has_no_tasks() {
             title: "empty-wave".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();
@@ -153,6 +157,7 @@ async fn validate_without_wave_keeps_plan_strict_behaviour() {
             title: "no-wave-flag".into(),
             description: None,
             project: None,
+            no_dispatch_default: false,
         })
         .await
         .unwrap();

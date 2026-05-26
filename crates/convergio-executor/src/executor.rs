@@ -112,11 +112,14 @@ impl Executor {
 
     async fn find_dispatchable(&self) -> Result<Vec<(String, String)>> {
         // Pending tasks whose wave is "ready" — no earlier-wave task
-        // is still open in the same plan.
+        // is still open in the same plan. `no_dispatch = 0` filters
+        // out tracker-only tasks (A.2) so the executor never picks
+        // them up; the operator drives them manually.
         let rows = sqlx::query_as::<_, (String, String, i64)>(
             "SELECT t.id, t.plan_id, t.wave \
              FROM tasks t \
              WHERE t.status = 'pending' \
+               AND t.no_dispatch = 0 \
                AND NOT EXISTS ( \
                    SELECT 1 FROM tasks t2 \
                    WHERE t2.plan_id = t.plan_id \

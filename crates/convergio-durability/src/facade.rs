@@ -106,12 +106,13 @@ impl Durability {
             started_at: None,
             ended_at: None,
             duration_ms: None,
+            no_dispatch_default: input.no_dispatch_default,
         };
 
         sqlx::query(
             "INSERT INTO plans \
-             (id, number, title, description, project, status, created_at, updated_at) \
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+             (id, number, title, description, project, status, created_at, updated_at, no_dispatch_default) \
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&plan.id)
         .bind(plan.number)
@@ -121,6 +122,7 @@ impl Durability {
         .bind(plan.status.as_str())
         .bind(plan.created_at.to_rfc3339())
         .bind(plan.updated_at.to_rfc3339())
+        .bind(plan.no_dispatch_default as i64)
         .execute(&mut *tx)
         .await?;
         append_tx(
@@ -133,6 +135,7 @@ impl Durability {
                 "number": plan.number,
                 "title": plan.title,
                 "project": plan.project,
+                "no_dispatch_default": plan.no_dispatch_default,
             }),
             None,
         )
@@ -195,8 +198,12 @@ impl Durability {
     /// Create a task and write the audit row.
     pub async fn create_task(&self, plan_id: &str, input: NewTask) -> Result<Task> {
         // Make sure the plan exists (yields NotFound if not).
-        self.plans().get(plan_id).await?;
+        let plan = self.plans().get(plan_id).await?;
         let now = Utc::now();
+        // A.2 inheritance: explicit `no_dispatch` on the body always
+        // wins; otherwise fall back to the plan-level default so
+        // tracker-only plans propagate to every new task.
+        let no_dispatch = input.no_dispatch.unwrap_or(plan.no_dispatch_default);
         let task = Task {
             id: Uuid::new_v4().to_string(),
             plan_id: plan_id.to_string(),
@@ -216,14 +223,15 @@ impl Durability {
             runner_kind: input.runner_kind,
             profile: input.profile,
             max_budget_usd: input.max_budget_usd,
+            no_dispatch,
         };
 
         let mut tx = self.pool.inner().begin().await?;
         sqlx::query(
             "INSERT INTO tasks (id, plan_id, wave, sequence, title, description, status, \
              agent_id, evidence_required, last_heartbeat_at, created_at, updated_at, \
-             runner_kind, profile, max_budget_usd) \
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+             runner_kind, profile, max_budget_usd, no_dispatch) \
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&task.id)
         .bind(&task.plan_id)
@@ -240,6 +248,7 @@ impl Durability {
         .bind(&task.runner_kind)
         .bind(&task.profile)
         .bind(task.max_budget_usd)
+        .bind(task.no_dispatch as i64)
         .execute(&mut *tx)
         .await?;
         append_tx(
@@ -253,6 +262,7 @@ impl Durability {
                 "wave": task.wave,
                 "sequence": task.sequence,
                 "title": task.title,
+                "no_dispatch": task.no_dispatch,
             }),
             None,
         )
