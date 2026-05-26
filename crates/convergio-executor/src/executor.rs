@@ -145,7 +145,7 @@ impl Executor {
         if let Some(repo_root) = self.repo_path.as_ref() {
             let holders = crate::holders::collect(&self.durability, repo_root).await;
             if let Err(e) = crate::guards::enforce_with_holders(repo_root, &holders) {
-                tracing::debug!(task_id, plan_id, error = %e, "skipping dispatch — guard refused");
+                tracing::warn!(task_id, plan_id, error = %e, "skipping dispatch — guard refused (#407)");
                 return Ok(());
             }
         }
