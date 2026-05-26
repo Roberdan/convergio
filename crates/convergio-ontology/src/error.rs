@@ -60,6 +60,27 @@ pub enum Error {
         id: String,
     },
 
+    /// Requested ontology branch does not exist.
+    #[error("ontology branch not found: {id}")]
+    BranchNotFound {
+        /// Missing branch id.
+        id: String,
+    },
+
+    /// Branch metadata is invalid.
+    #[error("invalid ontology branch: {reason}")]
+    InvalidBranch {
+        /// Validation failure reason.
+        reason: String,
+    },
+
+    /// Ontology entry payload is invalid.
+    #[error("invalid ontology entry: {reason}")]
+    InvalidEntry {
+        /// Validation failure reason.
+        reason: String,
+    },
+
     /// Feature exists on the API surface but its underlying primitive
     /// has not landed yet. The W1 `branch-diff` command returns this
     /// because branching itself ships in a later ADR (ADR-0059).

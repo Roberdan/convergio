@@ -68,6 +68,10 @@ mod facade_retry;
 mod facade_telemetry;
 mod facade_transitions;
 mod migrate;
+mod ontology_branch;
+mod ontology_branch_store;
+mod ontology_facade;
+mod ontology_merge;
 mod post_hoc_reason;
 mod workspace_facade;
 
@@ -83,6 +87,10 @@ pub use migrate::init;
 pub use model::{
     Evidence, NewPlan, NewTask, Plan, PlanStatus, RecentCompletedTask, Task, TaskStatus,
 };
+pub use ontology_branch::{
+    OntologyBranch, OntologyBranchStatus, OntologyResolvedEntry, OntologyValueSource,
+};
+pub use ontology_branch_store::OntologyBranchStore;
 pub use store::TelemetryPoint;
 pub use store::{
     AgentAuditEntry, AgentHeartbeat, AgentLease, AgentPrLink, AgentRecord, AgentStore,
