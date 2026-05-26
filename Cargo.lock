@@ -729,6 +729,7 @@ dependencies = [
  "convergio-graph",
  "convergio-i18n",
  "convergio-lifecycle",
+ "convergio-ontology",
  "convergio-server",
  "reqwest",
  "serde",
