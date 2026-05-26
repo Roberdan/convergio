@@ -1,18 +1,7 @@
 //! `cvg ontology` — read the schema registry maintained by the
-//! daemon's Ontology Runtime Core (ADR-0053).
-//!
-//! Subcommands:
-//!
-//! - `list-types` — every registered `ObjectType` / `LinkType`.
-//! - `describe object|link <NAME> [--version N]` — one type, with
-//!   inlined properties for objects.
-//! - `export <NAME> --format jsonschema|shacl [--version N]` —
-//!   byte-identical exporter output (use `--output plain` or pipe
-//!   to file to avoid pretty-printing). Mirrors the daemon's
-//!   golden-tested bytes.
-//!
-//! Every subcommand respects `--output human|json|plain` per
-//! ADR-0043.
+//! daemon's Ontology Runtime Core (ADR-0053). Subcommands: `list-types`,
+//! `describe object|link <NAME>`, `export <NAME> --format jsonschema|shacl`.
+//! Every subcommand respects `--output human|json|plain` per ADR-0043.
 
 use super::{Client, OutputMode};
 use anyhow::Result;
