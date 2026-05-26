@@ -21,6 +21,14 @@ pub enum Error {
     #[error("json error: {0}")]
     Json(#[from] serde_json::Error),
 
+    /// One of the persisted timestamps was not RFC3339.
+    #[error("timestamp parse error: {0}")]
+    TimestampParse(String),
+
+    /// Audit writer/verifier error from `convergio-durability`.
+    #[error("audit error: {0}")]
+    Audit(#[from] convergio_durability::DurabilityError),
+
     /// Caller asked for a schema_version that already exists with a
     /// different `content_hash`. The registry is append-on-write per
     /// ADR-0053; bump the version to land a new revision.

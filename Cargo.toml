@@ -14,6 +14,7 @@ members = [
     "crates/convergio-executor",
     "crates/convergio-i18n",
     "crates/convergio-api",
+    "crates/convergio-ontology",
     "crates/convergio-mcp",
     "crates/convergio-graph",
     "crates/convergio-tui",
@@ -25,7 +26,6 @@ members = [
     "crates/convergio-fleet",
     "crates/convergio-fleet-routes",
     "crates/convergio-server-core",
-    "crates/convergio-ontology",
     "crates/convergio-provenance",
     "crates/convergio-gdpr",
     "crates/convergio-a11y-axe",
@@ -131,6 +131,7 @@ convergio-thor = { path = "crates/convergio-thor" }
 convergio-executor = { path = "crates/convergio-executor" }
 convergio-i18n = { path = "crates/convergio-i18n" }
 convergio-api = { path = "crates/convergio-api" }
+convergio-ontology = { path = "crates/convergio-ontology" }
 convergio-graph = { path = "crates/convergio-graph" }
 convergio-tui = { path = "crates/convergio-tui" }
 convergio-runner = { path = "crates/convergio-runner" }
@@ -144,7 +145,6 @@ convergio-parse-multi = { path = "crates/convergio-parse-multi" }
 convergio-fleet = { path = "crates/convergio-fleet" }
 convergio-fleet-routes = { path = "crates/convergio-fleet-routes" }
 convergio-server-core = { path = "crates/convergio-server-core" }
-convergio-ontology = { path = "crates/convergio-ontology" }
 convergio-provenance = { path = "crates/convergio-provenance" }
 convergio-gdpr = { path = "crates/convergio-gdpr" }
 convergio-a11y-axe = { path = "crates/convergio-a11y-axe" }
