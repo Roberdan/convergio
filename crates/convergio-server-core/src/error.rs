@@ -274,9 +274,11 @@ impl IntoResponse for ApiError {
                 OntologyError::NotFound { .. } => {
                     (StatusCode::NOT_FOUND, "not_found", e.to_string())
                 }
-                OntologyError::VersionConflict { .. } => {
-                    (StatusCode::CONFLICT, "ontology_version_conflict", e.to_string())
-                }
+                OntologyError::VersionConflict { .. } => (
+                    StatusCode::CONFLICT,
+                    "ontology_version_conflict",
+                    e.to_string(),
+                ),
                 _ => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "ontology_error",

@@ -32,7 +32,10 @@ pub fn router() -> Router<AppState> {
         .route("/v1/ontology/types", get(list_types))
         .route("/v1/ontology/types/object/:name", get(describe_object))
         .route("/v1/ontology/types/link/:name", get(describe_link))
-        .route("/v1/ontology/export/:format/object/:name", get(export_object))
+        .route(
+            "/v1/ontology/export/:format/object/:name",
+            get(export_object),
+        )
 }
 
 #[derive(Serialize)]
@@ -133,10 +136,7 @@ struct VersionQuery {
     version: Option<i64>,
 }
 
-async fn latest_object_version(
-    state: &AppState,
-    name: &str,
-) -> Result<i64, ApiError> {
+async fn latest_object_version(state: &AppState, name: &str) -> Result<i64, ApiError> {
     let v = state
         .ontology
         .list_objects()
@@ -168,7 +168,10 @@ async fn describe_object(
             kind: "object",
             name: name.clone(),
         })?;
-    let props = state.ontology.list_object_properties(&name, version).await?;
+    let props = state
+        .ontology
+        .list_object_properties(&name, version)
+        .await?;
     Ok(Json(DescribeObject {
         name: object.name,
         schema_version: object.schema_version,
@@ -240,9 +243,5 @@ async fn export_object(
             });
         }
     };
-    Ok((
-        [(header::CONTENT_TYPE, "application/json")],
-        bytes,
-    )
-        .into_response())
+    Ok(([(header::CONTENT_TYPE, "application/json")], bytes).into_response())
 }

@@ -12,20 +12,46 @@ use serde_json::{json, Value};
 
 async fn seed_person_shacl(store: &Store) {
     store
-        .upsert_object("Person", 1, false, "Person", "A natural person.", json!({}), None)
-        .await
-        .unwrap();
-    store
-        .upsert_property(
-            "email", 1, false, "Email", "Primary email address.",
-            OwnerKind::Object, "Person", "string", true, json!({}), None,
+        .upsert_object(
+            "Person",
+            1,
+            false,
+            "Person",
+            "A natural person.",
+            json!({}),
+            None,
         )
         .await
         .unwrap();
     store
         .upsert_property(
-            "homepage", 1, false, "", "",
-            OwnerKind::Object, "Person", "iri", false, json!({}), None,
+            "email",
+            1,
+            false,
+            "Email",
+            "Primary email address.",
+            OwnerKind::Object,
+            "Person",
+            "string",
+            true,
+            json!({}),
+            None,
+        )
+        .await
+        .unwrap();
+    store
+        .upsert_property(
+            "homepage",
+            1,
+            false,
+            "",
+            "",
+            OwnerKind::Object,
+            "Person",
+            "iri",
+            false,
+            json!({}),
+            None,
         )
         .await
         .unwrap();
@@ -33,22 +59,46 @@ async fn seed_person_shacl(store: &Store) {
 
 async fn seed_person_jsonschema(store: &Store) {
     store
-        .upsert_object("Person", 1, false, "Person", "A natural person.", json!({}), None)
-        .await
-        .unwrap();
-    store
-        .upsert_property(
-            "email", 1, false, "Email", "Primary email address.",
-            OwnerKind::Object, "Person", "string", true,
-            json!({"maxLength": 254}), None,
+        .upsert_object(
+            "Person",
+            1,
+            false,
+            "Person",
+            "A natural person.",
+            json!({}),
+            None,
         )
         .await
         .unwrap();
     store
         .upsert_property(
-            "age", 1, false, "", "",
-            OwnerKind::Object, "Person", "integer", false,
-            json!({"minimum": 0}), None,
+            "email",
+            1,
+            false,
+            "Email",
+            "Primary email address.",
+            OwnerKind::Object,
+            "Person",
+            "string",
+            true,
+            json!({"maxLength": 254}),
+            None,
+        )
+        .await
+        .unwrap();
+    store
+        .upsert_property(
+            "age",
+            1,
+            false,
+            "",
+            "",
+            OwnerKind::Object,
+            "Person",
+            "integer",
+            false,
+            json!({"minimum": 0}),
+            None,
         )
         .await
         .unwrap();
@@ -102,29 +152,29 @@ async fn export_jsonschema_matches_crate_golden() {
     .await
     .unwrap();
     let actual = std::str::from_utf8(&bytes).unwrap();
-    let golden = include_str!(
-        "../../convergio-ontology/tests/golden/person_v1.jsonschema.json"
+    let golden = include_str!("../../convergio-ontology/tests/golden/person_v1.jsonschema.json");
+    assert_eq!(
+        actual, golden,
+        "HTTP JSON-Schema export drifted from crate golden"
     );
-    assert_eq!(actual, golden, "HTTP JSON-Schema export drifted from crate golden");
 }
 
 #[tokio::test]
 async fn export_shacl_matches_crate_golden() {
     let (base, pool, _dir) = boot().await;
     seed_person_shacl(&Store::new(pool)).await;
-    let bytes = reqwest::get(format!(
-        "{base}/v1/ontology/export/shacl/object/Person"
-    ))
-    .await
-    .unwrap()
-    .bytes()
-    .await
-    .unwrap();
+    let bytes = reqwest::get(format!("{base}/v1/ontology/export/shacl/object/Person"))
+        .await
+        .unwrap()
+        .bytes()
+        .await
+        .unwrap();
     let actual = std::str::from_utf8(&bytes).unwrap();
-    let golden = include_str!(
-        "../../convergio-ontology/tests/golden/person_v1.shacl.jsonld"
+    let golden = include_str!("../../convergio-ontology/tests/golden/person_v1.shacl.jsonld");
+    assert_eq!(
+        actual, golden,
+        "HTTP SHACL export drifted from crate golden"
     );
-    assert_eq!(actual, golden, "HTTP SHACL export drifted from crate golden");
 }
 
 #[tokio::test]

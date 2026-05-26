@@ -157,7 +157,10 @@ async fn list_types(client: &Client, output: OutputMode) -> Result<()> {
         OutputMode::Json => println!("{}", serde_json::to_string_pretty(&doc)?),
         OutputMode::Plain => {
             for r in &doc.objects {
-                println!("object\t{}\t{}\t{}", r.name, r.schema_version, r.content_hash);
+                println!(
+                    "object\t{}\t{}\t{}",
+                    r.name, r.schema_version, r.content_hash
+                );
             }
             for r in &doc.links {
                 println!("link\t{}\t{}\t{}", r.name, r.schema_version, r.content_hash);
@@ -173,7 +176,10 @@ async fn list_types(client: &Client, output: OutputMode) -> Result<()> {
                 for r in &doc.objects {
                     println!(
                         "  {:<20} v{}  {}  ({})",
-                        r.name, r.schema_version, r.title, &r.content_hash[..12]
+                        r.name,
+                        r.schema_version,
+                        r.title,
+                        &r.content_hash[..12]
                     );
                 }
             }
@@ -182,7 +188,10 @@ async fn list_types(client: &Client, output: OutputMode) -> Result<()> {
                 for r in &doc.links {
                     println!(
                         "  {:<20} v{}  {}  ({})",
-                        r.name, r.schema_version, r.title, &r.content_hash[..12]
+                        r.name,
+                        r.schema_version,
+                        r.title,
+                        &r.content_hash[..12]
                     );
                 }
             }
