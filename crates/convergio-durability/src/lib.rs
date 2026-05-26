@@ -90,6 +90,7 @@ pub use store::{
     CurrentTaskMeta, NewAgent, NewCrdtOp, RetireStaleResult, StaleAgentReport,
 };
 pub use store::{Capability, CapabilityStore, NewCapability};
+pub use store::{EvalOutcome, EvalOutcomeStore, NewEvalOutcome, TaxonomyStore};
 pub use store::{MergeOutcome, MergeQueueItem};
 pub use store::{
     NewPatchProposal, PatchFile, PatchProposal, WorkspaceConflict, WorkspaceConflictRef,
