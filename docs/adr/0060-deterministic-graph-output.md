@@ -1,16 +1,16 @@
 ---
 id: 0060
-status: proposed
+status: accepted
 date: 2026-05-25
 topics: [ontology, diff, visualization, output-format]
 related_adrs: [0043, 0051, 0053, 0056]
 touches_crates: [convergio-ontology, convergio-cli]
-last_validated: 2026-05-25
+last_validated: 2026-05-26
 ---
 
 # 0060. Deterministic Diff / Mermaid / Graphviz output format
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-05-25
 - Tags: ontology, diff, visualization
 

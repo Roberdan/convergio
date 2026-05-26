@@ -1,16 +1,16 @@
 ---
 id: 0053
-status: proposed
+status: accepted
 date: 2026-05-25
 topics: [ontology, modulor, platform-vs-vertical, p4]
 related_adrs: [0001, 0006, 0014, 0015, 0018]
 touches_crates: [convergio-ontology, convergio-db, convergio-graph, convergio-api]
-last_validated: 2026-05-25
+last_validated: 2026-05-26
 ---
 
-# 0051. Ontology Runtime Core (`convergio-ontology` crate)
+# 0053. Ontology Runtime Core (`convergio-ontology` crate)
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-05-25
 - Deciders: convergio maintainers
 - Tags: ontology, modulor, platform-vs-vertical

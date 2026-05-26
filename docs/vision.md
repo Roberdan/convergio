@@ -123,7 +123,9 @@ without hurting each other. Everything else is urbanism.
 
 ## 4. The Modulor
 
-> **The Modulor of Convergio is the tuple `(task, evidence, gate, audit-row)`.**
+> **The Modulor of Convergio is the tuple `(task, evidence, gate, audit-row)`,
+> with `(object, link, property, schema_version)` as its peer for typed
+> domain knowledge (ADR-0053).**
 
 Le Corbusier's *Modulor* (1948) was a system of human-scale
 proportions that let any architect produce a coherent building. Our
@@ -148,6 +150,26 @@ The Modulor is not a metaphor. It is the literal data shape:
 | `evidence` | `evidence` table | what the agent claims it did, in machine-readable form |
 | `gate` | `gates/*.rs`, ADR-0004 | the inspection regime — refuses with HTTP 409 if non-negotiables are violated |
 | `audit_row` | `audit_log` table, hash-chained, ADR-0002 | tamper-evident memory of every state change |
+
+### Knowledge peer (ADR-0053)
+
+Work composes from the four fields above. **Typed knowledge** —
+what each accelerator *knows about its own domain* — composes from a
+parallel four-tuple, owned by `convergio-ontology`:
+
+| Field | Storage | Why it matters |
+|---|---|---|
+| `object` | `ontology_object_types` | atomic typed concept (Student, Course, Patient, …) |
+| `link` | `ontology_link_types` | typed relation between objects, with cardinality |
+| `property` | `ontology_property_types` | typed attribute on an object, with value-type + cardinality |
+| `schema_version` | `schema_version` column on every ontology row | bitemporal pin — a query at version *N* sees exactly the schema as of *N* |
+
+The same discipline that protects work (gate refusal, audit chain)
+protects knowledge: schema changes are append-only, every object
+carries a `schema_version`, and JSON-Schema + SHACL exports are
+byte-identical rerun-to-rerun (golden-tested, same posture as
+ADR-0047 `actions.json`). Verticals contribute concrete
+ObjectTypes; the platform stays domain-free.
 
 If you want to add behaviour to Convergio that does not decompose into
 this shape, ask first whether the municipality can absorb it, or whether
