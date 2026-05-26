@@ -72,7 +72,7 @@ skip = [
     # of the two versions that fastembed's dep graph pulls; ratchet when
     # upstreams converge.
     { crate = "base64@0.13.1", reason = "via fastembed/tokenizers/spm_precompiled" },
-    { crate = "compact_str@0.8.1", reason = "via fastembed/tokenizers" },
+    { crate = "compact_str@0.9.1", reason = "via fastembed/tokenizers" },
     { crate = "core-foundation@0.9.4", reason = "via fastembed/ort/hf-hub macOS path" },
     { crate = "darling@0.20.11", reason = "via fastembed/ort proc-macros" },
     { crate = "darling_core@0.20.11", reason = "via fastembed/ort proc-macros" },

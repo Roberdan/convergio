@@ -14,6 +14,9 @@ use std::sync::Arc;
 use tempfile::tempdir;
 use tokio::net::TcpListener;
 
+const PURPOSE_ID_HEADER: &str = "x-purpose-id";
+const TEST_PURPOSE_ID: &str = "00000000-0000-4000-8000-000000000441";
+
 async fn boot() -> (String, tempfile::TempDir) {
     let dir = tempdir().unwrap();
     let db_path = dir.path().join("state.db");
@@ -23,6 +26,8 @@ async fn boot() -> (String, tempfile::TempDir) {
     convergio_ops::init(&pool).await.unwrap();
     convergio_bus::init(&pool).await.unwrap();
     convergio_lifecycle::init(&pool).await.unwrap();
+    let ontology = Arc::new(convergio_ontology::Store::new(pool.clone()));
+    ontology.migrate().await.unwrap();
 
     let state = AppState {
         durability: Arc::new(Durability::new(pool.clone())),
@@ -34,6 +39,7 @@ async fn boot() -> (String, tempfile::TempDir) {
         embedder: Arc::new(convergio_embed::embedder::testing::DeterministicTestEmbedder::new(8)),
         fleet: Arc::new(convergio_fleet::FleetStore::new(pool.clone())),
         fleet_plans: Arc::new(convergio_fleet::FleetPlanStore::new(pool.clone())),
+        ontology,
         audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let app = router(state);
@@ -51,7 +57,14 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn workflow_instance_can_run_to_completion() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .default_headers({
+            let mut headers = reqwest::header::HeaderMap::new();
+            headers.insert(PURPOSE_ID_HEADER, TEST_PURPOSE_ID.parse().unwrap());
+            headers
+        })
+        .build()
+        .unwrap();
 
     let wf: Value = client
         .post(format!("{base}/v1/ops/workflows"))
