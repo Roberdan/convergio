@@ -1044,6 +1044,7 @@ dependencies = [
  "convergio-fleet",
  "convergio-graph",
  "convergio-lifecycle",
+ "convergio-ontology",
  "convergio-planner",
  "convergio-thor",
  "serde_json",
