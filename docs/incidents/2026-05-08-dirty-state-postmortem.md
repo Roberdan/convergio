@@ -145,7 +145,7 @@ if path.exists() {
     quarantine(&path)?;   // mv path → path.<ts>.invalid, log warn
 }
 ```
-Test: aggiungere `quarantines_invalid_dir_before_create` in `crates/convergio-executor/tests/worktree.rs`.
+Test: aggiungere `quarantines_invalid_dir_before_create` in `crates/convergio-executor/src/worktree.rs`.
 
 **P3 — `cleanup()` con timeout + lsof drain (chiude R5).**
 Stesso file. Wrappare `run_git(["worktree","remove",...])` in `Command::new(...).timeout(30s)` (via `wait_timeout` crate o `tokio::process` async). Su timeout: log error, non bloccare il tick. In più, prima di remove, eseguire `git worktree prune` come idempotenza per gli orfani.

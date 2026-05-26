@@ -1,14 +1,14 @@
 ---
-id: 0057
+id: 0068
 status: proposed
 date: 2026-05-25
 topics: [ontology, connectors, ingest, federated-query]
 related_adrs: [0008, 0018, 0051, 0052, 0054]
-touches_crates: [convergio-ontology, convergio-api]
+touches_crates: [convergio-api]
 last_validated: 2026-05-25
 ---
 
-# 0057. Connector SDK + Federated Query
+# 0068. Connector SDK + Federated Query
 
 - Status: proposed
 - Date: 2026-05-25
@@ -40,13 +40,13 @@ systems without first materialising everything locally.
      process; reconnect/backoff in the SDK).
 2. **Schema mapping declaration** (YAML).
    - Source fields → ontology `PropertyType` references.
-   - Per-field comparator hint for ER (ADR-0055).
-   - Required `purpose` (ADR-0054) and `capability_bundle`
+   - Per-field comparator hint for ER (ADR-0066).
+   - Required `purpose` (ADR-0065) and `capability_bundle`
      (ADR-0008) references — connectors do not run without
      explicit binding.
 3. **Idempotency contract.**
    - Every ingested record carries a stable `source_key`; the
-     SDK helper writes through typed actions (ADR-0052) that
+     SDK helper writes through typed actions (ADR-0063) that
      are idempotent on `(connector_id, source_key)`.
 4. **Failure surface.**
    - Connectors emit structured failures to the bus
@@ -66,7 +66,7 @@ systems without first materialising everything locally.
    `--federated` to fan-out to the source connector for
    non-materialised properties.
 3. **Refusal rules**: federated queries are refused when the
-   active purpose (ADR-0054) is missing or does not cover
+   active purpose (ADR-0065) is missing or does not cover
    "live upstream read"; refusal is audited.
 4. **No write-through on federated queries.** Writes always go
    through typed actions and connectors' push/pull paths.
@@ -97,7 +97,7 @@ systems without first materialising everything locally.
 - P2 local-first: SDK is in-process; federated queries open
   only to declared endpoints inside a declared purpose.
 - ADR-0008 signing: connectors must be signed bundles.
-- ADR-0054 purpose-binding: every connector must declare its
+- ADR-0065 purpose-binding: every connector must declare its
   purposes.
 
 ## Rollout
@@ -128,7 +128,7 @@ systems without first materialising everything locally.
 
 - ADR-0008 capability bundles
 - ADR-0018 long-tail vertical accelerators
-- ADR-0051 ontology runtime core
-- ADR-0052 typed actions framework
-- ADR-0054 provenance bundle + purpose registry
-- ADR-0055 entity resolution
+- ADR-0062 ontology runtime core
+- ADR-0063 typed actions framework
+- ADR-0065 provenance bundle + purpose registry
+- ADR-0066 entity resolution

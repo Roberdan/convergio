@@ -1,14 +1,14 @@
 ---
-id: 0056
+id: 0067
 status: proposed
 date: 2026-05-25
 topics: [ontology, branching, what-if, crdt, workshop]
 related_adrs: [0006, 0007, 0051, 0052, 0053]
-touches_crates: [convergio-ontology, convergio-durability]
+touches_crates: [convergio-durability]
 last_validated: 2026-05-25
 ---
 
-# 0056. Scenario Branching (Workshop primitives)
+# 0067. Scenario Branching (Workshop primitives)
 
 - Status: proposed
 - Date: 2026-05-25
@@ -40,10 +40,10 @@ primitive:
    - Reads inside the branch see branch-local mutations on top
      of the mainline snapshot at branch-creation time.
    - Reads outside the branch are unaffected.
-   - Bitemporal queries (ADR-0053) continue to work inside the
+   - Bitemporal queries (ADR-0064) continue to work inside the
      branch with branch-local `system_time`.
 3. **Typed actions inside a branch.**
-   - All typed actions (ADR-0052) run identically inside a
+   - All typed actions (ADR-0063) run identically inside a
      branch; effects land on the overlay.
    - Side-effects flagged `irreversible: true` are refused
      inside branches by default (a branch may opt-in for a
@@ -118,6 +118,6 @@ primitive:
 - ADR-0006 CRDT actor/op store
 - ADR-0007 workspace leases
 - ADR-0011 Thor sole authority for `done`
-- ADR-0051 ontology runtime core
-- ADR-0052 typed actions framework
-- ADR-0053 bitemporal + lineage
+- ADR-0062 ontology runtime core
+- ADR-0063 typed actions framework
+- ADR-0064 bitemporal + lineage

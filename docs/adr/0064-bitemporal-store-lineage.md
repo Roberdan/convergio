@@ -1,14 +1,14 @@
 ---
-id: 0053
+id: 0064
 status: proposed
 date: 2026-05-25
 topics: [ontology, bitemporal, lineage, audit]
-related_adrs: [0002, 0006, 0051, 0052]
-touches_crates: [convergio-ontology, convergio-db, convergio-durability]
+related_adrs: [0002, 0006, 0062, 0063]
+touches_crates: [convergio-db, convergio-durability]
 last_validated: 2026-05-25
 ---
 
-# 0053. Bitemporal Store + Lineage over Ontology Objects
+# 0064. Bitemporal Store + Lineage over Ontology Objects
 
 - Status: proposed
 - Date: 2026-05-25
@@ -16,7 +16,7 @@ last_validated: 2026-05-25
 
 ## Context
 
-Once typed actions (ADR-0052) project effects onto ontology
+Once typed actions (ADR-0063) project effects onto ontology
 objects, accelerators need to answer two questions that flat
 state cannot:
 
@@ -49,7 +49,7 @@ the raw evidence; this ADR makes it queryable as a graph.
    - MCP: `ontology.object.snapshot` action with the same params.
 3. **Lineage graph.**
    - Derived view over `audit_log` + `ontology_events`
-     (ADR-0052) joined on action and effect hashes.
+     (ADR-0063) joined on action and effect hashes.
    - Query API: "for object X at system_time T, return the DAG
      of actions, agents, evidence rows, plans that produced
      it".
@@ -70,7 +70,7 @@ the raw evidence; this ADR makes it queryable as a graph.
 
 - Auditability beyond hash-chain: questions about *past
   beliefs* are not answerable from `audit_log` alone.
-- Reversibility partner to ADR-0052: undo only makes sense
+- Reversibility partner to ADR-0063: undo only makes sense
   against a known prior state.
 - Local-first (P2): pure SQLite, no temporal extension required.
 
@@ -122,5 +122,5 @@ the raw evidence; this ADR makes it queryable as a graph.
 - ADR-0002 hash-chained audit
 - ADR-0006 CRDT actor/op store
 - ADR-0031 materialised timing cache
-- ADR-0051 ontology runtime core
-- ADR-0052 typed actions framework
+- ADR-0062 ontology runtime core
+- ADR-0063 typed actions framework

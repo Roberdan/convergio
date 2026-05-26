@@ -84,7 +84,7 @@ The change touches three files:
 - `crates/convergio-mcp/src/help.rs` — `spawn_runner` help schema
   documents the three kinds and the `~/.convergio/adapters/<kind>/`
   convention.
-- `docs/adr/0028-...` — this file.
+- `docs/adr/0028-runner-kinds-shell-claude-copilot.md...` — this file.
 
 No supervisor change. No DB migration. No new dependency.
 

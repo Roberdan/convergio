@@ -26,7 +26,7 @@ Three repos, registered in this order:
 |------|----------|-------------|
 | `convergio` | rust | the working tree itself |
 | `convergio-edu` | typescript | `/Users/Roberdan/GitHub/convergio-edu` if present, else fixture proxy `tests/fixtures/fleet/plan-fsm-ts` |
-| `convergio-ui-framework` | typescript / python | `/Users/Roberdan/GitHub/convergio-ui-framework` if present, else fixture proxy `tests/fixtures/fleet/plan-fsm-py` |
+| `ui-framework (external)` | typescript / python | `/Users/Roberdan/GitHub/ui-framework (external)` if present, else fixture proxy `tests/fixtures/fleet/plan-fsm-py` |
 
 **Fixture-proxy mode** is the default in CI / on contributor machines:
 the F2-11 mini-repos (plan-fsm-rs/ts/py) stand in for the missing
@@ -35,7 +35,7 @@ the pipeline runs end-to-end across three languages but they do not
 exercise real cross-repo semantics. The gate assertion is **skipped**
 in fixture-proxy mode (`assert!` only fires when both downstream repos
 are real on disk). Re-running on a workstation that has the real
-`convergio-edu` and `convergio-ui-framework` checkouts produces the
+`convergio-edu` and `ui-framework (external)` checkouts produces the
 authoritative go/no-go numbers.
 
 ## Classifier

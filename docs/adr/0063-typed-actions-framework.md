@@ -1,14 +1,14 @@
 ---
-id: 0052
+id: 0063
 status: proposed
 date: 2026-05-25
 topics: [ontology, actions, compensations, audit]
-related_adrs: [0002, 0047, 0048, 0051]
-touches_crates: [convergio-api, convergio-server, convergio-ontology, convergio-durability]
+related_adrs: [0002, 0047, 0048, 0062]
+touches_crates: [convergio-api, convergio-server, convergio-durability]
 last_validated: 2026-05-25
 ---
 
-# 0052. Typed Actions Framework over the Ontology
+# 0063. Typed Actions Framework over the Ontology
 
 - Status: proposed
 - Date: 2026-05-25
@@ -19,7 +19,7 @@ last_validated: 2026-05-25
 ADR-0047 introduced an action type registry (`actions.json`) and
 ADR-0048 introduced compensating action types. Both treat actions
 as flat envelopes whose effects live in the head of whoever
-implements them. Once `convergio-ontology` (ADR-0051) exists, the
+implements them. Once `ontology (future)` (ADR-0062) exists, the
 daemon can — and must — describe what each action *does to the
 ontology*: which `ObjectType` it creates, mutates, or links;
 which pre-conditions must hold; which compensation undoes it.
@@ -36,7 +36,7 @@ ontology**:
 
 1. **Action specification** carries:
    - `inputs`: typed parameters (referencing `PropertyType` from
-     ADR-0051 where applicable).
+     ADR-0062 where applicable).
    - `effects`: structured list of
      `{kind: create|update|link|unlink|delete, object_type,
        property_set}`.
@@ -54,7 +54,7 @@ ontology**:
 4. **Effect projection** — successful actions emit an
    `effect_envelope` written to a dedicated `ontology_events`
    table. The audit row points at the envelope hash. This is the
-   substrate that ADR-0053 (bitemporal store) and ADR-0054
+   substrate that ADR-0064 (bitemporal store) and ADR-0065
    (provenance bundle) will project on.
 5. **No domain-specific actions in core.** The framework is
    generic; concrete actions are registered by the vertical
@@ -116,4 +116,4 @@ ontology**:
 - ADR-0022 adversarial-review service
 - ADR-0047 actions.json
 - ADR-0048 compensating actions
-- ADR-0051 ontology runtime core
+- ADR-0062 ontology runtime core

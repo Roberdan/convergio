@@ -137,7 +137,7 @@ the intended shape; flipping to `accepted` requires the file-rotation
    (default `~/.convergio/logs/`). Daily rotation, retention
    30 days. Format: existing JSON layer.
 2. **Request-id middleware** in
-   `crates/convergio-server/src/middleware/request_id.rs`:
+   `crates/convergio-server-core/src/error.rs`:
    - extracts `X-Request-Id` header if present, else generates
      a UUID v4;
    - injects it into the tracing span as field `req_id`;

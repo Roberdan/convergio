@@ -17,7 +17,7 @@ flagged four recurring failure modes:
 
 The seven optimizations below close all four. They split cleanly
 into three operator-side artifacts in `~/.claude/` and four
-convergio-side artifacts in this repo, but they are designed to
+side artifacts in this repo, but they are designed to
 work as a single contract.
 
 ---
@@ -75,7 +75,7 @@ finding, prefixed `⚠️  PRE-COMPLETION:`. Today it checks:
   check short (single command + `emit`) and non-blocking — exit
   must stay 0.
 - If a check is too noisy in solo-human sessions, gate it behind a
-  repo-name match (e.g. only fire the convergio-specific checks
+  repo-name match (e.g. only fire the repo-specific checks
   inside `~/GitHub/convergio`).
 
 ## 3. Convergio Definition of Done — `AGENTS.md`

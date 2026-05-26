@@ -66,7 +66,7 @@ reproducibility test all remain explicit W9 follow-ups (see below).
 - Ed25519 trust store + rotation policy ADR.
 - Mirror discipline doc.
 - CI bundle reproducibility test.
-- `docs/capability-registry.md` for capability authors.
+- `docs/adr/0008-downloadable-capabilities.md` for capability authors.
 
 ## Status
 

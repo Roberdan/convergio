@@ -48,7 +48,7 @@ are recommended; PR #129 collision already resolved (ADR is 0038, not
 | D-4  | Fleet config location | `~/.convergio/v3/fleet.toml` | defer to F2 lock |
 | D-5  | Cluster naming | centroid keyword extraction | defer to F3 |
 | D-6  | Doc-drift snapshot trigger | on daemon start (lazy) | defer to F3 |
-| D-7  | First fleet repos | convergio + convergio-edu + convergio-ui-framework | open |
+| D-7  | First fleet repos | convergio + convergio-edu + ui-framework (external) | open |
 | D-8  | Re-embed strategy | source_hash change | open |
 | D-9  | API versioning | F1+F2 in v3.x; F3 in v4.0 | open |
 | D-10 | Telemetry on retrieval recall | opt-in, local-only | defer to F2 |
@@ -81,7 +81,7 @@ Recall@10 lift over substring baseline is the single decision metric.
 | F1-6 | Hybrid retrieval ranking (RRF default, linear with `--alpha` opt-in) | F1-3, F1-4 | `for-task` returns nodes with `match_source ∈ {structural, semantic, both}` and `score_components` | unit test `rrf_fusion_preserves_provenance` |
 | F1-7 | `cvg graph for-task --semantic` and `--gap-check` flags | F1-6 | flags wired through CLI → HTTP → server route; default off; behaves identically to current command when off (D6 back-compat) | **partial — semantic-only path landed**: this PR ships `cvg embed for-task` (semantic-only) + `cvg embed warm`/`build` + `/v1/embed/{warm,build,for-task}`; hybrid fusion layered onto `cvg graph for-task --semantic` is F1-ε |
 | F1-8 | Golden set: 30 historical Convergio tasks with hand-curated expected files | F0-5 | `tests/fixtures/retrieval-golden/` has 30 task fixtures, schema validated against `docs/spec/fleet-retrieval-golden-methodology.md` | **landed**: 30 hand-derived fixtures under `tests/fixtures/retrieval-golden/convergio/`. Mirrored as tasks in daemon plan `8570c639-90f7-45a2-9c32-11962747e70a` so the audit chain captures the curation. Bench (§15.7): hybrid lift +0.132 vs substring on real model. |
-| F1-9 | Bench harness `crates/convergio-embed/benches/recall.rs` measuring substring vs hybrid recall@10 | F1-8 | bench runs in CI on a 50-task subset; full set on nightly main only | **landed**: `crates/convergio-embed/tests/recall_bench.rs` (`#[ignore]`-gated). Reproduce with `cargo test -p convergio-embed --test recall_bench --release -- --ignored --nocapture`. Real-model variant requires `--features fastembed` + `CONVERGIO_BENCH_MODEL=multilingual-e5-small` |
+| F1-9 | Bench harness `crates/convergio-embed/tests/recall_bench.rs` measuring substring vs hybrid recall@10 | F1-8 | bench runs in CI on a 50-task subset; full set on nightly main only | **landed**: `crates/convergio-embed/tests/recall_bench.rs` (`#[ignore]`-gated). Reproduce with `cargo test -p convergio-embed --test recall_bench --release -- --ignored --nocapture`. Real-model variant requires `--features fastembed` + `CONVERGIO_BENCH_MODEL=multilingual-e5-small` |
 | F1-10 | F1 go/no-go report → ADR-0038 decision log | F1-9 | report shows recall@10 lift ≥15% absolute, p95 < 1s, storage < 50MB, incremental rebuild < 30s, OR documents the no-go finding | **landed**: ADR-0038 §15.7 documents the 30-fixture run — recall@10 lift +0.132 abs (88% of target; within fixture-selection noise). Latency, storage, rebuild, test stability all PASS by 60-100×. **Verdict: F2 GO.** |
 
 **F1 go/no-go criteria** (any ONE failed criterion = no-go):
@@ -99,7 +99,7 @@ record of why we chose not to proceed; write retrospective ADR.
 ## F2 — Multi-repo opening
 
 **Scope**: ADR-0038 § 6 F2. Open the graph to TS + Python parsers and
-backfill convergio + convergio-edu + convergio-ui-framework.
+backfill convergio + convergio-edu + ui-framework (external).
 
 | ID | Subject | Blocked by | Acceptance | Validation |
 |----|---------|-----------|-----------|-----------|

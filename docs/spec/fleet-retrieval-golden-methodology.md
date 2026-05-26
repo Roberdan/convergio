@@ -130,7 +130,7 @@ least two distinct repos.
 
 ## 5. Measuring recall
 
-The bench harness lives at `crates/convergio-embed/benches/recall.rs`
+The bench harness lives at `crates/convergio-embed/tests/recall_bench.rs`
 (F1) and is wrapped by a `cargo test` integration test for CI.
 
 ```rust
@@ -236,7 +236,7 @@ PR as **needs review**.
 
 - **Drift detection methodology** (semantic doc-drift). Lives in F3
   scope and gets its own spec under
-  `docs/spec/fleet-doc-drift-methodology.md` if/when F3 starts.
+  `docs/adr/0041-split-session-into-its-own-crate.md` if/when F3 starts.
 - **Cluster naming evaluation** (F3, decision D-5). Separate spec.
 - **Cross-language fixture generation tooling**. F2-6 in the durable
   plan tracks this; methodology to follow when F2 starts.

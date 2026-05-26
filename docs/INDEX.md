@@ -130,22 +130,22 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0049-f3-fleet-retrospective.md` | adr | [convergio-fleet, convergio-embed, convergio-graph, convergio-server, convergio-mcp, convergio-api] | accepted | 169 |
 | `docs/adr/0050-prompt-injection-gate.md` | adr | [convergio-durability] | accepted | 127 |
 | `docs/adr/0051-a11y-gate-phase-1.md` | adr | [convergio-durability] | accepted | 97 |
-| `docs/adr/0051-ontology-runtime-core.md` | adr | [convergio-ontology, convergio-db, convergio-graph, convergio-api] | proposed | 130 |
 | `docs/adr/0052-smart-thor-real-validation.md` | adr | - | accepted | 111 |
-| `docs/adr/0052-typed-actions-framework.md` | adr | [convergio-api, convergio-server, convergio-ontology, convergio-durability] | proposed | 119 |
 | `docs/adr/0053-ai-openai-runner-adapter.md` | adr | - | accepted | 84 |
-| `docs/adr/0053-bitemporal-store-lineage.md` | adr | [convergio-ontology, convergio-db, convergio-durability] | proposed | 126 |
 | `docs/adr/0054-cvg-status-agents.md` | adr | - | accepted | 53 |
-| `docs/adr/0054-provenance-bundle-purpose-registry.md` | adr | [convergio-ontology, convergio-durability, convergio-api] | proposed | 136 |
-| `docs/adr/0055-entity-resolution-service.md` | adr | [convergio-ontology, convergio-api] | proposed | 134 |
 | `docs/adr/0055-plan-objectives-and-coherence-gate.md` | adr | - | accepted | 69 |
 | `docs/adr/0056-plan-templates.md` | adr | - | accepted | 90 |
-| `docs/adr/0056-scenario-branching-workshop.md` | adr | [convergio-ontology, convergio-durability] | proposed | 123 |
-| `docs/adr/0057-connector-sdk-federated-query.md` | adr | [convergio-ontology, convergio-api] | proposed | 134 |
-| `docs/adr/0058-llm-gateway-primitive.md` | adr | [convergio-api, convergio-server, convergio-ontology] | proposed | 142 |
-| `docs/adr/0059-tui-ontology-inspector.md` | adr | [convergio-tui, convergio-ontology, convergio-api] | proposed | 149 |
-| `docs/adr/0060-deterministic-graph-output.md` | adr | [convergio-ontology, convergio-cli] | proposed | 118 |
 | `docs/adr/0061-capability-search-local.md` | adr | - | accepted | 74 |
+| `docs/adr/0062-ontology-runtime-core.md` | adr | [convergio-db, convergio-graph, convergio-api] | proposed | 130 |
+| `docs/adr/0063-typed-actions-framework.md` | adr | [convergio-api, convergio-server, convergio-durability] | proposed | 119 |
+| `docs/adr/0064-bitemporal-store-lineage.md` | adr | [convergio-db, convergio-durability] | proposed | 126 |
+| `docs/adr/0065-provenance-bundle-purpose-registry.md` | adr | [convergio-durability, convergio-api] | proposed | 136 |
+| `docs/adr/0066-entity-resolution-service.md` | adr | [convergio-api] | proposed | 134 |
+| `docs/adr/0067-scenario-branching-workshop.md` | adr | [convergio-durability] | proposed | 123 |
+| `docs/adr/0068-connector-sdk-federated-query.md` | adr | [convergio-api] | proposed | 134 |
+| `docs/adr/0069-llm-gateway-primitive.md` | adr | [convergio-api, convergio-server] | proposed | 142 |
+| `docs/adr/0070-tui-ontology-inspector.md` | adr | [convergio-tui, convergio-api] | proposed | 149 |
+| `docs/adr/0071-deterministic-graph-output.md` | adr | [convergio-cli] | proposed | 118 |
 | `docs/adr/README.md` | adr | - | - | 88 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
@@ -163,7 +163,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/v0.1.x-friction-log.md` | plan | - | - | 257 |
 | `docs/plans/v0.2-fresh-eyes-test-result.md` | plan | - | - | 168 |
 | `docs/plans/v0.2-friction-log.md` | plan | - | - | 207 |
-| `docs/plans/v1.0-production-ready.md` | plan | - | - | 743 |
+| `docs/plans/v1.0-production-ready.md` | plan | - | - | 750 |
 | `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
 | `docs/release.md` | - | - | - | 106 |
 | `docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |

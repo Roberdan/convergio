@@ -1,14 +1,14 @@
 ---
-id: 0060
+id: 0071
 status: proposed
 date: 2026-05-25
 topics: [ontology, diff, visualization, output-format]
 related_adrs: [0043, 0051, 0053, 0056]
-touches_crates: [convergio-ontology, convergio-cli]
+touches_crates: [convergio-cli]
 last_validated: 2026-05-25
 ---
 
-# 0060. Deterministic Diff / Mermaid / Graphviz output format
+# 0071. Deterministic Diff / Mermaid / Graphviz output format
 
 - Status: proposed
 - Date: 2026-05-25
@@ -16,9 +16,9 @@ last_validated: 2026-05-25
 
 ## Context
 
-ADR-0051 introduces `cvg ontology diff <from> <to>` for schema
-versions; ADR-0053 introduces `cvg ontology lineage <id>`;
-ADR-0056 introduces `cvg ontology branch diff <name>`. All
+ADR-0062 introduces `cvg ontology diff <from> <to>` for schema
+versions; ADR-0064 introduces `cvg ontology lineage <id>`;
+ADR-0067 introduces `cvg ontology branch diff <name>`. All
 three produce graph-shaped output. The default `--output
 human|json|plain` contract (ADR-0043) is right for tabular
 data but awkward for graphs.
@@ -97,9 +97,9 @@ commands with two additional formats:
 
 - Folded into plan *[core] Ontology Runtime W1: Runtime Core*
   as one additional task: "Mermaid + dot output for ontology
-  diff/lineage/branch-diff (ADR-0060)".
+  diff/lineage/branch-diff (ADR-0071)".
 - Test fixtures live under
-  `crates/convergio-ontology/tests/golden/diff/`.
+  (golden fixtures live alongside the ontology implementation).
 
 ## Consequences
 
@@ -113,6 +113,6 @@ commands with two additional formats:
 ## References
 
 - ADR-0043 API ID and payload consistency
-- ADR-0051 ontology runtime core
-- ADR-0053 bitemporal + lineage
-- ADR-0056 scenario branching
+- ADR-0062 ontology runtime core
+- ADR-0064 bitemporal + lineage
+- ADR-0067 scenario branching

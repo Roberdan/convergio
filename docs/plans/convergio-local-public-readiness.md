@@ -38,7 +38,7 @@ Implemented:
 | Release | local package script, macOS signing/notarization docs |
 | Docs | vision, multi-agent model, CRDT/workspace/capability/ACP ADRs, public honesty pass |
 | Public push gate | context packets, bus actions, signatures, docs honesty pass, and fresh validation complete |
-| Context hygiene | folder-local `AGENTS.md` and `CLAUDE.md` for crates/docs |
+| Context hygiene | folder-local `AGENTS.md` and `CLAUDE.md` for docs |
 | CRDT | actor/op schema, audited import, merge helpers, conflict listing/gate, E2E |
 | Workspace | resource/lease schema, patch proposals, merge queue arbitration, multi-agent E2E |
 | Agents | durable registry, heartbeat/list/retire APIs, lifecycle spawn skeleton |

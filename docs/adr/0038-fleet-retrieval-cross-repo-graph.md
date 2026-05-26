@@ -59,7 +59,7 @@ Match strategy is intentionally simple — substring + static score
 Six maintenance problems remain unsolved by the current tier-3 design,
 and they are **the actual pain Roberto described** while operating
 Convergio + its downstream "machines" (convergio-edu,
-convergio-ui-framework, MirrorBuddy, MirrorHR, VirtualBPM, hve-core,
+ui-framework (external), MirrorBuddy, MirrorHR, VirtualBPM, hve-core,
 WareHouse — at least 7 repos today, planned 10-20):
 
 ### 1.1. Removability uncertainty
@@ -511,8 +511,8 @@ role = "downstream"
 derives_from = "convergio"
 
 [[repo]]
-name = "convergio-ui-framework"
-path = "/Users/Roberdan/GitHub/convergio-ui-framework"
+name = "ui-framework (external)"
+path = "/Users/Roberdan/GitHub/ui-framework (external)"
 language = "typescript"
 parser = "tree-sitter"
 role = "library"
@@ -605,7 +605,7 @@ substring-only.
 **Deliverables**:
 - `crates/convergio-embed/` (≤ 800 LOC)
 - Golden set: `tests/fixtures/retrieval-golden/` (30 tasks)
-- Bench harness: `crates/convergio-embed/benches/recall.rs`
+- Bench harness: `crates/convergio-embed/tests/recall_bench.rs`
 - Migration `0700_embeddings.sql`
 - Updated `cvg graph for-task` with `--semantic` and `--gap-check`
   flags
@@ -620,7 +620,7 @@ substring-only.
 - Implement `convergio-fleet` with `fleet.toml`, `cvg fleet add/ls/
   build`, multi-repo graph schema (Node.repo + Node.language)
 - Backfill: re-parse Convergio with `repo = "convergio"`, add convergio-
-  edu and convergio-ui-framework
+  edu and ui-framework (external)
 - Cross-repo similarity batch: nightly or on-demand `cvg fleet build
   --refresh-similarity` that computes `similar_to` and `duplicates`
   edges
@@ -628,7 +628,7 @@ substring-only.
 
 **Go/no-go gate**:
 - Find **≥ 3 real cross-repo patterns** between Convergio +
-  convergio-edu + convergio-ui-framework (e.g. plan/curriculum FSM,
+  convergio-edu + ui-framework (external) (e.g. plan/curriculum FSM,
   auth, request-id propagation, i18n bundle loading)
 - False positive rate on `duplicates` (cosine ≥ 0.95) **< 20%**
   measured on 50 sampled pairs reviewed by Roberto
@@ -675,7 +675,7 @@ needs a deeper redesign (separate ADR).
 - Cross-repo audit verifier
 - ADR-0038 "Fleet plan/audit federation model"
 - New PRD addendum on fleet-level evidence verification
-- Documentation: `docs/spec/fleet-orchestration.md`
+- Documentation: `docs/spec/fleet-retrieval-cross-repo-graph.md`
 
 ---
 
@@ -1025,7 +1025,7 @@ noise (n=30). The mechanics are validated, the latency budget is
 ~100× under target, the storage budget is ~60× under target, and
 no existing tests regress. F2 (multi-language parsing of TS +
 Python via tree-sitter, backfill of convergio-edu +
-convergio-ui-framework, cross-repo cluster discovery) is unblocked.
+ui-framework (external), cross-repo cluster discovery) is unblocked.
 
 ### 15.6. How to reproduce
 
@@ -1083,7 +1083,7 @@ F3 gate stands.
 The F2 gate (§ 6 F2) calls for two numbers:
 
 1. **≥3 cross-repo patterns** discovered on Roberto's fleet
-   (convergio + convergio-edu + convergio-ui-framework).
+   (convergio + convergio-edu + ui-framework (external)).
 2. **Duplicate FP rate < 20%** on a 50-pair sample.
 
 Today, only `convergio` is present on the workstation that ran F2.

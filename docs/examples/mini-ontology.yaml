@@ -1,0 +1,14 @@
+# Minimal ontology example used by ADR-0062.
+# This file is intentionally tiny and schema-agnostic: it demonstrates the shape
+# of a vertical-provided ontology bundle, not a finalized spec.
+
+version: 0.1
+object_types:
+  - id: Person
+    properties:
+      - name: full_name
+        type: string
+link_types:
+  - id: enrolled_in
+    from: Person
+    to: Course

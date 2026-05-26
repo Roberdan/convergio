@@ -1,14 +1,14 @@
 ---
-id: 0058
+id: 0069
 status: proposed
 date: 2026-05-25
 topics: [ontology, llm, gateway, safety, p2]
 related_adrs: [0008, 0018, 0020, 0022, 0050, 0051, 0052]
-touches_crates: [convergio-api, convergio-server, convergio-ontology]
+touches_crates: [convergio-api, convergio-server]
 last_validated: 2026-05-25
 ---
 
-# 0058. LLM Gateway primitive (typed, ontology-aware)
+# 0069. LLM Gateway primitive (typed, ontology-aware)
 
 - Status: proposed
 - Date: 2026-05-25
@@ -28,7 +28,7 @@ return, and auditable end-to-end.
 Today each accelerator wires its own provider client. Result:
 no central place to apply redaction, no central place to refuse
 on suspicious output, and inconsistent provenance bundles
-(ADR-0054).
+(ADR-0065).
 
 This ADR ships an **upstream primitive** only — the gateway
 contract and a local pass-through implementation. Vertical-
@@ -44,8 +44,8 @@ surface, behind a stable contract:
 1. **Typed request envelope.**
    - `prompt`, `model_ref`, `expected_output_schema` (a
      JSON-Schema id, optionally pointing at a `PropertyType`
-     fragment from ADR-0051).
-   - `active_purpose` (ADR-0054) — required, refused otherwise.
+     fragment from ADR-0062).
+   - `active_purpose` (ADR-0065) — required, refused otherwise.
    - `capability_bundle_id` of the calling capability
      (ADR-0008).
 2. **Egress pre-flight.**
@@ -66,7 +66,7 @@ surface, behind a stable contract:
      debugging.
 5. **Audit + provenance.**
    - Every gateway call writes an `audit_log` row and emits a
-     PROV bundle (ADR-0054) referencing prompt hash, model
+     PROV bundle (ADR-0065) referencing prompt hash, model
      identifier, capability bundle, active purpose, output
      schema id, and the resulting typed action (if any).
 6. **No model registry in core.** Models are referenced by
@@ -78,7 +78,7 @@ surface, behind a stable contract:
 - One place to enforce redaction + injection gate + schema
   validation; cheaper than auditing N vertical clients.
 - Typed output is the natural feeder for typed actions
-  (ADR-0052) and PROV bundles (ADR-0054).
+  (ADR-0063) and PROV bundles (ADR-0065).
 - Pass-through only — P2 keeps networking explicit; verticals
   decide whether to talk to a cloud provider, an on-prem
   model, or an air-gapped local one.
@@ -101,7 +101,7 @@ surface, behind a stable contract:
   call to a model unless a signed capability bundle declares
   the endpoint.
 - ADR-0050 PromptInjectionGate composes with egress pre-flight.
-- ADR-0054 purpose-binding: every gateway call is refused
+- ADR-0065 purpose-binding: every gateway call is refused
   without an active purpose.
 
 ## Rollout
@@ -137,6 +137,6 @@ surface, behind a stable contract:
 - ADR-0020 model evaluation framework
 - ADR-0022 adversarial-review service
 - ADR-0050 PromptInjectionGate
-- ADR-0051 ontology runtime core
-- ADR-0052 typed actions framework
-- ADR-0054 provenance bundle + purpose registry
+- ADR-0062 ontology runtime core
+- ADR-0063 typed actions framework
+- ADR-0065 provenance bundle + purpose registry

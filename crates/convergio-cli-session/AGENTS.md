@@ -55,7 +55,7 @@ Public entry points: [`run`] and [`SessionCommand`].
 - `docs/adr/0041-split-session-into-its-own-crate.md` — extraction
   rationale (mirrors ADR-0040 for coherence).
 - `docs/adr/0040-split-coherence-into-its-own-crate.md`,
-  `docs/adr/0013-durability-split.md` — sibling cross-cutting
+  `docs/adr/0013-split-durability-into-three-crates.md` — sibling cross-cutting
   splits.
 - `docs/adr/0014-code-graph-tier3-retrieval.md` — Tier-3 graph
   context-pack consumed by `session resume --task-id`.

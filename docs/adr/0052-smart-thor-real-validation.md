@@ -9,7 +9,7 @@ deciders: roberdan
 - Status: accepted
 - Date: 2026-05-25
 - Deciders: Roberdan, Copilot CLI agent (autonomous v1.0 push)
-- Workstream: W3 from `convergio-production-ready-plan.md`
+- Workstream: W3 from `docs/plans/v1.0-production-ready.md`
 - Supersedes: extends ADR-0012 (Thor as validator)
 
 ## Context
@@ -20,7 +20,7 @@ project's *real* validation pipeline before promoting tasks
 implementation already had the seed: a single shell command in
 `CONVERGIO_THOR_PIPELINE_CMD` is executed with timeout and tail
 truncation. That covers *bring your own pipeline* — `make ci`,
-`scripts/release-check.sh`, etc. — but the v1.0 plan listed three
+`scripts/check-workspace-integrity.sh`, etc. — but the v1.0 plan listed three
 gaps that operators kept hitting:
 
 1. The default Rust workspace check (fmt + clippy + test) had to be

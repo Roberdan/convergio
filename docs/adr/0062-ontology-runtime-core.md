@@ -1,14 +1,14 @@
 ---
-id: 0051
+id: 0062
 status: proposed
 date: 2026-05-25
 topics: [ontology, modulor, platform-vs-vertical, p4]
 related_adrs: [0001, 0006, 0014, 0015, 0018]
-touches_crates: [convergio-ontology, convergio-db, convergio-graph, convergio-api]
+touches_crates: [convergio-db, convergio-graph, convergio-api]
 last_validated: 2026-05-25
 ---
 
-# 0051. Ontology Runtime Core (`convergio-ontology` crate)
+# 0062. Ontology Runtime Core (`ontology (future)` crate)
 
 - Status: proposed
 - Date: 2026-05-25
@@ -33,7 +33,7 @@ It does not know how to govern *domain-shaped* state. The Modulor
 
 ## Decision
 
-Introduce a new core crate **`convergio-ontology`** that owns:
+Introduce a new core crate **`ontology (future)`** that owns:
 
 1. **Schema registry**
    - `ObjectType`, `LinkType`, `PropertyType` records persisted in
@@ -103,7 +103,7 @@ Introduce a new core crate **`convergio-ontology`** that owns:
 ## Consequences
 
 - Verticals stop forking their own type registries; `convergio-edu`
-  becomes a consumer of `convergio-ontology` and provides only
+  becomes a consumer of `ontology (future)` and provides only
   CEDS/ELMO/EMREX/ESCO-aligned YAML.
 - A new crate appears in the workspace; the docs-as-derived-state
   pipeline (ADR-0015) regenerates the members table.
@@ -115,7 +115,7 @@ Introduce a new core crate **`convergio-ontology`** that owns:
 ## Alternatives left for verticals
 
 - Domain-specific validation rules (e.g. CEDS conformance for
-  edu) live in the vertical, not in `convergio-ontology`.
+  edu) live in the vertical, not in `ontology (future)`.
 - Public ontology publication / CC-BY-SA licensing is a vertical
   decision (`convergio-edu` ADR territory).
 

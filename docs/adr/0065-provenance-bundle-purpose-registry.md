@@ -1,14 +1,14 @@
 ---
-id: 0054
+id: 0065
 status: proposed
 date: 2026-05-25
 topics: [ontology, provenance, purpose, capabilities, w3c-prov]
 related_adrs: [0002, 0008, 0018, 0051, 0052, 0053]
-touches_crates: [convergio-ontology, convergio-durability, convergio-api]
+touches_crates: [convergio-durability, convergio-api]
 last_validated: 2026-05-25
 ---
 
-# 0054. Provenance Bundle & Purpose Registry
+# 0065. Provenance Bundle & Purpose Registry
 
 - Status: proposed
 - Date: 2026-05-25
@@ -36,7 +36,7 @@ dominio-agnostic.
 
 ### A. Provenance bundle (W3C PROV-compatible)
 
-1. Every successful typed action (ADR-0052) emits a
+1. Every successful typed action (ADR-0063) emits a
    **PROV bundle** referencing:
    - `prov:Activity` — the action.
    - `prov:Agent` — the agent that issued it (plus model
@@ -50,7 +50,7 @@ dominio-agnostic.
    ADR-0002).
 3. CLI / MCP surface: `cvg ontology provenance <object_id>`
    returns the bundle for the requested time window
-   (composes with ADR-0053 bitemporal queries).
+   (composes with ADR-0064 bitemporal queries).
 
 ### B. Purpose registry
 
@@ -67,7 +67,7 @@ dominio-agnostic.
    PROV bundle includes the purpose id.
 4. Purpose-mismatch gate: when an action effect touches an
    `ObjectType` flagged `requires_purpose: true` in its schema
-   (ADR-0051), the gate refuses unless the active purpose is
+   (ADR-0062), the gate refuses unless the active purpose is
    in the declared purpose set of the calling capability.
 
 ## Decision Drivers
@@ -130,7 +130,7 @@ dominio-agnostic.
 - ADR-0002 audit hash chain
 - ADR-0008 capability bundles
 - ADR-0018 long-tail vertical accelerators
-- ADR-0051 ontology runtime core
-- ADR-0052 typed actions framework
-- ADR-0053 bitemporal store + lineage
+- ADR-0062 ontology runtime core
+- ADR-0063 typed actions framework
+- ADR-0064 bitemporal store + lineage
 - W3C PROV-O 2013 recommendation

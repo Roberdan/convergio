@@ -50,4 +50,4 @@ Trade-offs:
 
 - ADR-0009 (agent registry)
 - `crates/convergio-cli/src/commands/status_agents.rs`
-- W5 in `convergio-production-ready-plan.md`
+- W5 in `docs/plans/v1.0-production-ready.md`

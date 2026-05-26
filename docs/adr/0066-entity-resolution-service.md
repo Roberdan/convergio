@@ -1,14 +1,14 @@
 ---
-id: 0055
+id: 0066
 status: proposed
 date: 2026-05-25
 topics: [ontology, entity-resolution, explainability]
 related_adrs: [0022, 0051, 0052, 0054]
-touches_crates: [convergio-ontology, convergio-api]
+touches_crates: [convergio-api]
 last_validated: 2026-05-25
 ---
 
-# 0055. Entity Resolution Service with Explainability
+# 0066. Entity Resolution Service with Explainability
 
 - Status: proposed
 - Date: 2026-05-25
@@ -16,7 +16,7 @@ last_validated: 2026-05-25
 
 ## Context
 
-Once the ontology runtime (ADR-0051) exists, accelerators that
+Once the ontology runtime (ADR-0062) exists, accelerators that
 ingest from multiple sources — `convergio-edu` pulling from SIS
 + LMS + identity provider; future verticals pulling from CRM +
 ERP + public registers — face the classic entity-resolution
@@ -32,8 +32,8 @@ regulated domains.
 ## Decision
 
 Add an upstream **Entity Resolution (ER) service** as part of
-the `convergio-ontology` crate (or a sibling
-`convergio-ontology-er` if the surface grows large enough; the
+the `ontology (future)` crate (or a sibling
+`ontology-er (future)` if the surface grows large enough; the
 crate split is deferred to implementation).
 
 1. **Generic primitive — zero domain knowledge.**
@@ -54,12 +54,12 @@ crate split is deferred to implementation).
      contribution, the threshold that was applied, and the
      blocking key used.
    - Stored alongside the resulting merge/unmerge action
-     (ADR-0052) so lineage (ADR-0053) and provenance
-     (ADR-0054) trace it end-to-end.
+     (ADR-0063) so lineage (ADR-0064) and provenance
+     (ADR-0065) trace it end-to-end.
 4. **Merge is a typed action with a guaranteed undo.**
    - `ontology.entity.merge` is a typed action with an
      explicit compensation `ontology.entity.unmerge`
-     (ADR-0048 / ADR-0052), keyed by the merge proposal hash.
+     (ADR-0048 / ADR-0063), keyed by the merge proposal hash.
 5. **Adversarial-review hook (ADR-0022).**
    - High-score-but-low-confidence merges (configurable band)
      are forwarded to the adversarial-review service before
@@ -76,7 +76,7 @@ crate split is deferred to implementation).
   ADR-0018 warns against.
 - Explainability is a regulatory and trust requirement; the
   upstream primitive must enforce it.
-- Reversibility composes with ADR-0052: an ER mistake is fixed
+- Reversibility composes with ADR-0063: an ER mistake is fixed
   by an unmerge action, never by manual SQL.
 
 ## Considered Options
@@ -94,7 +94,7 @@ crate split is deferred to implementation).
 - P2 local-first: ER runs in-process.
 - ADR-0022 adversarial-review: borderline merges flow through
   the existing challenge surface.
-- ADR-0054 purpose-binding: ER actions are bound to a declared
+- ADR-0065 purpose-binding: ER actions are bound to a declared
   purpose (e.g. "deduplication for billing", "deduplication for
   enrolment"), refused otherwise.
 
@@ -127,8 +127,8 @@ crate split is deferred to implementation).
 - ADR-0008 capability bundles
 - ADR-0022 adversarial-review
 - ADR-0048 compensating actions
-- ADR-0051 ontology runtime core
-- ADR-0052 typed actions framework
-- ADR-0053 bitemporal + lineage
-- ADR-0054 provenance bundle + purpose registry
+- ADR-0062 ontology runtime core
+- ADR-0063 typed actions framework
+- ADR-0064 bitemporal + lineage
+- ADR-0065 provenance bundle + purpose registry
 - Fellegi, Sunter (1969). *A Theory for Record Linkage.*

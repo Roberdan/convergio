@@ -42,7 +42,7 @@ Two Microsoft-affiliated bodies of work are adjacent to Convergio:
 2. **`microsoft/hve-core`** — a Microsoft-internal/public collection
    of Copilot agents, instructions, prompts, and skills consumed
    via a VS Code extension. Includes
-   `docs/templates/engineering-fundamentals.md` with code-level
+   ISE Engineering Fundamentals (external) with code-level
    principles: DRY, Simplicity First, Surgical Changes, Approach
    Proportionality. Pipeline is RPI (Research → Plan → Implement →
    Review), strictly sequential and human-driven via context-clear.
@@ -109,7 +109,7 @@ Keep the five sacred principles as the gate-level non-negotiables.
 Document the mapping to ISE NFRs explicitly. Commit to closing the
 P3 a11y honesty gap with a real `A11yGate` (planned for v0.3,
 ROADMAP Wave 1). Position hve-core as the *prompt source* for an
-agent runner adapter and link `engineering-fundamentals.md` (DRY
+agent runner adapter and link `ISE Engineering Fundamentals` (DRY
 / Simplicity / Surgical / Proportionality) as advisory taste rules
 that may be enforced via an optional `EngineeringFundamentalsGate`
 per-domain.
@@ -134,7 +134,7 @@ elsewhere.
 
 | Convergio | ISE Playbook | hve-core | Convergio gate | Status |
 |---|---|---|---|---|
-| **P1** Zero-debt / zero-warnings | Code Reviews § Linters/Code Analyzers; Source Control § main-shippable | `engineering-fundamentals.md` Simplicity First, Surgical Changes | `NoDebtGate` (7 langs), `ZeroWarningsGate` | enforced |
+| **P1** Zero-debt / zero-warnings | Code Reviews § Linters/Code Analyzers; Source Control § main-shippable | `ISE Engineering Fundamentals` Simplicity First, Surgical Changes | `NoDebtGate` (7 langs), `ZeroWarningsGate` | enforced |
 | **P2** Security-first | Security chapter + NFR Privacy/Compliance | (no direct equivalent) | `NoSecretsGate`; `PromptInjectionGate` v0.3+ | partial |
 | **P3** Accessibility-first | NFR Accessibility | (no direct equivalent) | `A11yGate` — **planned, not yet enforced** | honesty gap |
 | **P4** No scaffolding only | DevEx § F5-to-run; CI/CD § main-shippable | Surgical Changes | `NoStubGate`; `WireCheckGate` v0.3+ | partial |
@@ -173,7 +173,7 @@ instructions, and skills in `microsoft/hve-core` as the *prompt
 configuration* for the spawned agent. The Convergio side enforces
 runtime; hve-core supplies the prompt it enforces against.
 
-The `engineering-fundamentals.md` taste rules (DRY, Simplicity
+The `ISE Engineering Fundamentals` taste rules (DRY, Simplicity
 First, Surgical Changes, Approach Proportionality) become an
 optional `EngineeringFundamentalsGate` that capability bundle
 authors may enable for accelerators where they apply. They do not
@@ -214,7 +214,7 @@ audiences. It is accurate without overstating.
 - The P3 a11y honesty gap gets a concrete close-out plan instead of
   a perennial "planned" status.
 - Capability bundle authors get a known catalogue of taste rules
-  (`engineering-fundamentals.md`) they can opt into, without
+  (`ISE Engineering Fundamentals`) they can opt into, without
   Convergio becoming opinionated about taste.
 - Copilot becomes a first-class runner alongside Claude and OpenAI
   via the runner adapter pattern (ROADMAP Wave 2-3).

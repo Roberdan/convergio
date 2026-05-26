@@ -22,7 +22,7 @@ Docs lag the implemented HTTP surface, and several route files are close to the 
 | Severity | Location | Finding | Suggested action |
 |----------|----------|---------|------------------|
 | low | crates/convergio-server/src/routes/graph.rs:1 | `graph.rs` is 295 lines and one feature away from the 300-line cap. | Split hybrid semantic assembly or graph query DTOs into a sibling module. |
-| low | crates/convergio-server/src/routes/fleet.rs:1 | `fleet.rs` is 277 lines and mixes repo CRUD, build orchestration, and pattern queries. | Split fleet repo CRUD from build/pattern route handlers. |
+| low | crates/convergio-fleet-routes/src/fleet.rs:1 | `fleet.rs` is 277 lines and mixes repo CRUD, build orchestration, and pattern queries. | Split fleet repo CRUD from build/pattern route handlers. |
 | low | crates/convergio-server/src/error.rs:1 | `error.rs` is 266 lines and centralizes unrelated durability, bus, lifecycle, graph, and fleet mappings. | Split domain-specific error mapping helpers while preserving the stable JSON envelope. |
 | low | crates/convergio-server/src/routes/messages.rs:57 | Message-limit validation is duplicated across plan, system, and context message routes. | Extract a small shared limit validator with route-specific error codes. |
 

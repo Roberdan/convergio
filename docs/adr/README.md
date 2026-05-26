@@ -69,20 +69,20 @@ do not edit between the markers.
 | [0049](./0049-f3-fleet-retrospective.md) | 0049. F3 fleet-grade orchestration — retrospective | accepted |
 | [0050](./0050-prompt-injection-gate.md) | 0050. PromptInjectionGate (P2 phase 1) | accepted |
 | [0051](./0051-a11y-gate-phase-1.md) | 0051. A11yGate phase 1 — built-in accessibility checks on evidence | accepted |
-| [0051](./0051-a11y-gate-phase-1.md) | 0051. Ontology Runtime Core (`convergio-ontology` crate) | proposed |
 | [0052](./0052-smart-thor-real-validation.md) | -0052 — Smart Thor: real validation, audited pipeline runs, and skip-when-trusted | accepted |
-| [0052](./0052-smart-thor-real-validation.md) | 0052. Typed Actions Framework over the Ontology | proposed |
-| [0053](./0053-bitemporal-store-lineage.md) | 0053. Bitemporal Store + Lineage over Ontology Objects | proposed |
-| [0053](./0053-bitemporal-store-lineage.md) | 0053 — OpenAI vendor runner adapter | accepted |
-| [0054](./0054-provenance-bundle-purpose-registry.md) | 0054. Provenance Bundle & Purpose Registry | proposed |
-| [0054](./0054-provenance-bundle-purpose-registry.md) | 0054 — `cvg status --agents` live agent listing | accepted |
-| [0055](./0055-entity-resolution-service.md) | 0055. Entity Resolution Service with Explainability | proposed |
-| [0055](./0055-entity-resolution-service.md) | -0055 — Plan objectives table and PlanCoherenceGate | accepted |
-| [0056](./0056-scenario-branching-workshop.md) | 0056. Scenario Branching (Workshop primitives) | proposed |
-| [0056](./0056-scenario-branching-workshop.md) | -0056 — Parametric plan templates and `cvg plan-templates` | accepted |
-| [0057](./0057-connector-sdk-federated-query.md) | 0057. Connector SDK + Federated Query | proposed |
-| [0058](./0058-llm-gateway-primitive.md) | 0058. LLM Gateway primitive (typed, ontology-aware) | proposed |
-| [0059](./0059-tui-ontology-inspector.md) | 0059. TUI Ontology Inspector (read-only) | proposed |
-| [0060](./0060-deterministic-graph-output.md) | 0060. Deterministic Diff / Mermaid / Graphviz output format | proposed |
+| [0053](./0053-ai-openai-runner-adapter.md) | 0053 — OpenAI vendor runner adapter | accepted |
+| [0054](./0054-cvg-status-agents.md) | 0054 — `cvg status --agents` live agent listing | accepted |
+| [0055](./0055-plan-objectives-and-coherence-gate.md) | -0055 — Plan objectives table and PlanCoherenceGate | accepted |
+| [0056](./0056-plan-templates.md) | -0056 — Parametric plan templates and `cvg plan-templates` | accepted |
 | [0061](./0061-capability-search-local.md) | -0061 — `cvg capability search` (local-only slice of W9) | accepted |
+| [0062](./0062-ontology-runtime-core.md) | 0062. Ontology Runtime Core (`ontology (future)` crate) | proposed |
+| [0063](./0063-typed-actions-framework.md) | 0063. Typed Actions Framework over the Ontology | proposed |
+| [0064](./0064-bitemporal-store-lineage.md) | 0064. Bitemporal Store + Lineage over Ontology Objects | proposed |
+| [0065](./0065-provenance-bundle-purpose-registry.md) | 0065. Provenance Bundle & Purpose Registry | proposed |
+| [0066](./0066-entity-resolution-service.md) | 0066. Entity Resolution Service with Explainability | proposed |
+| [0067](./0067-scenario-branching-workshop.md) | 0067. Scenario Branching (Workshop primitives) | proposed |
+| [0068](./0068-connector-sdk-federated-query.md) | 0068. Connector SDK + Federated Query | proposed |
+| [0069](./0069-llm-gateway-primitive.md) | 0069. LLM Gateway primitive (typed, ontology-aware) | proposed |
+| [0070](./0070-tui-ontology-inspector.md) | 0070. TUI Ontology Inspector (read-only) | proposed |
+| [0071](./0071-deterministic-graph-output.md) | 0071. Deterministic Diff / Mermaid / Graphviz output format | proposed |
 <!-- END AUTO -->

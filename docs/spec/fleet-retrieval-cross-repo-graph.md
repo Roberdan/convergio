@@ -13,7 +13,7 @@
 
 Convergio v3 is a leash for ONE repo's AI agent. Roberto operates a
 **fleet** of 7+ repositories (Convergio engine, convergio-edu,
-convergio-ui-framework, MirrorBuddy, MirrorHR_Set, VirtualBPM,
+ui-framework (external), MirrorBuddy, MirrorHR_Set, VirtualBPM,
 hve-core, WareHouse — heading toward 10-20). The current product
 shape leaves him answering critical maintenance questions **manually
 across N repos**:
@@ -238,7 +238,7 @@ suggestion.
 - LLM-suggested cluster names are opt-in; default uses centroid
   keyword extraction
 - Each cluster has a "candidate hoist target" (e.g. "extract to
-  convergio-fsm-core")
+  fsm-core (external)")
 
 **US-3.2** As Roberto, when I run `cvg fleet duplicates`, I see
 near-exact code/concept duplicates across repos with cosine ≥ 0.95
@@ -258,7 +258,7 @@ gate set, all linked under one fleet plan ID.
 
 **Acceptance criteria**:
 - `cvg fleet plan create "<title>" --repos convergio,convergio-edu,
-  convergio-ui-framework`
+  ui-framework (external)`
 - Each repo's plan inherits fleet plan ID + has its own evidence
   rows + gate run
 - `cvg fleet plan show <id>` shows fleet rollup: per-repo status,
@@ -410,7 +410,7 @@ cvg fleet
 NAME                   PATH                                           LANG     ROLE        NODES    EMBED    LAST BUILD
 convergio              ~/GitHub/convergio                             rust     engine      4823     ✓        2 min ago
 convergio-edu          ~/GitHub/convergio-edu                         ts+py    downstream  6914     ✓        2 min ago
-convergio-ui-framework ~/GitHub/convergio-ui-framework                ts       library     2102     ✓        2 min ago
+ui-framework (external) ~/GitHub/ui-framework (external)                ts       library     2102     ✓        2 min ago
 MirrorHR_Set           ~/GitHub/MirrorHR_Set                          ts       downstream  3441     ✗        never
 ```
 
@@ -429,7 +429,7 @@ RANK  CONF   REPO            KIND     NAME                             REASON
 
 ```
 CLUSTER  CONF   REPOS-COUNT   PATTERN-NAME                  HOIST CANDIDATE
-P-01     0.93   4             "Plan/Workflow with phases"   extract → convergio-fsm-core
+P-01     0.93   4             "Plan/Workflow with phases"   extract → fsm-core (external)
 P-02     0.88   3             "Auth via scrypt + JWT"       align on convergio-auth
 P-03     0.85   3             "i18n bundle loader"          extract → convergio-i18n
 ```
@@ -497,7 +497,7 @@ IT and EN parity day one (per CONSTITUTION P5).
 **What ships**:
 - `convergio-parse-multi` (TS + Python)
 - `convergio-fleet` (config, CLI, multi-repo build)
-- Backfill of `convergio` + `convergio-edu` + `convergio-ui-framework`
+- Backfill of `convergio` + `convergio-edu` + `ui-framework (external)`
 - `cvg fleet patterns`, `cvg fleet duplicates`
 - Migration `0800_fleet.sql`
 
@@ -603,7 +603,7 @@ recommendation but the call is product-level.
 | **D-4** | Fleet config location | `~/.convergio/v3/fleet.toml` | per-repo `convergio.yaml` aggregation | F2 lock |
 | **D-5** | Cluster naming | Centroid keyword extraction | LLM-generated names (one inference call) | F3 |
 | **D-6** | Doc-drift snapshot trigger | On daemon start (lazy) | Git pre-push hook | F3 lock |
-| **D-7** | First fleet repos | convergio + convergio-edu + convergio-ui-framework | All 7 at once | F2 start |
+| **D-7** | First fleet repos | convergio + convergio-edu + ui-framework (external) | All 7 at once | F2 start |
 | **D-8** | Re-embed strategy | source_hash change | mtime + hash | F1 start |
 | **D-9** | API versioning | F1+F2 in v3.x; F3 in v4.0 | Hold all for v4.0 | before F1 ships |
 | **D-10** | Telemetry on retrieval recall | Opt-in, local-only | Off | F2 |
@@ -673,7 +673,7 @@ Approval sequence:
 - **Downstream repo**: a repo that declares `derives_from: <engine>`
   in `convergio.yaml`, e.g. convergio-edu.
 - **Library repo**: a repo intended to be consumed by other fleet
-  repos, e.g. convergio-ui-framework.
+  repos, e.g. ui-framework (external).
 - **Sandbox repo**: opt-in fleet member with relaxed dead-code
   thresholds (work in progress, prototypes).
 - **Structural retrieval**: existing substring-based + static-score

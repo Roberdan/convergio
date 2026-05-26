@@ -1,14 +1,14 @@
 ---
-id: 0059
+id: 0070
 status: proposed
 date: 2026-05-25
 topics: [ontology, tui, observability, dashboard]
-related_adrs: [0023, 0029, 0051, 0052, 0053, 0055, 0056, 0058]
-touches_crates: [convergio-tui, convergio-ontology, convergio-api]
+related_adrs: [0023, 0029, 0062, 0063, 0064, 0066, 0067, 0069]
+touches_crates: [convergio-tui, convergio-api]
 last_validated: 2026-05-25
 ---
 
-# 0059. TUI Ontology Inspector (read-only)
+# 0070. TUI Ontology Inspector (read-only)
 
 - Status: proposed
 - Date: 2026-05-25
@@ -16,7 +16,7 @@ last_validated: 2026-05-25
 
 ## Context
 
-ADRs 0051–0058 add an ontology runtime, typed actions,
+ADRs 0062–0069 add an ontology runtime, typed actions,
 bitemporal store + lineage, ER, branching, connectors, and an
 LLM gateway. All of these emit state that operators need to
 inspect at runtime, not just at audit time. The CLI is fine
@@ -27,7 +27,7 @@ its dashboard separation pattern. The natural place for an
 ontology observability surface is **inside that TUI**, not in a
 new graphical frontend (which would violate the local-first
 posture and the urbanism split — see ADR-0018 and the
-`convergio-workbench` accelerator stub).
+`workbench (future)` accelerator stub).
 
 This ADR is deliberately **read-only**. Authoring of schemas
 remains YAML inside signed capability bundles (ADR-0008);
@@ -44,31 +44,31 @@ panels, all read-only, all sourced from existing crate APIs:
    from the schema registry; show `schema_version`,
    `content_hash`, `breaking` flag, registering plan. Drilldown
    into property definitions and JSON-Schema preview.
-   _Source: ADR-0051._
+   _Source: ADR-0062._
 2. **Live events** — rolling tail of `ontology_events`,
    filterable by `object_type`, `action`, `agent`, `purpose`.
    Subscribes to the existing Layer 2 bus topic.
-   _Source: ADR-0052._
+   _Source: ADR-0063._
 3. **Lineage** — ASCII DAG renderer for the lineage of a
    selected `object_id`, with `--as-of` and `--valid-at`
    navigation (bitemporal). Hash references link back to
    `audit_log` rows.
-   _Source: ADR-0053._
+   _Source: ADR-0064._
 4. **Branches** — active scenario branches, author, expiry,
    mutation count, diff size; quick-jump to branch diff.
-   _Source: ADR-0056._
+   _Source: ADR-0067._
 5. **ER queue** — pending `MatchProposal` rows in `hold`
    state, with comparator breakdown and recommended action;
    no merge button (refers the user to the CLI / capability
    surface).
-   _Source: ADR-0055._
+   _Source: ADR-0066._
 6. **Gateway calls** — rolling tail of LLM gateway calls
    (prompt hash, model id, schema id, purpose, refuse/accept
    outcome); never shows raw prompt content (it might carry
    redactable PII). A separate "detail" view requires an
    active `inspect` purpose to reveal payloads — refused
    otherwise.
-   _Source: ADR-0058._
+   _Source: ADR-0069._
 
 ### Non-goals
 
@@ -76,7 +76,7 @@ panels, all read-only, all sourced from existing crate APIs:
   the operator wants to take (validate YAML, register type,
   approve merge, register purpose) is surfaced as a
   CLI-command hint with the exact `cvg` invocation copied to
-  clipboard. This keeps the typed-action surface (ADR-0052)
+  clipboard. This keeps the typed-action surface (ADR-0063)
   authoritative.
 - **No graphical rendering** (no Tauri, no embedded
   webserver). ASCII / box-drawing characters only.
@@ -93,7 +93,7 @@ panels, all read-only, all sourced from existing crate APIs:
   is the contract); no animations required to comprehend
   state.
 - Payload-redaction in the Gateway panel honours the LLM
-  gateway's redactor chain (ADR-0058) by default.
+  gateway's redactor chain (ADR-0069) by default.
 
 ## Decision Drivers
 
@@ -110,7 +110,7 @@ panels, all read-only, all sourced from existing crate APIs:
    bind / new attack surface) and pulls toward authoring.
 2. **External desktop app (Tauri).** Rejected — introduces
    build-time dependency on a UI runtime; better as a
-   separate vertical accelerator (`convergio-workbench`).
+   separate vertical accelerator (`workbench (future)`).
 3. **Read-only TUI panels (this proposal).** Accepted.
 
 ## Rollout
@@ -132,7 +132,7 @@ panels, all read-only, all sourced from existing crate APIs:
 ## Alternatives left for verticals
 
 - Graphical / web-based ontology workbench (see
-  `convergio-workbench` plan stub) — vertical accelerator
+  `workbench (future)` plan stub) — vertical accelerator
   built on the core HTTP + MCP API.
 
 ## References
@@ -141,9 +141,9 @@ panels, all read-only, all sourced from existing crate APIs:
 - ADR-0018 long-tail vertical accelerators
 - ADR-0023 observability tier
 - ADR-0029 TUI dashboard crate separation
-- ADR-0051 ontology runtime core
-- ADR-0052 typed actions framework
-- ADR-0053 bitemporal store + lineage
-- ADR-0055 entity resolution service
-- ADR-0056 scenario branching
-- ADR-0058 LLM gateway primitive
+- ADR-0062 ontology runtime core
+- ADR-0063 typed actions framework
+- ADR-0064 bitemporal store + lineage
+- ADR-0066 entity resolution service
+- ADR-0067 scenario branching
+- ADR-0069 LLM gateway primitive

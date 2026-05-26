@@ -7,14 +7,14 @@ All notable changes to Convergio will be documented in this file.
 ### Added
 - placeholder for the next release
 
-## [0.3.9](https://github.com/Roberdan/convergio/compare/convergio-v0.3.8...convergio-v0.3.9) (2026-05-03)
+## [0.3.9](https://github.com/Roberdan/convergio/compare/v0.3.8...v0.3.9) (2026-05-03)
 
 ### Features
 
 * **cli:** cvg agent spawn — drive vendor cli runners end-to-end
 * **runner:** vendor-cli runner crate (claude + copilot)
 
-## [0.3.8](https://github.com/Roberdan/convergio/compare/convergio-v0.3.7...convergio-v0.3.8) (2026-05-03)
+## [0.3.8](https://github.com/Roberdan/convergio/compare/v0.3.7...v0.3.8) (2026-05-03)
 
 ### Features
 
@@ -25,13 +25,13 @@ All notable changes to Convergio will be documented in this file.
 
 * **durability:** write timing cache on close_task_post_hoc too
 
-## [0.3.7](https://github.com/Roberdan/convergio/compare/convergio-v0.3.6...convergio-v0.3.7) (2026-05-02)
+## [0.3.7](https://github.com/Roberdan/convergio/compare/v0.3.6...v0.3.7) (2026-05-02)
 
 ### Features
 
 * **tui:** accessible palette + scoped master/detail filtering
 
-## [0.3.6](https://github.com/Roberdan/convergio/compare/convergio-v0.3.5...convergio-v0.3.6) (2026-05-02)
+## [0.3.6](https://github.com/Roberdan/convergio/compare/v0.3.5...v0.3.6) (2026-05-02)
 
 ### Features
 
