@@ -1,11 +1,6 @@
-//! `task_taxonomy` + `eval_outcomes` DAO. Skeleton for the W10
-//! Cost-of-Pass framework (ADR-0063).
-//!
-//! Today this is read-mostly: the daemon exposes the closed
-//! taxonomy and accepts skeletal eval outcome rows so that W10-full
-//! (Smart Thor recorder, `model_evaluations` view, MCP
-//! `eval.recommend`) can land incrementally without another
-//! migration.
+//! `task_taxonomy` + `eval_outcomes` DAO. Skeleton for W10
+//! Cost-of-Pass (ADR-0063). W10-full will add the
+//! `model_evaluations` view + Thor recorder + MCP `eval.recommend`.
 
 use crate::error::Result;
 use chrono::Utc;
@@ -33,7 +28,7 @@ pub struct EvalOutcome {
     pub taxonomy_kind: String,
     /// Did Thor's pipeline pass overall?
     pub passed: bool,
-    /// USD cost reported by the vendor (None until Thor populates).
+    /// USD cost reported by the vendor.
     pub cost_usd: Option<f64>,
     /// End-to-end latency in milliseconds.
     pub latency_ms: Option<i64>,
@@ -50,7 +45,7 @@ pub struct NewEvalOutcome {
     pub plan_id: String,
     /// Runner kind wire string (`vendor:model`).
     pub runner_kind: String,
-    /// Closed taxonomy kind — must already exist in `task_taxonomy`.
+    /// Closed taxonomy kind — must exist in `task_taxonomy`.
     pub taxonomy_kind: String,
     /// Did the pipeline pass?
     pub passed: bool,
@@ -65,22 +60,23 @@ impl TaxonomyStore {
     pub fn new(pool: Pool) -> Self {
         Self { pool }
     }
-
     /// All known taxonomy kinds, sorted.
     pub async fn list(&self) -> Result<Vec<String>> {
-        let rows =
-            sqlx::query_as::<_, (String,)>("SELECT kind FROM task_taxonomy ORDER BY kind ASC")
-                .fetch_all(self.pool.inner())
-                .await?;
+        let rows = sqlx::query_as::<_, (String,)>(
+            "SELECT kind FROM task_taxonomy ORDER BY kind ASC",
+        )
+        .fetch_all(self.pool.inner())
+        .await?;
         Ok(rows.into_iter().map(|(k,)| k).collect())
     }
-
     /// True if `kind` is in the closed list.
     pub async fn contains(&self, kind: &str) -> Result<bool> {
-        let row = sqlx::query_as::<_, (i64,)>("SELECT COUNT(1) FROM task_taxonomy WHERE kind = ?")
-            .bind(kind)
-            .fetch_one(self.pool.inner())
-            .await?;
+        let row = sqlx::query_as::<_, (i64,)>(
+            "SELECT COUNT(1) FROM task_taxonomy WHERE kind = ?",
+        )
+        .bind(kind)
+        .fetch_one(self.pool.inner())
+        .await?;
         Ok(row.0 > 0)
     }
 }
@@ -96,7 +92,6 @@ impl EvalOutcomeStore {
     pub fn new(pool: Pool) -> Self {
         Self { pool }
     }
-
     /// Insert a new eval outcome. Returns the persisted row.
     pub async fn record(&self, input: NewEvalOutcome) -> Result<EvalOutcome> {
         let id = Uuid::new_v4().to_string();
@@ -129,14 +124,10 @@ impl EvalOutcomeStore {
             recorded_at,
         })
     }
-
-    /// Count rows scoped by `(runner_kind, taxonomy_kind)`. The
-    /// `model_evaluations` view in W10-full will replace this with a
-    /// pass-rate / mean-cost / p95-latency aggregation.
+    /// Count rows scoped by `(runner_kind, taxonomy_kind)`.
     pub async fn count_for(&self, runner_kind: &str, taxonomy_kind: &str) -> Result<i64> {
         let row = sqlx::query_as::<_, (i64,)>(
-            "SELECT COUNT(1) FROM eval_outcomes \
-             WHERE runner_kind = ? AND taxonomy_kind = ?",
+            "SELECT COUNT(1) FROM eval_outcomes WHERE runner_kind = ? AND taxonomy_kind = ?",
         )
         .bind(runner_kind)
         .bind(taxonomy_kind)
