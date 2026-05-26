@@ -41,6 +41,7 @@ pub fn router(state: AppState) -> Router {
         .merge(crate::routes::telemetry::router())
         .merge(crate::routes::api_actions::router())
         .merge(crate::routes::gate_preconditions::router())
+        .merge(crate::routes::search::router())
         .merge(crate::routes::gdpr::router())
         .layer(TraceLayer::new_for_http())
         .with_state(state)

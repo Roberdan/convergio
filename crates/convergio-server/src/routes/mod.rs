@@ -21,6 +21,7 @@ pub mod ontology_branches;
 pub mod ontology_graph;
 pub mod plans;
 pub mod pr_links;
+pub mod search;
 pub mod solve;
 pub mod status;
 pub mod system_messages;

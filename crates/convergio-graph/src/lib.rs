@@ -48,6 +48,7 @@ pub mod query;
 mod query_adrs;
 pub mod query_hints;
 mod query_match;
+pub mod search;
 pub mod store;
 pub mod tokens;
 
@@ -61,4 +62,5 @@ pub use query::{
     DEFAULT_NODE_LIMIT, DEFAULT_TOKEN_BUDGET, MAX_NODE_LIMIT, MAX_TOKEN_BUDGET,
 };
 pub use query_hints::StructuredContextMetadata;
+pub use search::{search_nodes, NodeSearchHit};
 pub use store::Store;
