@@ -65,8 +65,28 @@ impl Crosswalk {
     }
 
     /// Compute a stable schema hash over the canonical JSON form.
+    ///
+    /// The hash must be stable across semantically-equivalent YAML files.
+    /// In particular, the ordering of `fields` in YAML must not change the
+    /// schema hash.
     pub fn schema_hash(&self) -> Result<SchemaHash, ConnectorError> {
-        let bytes = to_canonical_bytes(self)?;
+        let mut canonical = self.clone();
+        canonical.fields.sort_by(|a, b| {
+            (
+                a.source.as_str(),
+                a.property.as_str(),
+                a.comparator.as_deref().unwrap_or(""),
+                a.source_key,
+            )
+                .cmp(&(
+                    b.source.as_str(),
+                    b.property.as_str(),
+                    b.comparator.as_deref().unwrap_or(""),
+                    b.source_key,
+                ))
+        });
+
+        let bytes = to_canonical_bytes(&canonical)?;
         let digest = Sha256::digest(bytes);
         Ok(SchemaHash::new_hex(hex::encode(digest)))
     }
@@ -82,6 +102,7 @@ impl Crosswalk {
                 "crosswalk.fields must be non-empty",
             ));
         }
+        let mut seen_sources = std::collections::BTreeSet::new();
         for f in &self.fields {
             if f.source.trim().is_empty() {
                 return Err(ConnectorError::protocol(
@@ -92,6 +113,12 @@ impl Crosswalk {
                 return Err(ConnectorError::protocol(
                     "crosswalk.fields[].property must be non-empty",
                 ));
+            }
+            if !seen_sources.insert(f.source.as_str()) {
+                return Err(ConnectorError::protocol(format!(
+                    "crosswalk has duplicate source field: {}",
+                    f.source
+                )));
             }
         }
         if !self.fields.iter().any(|f| f.source_key) {

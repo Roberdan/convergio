@@ -765,7 +765,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-connector"
-version = "0.3.31"
+version = "0.3.33"
 dependencies = [
  "async-trait",
  "hex",
