@@ -19,7 +19,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
 | `.pr-body.md` | - | - | - | 83 |
-| `AGENTS.md` | agent-rules | - | - | 591 |
+| `AGENTS.md` | agent-rules | - | - | 589 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
 | `CHANGELOG.md` | release | - | - | 1343 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -63,7 +63,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-lifecycle/README.md` | crate-readme | - | - | 63 |
 | `crates/convergio-mcp/AGENTS.md` | crate-rules | - | - | 29 |
 | `crates/convergio-mcp/README.md` | crate-readme | - | - | 12 |
-| `crates/convergio-parse-multi/AGENTS.md` | crate-rules | - | - | 64 |
+| `crates/convergio-parse-multi/AGENTS.md` | crate-rules | - | - | 63 |
 | `crates/convergio-parse-multi/CLAUDE.md` | crate-rules | - | - | 1 |
 | `crates/convergio-planner/AGENTS.md` | crate-rules | - | - | 32 |
 | `crates/convergio-planner/README.md` | crate-readme | - | - | 23 |
@@ -147,7 +147,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0060-deterministic-graph-output.md` | adr | [convergio-ontology, convergio-cli] | proposed | 118 |
 | `docs/adr/0061-capability-search-local.md` | adr | - | accepted | 74 |
 | `docs/adr/0062-dispatch-choice-audit-row.md` | adr | - | accepted | 70 |
-| `docs/adr/README.md` | adr | - | - | 89 |
+| `docs/adr/0063-task-taxonomy-eval-skeleton.md` | adr | - | accepted | 68 |
+| `docs/adr/README.md` | adr | - | - | 83 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
