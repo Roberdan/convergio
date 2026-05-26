@@ -16,6 +16,7 @@ pub mod gdpr;
 pub mod graph;
 pub mod health;
 pub(crate) mod limits;
+pub mod llm_gateway;
 pub mod messages;
 pub mod ontology;
 pub mod ontology_branches;

@@ -9,6 +9,7 @@ use crate::ontology_branch_store::OntologyBranchStore;
 use crate::store::{
     CrdtStore, EvidenceStore, PlanPrLinksStore, PlanStore, TaskStore, WorkspaceStore, WorktreeStore,
 };
+
 use chrono::Utc;
 use convergio_db::Pool;
 use serde_json::json;
@@ -81,6 +82,11 @@ impl Durability {
     /// Ontology branch + overlay entry store accessor.
     pub fn ontology(&self) -> OntologyBranchStore {
         OntologyBranchStore::new(self.pool.clone())
+    }
+
+    /// LLM gateway cache store accessor.
+    pub fn llm_gateway_cache(&self) -> crate::store::LlmGatewayCacheStore {
+        crate::store::LlmGatewayCacheStore::new(self.pool.clone())
     }
 
     /// Audit log accessor.
