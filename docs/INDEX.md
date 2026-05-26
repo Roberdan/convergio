@@ -177,6 +177,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/v1.0-production-ready.md` | plan | - | - | 754 |
 | `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
 | `docs/release.md` | - | - | - | 131 |
+| `docs/research/2026-05-26-vertical-accelerators-demand-signals.md` | - | - | - | 168 |
+| `docs/research/AGENTS.md` | - | - | - | 22 |
 | `docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |
 | `docs/reviews/PRD-001-pre-PR-review-v1.md` | - | - | - | 114 |
 | `docs/reviews/crate-audits/convergio-api.md` | - | - | - | 24 |
