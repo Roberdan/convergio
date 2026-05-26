@@ -2,6 +2,7 @@
 members = [
     "crates/convergio-db",
     "crates/convergio-durability",
+    "crates/convergio-ops",
     "crates/convergio-bus",
     "crates/convergio-lifecycle",
     "crates/convergio-server",
@@ -117,6 +118,7 @@ fastembed = "5"
 # Internal crates (workspace path deps)
 convergio-db = { path = "crates/convergio-db" }
 convergio-durability = { path = "crates/convergio-durability" }
+convergio-ops = { path = "crates/convergio-ops" }
 convergio-bus = { path = "crates/convergio-bus" }
 convergio-lifecycle = { path = "crates/convergio-lifecycle" }
 convergio-server = { path = "crates/convergio-server" }

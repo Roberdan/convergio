@@ -16,6 +16,7 @@ use convergio_executor::{
 };
 use convergio_lifecycle::watcher::{self, WatcherConfig};
 use convergio_lifecycle::Supervisor;
+use convergio_ops::init as init_ops;
 use convergio_server::{router, AppState};
 use std::io::{self, IsTerminal};
 use std::net::SocketAddr;
@@ -93,6 +94,7 @@ async fn start(
 
     let pool = Pool::connect(&db_url).await?;
     init_durability(&pool).await?;
+    init_ops(&pool).await?;
     convergio_bus::init(&pool).await?;
     convergio_lifecycle::init(&pool).await?;
     let graph = Arc::new(convergio_graph::Store::new(pool.clone()));
@@ -105,6 +107,7 @@ async fn start(
     let fleet_plans = Arc::new(convergio_fleet::FleetPlanStore::new(pool.clone()));
 
     let durability = Arc::new(Durability::new(pool.clone()));
+    let ops = Arc::new(convergio_ops::Ops::new(pool.clone()));
     let bus = Arc::new(Bus::new(pool.clone()));
     let supervisor = Arc::new(Supervisor::new_with_bus(pool, (*bus).clone()));
 
@@ -159,6 +162,7 @@ async fn start(
 
     let state = AppState {
         durability: durability.clone(),
+        ops: ops.clone(),
         bus: bus.clone(),
         supervisor: supervisor.clone(),
         graph: graph.clone(),

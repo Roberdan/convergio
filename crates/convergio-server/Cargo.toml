@@ -28,6 +28,7 @@ convergio-api = { workspace = true }
 convergio-brand = { workspace = true }
 convergio-db = { workspace = true }
 convergio-durability = { workspace = true }
+convergio-ops = { workspace = true }
 convergio-bus = { workspace = true }
 convergio-lifecycle = { workspace = true }
 convergio-planner = { workspace = true }

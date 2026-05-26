@@ -38,6 +38,7 @@ pub async fn boot() -> (String, Pool, TempDir) {
     let url = format!("sqlite://{}", db_path.display());
     let pool = Pool::connect(&url).await.expect("pool connect");
     init(&pool).await.expect("durability init");
+    convergio_ops::init(&pool).await.expect("ops init");
     convergio_bus::init(&pool).await.expect("bus init");
     convergio_lifecycle::init(&pool)
         .await
@@ -47,6 +48,7 @@ pub async fn boot() -> (String, Pool, TempDir) {
 
     let state = AppState {
         durability: Arc::new(Durability::new(pool.clone())),
+        ops: Arc::new(convergio_ops::Ops::new(pool.clone())),
         bus: Arc::new(Bus::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool.clone())),
         graph: Arc::new(convergio_graph::Store::new(pool.clone())),

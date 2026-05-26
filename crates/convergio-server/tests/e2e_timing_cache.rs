@@ -28,6 +28,7 @@ async fn boot() -> (String, AppState, tempfile::TempDir) {
     let durability = Arc::new(Durability::new(pool.clone()));
     let state = AppState {
         durability: durability.clone(),
+        ops: Arc::new(convergio_ops::Ops::new(pool.clone())),
         bus: Arc::new(Bus::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool.clone())),
         graph: Arc::new(convergio_graph::Store::new(pool.clone())),

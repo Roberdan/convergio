@@ -184,6 +184,16 @@ impl IntoResponse for ApiError {
                     "invalid_capability",
                     e.to_string(),
                 ),
+                DurabilityError::InvalidOpsWorkflow { .. } => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "invalid_ops_workflow",
+                    e.to_string(),
+                ),
+                DurabilityError::InvalidOpsWorkflowInstance { .. } => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "invalid_ops_workflow_instance",
+                    e.to_string(),
+                ),
                 DurabilityError::InvalidEvidence { .. } => (
                     StatusCode::UNPROCESSABLE_ENTITY,
                     "invalid_evidence",

@@ -180,6 +180,20 @@ pub enum DurabilityError {
         reason: String,
     },
 
+    /// Ops workflow spec is invalid.
+    #[error("invalid ops workflow: {reason}")]
+    InvalidOpsWorkflow {
+        /// Validation failure reason.
+        reason: String,
+    },
+
+    /// Ops workflow instance operation is invalid.
+    #[error("invalid ops workflow instance: {reason}")]
+    InvalidOpsWorkflowInstance {
+        /// Validation failure reason.
+        reason: String,
+    },
+
     /// Evidence payload violates a kind-specific protocol.
     #[error("invalid evidence: {reason}")]
     InvalidEvidence {

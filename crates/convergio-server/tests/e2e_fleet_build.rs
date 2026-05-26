@@ -26,6 +26,7 @@ async fn boot() -> (String, Arc<FleetStore>, Arc<EmbedStore>, tempfile::TempDir)
     let pool = Pool::connect(&url).await.expect("connect");
 
     init(&pool).await.expect("durability init");
+    convergio_ops::init(&pool).await.expect("ops init");
     convergio_bus::init(&pool).await.expect("bus init");
     convergio_lifecycle::init(&pool)
         .await
@@ -40,6 +41,7 @@ async fn boot() -> (String, Arc<FleetStore>, Arc<EmbedStore>, tempfile::TempDir)
 
     let state = AppState {
         durability: Arc::new(Durability::new(pool.clone())),
+        ops: Arc::new(convergio_ops::Ops::new(pool.clone())),
         bus: Arc::new(Bus::new(pool.clone())),
         fleet: fleet.clone(),
         fleet_plans: Arc::new(convergio_fleet::FleetPlanStore::new(pool.clone())),

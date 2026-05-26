@@ -18,11 +18,13 @@ async fn boot() -> (String, tempfile::TempDir) {
     let url = format!("sqlite://{}", db_path.display());
     let pool = Pool::connect(&url).await.unwrap();
     init(&pool).await.unwrap();
+    convergio_ops::init(&pool).await.unwrap();
     convergio_bus::init(&pool).await.unwrap();
     convergio_lifecycle::init(&pool).await.unwrap();
 
     let state = AppState {
         durability: Arc::new(Durability::new(pool.clone())),
+        ops: Arc::new(convergio_ops::Ops::new(pool.clone())),
         bus: Arc::new(Bus::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool.clone())),
         graph: Arc::new(convergio_graph::Store::new(pool.clone())),

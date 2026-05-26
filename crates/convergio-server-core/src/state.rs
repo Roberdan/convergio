@@ -11,6 +11,7 @@ use convergio_embed::{EmbedStore, Embedder};
 use convergio_fleet::{FleetPlanStore, FleetStore};
 use convergio_graph::Store as GraphStore;
 use convergio_lifecycle::Supervisor;
+use convergio_ops::Ops;
 use std::sync::{Arc, Mutex};
 
 /// Application state injected into every handler.
@@ -18,6 +19,8 @@ use std::sync::{Arc, Mutex};
 pub struct AppState {
     /// Layer 1 facade.
     pub durability: Arc<Durability>,
+    /// Ops workflow engine facade (Ontology Platform W8).
+    pub ops: Arc<Ops>,
     /// Layer 2 facade.
     pub bus: Arc<Bus>,
     /// Layer 3 facade.

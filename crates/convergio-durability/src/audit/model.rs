@@ -22,6 +22,10 @@ pub enum EntityKind {
     Workspace,
     /// Capability registry event.
     Capability,
+    /// Ops workflow definition (`ops_workflows`).
+    OpsWorkflow,
+    /// Ops workflow instance (`ops_workflow_instances`).
+    OpsWorkflowInstance,
     /// Free-form entity reference for agent-emitted custom audit rows
     /// (ADR-0002 § Custom kinds, P2-2). The `entity_id` is opaque to
     /// the daemon — agents use it as a correlation key.
@@ -39,6 +43,8 @@ impl EntityKind {
             Self::Crdt => "crdt",
             Self::Workspace => "workspace",
             Self::Capability => "capability",
+            Self::OpsWorkflow => "ops_workflow",
+            Self::OpsWorkflowInstance => "ops_workflow_instance",
             Self::Free => "free",
         }
     }

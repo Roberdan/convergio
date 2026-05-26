@@ -17,6 +17,6 @@ mod model;
 pub use action::Action;
 pub use canonical::canonical_json;
 pub use hash::{compute_hash, GENESIS_HASH};
-pub(crate) use log::append_tx;
+pub use log::append_tx;
 pub use log::AuditLog;
 pub use model::{AuditEntry, EntityKind, VerifyReport};
