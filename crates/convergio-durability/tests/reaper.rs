@@ -129,6 +129,7 @@ async fn reaps_tasks_with_stale_heartbeat() {
             tick_interval: Duration::seconds(60),
             agent_reaper_enabled: false,
             agent_threshold: Duration::seconds(3600),
+            on_reap: None,
         },
     )
     .await
@@ -184,6 +185,7 @@ async fn does_not_reap_fresh_tasks() {
             tick_interval: Duration::seconds(30),
             agent_reaper_enabled: false,
             agent_threshold: Duration::seconds(3600),
+            on_reap: None,
         },
     )
     .await
@@ -241,6 +243,7 @@ async fn reaps_tasks_that_never_heartbeat() {
             tick_interval: Duration::seconds(60),
             agent_reaper_enabled: false,
             agent_threshold: Duration::seconds(3600),
+            on_reap: None,
         },
     )
     .await
