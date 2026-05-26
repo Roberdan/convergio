@@ -918,6 +918,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "convergio-ontology"
+version = "0.3.31"
+dependencies = [
+ "hex",
+ "schemars",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 1.0.69",
+ "uuid",
+]
+
+[[package]]
 name = "convergio-parse-multi"
 version = "0.3.31"
 dependencies = [

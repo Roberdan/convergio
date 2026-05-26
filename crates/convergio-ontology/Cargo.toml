@@ -1,0 +1,27 @@
+[package]
+name = "convergio-ontology"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Ontology DSL + versioned schema registry for Convergio (ObjectType/LinkType/PropertyType) with deterministic JSON-Schema export."
+readme = "AGENTS.md"
+keywords = ["ontology", "schema", "json-schema", "registry"]
+categories = ["database", "data-structures"]
+
+[lints]
+workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+schemars = { workspace = true }
+uuid = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
