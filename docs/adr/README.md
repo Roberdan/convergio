@@ -86,4 +86,6 @@ do not edit between the markers.
 | [0060](./0060-deterministic-graph-output.md) | 0060. Deterministic Diff / Mermaid / Graphviz output format | proposed |
 | [0061](./0061-capability-search-local.md) | -0061 — `cvg capability search` (local-only slice of W9) | accepted |
 | [0062](./0062-dispatch-choice-audit-row.md) | -0062 — Dispatch-choice audit row (W8 slice) | accepted |
+| [0063](./0063-task-taxonomy-eval-skeleton.md) | -0063 — Task taxonomy + eval outcome ledger skeleton (W10 slice) | accepted |
+| [0064](./0064-eu-sovereign-pivot.md) | 0064. Pivot to an EU-sovereign, AI-native, local-first open ontology platform | accepted |
 <!-- END AUTO -->
