@@ -1,0 +1,117 @@
+schema: convergio.ontology.mapping.v1
+connector_id: connector-canvas-rest-lti13
+source:
+  system: canvas
+  entities:
+    user: /users/{id}
+    course: /courses/{id}
+    enrollment: /courses/{course_id}/enrollments
+    lti_launch_claims: lti.jwt.claims
+objects:
+  - object_type: edu.course
+    source_entity: course
+    identity:
+      source_key_field: id
+    fields:
+      - source: id
+        target_property: edu.course.source_key
+        purpose: edu.lms
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Course identity for learning administration."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-02
+          annex: "Annex A / LMS / course metadata"
+      - source: course_code
+        target_property: edu.course.code
+        purpose: edu.lms
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Official course code for enrolment and reporting."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-02
+          annex: "Annex A / LMS / course metadata"
+      - source: name
+        target_property: edu.course.title
+        purpose: edu.lms
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Course title shown to enrolled users."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-02
+          annex: "Annex A / LMS / course metadata"
+
+  - object_type: edu.course_enrollment
+    source_entity: enrollment
+    identity:
+      source_key_field: id
+    fields:
+      - source: id
+        target_property: edu.course_enrollment.source_key
+        purpose: edu.lms
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Enrollment record identity for administration."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-02
+          annex: "Annex A / LMS / enrollments"
+      - source: user_id
+        target_property: edu.course_enrollment.user_source_key
+        purpose: edu.lms
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Links enrollment to a user."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-02
+          annex: "Annex A / LMS / enrollments"
+      - source: course_id
+        target_property: edu.course_enrollment.course_source_key
+        purpose: edu.lms
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Links enrollment to a course."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-02
+          annex: "Annex A / LMS / enrollments"
+      - source: role
+        target_property: edu.course_enrollment.role
+        purpose: edu.lms
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Role is required to authorize course participation."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-02
+          annex: "Annex A / LMS / enrollments"
+
+  - object_type: edu.lti_launch
+    source_entity: lti_launch_claims
+    identity:
+      source_key_field: nonce
+    fields:
+      - source: "https://purl.imsglobal.org/spec/lti/claim/deployment_id"
+        target_property: edu.lti.deployment_id
+        purpose: edu.lti
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "LTI deployment identifier for tool launch validation."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-02
+          annex: "Annex A / LMS / LTI"
+      - source: "https://purl.imsglobal.org/spec/lti/claim/target_link_uri"
+        target_property: edu.lti.target_link_uri
+        purpose: edu.lti
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Tool launch target URL."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-02
+          annex: "Annex A / LMS / LTI"
+      - source: "https://purl.imsglobal.org/spec/lti/claim/roles"
+        target_property: edu.lti.roles
+        purpose: edu.lti
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Roles are needed to authorize the user in-context."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-02
+          annex: "Annex A / LMS / LTI"

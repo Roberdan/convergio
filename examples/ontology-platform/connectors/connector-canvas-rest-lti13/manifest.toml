@@ -1,0 +1,7 @@
+name = "connector-canvas-rest-lti13"
+version = "0.1.0"
+platforms = ["any"]
+
+[connector]
+kind = "lms"
+source_system = "canvas"
