@@ -12,6 +12,8 @@
 //! - `POST   /v1/fleet/doc-drift/snapshot` — refresh drift snapshots
 
 use axum::extract::{Path, Query, State};
+
+use crate::bitemporal::{parse_bitemporal, BitemporalQuery};
 use axum::routing::{patch, post};
 use axum::{Json, Router};
 use convergio_embed::{collect_files, ingest, DEFAULT_MAX_LINES};
@@ -157,7 +159,11 @@ async fn add(
 }
 
 /// `GET /v1/fleet/repos` — list all repos (enabled and disabled).
-async fn list(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
+async fn list(
+    State(state): State<AppState>,
+    Query(bt): Query<BitemporalQuery>,
+) -> Result<Json<Value>, ApiError> {
+    let _ = bt.parse()?;
     let repos = state.fleet.list_repos().await.map_err(ApiError::Fleet)?;
     let items: Vec<RepoResponse> = repos.into_iter().map(to_response).collect();
     Ok(Json(json!({ "repos": items })))
@@ -252,6 +258,10 @@ async fn build(
 /// Query parameters for `GET /v1/fleet/patterns`.
 #[derive(Debug, Deserialize)]
 struct PatternsQuery {
+    #[serde(default)]
+    as_of: Option<String>,
+    #[serde(default)]
+    tx_as_of: Option<String>,
     /// Minimum number of distinct repos a cluster must span (default 2).
     #[serde(default = "default_min_repos")]
     min_repos: usize,
@@ -269,6 +279,7 @@ async fn patterns(
     State(state): State<AppState>,
     Query(q): Query<PatternsQuery>,
 ) -> Result<Json<Value>, ApiError> {
+    let _ = parse_bitemporal(q.as_of.as_deref(), q.tx_as_of.as_deref())?;
     let clusters = find_patterns(&state.fleet, q.min_repos)
         .await
         .map_err(|e| ApiError::Internal(format!("pattern detection failed: {e}")))?;

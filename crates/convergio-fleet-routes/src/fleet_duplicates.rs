@@ -6,11 +6,17 @@ use convergio_fleet::find_duplicates;
 use convergio_server_core::ApiError;
 use convergio_server_core::AppState;
 use serde::Deserialize;
+
+use crate::bitemporal::parse_bitemporal;
 use serde_json::{json, Value};
 
 /// Query parameters for `GET /v1/fleet/duplicates`.
 #[derive(Debug, Deserialize)]
 pub(super) struct DuplicatesQuery {
+    #[serde(default)]
+    as_of: Option<String>,
+    #[serde(default)]
+    tx_as_of: Option<String>,
     /// Cosine similarity threshold (default 0.95).
     #[serde(default = "default_cosine")]
     cosine: f64,
@@ -30,6 +36,7 @@ pub(super) async fn duplicates(
     State(state): State<AppState>,
     Query(q): Query<DuplicatesQuery>,
 ) -> Result<Json<Value>, ApiError> {
+    let _ = parse_bitemporal(q.as_of.as_deref(), q.tx_as_of.as_deref())?;
     let repo_pair = q
         .repo_pair
         .as_deref()

@@ -11,10 +11,16 @@ use convergio_fleet::{find_doc_drift, snapshot_doc_alignment, DEFAULT_DOC_DRIFT_
 use convergio_server_core::ApiError;
 use convergio_server_core::AppState;
 use serde::Deserialize;
+
+use crate::bitemporal::parse_bitemporal;
 use serde_json::{json, Value};
 
 #[derive(Debug, Deserialize)]
 pub(super) struct DriftQuery {
+    #[serde(default)]
+    as_of: Option<String>,
+    #[serde(default)]
+    tx_as_of: Option<String>,
     #[serde(default = "default_threshold")]
     threshold: f32,
     #[serde(default)]
@@ -30,6 +36,7 @@ pub(super) async fn drift(
     State(state): State<AppState>,
     Query(q): Query<DriftQuery>,
 ) -> Result<Json<Value>, ApiError> {
+    let _ = parse_bitemporal(q.as_of.as_deref(), q.tx_as_of.as_deref())?;
     if !q.threshold.is_finite() || !(0.0..=2.0).contains(&q.threshold) {
         return Err(ApiError::BadRequest {
             code: "invalid_threshold",

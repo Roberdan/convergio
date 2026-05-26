@@ -9,11 +9,17 @@ use convergio_fleet::{find_rot, DEFAULT_ROT_THRESHOLD};
 use convergio_server_core::ApiError;
 use convergio_server_core::AppState;
 use serde::Deserialize;
+
+use crate::bitemporal::parse_bitemporal;
 use serde_json::{json, Value};
 
 /// Query parameters for `GET /v1/fleet/rot`.
 #[derive(Debug, Deserialize)]
 pub(super) struct RotQuery {
+    #[serde(default)]
+    as_of: Option<String>,
+    #[serde(default)]
+    tx_as_of: Option<String>,
     /// Cosine ceiling — nodes below this value are surfaced (default 0.3).
     #[serde(default = "default_threshold")]
     threshold: f32,
@@ -34,6 +40,7 @@ pub(super) async fn rot(
     State(state): State<AppState>,
     Query(q): Query<RotQuery>,
 ) -> Result<Json<Value>, ApiError> {
+    let _ = parse_bitemporal(q.as_of.as_deref(), q.tx_as_of.as_deref())?;
     if !q.threshold.is_finite() || !(0.0..=1.0).contains(&q.threshold) {
         return Err(ApiError::BadRequest {
             code: "invalid_threshold",
