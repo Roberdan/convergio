@@ -79,6 +79,7 @@ async fn context_packet_collects_task_state_messages_agents_and_agent_docs() {
 
     let state = AppState {
         durability: Arc::new(dur),
+        ops: Arc::new(convergio_ops::Ops::new(pool.clone())),
         bus: Arc::new(bus),
         supervisor: Arc::new(Supervisor::new(pool.clone())),
         graph: Arc::new(convergio_graph::Store::new(pool.clone())),

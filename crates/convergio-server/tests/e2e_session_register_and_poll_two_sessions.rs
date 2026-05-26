@@ -28,12 +28,14 @@ async fn boot() -> (String, tempfile::TempDir) {
         .await
         .expect("connect pool");
     init(&pool).await.expect("init durability");
+    convergio_ops::init(&pool).await.expect("ops init");
     convergio_bus::init(&pool).await.expect("init bus");
     convergio_lifecycle::init(&pool)
         .await
         .expect("init lifecycle");
     let state = AppState {
         durability: Arc::new(Durability::new(pool.clone())),
+        ops: Arc::new(convergio_ops::Ops::new(pool.clone())),
         bus: Arc::new(Bus::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool.clone())),
         graph: Arc::new(convergio_graph::Store::new(pool.clone())),
