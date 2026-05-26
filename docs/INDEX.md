@@ -42,7 +42,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-cli-pr/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 61 |
 | `crates/convergio-cli-session/README.md` | crate-readme | - | - | 33 |
-| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 42 |
+| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 43 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 38 |
 | `crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
 | `crates/convergio-coherence/AGENTS.md` | crate-rules | - | - | 80 |
@@ -65,7 +65,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-mcp/README.md` | crate-readme | - | - | 12 |
 | `crates/convergio-parse-multi/AGENTS.md` | crate-rules | - | - | 63 |
 | `crates/convergio-parse-multi/CLAUDE.md` | crate-rules | - | - | 1 |
-| `crates/convergio-planner/AGENTS.md` | crate-rules | - | - | 31 |
+| `crates/convergio-planner/AGENTS.md` | crate-rules | - | - | 32 |
 | `crates/convergio-planner/README.md` | crate-readme | - | - | 23 |
 | `crates/convergio-runner/AGENTS.md` | crate-rules | - | - | 53 |
 | `crates/convergio-server-core/AGENTS.md` | crate-rules | - | - | 58 |
@@ -133,14 +133,21 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0051-ontology-runtime-core.md` | adr | [convergio-ontology, convergio-db, convergio-graph, convergio-api] | proposed | 130 |
 | `docs/adr/0052-smart-thor-real-validation.md` | adr | - | accepted | 111 |
 | `docs/adr/0052-typed-actions-framework.md` | adr | [convergio-api, convergio-server, convergio-ontology, convergio-durability] | proposed | 119 |
+| `docs/adr/0053-ai-openai-runner-adapter.md` | adr | - | accepted | 84 |
 | `docs/adr/0053-bitemporal-store-lineage.md` | adr | [convergio-ontology, convergio-db, convergio-durability] | proposed | 126 |
+| `docs/adr/0054-cvg-status-agents.md` | adr | - | accepted | 53 |
 | `docs/adr/0054-provenance-bundle-purpose-registry.md` | adr | [convergio-ontology, convergio-durability, convergio-api] | proposed | 136 |
 | `docs/adr/0055-entity-resolution-service.md` | adr | [convergio-ontology, convergio-api] | proposed | 134 |
+| `docs/adr/0055-plan-objectives-and-coherence-gate.md` | adr | - | accepted | 69 |
+| `docs/adr/0056-plan-templates.md` | adr | - | accepted | 90 |
 | `docs/adr/0056-scenario-branching-workshop.md` | adr | [convergio-ontology, convergio-durability] | proposed | 123 |
 | `docs/adr/0057-connector-sdk-federated-query.md` | adr | [convergio-ontology, convergio-api] | proposed | 134 |
 | `docs/adr/0058-llm-gateway-primitive.md` | adr | [convergio-api, convergio-server, convergio-ontology] | proposed | 142 |
 | `docs/adr/0059-tui-ontology-inspector.md` | adr | [convergio-tui, convergio-ontology, convergio-api] | proposed | 149 |
 | `docs/adr/0060-deterministic-graph-output.md` | adr | [convergio-ontology, convergio-cli] | proposed | 118 |
+| `docs/adr/0061-capability-search-local.md` | adr | - | accepted | 74 |
+| `docs/adr/0062-dispatch-choice-audit-row.md` | adr | - | accepted | 70 |
+| `docs/adr/0063-task-taxonomy-eval-skeleton.md` | adr | - | accepted | 68 |
 | `docs/adr/README.md` | adr | - | - | 83 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |

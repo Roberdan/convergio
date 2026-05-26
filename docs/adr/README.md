@@ -73,11 +73,18 @@ do not edit between the markers.
 | [0052](./0052-smart-thor-real-validation.md) | -0052 — Smart Thor: real validation, audited pipeline runs, and skip-when-trusted | accepted |
 | [0052](./0052-smart-thor-real-validation.md) | 0052. Typed Actions Framework over the Ontology | proposed |
 | [0053](./0053-bitemporal-store-lineage.md) | 0053. Bitemporal Store + Lineage over Ontology Objects | proposed |
+| [0053](./0053-bitemporal-store-lineage.md) | 0053 — OpenAI vendor runner adapter | accepted |
 | [0054](./0054-provenance-bundle-purpose-registry.md) | 0054. Provenance Bundle & Purpose Registry | proposed |
+| [0054](./0054-provenance-bundle-purpose-registry.md) | 0054 — `cvg status --agents` live agent listing | accepted |
 | [0055](./0055-entity-resolution-service.md) | 0055. Entity Resolution Service with Explainability | proposed |
+| [0055](./0055-entity-resolution-service.md) | -0055 — Plan objectives table and PlanCoherenceGate | accepted |
 | [0056](./0056-scenario-branching-workshop.md) | 0056. Scenario Branching (Workshop primitives) | proposed |
+| [0056](./0056-scenario-branching-workshop.md) | -0056 — Parametric plan templates and `cvg plan-templates` | accepted |
 | [0057](./0057-connector-sdk-federated-query.md) | 0057. Connector SDK + Federated Query | proposed |
 | [0058](./0058-llm-gateway-primitive.md) | 0058. LLM Gateway primitive (typed, ontology-aware) | proposed |
 | [0059](./0059-tui-ontology-inspector.md) | 0059. TUI Ontology Inspector (read-only) | proposed |
 | [0060](./0060-deterministic-graph-output.md) | 0060. Deterministic Diff / Mermaid / Graphviz output format | proposed |
+| [0061](./0061-capability-search-local.md) | -0061 — `cvg capability search` (local-only slice of W9) | accepted |
+| [0062](./0062-dispatch-choice-audit-row.md) | -0062 — Dispatch-choice audit row (W8 slice) | accepted |
+| [0063](./0063-task-taxonomy-eval-skeleton.md) | -0063 — Task taxonomy + eval outcome ledger skeleton (W10 slice) | accepted |
 <!-- END AUTO -->
