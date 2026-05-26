@@ -51,8 +51,8 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-server-core` stats:** 3 `*.rs` files / 4 public items / 342 lines (under `src/`).
+**`convergio-server-core` stats:** 3 `*.rs` files / 4 public items / 355 lines (under `src/`).
 
 Files approaching the 300-line cap:
-- `src/error.rs` (270 lines)
+- `src/error.rs` (280 lines)
 <!-- END AUTO -->
