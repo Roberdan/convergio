@@ -16,6 +16,10 @@ mod help_actions;
 #[cfg(test)]
 mod help_tests;
 mod http;
+
+mod ontology_action;
+#[cfg(test)]
+mod ontology_e2e_tests;
 #[cfg(test)]
 mod http_tests;
 

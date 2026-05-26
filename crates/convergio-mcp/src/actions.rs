@@ -59,6 +59,9 @@ impl Bridge {
             Action::FleetPlanCreate => self.post("/v1/fleet/plans", request.params).await,
             Action::FleetPlanShow => self.fleet_plan_show(request.params).await,
             Action::FleetPlanValidate => self.fleet_plan_validate(request.params).await,
+            Action::OntologyList => self.get("/v1/ontology/types").await,
+            Action::OntologyDescribe => self.ontology_describe(request.params).await,
+            Action::OntologyExport => self.ontology_export(request.params).await,
         };
         self.log_action(action, &response);
         response

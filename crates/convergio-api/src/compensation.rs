@@ -54,7 +54,10 @@ impl Action {
             | Self::AuditAppend
             | Self::FleetPlanCreate
             | Self::FleetPlanShow
-            | Self::FleetPlanValidate => None,
+            | Self::FleetPlanValidate
+            | Self::OntologyList
+            | Self::OntologyDescribe
+            | Self::OntologyExport => None,
         }
     }
 
