@@ -171,7 +171,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0074-relicense-agplv3.md` | adr | - | accepted | 137 |
 | `docs/adr/0075-w3c-prov-provenance-bundles.md` | adr | - | accepted | 109 |
 | `docs/adr/0076-gdpr-data-subject-rights.md` | adr | - | accepted | 98 |
-| `docs/adr/README.md` | adr | - | - | 97 |
+| `docs/adr/0077-workbench-ui-stack-tauri-vs-nextjs.md` | adr | [] | proposed | 152 |
+| `docs/adr/README.md` | adr | - | - | 98 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
