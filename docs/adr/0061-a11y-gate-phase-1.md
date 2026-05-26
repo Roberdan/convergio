@@ -1,5 +1,5 @@
 ---
-id: 0051
+id: 0061
 status: accepted
 date: 2026-05-25
 topics: [accessibility, gates, durability, p3]
@@ -8,7 +8,7 @@ touches_crates: [convergio-durability]
 last_validated: 2026-05-25
 ---
 
-# 0051. A11yGate phase 1 — built-in accessibility checks on evidence
+# 0061. A11yGate phase 1 — built-in accessibility checks on evidence
 
 - Status: accepted
 - Date: 2026-05-25
@@ -42,9 +42,10 @@ reason `a11y_violation_found: <evidence_kind>#<rule>, ...`.
 | Rule                       | Kinds                                       | Catches                                                  |
 |----------------------------|---------------------------------------------|----------------------------------------------------------|
 | `md_heading_skip`          | markdown, markdown_doc, md_doc, doc, readme | Forward jump of more than one heading level (H1 → H3+)   |
-| `md_image_missing_alt`     | markdown, markdown_doc, md_doc, doc, readme | `![](url)` or `![ ](url)` — image with empty alt         |
-| `md_link_nondescriptive`   | markdown, markdown_doc, md_doc, doc, readme | `[here]`, `[click here]`, `[link]`, `[this]`, `[read more]` |
+| `md_image_missing_alt`     | markdown, markdown_doc, md_doc, doc, readme | `![](url)` / `![ ](url)` or `<img ...>` with missing/blank `alt=` |
+| `md_link_nondescriptive`   | markdown, markdown_doc, md_doc, doc, readme | `[here]`, `[click here]`, `[link]`, `[this]`, `[read more]`, plus `<a ...>click here</a>` |
 | `md_color_only_emphasis`   | markdown, markdown_doc, md_doc, doc, readme | `<font color=...>` — emphasis carried by color only      |
+| `md_color_contrast_low`    | markdown, markdown_doc, md_doc, doc, readme | Inline `style="color:#...; background-color:#..."` with contrast < 4.5:1 |
 | `cli_color_only_signal`    | cli_output, terminal, tui_snapshot          | Line whose meaning vanishes when ANSI escapes are stripped |
 | `bidi_override`            | **all kinds**                                | U+202A..U+202E and U+2066..U+2069 spoofing characters    |
 
@@ -64,8 +65,9 @@ flagged.
 - **README P3 moves from `planned` to `enforced (built-in checks,
   phase 1; axe-core in phase 2)`.** Phase 2 (W11) will compose with
   this gate, not replace it.
-- Cost is negligible: 5 small regexes over string leaves of
-  matching-kind payloads at exactly two transitions per task.
+- Cost is negligible: a small set of regex scans over string leaves,
+  plus a tiny contrast calculator for inline hex colors, at exactly two
+  transitions per task.
 - Pattern set is intentionally closed-and-curated; rules added
   later reuse the same name → rule → reason pipeline and do not
   require a new ADR unless the gate's semantics change.

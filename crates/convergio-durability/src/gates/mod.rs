@@ -114,7 +114,7 @@ pub fn default_pipeline() -> Pipeline {
         Arc::new(WireCheckGate),
         Arc::new(NoSecretsGate::default()),
         Arc::new(PromptInjectionGate::default()),
-        Arc::new(A11yGate::default()),
+        Arc::new(A11yGate),
         Arc::new(ZeroWarningsGate),
         Arc::new(WaveSequenceGate),
         Arc::new(PrLinkGate),

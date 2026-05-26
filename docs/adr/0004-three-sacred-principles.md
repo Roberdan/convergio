@@ -59,8 +59,8 @@ Chosen: **3 — principles enshrined and enforced**.
 | # | Principle | Enforcement |
 |---|-----------|-------------|
 | P1 | Zero tolerance for technical debt, errors, warnings (any language) | `NoDebtGate`, `ZeroWarningsGate` |
-| P2 | Security first, including LLM security | `NoSecretsGate`, `DepsAuditGate`, `PromptInjectionGate` (planned) |
-| P3 | Accessibility first | `A11yGate` (planned), CLI `--format` modes (planned) |
+| P2 | Security first, including LLM security | `NoSecretsGate`, `PromptInjectionGate` (phase 1), `DepsAuditGate` (planned) |
+| P3 | Accessibility first | `A11yGate` (phase 1), CLI `--format` modes (planned) |
 
 ### Operational consequences
 

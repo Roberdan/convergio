@@ -1,75 +1,31 @@
-//! `A11yGate` phase 1 — accessibility checks on evidence payloads.
+//! `A11yGate` phase 1 — built-in accessibility checks on evidence payloads.
 //!
-//! Implements the built-in subset of CONSTITUTION § Sacred principle
-//! #3 (accessibility first). Phase 2 (capability `a11y.axe`) wraps
-//! axe-core for full WCAG coverage; that ships separately (W11 of
-//! `docs/plans/v1.0-production-ready.md`).
+//! Implements the built-in subset of CONSTITUTION Sacred principle #3
+//! (accessibility first).
 //!
-//! Checks here intentionally use **no external tooling** — they fire
-//! against the evidence row payload at `submitted` / `done`
-//! transitions and refuse with HTTP 409 + a stable reason of the form
-//! `a11y_violation_found: <evidence_kind>#<rule>, ...`.
+//! Phase 2 (capability `a11y.axe`) will wrap axe-core for broader WCAG coverage,
+//! but is intentionally out of scope for phase 1.
 //!
-//! Evidence-kind dispatch:
-//! - `markdown`, `markdown_doc`, `md_doc`, `doc`, `readme` →
-//!   markdown structure checks.
-//! - `cli_output`, `terminal`, `tui_snapshot` → terminal-output
-//!   checks.
-//! - Every kind → bidi-override scan (cheap, defends against text
-//!   spoofing in any leaf).
+//! These checks intentionally use **no external tooling**. They scan the string
+//! leaves of each evidence payload on `submitted` / `done` transitions and
+//! refuse with HTTP 409 + a stable reason of the form:
 //!
-//! See ADR-0051 for the rationale and the deferred axe-core path.
+//! `a11y_violation_found: <evidence_kind>#<rule>, ...`
+//!
+//! See ADR-0061 for rationale and rule definitions.
+
+mod cli;
+mod markdown;
 
 use super::{Gate, GateContext, GatePrecondition};
 use crate::error::{DurabilityError, Result};
 use crate::model::TaskStatus;
 use crate::store::EvidenceStore;
-use regex::Regex;
 use serde_json::Value;
 
 /// Built-in accessibility gate.
-pub struct A11yGate {
-    md: MarkdownRules,
-    cli: CliRules,
-    bidi: Regex,
-}
-
-struct MarkdownRules {
-    image_missing_alt: Regex,
-    link_nondescriptive: Regex,
-    color_only_emphasis: Regex,
-    heading: Regex,
-}
-
-struct CliRules {
-    ansi_escape: Regex,
-}
-
-impl Default for A11yGate {
-    fn default() -> Self {
-        Self {
-            md: MarkdownRules {
-                image_missing_alt: Regex::new(r"!\[\s*\]\([^)]*\)").unwrap(),
-                link_nondescriptive: Regex::new(
-                    r"(?i)\[\s*(?:here|click here|click|link|this|read more|more)\s*\]\([^)]+\)",
-                )
-                .unwrap(),
-                color_only_emphasis: Regex::new(r#"(?i)<font\s+[^>]*color\s*="#).unwrap(),
-                heading: Regex::new(r"(?m)^(#{1,6})\s+\S").unwrap(),
-            },
-            cli: CliRules {
-                ansi_escape: Regex::new(r"\x1b\[[0-9;]*[A-Za-z]").unwrap(),
-            },
-            // U+202A..U+202E (bidi embedding / override) + U+2066..U+2069
-            // (isolates). All seven are used in known text-spoofing
-            // attacks against terminals and viewers.
-            bidi: Regex::new(
-                r"[\u{202A}\u{202B}\u{202C}\u{202D}\u{202E}\u{2066}\u{2067}\u{2068}\u{2069}]",
-            )
-            .unwrap(),
-        }
-    }
-}
+#[derive(Debug, Default)]
+pub struct A11yGate;
 
 #[async_trait::async_trait]
 impl Gate for A11yGate {
@@ -84,6 +40,7 @@ impl Gate for A11yGate {
 
         let store = EvidenceStore::new(ctx.pool.clone());
         let evidence = store.list_by_task(&ctx.task.id).await?;
+
         let mut violations: Vec<String> = Vec::new();
 
         for ev in evidence {
@@ -93,15 +50,16 @@ impl Gate for A11yGate {
             let joined = strings.join("\n");
 
             // Bidi check fires on every evidence kind.
-            if self.bidi.is_match(&joined) {
+            if contains_bidi_override(&joined) {
                 violations.push(format!("{kind}#bidi_override"));
             }
 
             if is_markdown_kind(kind) {
-                self.check_markdown(kind, &joined, &mut violations);
+                markdown::check(kind, &joined, &mut violations);
             }
-            if is_cli_kind(kind) {
-                self.check_cli(kind, &strings, &mut violations);
+
+            if is_cli_kind(kind) && cli::has_color_only_signal(&strings) {
+                violations.push(format!("{kind}#cli_color_only_signal"));
             }
         }
 
@@ -128,40 +86,6 @@ impl Gate for A11yGate {
     }
 }
 
-impl A11yGate {
-    fn check_markdown(&self, kind: &str, text: &str, violations: &mut Vec<String>) {
-        if self.md.image_missing_alt.is_match(text) {
-            violations.push(format!("{kind}#md_image_missing_alt"));
-        }
-        if self.md.link_nondescriptive.is_match(text) {
-            violations.push(format!("{kind}#md_link_nondescriptive"));
-        }
-        if self.md.color_only_emphasis.is_match(text) {
-            violations.push(format!("{kind}#md_color_only_emphasis"));
-        }
-        if has_heading_skip(text, &self.md.heading) {
-            violations.push(format!("{kind}#md_heading_skip"));
-        }
-    }
-
-    fn check_cli(&self, kind: &str, strings: &[String], violations: &mut Vec<String>) {
-        // A "color-only" message is any line whose meaning relies on
-        // ANSI escapes — stripping them produces an empty (or
-        // whitespace-only) line that still carried a signal.
-        for s in strings {
-            for line in s.lines() {
-                if self.cli.ansi_escape.is_match(line) {
-                    let stripped = self.cli.ansi_escape.replace_all(line, "");
-                    if stripped.trim().is_empty() {
-                        violations.push(format!("{kind}#cli_color_only_signal"));
-                        return;
-                    }
-                }
-            }
-        }
-    }
-}
-
 fn is_markdown_kind(kind: &str) -> bool {
     matches!(
         kind,
@@ -173,22 +97,21 @@ fn is_cli_kind(kind: &str) -> bool {
     matches!(kind, "cli_output" | "terminal" | "tui_snapshot")
 }
 
-/// Detects an H1→H3 (or any other skipped-level) sequence. We allow
-/// the document to *start* at any level — only forward jumps of more
-/// than one inside the document are flagged. Empty docs and docs with
-/// no headings pass trivially.
-fn has_heading_skip(text: &str, heading_re: &Regex) -> bool {
-    let mut last: Option<usize> = None;
-    for cap in heading_re.captures_iter(text) {
-        let level = cap.get(1).map(|m| m.as_str().len()).unwrap_or(0);
-        if let Some(prev) = last {
-            if level > prev + 1 {
-                return true;
-            }
-        }
-        last = Some(level);
-    }
-    false
+fn contains_bidi_override(s: &str) -> bool {
+    s.chars().any(|c| {
+        matches!(
+            c,
+            '\u{202A}'
+                | '\u{202B}'
+                | '\u{202C}'
+                | '\u{202D}'
+                | '\u{202E}'
+                | '\u{2066}'
+                | '\u{2067}'
+                | '\u{2068}'
+                | '\u{2069}'
+        )
+    })
 }
 
 fn collect_strings(value: &Value, out: &mut Vec<String>) {

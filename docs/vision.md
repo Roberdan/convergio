@@ -211,15 +211,16 @@ slogans. They are the reason cities are habitable.
 |---|---|---|---|
 | **P1** | Zero tolerance for technical debt | `NoDebtGate` + `ZeroWarningsGate` refuse evidence containing `TODO`, `FIXME`, `unwrap()`, `console.log`, ignored tests, `as any`, etc. across 7 languages | enforced |
 | **P2** | Security first | `NoSecretsGate` enforces no secrets in evidence; LLM-specific threats (prompt injection) tracked in v0.3+ | partial |
-| **P3** | Accessibility first | UI accessible, CLI usable without colour/animation, evidence must demonstrate a11y when UI is touched | **planned, not yet enforced — honesty gap** |
+| **P3** | Accessibility first | UI accessible, CLI usable without colour/animation, evidence must demonstrate a11y when UI is touched | **enforced (phase 1)** |
 | **P4** | No scaffolding only | `NoStubGate` refuses self-admitted stubs; `WireCheckGate` (real wiring proofs) v0.3+ | partial |
 | **P5** | Internationalization first | Fluent bundles EN+IT shipped together, coverage gate in `convergio-i18n` | enforced |
 
 These are the *building codes*. Anyone can build any vertical. Nobody
 can ship a vertical that violates these. The audit chain proves it.
 
-The honesty gap on P3 is open and tracked. Closing it is one of the
-first deliverables in [`ROADMAP.md`](./ROADMAP.md) v0.3.
+The P3 "honesty gap" is closed for evidence payloads via `A11yGate`
+(phase 1; ADR-0061). Remaining work includes phase 2 (axe-core capability)
+and continuing to keep the CLI/UI surfaces usable without relying on colour.
 
 ---
 

@@ -44,7 +44,7 @@ cd "$repo_root"
 #             second time the cli has needed a temporary bump.).
 #             14_500 → 15_500 (2026-05-25, v1.0 W2 + W1 — two new
 #             gates landed in the same milestone (PromptInjectionGate
-#             and A11yGate, ADR-0050 + ADR-0051). Each gate is ~200
+#             and A11yGate, ADR-0050 + ADR-0061). Each gate is ~200
 #             LOC of source + ~150 LOC of integration tests; the cap
 #             pre-dates both. A "durability gates split" ADR is the
 #             real answer (gates/ could be a sibling crate exposing

@@ -68,8 +68,7 @@ do not edit between the markers.
 | [0048](./0048-compensating-action-types.md) | 0048. Add compensating action types | proposed |
 | [0049](./0049-f3-fleet-retrospective.md) | 0049. F3 fleet-grade orchestration — retrospective | accepted |
 | [0050](./0050-prompt-injection-gate.md) | 0050. PromptInjectionGate (P2 phase 1) | accepted |
-| [0051](./0051-a11y-gate-phase-1.md) | 0051. A11yGate phase 1 — built-in accessibility checks on evidence | accepted |
-| [0051](./0051-a11y-gate-phase-1.md) | 0051. Ontology Runtime Core (`convergio-ontology` crate) | proposed |
+| [0051](./0051-ontology-runtime-core.md) | 0051. Ontology Runtime Core (`convergio-ontology` crate) | proposed |
 | [0052](./0052-smart-thor-real-validation.md) | -0052 — Smart Thor: real validation, audited pipeline runs, and skip-when-trusted | accepted |
 | [0052](./0052-smart-thor-real-validation.md) | 0052. Typed Actions Framework over the Ontology | proposed |
 | [0053](./0053-bitemporal-store-lineage.md) | 0053. Bitemporal Store + Lineage over Ontology Objects | proposed |
@@ -80,4 +79,5 @@ do not edit between the markers.
 | [0058](./0058-llm-gateway-primitive.md) | 0058. LLM Gateway primitive (typed, ontology-aware) | proposed |
 | [0059](./0059-tui-ontology-inspector.md) | 0059. TUI Ontology Inspector (read-only) | proposed |
 | [0060](./0060-deterministic-graph-output.md) | 0060. Deterministic Diff / Mermaid / Graphviz output format | proposed |
+| [0061](./0061-a11y-gate-phase-1.md) | 0061. A11yGate phase 1 — built-in accessibility checks on evidence | accepted |
 <!-- END AUTO -->

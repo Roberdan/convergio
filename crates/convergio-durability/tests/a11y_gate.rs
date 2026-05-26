@@ -61,7 +61,7 @@ fn ctx(dur: &Durability, task: convergio_durability::Task, target: TaskStatus) -
 async fn assert_refused_with(kind: &str, payload: Value, expected_rule: &str) {
     let (dur, _dir) = fresh().await;
     let task = make_task_with(&dur, kind, payload).await;
-    let err = A11yGate::default()
+    let err = A11yGate
         .check(&ctx(&dur, task, TaskStatus::Submitted))
         .await
         .unwrap_err();
@@ -86,7 +86,7 @@ async fn passes_on_clean_markdown() {
         json!({"body": "# Title\n\n## Section\n\n![team photo](photo.png)\n\nSee the [installation guide](./install.md)."}),
     )
     .await;
-    A11yGate::default()
+    A11yGate
         .check(&ctx(&dur, task, TaskStatus::Submitted))
         .await
         .unwrap();
@@ -101,7 +101,7 @@ async fn no_op_for_in_progress_target() {
         json!({"body": "# A\n\n### Skip\n\n![](x.png)"}),
     )
     .await;
-    A11yGate::default()
+    A11yGate
         .check(&ctx(&dur, task, TaskStatus::InProgress))
         .await
         .unwrap();
@@ -132,6 +132,11 @@ async fn refuses_each_built_in_rule_family() {
             json!({"body": "<font color=\"red\">danger</font>"}),
         ),
         (
+            "markdown_doc",
+            "md_color_contrast_low",
+            json!({"body": "<span style=\"color: #888; background-color: #fff\">low</span>"}),
+        ),
+        (
             "cli_output",
             "cli_color_only_signal",
             json!({"line": "\u{1b}[31m\u{1b}[0m"}),
@@ -148,13 +153,33 @@ async fn refuses_each_built_in_rule_family() {
 }
 
 #[tokio::test]
+async fn refuses_html_img_without_alt_attribute() {
+    assert_refused_with(
+        "markdown_doc",
+        json!({"body": "<img src=\"x.png\">"}),
+        "md_image_missing_alt",
+    )
+    .await;
+}
+
+#[tokio::test]
+async fn refuses_html_link_with_nondescriptive_text() {
+    assert_refused_with(
+        "markdown_doc",
+        json!({"body": "See <a href=\"./install.md\">click here</a>."}),
+        "md_link_nondescriptive",
+    )
+    .await;
+}
+
+#[tokio::test]
 async fn ignores_markdown_rules_on_non_markdown_kind() {
     // The `code` kind is not in is_markdown_kind, so a missing-alt
     // image in code should not flag md_image_missing_alt. Bidi still
     // applies to every kind — keep this payload bidi-clean.
     let (dur, _dir) = fresh().await;
     let task = make_task_with(&dur, "code", json!({"diff": "let x = \"![](url)\";"})).await;
-    A11yGate::default()
+    A11yGate
         .check(&ctx(&dur, task, TaskStatus::Submitted))
         .await
         .unwrap();
@@ -164,7 +189,7 @@ async fn ignores_markdown_rules_on_non_markdown_kind() {
 async fn surfaces_evidence_kind_in_reason() {
     let (dur, _dir) = fresh().await;
     let task = make_task_with(&dur, "markdown_doc", json!({"body": "# T\n\n#### too far"})).await;
-    let err = A11yGate::default()
+    let err = A11yGate
         .check(&ctx(&dur, task, TaskStatus::Done))
         .await
         .unwrap_err();

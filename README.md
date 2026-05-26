@@ -119,7 +119,7 @@ README does not claim more than the code does.
 3. **P3 — Accessibility first.** `enforced (phase 1)`. `A11yGate`
    ships built-in checks (heading order, image alt, descriptive
    link text, color-only emphasis, ANSI color-only signal, bidi
-   spoofing) at every `submitted`/`done` transition; see ADR-0051.
+   spoofing) at every `submitted`/`done` transition; see ADR-0061.
    Phase 2 (capability `a11y.axe`, axe-core wrap) remains roadmap.
    The CLI remains screen-reader friendly without color by
    convention; the gate enforces the evidence side.
