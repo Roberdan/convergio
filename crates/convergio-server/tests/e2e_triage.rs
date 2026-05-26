@@ -1,4 +1,5 @@
 //! E2E tests for `GET /v1/plans/:id/triage`.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -42,7 +43,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn triage_empty_when_no_tasks() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
@@ -69,7 +70,7 @@ async fn triage_empty_when_no_tasks() {
 #[tokio::test]
 async fn triage_returns_pending_tasks_with_zero_stale_days() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
@@ -129,7 +130,7 @@ async fn triage_returns_pending_tasks_with_zero_stale_days() {
 #[tokio::test]
 async fn triage_excludes_done_tasks() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
@@ -176,7 +177,7 @@ async fn triage_excludes_done_tasks() {
 #[tokio::test]
 async fn triage_includes_failed_tasks() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))

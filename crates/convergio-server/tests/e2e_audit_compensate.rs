@@ -3,6 +3,7 @@
 //! Boots the server in-process, produces a real `task.completed_by_thor`
 //! event via `/v1/plans/:id/validate`, then compensates it and confirms
 //! the task reverts to `submitted`.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -50,7 +51,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn compensate_reverts_thor_completed_task_to_submitted() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))

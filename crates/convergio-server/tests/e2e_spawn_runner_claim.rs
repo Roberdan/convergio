@@ -14,13 +14,12 @@
 mod common;
 
 use convergio_durability::NewTask;
-use reqwest::Client;
 use serde_json::{json, Value};
 
 #[tokio::test]
 async fn second_spawn_runner_on_same_task_is_refused_with_claim_conflict() {
     let (base, pool, _dir) = common::boot().await;
-    let client = Client::new();
+    let client = common::client();
 
     let durability = convergio_durability::Durability::new(pool.clone());
     let plan = durability
@@ -108,7 +107,7 @@ async fn second_spawn_runner_on_same_task_is_refused_with_claim_conflict() {
 #[tokio::test]
 async fn spawn_runner_without_task_id_skips_the_claim_check() {
     let (base, _pool, _dir) = common::boot().await;
-    let client = Client::new();
+    let client = common::client();
 
     // No task_id => no claim. Process should spawn normally.
     let resp = client

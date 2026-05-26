@@ -4,6 +4,7 @@
 //!
 //! Also asserts the explicit retire endpoint still works alongside
 //! the heartbeat alias rejection.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -49,7 +50,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn heartbeat_with_retired_status_returns_clearer_422() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     client
         .post(format!("{base}/v1/agent-registry/agents"))
@@ -106,7 +107,7 @@ async fn heartbeat_with_retired_status_returns_clearer_422() {
 #[tokio::test]
 async fn heartbeat_with_unknown_status_still_returns_422() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     client
         .post(format!("{base}/v1/agent-registry/agents"))
         .json(&json!({

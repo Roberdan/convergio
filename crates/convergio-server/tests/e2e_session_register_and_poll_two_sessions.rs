@@ -6,6 +6,7 @@
 //! Boots the real daemon in-process, publishes one unicast message for
 //! each agent, then runs the real CLI handler for B first and asserts
 //! A's inbox is untouched.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_cli_session::register_and_poll::{run, Args};
@@ -56,7 +57,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn register_and_poll_two_sessions_do_not_cross_talk() {
     let (base, _dir) = boot().await;
-    let http = reqwest::Client::new();
+    let http = common::client();
 
     // Create a plan so active_plans() returns something to poll.
     let plan: Value = http

@@ -31,7 +31,7 @@ async fn boot() -> (String, Pool, tempfile::TempDir) {
 #[tokio::test]
 async fn solve_dispatch_validate_full_loop() {
     let (base, pool, _dir) = boot().await;
-    let c = reqwest::Client::new();
+    let c = common::client();
 
     // 1. Solve a mission.
     let solved: Value = c
@@ -110,7 +110,7 @@ async fn solve_dispatch_validate_full_loop() {
 #[tokio::test]
 async fn validate_returns_fail_on_open_tasks() {
     let (base, _pool, _dir) = boot().await;
-    let c = reqwest::Client::new();
+    let c = common::client();
 
     let solved: Value = c
         .post(format!("{base}/v1/solve"))

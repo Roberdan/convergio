@@ -3,6 +3,7 @@
 //! Exercises the retroactive cleanup path: attach evidence, delete it,
 //! confirm the task evidence list is empty again, and verify the audit
 //! chain captures both `evidence.attached` and `evidence.removed`.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -50,7 +51,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn delete_evidence_removes_row_and_audits_event() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
@@ -151,7 +152,7 @@ async fn delete_evidence_removes_row_and_audits_event() {
 #[tokio::test]
 async fn delete_unknown_evidence_returns_404() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let resp = client
         .delete(format!(
             "{base}/v1/evidence/00000000-0000-0000-0000-000000000000"

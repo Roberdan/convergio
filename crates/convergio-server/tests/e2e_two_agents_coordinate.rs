@@ -1,6 +1,7 @@
 //! E2E test for Wave 0b PRD-001 KR1: two ephemeral agents must
 //! register and become visible to each other through the daemon
 //! within the heartbeat window.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -91,7 +92,7 @@ async fn announce(client: &reqwest::Client, base: &str, agent_id: &str) {
 #[tokio::test]
 async fn two_ephemeral_agents_register_and_see_each_other() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     // Two sibling sessions register concurrently.
     let alpha = register(&client, &base, "claude-code-alpha", "host-a").await;
@@ -159,7 +160,7 @@ async fn two_ephemeral_agents_register_and_see_each_other() {
 #[tokio::test]
 async fn one_agent_retiring_does_not_affect_the_other() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     register(&client, &base, "claude-code-alpha", "host-a").await;
     register(&client, &base, "claude-code-beta", "host-b").await;

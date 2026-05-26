@@ -8,6 +8,8 @@
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
+mod common;
+
 use convergio_bus::Bus;
 use convergio_db::Pool;
 use convergio_durability::{init, Durability};
@@ -55,7 +57,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn spawn_register_heartbeat_idle_round_trip() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let agent_id = "claude-sonnet-spawn-test";
     let task_id = "task-12345";
 
@@ -135,7 +137,7 @@ async fn spawn_register_heartbeat_idle_round_trip() {
 #[tokio::test]
 async fn spawn_register_then_terminated_on_failure() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let agent_id = "claude-sonnet-fail-test";
 
     client

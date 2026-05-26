@@ -1,7 +1,6 @@
 //! ADR-0038 F3-4: cross-repo audit-chain verify.
 
 use convergio_durability::{Durability, NewPlan};
-use reqwest::Client;
 use serde_json::{json, Value};
 use sqlx::Executor as _;
 
@@ -10,13 +9,15 @@ mod common;
 #[tokio::test]
 async fn fleet_audit_verify_detects_tampering() {
     let (base, pool, _d) = common::boot().await;
-    let http = Client::new();
+    let http = common::client();
     let durability = Durability::new(pool.clone());
     let create: Value = http
         .post(format!("{base}/v1/fleet/plans"))
         .json(&json!({ "title": "audit fleet", "scope": "fleet" }))
         .send()
         .await
+        .unwrap()
+        .error_for_status()
         .unwrap()
         .json()
         .await
@@ -86,6 +87,8 @@ async fn fleet_audit_verify_detects_tampering() {
         .json(&json!({ "title": "unlinked", "scope": "fleet" }))
         .send()
         .await
+        .unwrap()
+        .error_for_status()
         .unwrap()
         .json()
         .await

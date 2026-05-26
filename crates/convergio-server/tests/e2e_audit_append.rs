@@ -19,7 +19,7 @@ use serde_json::{json, Value};
 #[tokio::test]
 async fn agent_custom_row_appends_and_chain_still_verifies() {
     let (base, _pool, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     // Produce a small history first so the chain isn't empty.
     let plan: Value = client
@@ -103,7 +103,7 @@ async fn agent_custom_row_appends_and_chain_still_verifies() {
 #[tokio::test]
 async fn reserved_daemon_kinds_are_refused_with_422() {
     let (base, _pool, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     for reserved in &[
         "task.foo",
@@ -135,7 +135,7 @@ async fn reserved_daemon_kinds_are_refused_with_422() {
 #[tokio::test]
 async fn vendor_prefixed_kind_is_accepted() {
     let (base, _pool, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let response = client
         .post(format!("{base}/v1/audit/append"))
@@ -154,7 +154,7 @@ async fn vendor_prefixed_kind_is_accepted() {
 #[tokio::test]
 async fn malformed_kinds_are_refused_with_400() {
     let (base, _pool, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     for bad in &[
         "noNamespace",
@@ -187,7 +187,7 @@ async fn malformed_kinds_are_refused_with_400() {
 #[tokio::test]
 async fn payload_must_be_object() {
     let (base, _pool, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     // Array payload.
     let response = client

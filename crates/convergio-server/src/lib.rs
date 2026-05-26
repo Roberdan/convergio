@@ -15,6 +15,7 @@
 mod app;
 mod capability_install;
 mod error;
+mod purpose;
 mod routes;
 mod sse;
 

@@ -30,6 +30,14 @@ pub const HELP_TOOL: &str = "convergio.help";
 /// Stable MCP action tool name.
 pub const ACT_TOOL: &str = "convergio.act";
 
+/// HTTP header carrying the caller's GDPR purpose-binding identifier.
+///
+/// Convergio refuses requests that omit this header (GDPR Art.5(1)(b)).
+///
+/// Header name is lowercase to match the canonical HTTP/2 form; HTTP is
+/// case-insensitive.
+pub const PURPOSE_ID_HEADER: &str = "x-purpose-id";
+
 /// Action capabilities exposed to agents.
 pub const CAPABILITIES: &[&str] = &[
     "status",

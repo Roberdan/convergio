@@ -109,7 +109,7 @@ async fn produce_audit_history(client: &reqwest::Client, base: &str) -> String {
 async fn audit_stream_emits_new_events_in_seq_order() {
     let (base, _pool, _dir) = boot().await;
     // Connect first so the stream's "current tip" baseline is 0.
-    let client = reqwest::Client::builder()
+    let client = common::client_builder()
         .timeout(Duration::from_secs(15))
         .build()
         .unwrap();
@@ -127,7 +127,7 @@ async fn audit_stream_emits_new_events_in_seq_order() {
     );
 
     // Generate ≥ 3 audit rows (plan.created + task.created + task.in_progress).
-    let pub_client = reqwest::Client::new();
+    let pub_client = common::client();
     let _plan_id = produce_audit_history(&pub_client, &base).await;
 
     let events = read_sse_events(resp, "audit", 3, Duration::from_secs(8)).await;
@@ -151,12 +151,12 @@ async fn audit_stream_emits_new_events_in_seq_order() {
 #[tokio::test]
 async fn audit_stream_resumes_with_since_cursor() {
     let (base, _pool, _dir) = boot().await;
-    let pub_client = reqwest::Client::new();
+    let pub_client = common::client();
     // Generate a baseline batch so we know seq counts.
     let _ = produce_audit_history(&pub_client, &base).await;
 
     // Open stream from seq=0 and grab the first event's seq.
-    let stream_client = reqwest::Client::builder()
+    let stream_client = common::client_builder()
         .timeout(Duration::from_secs(15))
         .build()
         .unwrap();

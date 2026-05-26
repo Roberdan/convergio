@@ -1,4 +1,5 @@
 //! System-message route smoke tests (`/v1/system-messages`, ADR-0025).
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -44,7 +45,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn system_message_publish_then_poll_round_trip() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let published: Value = client
         .post(format!("{base}/v1/system-messages"))
@@ -88,7 +89,7 @@ async fn system_message_publish_then_poll_round_trip() {
 #[tokio::test]
 async fn system_message_rejects_non_system_topic() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let resp = client
         .post(format!("{base}/v1/system-messages"))
@@ -110,7 +111,7 @@ async fn system_message_rejects_non_system_topic() {
 #[tokio::test]
 async fn system_message_rejects_invalid_limit() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let resp = client
         .get(format!(

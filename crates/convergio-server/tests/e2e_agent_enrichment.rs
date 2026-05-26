@@ -31,7 +31,7 @@ async fn set_heartbeat_age(pool: &Pool, agent_id: &str, age_secs: i64) {
 #[tokio::test]
 async fn summaries_resolves_current_task_title() {
     let (base, pool, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
@@ -121,7 +121,7 @@ async fn summaries_resolves_current_task_title() {
 #[tokio::test]
 async fn details_includes_all_sections_even_when_empty() {
     let (base, _pool, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     register(&client, &base, "agent-bare", "shell").await;
 
     let details: Value = client
@@ -151,7 +151,7 @@ async fn details_includes_all_sections_even_when_empty() {
 #[tokio::test]
 async fn retire_stale_dry_run_then_apply() {
     let (base, pool, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     register(&client, &base, "agent-fresh", "shell").await;
     register(&client, &base, "agent-stale-1", "shell").await;
     register(&client, &base, "agent-stale-2", "shell").await;

@@ -12,7 +12,6 @@
 //! a separate call against a known-slow scenario).
 
 use convergio_durability::{Durability, NewPlan, NewTask};
-use reqwest::Client;
 use serde_json::{json, Value};
 use sqlx::Executor as _;
 
@@ -21,7 +20,7 @@ mod common;
 #[tokio::test]
 async fn fleet_validate_aggregates_per_repo_verdicts() {
     let (base, pool, _dir) = common::boot().await;
-    let http = Client::new();
+    let http = common::client();
     let durability = Durability::new(pool.clone());
 
     // --- create the fleet plan ---
@@ -30,6 +29,8 @@ async fn fleet_validate_aggregates_per_repo_verdicts() {
         .json(&json!({ "title": "cross-repo refactor", "scope": "fleet" }))
         .send()
         .await
+        .unwrap()
+        .error_for_status()
         .unwrap()
         .json()
         .await
@@ -248,7 +249,7 @@ async fn fleet_validate_aggregates_per_repo_verdicts() {
 #[tokio::test]
 async fn fleet_validate_404_on_unknown_plan() {
     let (base, _pool, _dir) = common::boot().await;
-    let http = Client::new();
+    let http = common::client();
     let resp = http
         .post(format!("{base}/v1/fleet/plans/does-not-exist/validate"))
         .json(&json!({}))
@@ -261,12 +262,14 @@ async fn fleet_validate_404_on_unknown_plan() {
 #[tokio::test]
 async fn fleet_validate_empty_plan_passes() {
     let (base, _pool, _dir) = common::boot().await;
-    let http = Client::new();
+    let http = common::client();
     let create: Value = http
         .post(format!("{base}/v1/fleet/plans"))
         .json(&json!({ "title": "empty", "scope": "fleet" }))
         .send()
         .await
+        .unwrap()
+        .error_for_status()
         .unwrap()
         .json()
         .await
@@ -277,6 +280,8 @@ async fn fleet_validate_empty_plan_passes() {
         .json(&json!({}))
         .send()
         .await
+        .unwrap()
+        .error_for_status()
         .unwrap()
         .json()
         .await

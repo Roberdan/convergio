@@ -61,7 +61,7 @@ async fn produce_some_history(client: &reqwest::Client, base: &str) {
 #[tokio::test]
 async fn open_ended_verify_passes_after_a_real_workflow() {
     let (base, _pool, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     produce_some_history(&client, &base).await;
 
     let report: Value = client
@@ -80,7 +80,7 @@ async fn open_ended_verify_passes_after_a_real_workflow() {
 #[tokio::test]
 async fn ranged_verify_works_inside_clean_range() {
     let (base, _pool, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     produce_some_history(&client, &base).await;
     produce_some_history(&client, &base).await;
 
@@ -100,7 +100,7 @@ async fn ranged_verify_works_inside_clean_range() {
 #[tokio::test]
 async fn http_verify_detects_tampering_done_directly_in_db() {
     let (base, pool, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     produce_some_history(&client, &base).await;
 
     // Tamper directly via the pool the server is using.

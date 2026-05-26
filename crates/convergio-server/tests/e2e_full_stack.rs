@@ -10,6 +10,7 @@
 //! 6. Layer 2: a consumer polls and acks
 //! 7. Layer 1: transition to submitted (gate must allow now)
 //! 8. Layer 1: verify the audit chain — every step above wrote a row
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -57,7 +58,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn three_layers_cooperate_in_one_workflow() {
     let (base, _dir) = boot().await;
-    let c = reqwest::Client::new();
+    let c = common::client();
 
     // 1. Create plan.
     let plan: Value = c

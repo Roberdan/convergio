@@ -38,6 +38,7 @@ pub fn router(state: AppState) -> Router {
         .merge(crate::routes::telemetry::router())
         .merge(crate::routes::api_actions::router())
         .merge(crate::routes::gate_preconditions::router())
+        .layer(axum::middleware::from_fn(crate::purpose::enforce))
         .layer(TraceLayer::new_for_http())
         .with_state(state)
 }

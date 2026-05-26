@@ -1,4 +1,5 @@
 //! HTTP E2E tests for capability signature verification.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -66,7 +67,7 @@ fn signed_request() -> CapabilitySignatureRequest {
 #[tokio::test]
 async fn verify_signature_route_accepts_good_signature_and_refuses_bad_one() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let verified: Value = client
         .post(format!("{base}/v1/capabilities/verify-signature"))
