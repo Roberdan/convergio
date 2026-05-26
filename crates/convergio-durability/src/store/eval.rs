@@ -62,21 +62,18 @@ impl TaxonomyStore {
     }
     /// All known taxonomy kinds, sorted.
     pub async fn list(&self) -> Result<Vec<String>> {
-        let rows = sqlx::query_as::<_, (String,)>(
-            "SELECT kind FROM task_taxonomy ORDER BY kind ASC",
-        )
-        .fetch_all(self.pool.inner())
-        .await?;
+        let rows =
+            sqlx::query_as::<_, (String,)>("SELECT kind FROM task_taxonomy ORDER BY kind ASC")
+                .fetch_all(self.pool.inner())
+                .await?;
         Ok(rows.into_iter().map(|(k,)| k).collect())
     }
     /// True if `kind` is in the closed list.
     pub async fn contains(&self, kind: &str) -> Result<bool> {
-        let row = sqlx::query_as::<_, (i64,)>(
-            "SELECT COUNT(1) FROM task_taxonomy WHERE kind = ?",
-        )
-        .bind(kind)
-        .fetch_one(self.pool.inner())
-        .await?;
+        let row = sqlx::query_as::<_, (i64,)>("SELECT COUNT(1) FROM task_taxonomy WHERE kind = ?")
+            .bind(kind)
+            .fetch_one(self.pool.inner())
+            .await?;
         Ok(row.0 > 0)
     }
 }
