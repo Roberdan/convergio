@@ -3,11 +3,13 @@
 //! `describe object|link <NAME>`, `export <NAME> --format jsonschema|shacl`.
 //! Every subcommand respects `--output human|json|plain` per ADR-0043.
 
+use super::ontology_types::{
+    DescribeLink, DescribeObject, ExportFormatArg, GraphFormatArg, ListResponse,
+};
 use super::{Client, OutputMode};
 use anyhow::Result;
 use clap::{Subcommand, ValueEnum};
 use convergio_i18n::Bundle;
-use serde::{Deserialize, Serialize};
 
 /// `cvg ontology` subcommand surface.
 #[derive(Subcommand)]
@@ -36,6 +38,36 @@ pub enum OntologyCommand {
         #[arg(long)]
         version: Option<i64>,
     },
+    /// Diff two schema versions of an ObjectType (ADR-0060).
+    Diff {
+        /// Object name.
+        name: String,
+        /// Older schema_version.
+        #[arg(long)]
+        from: i64,
+        /// Newer schema_version.
+        #[arg(long)]
+        to: i64,
+        /// Render format.
+        #[arg(long, value_enum, default_value_t = GraphFormatArg::Json)]
+        format: GraphFormatArg,
+    },
+    /// Show the lineage chain of an ObjectType (ADR-0060).
+    Lineage {
+        /// Object name.
+        name: String,
+        /// Render format.
+        #[arg(long, value_enum, default_value_t = GraphFormatArg::Json)]
+        format: GraphFormatArg,
+    },
+    /// Diff across branches (501 in W1, lands with ADR-0059).
+    BranchDiff {
+        /// Object name.
+        name: String,
+        /// Render format.
+        #[arg(long, value_enum, default_value_t = GraphFormatArg::Json)]
+        format: GraphFormatArg,
+    },
 }
 
 /// Type family selector for `cvg ontology describe`.
@@ -45,74 +77,6 @@ pub enum TypeKindArg {
     Object,
     /// LinkType — a typed relationship between objects.
     Link,
-}
-
-/// Export format selector for `cvg ontology export`.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
-pub enum ExportFormatArg {
-    /// Canonical JSON-Schema document (draft 2020-12).
-    Jsonschema,
-    /// SHACL shape graph encoded as JSON-LD.
-    Shacl,
-}
-
-impl ExportFormatArg {
-    fn as_path(self) -> &'static str {
-        match self {
-            Self::Jsonschema => "jsonschema",
-            Self::Shacl => "shacl",
-        }
-    }
-}
-
-#[derive(Deserialize, Serialize)]
-struct TypeRow {
-    kind: String,
-    name: String,
-    schema_version: i64,
-    title: String,
-    description: String,
-    content_hash: String,
-}
-
-#[derive(Deserialize, Serialize)]
-struct ListResponse {
-    objects: Vec<TypeRow>,
-    links: Vec<TypeRow>,
-}
-
-#[derive(Deserialize, Serialize)]
-struct PropertyRow {
-    name: String,
-    schema_version: i64,
-    datatype: String,
-    required: bool,
-    title: String,
-    description: String,
-    content_hash: String,
-}
-
-#[derive(Deserialize, Serialize)]
-struct DescribeObject {
-    name: String,
-    schema_version: i64,
-    title: String,
-    description: String,
-    breaking: bool,
-    content_hash: String,
-    properties: Vec<PropertyRow>,
-}
-
-#[derive(Deserialize, Serialize)]
-struct DescribeLink {
-    name: String,
-    schema_version: i64,
-    title: String,
-    description: String,
-    from_object: String,
-    to_object: String,
-    breaking: bool,
-    content_hash: String,
 }
 
 /// Entry point routed from `crate::dispatch`.
@@ -137,6 +101,18 @@ pub async fn run(
             format,
             version,
         } => export_object(client, output, &name, format, version).await,
+        OntologyCommand::Diff {
+            name,
+            from,
+            to,
+            format,
+        } => super::ontology_diff::diff(client, output, &name, from, to, format).await,
+        OntologyCommand::Lineage { name, format } => {
+            super::ontology_diff::lineage(client, output, &name, format).await
+        }
+        OntologyCommand::BranchDiff { name, format } => {
+            super::ontology_diff::branch_diff(client, output, &name, format).await
+        }
     }
 }
 

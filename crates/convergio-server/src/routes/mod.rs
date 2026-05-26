@@ -16,6 +16,7 @@ pub mod health;
 pub(crate) mod limits;
 pub mod messages;
 pub mod ontology;
+pub mod ontology_graph;
 pub mod plans;
 pub mod pr_links;
 pub mod solve;

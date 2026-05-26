@@ -42,4 +42,13 @@ pub enum Error {
         /// Registry name that was not found.
         name: String,
     },
+
+    /// Feature exists on the API surface but its underlying primitive
+    /// has not landed yet. The W1 `branch-diff` command returns this
+    /// because branching itself ships in a later ADR (ADR-0059).
+    #[error("not implemented yet: {feature}")]
+    NotImplemented {
+        /// Stable identifier for the missing feature.
+        feature: &'static str,
+    },
 }
