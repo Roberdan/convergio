@@ -55,10 +55,22 @@ pub struct Client {
 impl Client {
     /// Build with the daemon base URL (e.g. `http://127.0.0.1:8420`).
     pub fn new(base: String) -> Self {
-        Self {
-            base,
-            inner: reqwest::Client::new(),
+        let purpose = std::env::var("CONVERGIO_PURPOSE_ID")
+            .ok()
+            .filter(|v| !v.trim().is_empty())
+            .unwrap_or_else(|| "00000000-0000-0000-0000-000000000000".to_string());
+
+        let mut headers = reqwest::header::HeaderMap::new();
+        if let Ok(v) = reqwest::header::HeaderValue::from_str(&purpose) {
+            headers.insert(convergio_api::PURPOSE_ID_HEADER, v);
         }
+
+        let inner = reqwest::Client::builder()
+            .default_headers(headers)
+            .build()
+            .expect("reqwest client");
+
+        Self { base, inner }
     }
 
     /// Daemon base URL.
