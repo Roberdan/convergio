@@ -29,6 +29,7 @@ async fn boot() -> (String, tempfile::TempDir) {
         embedder: Arc::new(convergio_embed::embedder::testing::DeterministicTestEmbedder::new(8)),
         fleet: Arc::new(convergio_fleet::FleetStore::new(pool.clone())),
         fleet_plans: Arc::new(convergio_fleet::FleetPlanStore::new(pool.clone())),
+        ontology: Arc::new(convergio_ontology::Store::new(pool.clone())),
         audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let app = router(state);

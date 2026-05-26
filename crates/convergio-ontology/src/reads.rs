@@ -97,6 +97,46 @@ impl Store {
         .transpose()
     }
 
+    /// List the latest revision of every registered `ObjectType`,
+    /// sorted by name. Returns one row per object name.
+    pub async fn list_objects(&self) -> Result<Vec<ObjectTypeRecord>> {
+        let rows = sqlx::query(
+            "SELECT name, MAX(schema_version) AS max_v \
+             FROM ontology_object_types GROUP BY name ORDER BY name ASC",
+        )
+        .fetch_all(self.pool.inner())
+        .await?;
+        let mut out = Vec::with_capacity(rows.len());
+        for r in rows {
+            let name: String = r.try_get("name")?;
+            let v: i64 = r.try_get("max_v")?;
+            if let Some(rec) = self.get_object(&name, v).await? {
+                out.push(rec);
+            }
+        }
+        Ok(out)
+    }
+
+    /// List the latest revision of every registered `LinkType`,
+    /// sorted by name.
+    pub async fn list_links(&self) -> Result<Vec<LinkTypeRecord>> {
+        let rows = sqlx::query(
+            "SELECT name, MAX(schema_version) AS max_v \
+             FROM ontology_link_types GROUP BY name ORDER BY name ASC",
+        )
+        .fetch_all(self.pool.inner())
+        .await?;
+        let mut out = Vec::with_capacity(rows.len());
+        for r in rows {
+            let name: String = r.try_get("name")?;
+            let v: i64 = r.try_get("max_v")?;
+            if let Some(rec) = self.get_link(&name, v).await? {
+                out.push(rec);
+            }
+        }
+        Ok(out)
+    }
+
     /// List the latest revision of every `PropertyType` whose owner
     /// is the given `(object_name)` — used by exporters that need to
     /// flatten an `ObjectType` into one schema document.

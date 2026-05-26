@@ -19,6 +19,7 @@ convergio-embed = { workspace = true }
 convergio-fleet = { workspace = true }
 convergio-graph = { workspace = true }
 convergio-lifecycle = { workspace = true }
+convergio-ontology = { workspace = true }
 convergio-planner = { workspace = true }
 convergio-thor = { workspace = true }
 

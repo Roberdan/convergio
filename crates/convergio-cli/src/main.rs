@@ -228,6 +228,11 @@ pub(crate) enum Command {
         #[command(subcommand)]
         sub: commands::bus::BusCommand,
     },
+    /// Ontology Runtime Core registry (list, describe, export; ADR-0053).
+    Ontology {
+        #[command(subcommand)]
+        sub: commands::ontology::OntologyCommand,
+    },
     /// One-shot peer + bus + plan snapshot for a fresh agent session.
     Discover {
         /// Lookback window for active peers / bus topics. Default `30m`.

@@ -11,6 +11,7 @@ use convergio_embed::{EmbedStore, Embedder};
 use convergio_fleet::{FleetPlanStore, FleetStore};
 use convergio_graph::Store as GraphStore;
 use convergio_lifecycle::Supervisor;
+use convergio_ontology::Store as OntologyStore;
 use std::sync::{Arc, Mutex};
 
 /// Application state injected into every handler.
@@ -37,6 +38,8 @@ pub struct AppState {
     /// Fleet plan store (ADR-0038, F3-2): cross-repo plans with
     /// per-repo plan links.
     pub fleet_plans: Arc<FleetPlanStore>,
+    /// Ontology Runtime Core schema registry (ADR-0053).
+    pub ontology: Arc<OntologyStore>,
     /// Memoised full-chain audit verify result. Keyed by tail `seq`; auto-
     /// invalidated when a new audit row is appended (tail advances). Shared
     /// across all clones via `Arc` — one warm call benefits every concurrent

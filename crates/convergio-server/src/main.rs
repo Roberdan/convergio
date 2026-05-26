@@ -99,9 +99,6 @@ async fn start(
     graph.migrate().await?;
     let ontology = Arc::new(convergio_ontology::Store::new(pool.clone()));
     ontology.migrate().await?;
-    // Hold a reference so the schema stays available to later tasks
-    // in the W1 plan (CLI/MCP/exporters). Unused-for-now is fine.
-    let _ontology = ontology;
     convergio_embed::init(&pool).await?;
     let embed = Arc::new(convergio_embed::EmbedStore::new(pool.clone()));
     let embedder = make_embedder();
@@ -188,6 +185,7 @@ async fn start(
         embedder: embedder.clone(),
         fleet: fleet.clone(),
         fleet_plans: fleet_plans.clone(),
+        ontology: ontology.clone(),
         audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let app = router(state);
