@@ -31,6 +31,7 @@ module.exports = {
         'tui',
         'brand',
         'embed',
+        'connector',
         'coherence',
         'parse-multi',
         'fleet',
