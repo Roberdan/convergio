@@ -412,3 +412,5 @@ documented in [ADR-0019](./docs/adr/0019-thinking-stack-gstack-vendored.md).
 ## License
 
 Convergio Community License v1.3 (source-available, not OSI-approved). See [LICENSE](./LICENSE).
+
+<!-- ci re-trigger -->
