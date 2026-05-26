@@ -3,6 +3,7 @@
 //! Boots the full daemon router with a tempdir SQLite, seeds the
 //! [`EmbedStore`] directly, then hits `/v1/embed/stats` over HTTP and
 //! verifies the response shape.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -64,7 +65,7 @@ async fn boot() -> (String, Arc<EmbedStore>, tempfile::TempDir) {
 #[tokio::test]
 async fn embed_stats_returns_zero_on_fresh_db() {
     let (base, _embed, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let body: Value = client
         .get(format!("{base}/v1/embed/stats"))
         .send()
@@ -95,7 +96,7 @@ async fn embed_stats_reflects_seeded_rows() {
         }
     }
 
-    let client = reqwest::Client::new();
+    let client = common::client();
     let total: Value = client
         .get(format!("{base}/v1/embed/stats"))
         .send()
@@ -122,7 +123,7 @@ async fn embed_stats_reflects_seeded_rows() {
 #[tokio::test]
 async fn embed_warm_returns_model_and_dim() {
     let (base, _embed, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let body: Value = client
         .post(format!("{base}/v1/embed/warm"))
         .send()
@@ -148,7 +149,7 @@ async fn embed_build_walks_directory_and_ingests() {
     .expect("write rs");
     std::fs::write(corpus.path().join("README.md"), "# convergio\n").expect("write md");
 
-    let client = reqwest::Client::new();
+    let client = common::client();
     let body: Value = client
         .post(format!("{base}/v1/embed/build"))
         .json(&serde_json::json!({
@@ -190,7 +191,7 @@ async fn embed_for_task_finds_seeded_match() {
     std::fs::write(corpus.path().join("src/auth.rs"), "fn login() {}\n").expect("write");
     std::fs::write(corpus.path().join("src/payments.rs"), "fn checkout() {}\n").expect("write");
 
-    let client = reqwest::Client::new();
+    let client = common::client();
     // Build first.
     let _: Value = client
         .post(format!("{base}/v1/embed/build"))

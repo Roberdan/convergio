@@ -46,7 +46,7 @@ async fn run_measurement() {
     let embedder = common::make_embedder();
     let model_id = embedder.model_id().to_owned();
     let (base, fleet_store, _embed, _dir) = common::boot_with_embedder(embedder).await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let ws = common::workspace_root();
     let (convergio_path, convergio_real) = (ws.clone(), true);

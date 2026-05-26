@@ -18,7 +18,7 @@ async fn boot() -> (String, Pool, tempfile::TempDir) {
 #[tokio::test]
 async fn plan_number_assigned_on_create() {
     let (base, _pool, _dir) = boot().await;
-    let c = reqwest::Client::new();
+    let c = common::client();
 
     let p1: Value = c
         .post(format!("{base}/v1/plans"))
@@ -46,7 +46,7 @@ async fn plan_number_assigned_on_create() {
 #[tokio::test]
 async fn plan_number_scoped_per_project() {
     let (base, _pool, _dir) = boot().await;
-    let c = reqwest::Client::new();
+    let c = common::client();
 
     let x1: Value = c
         .post(format!("{base}/v1/plans"))
@@ -85,7 +85,7 @@ async fn plan_number_scoped_per_project() {
 #[tokio::test]
 async fn plan_list_includes_number() {
     let (base, _pool, _dir) = boot().await;
-    let c = reqwest::Client::new();
+    let c = common::client();
 
     c.post(format!("{base}/v1/plans"))
         .json(&json!({"title": "Alpha"}))
@@ -119,7 +119,7 @@ async fn plan_list_includes_number() {
 #[tokio::test]
 async fn get_plan_by_number_and_uuid() {
     let (base, _pool, _dir) = boot().await;
-    let c = reqwest::Client::new();
+    let c = common::client();
 
     let created: Value = c
         .post(format!("{base}/v1/plans"))
@@ -170,7 +170,7 @@ async fn get_plan_by_number_and_uuid() {
 #[tokio::test]
 async fn run_plan_claims_and_submits_pending_tasks_in_order() {
     let (base, _pool, _dir) = boot().await;
-    let c = reqwest::Client::new();
+    let c = common::client();
 
     let plan: Value = c
         .post(format!("{base}/v1/plans"))

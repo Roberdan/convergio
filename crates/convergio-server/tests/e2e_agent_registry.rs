@@ -1,4 +1,5 @@
 //! Agent registry API E2E tests.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -46,7 +47,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn agent_registry_round_trip_is_audited() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let agent: Value = client
         .post(format!("{base}/v1/agent-registry/agents"))
         .json(&json!({

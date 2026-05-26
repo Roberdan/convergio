@@ -2,6 +2,7 @@
 //! `submitted -> done`. Agent-driven done attempts must be refused
 //! with HTTP 403 and an audit row, and `validate` must atomically
 //! flip valid submitted tasks with a dedicated audit kind.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -56,7 +57,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn agent_done_transition_is_refused_with_audit_row() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
@@ -122,7 +123,7 @@ async fn agent_done_transition_is_refused_with_audit_row() {
 #[tokio::test]
 async fn validate_promotes_submitted_tasks_to_done_with_thor_audit() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))

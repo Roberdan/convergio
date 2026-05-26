@@ -4,6 +4,7 @@
 //! over HTTP and verifies that the `started_at`, `ended_at`, and
 //! `duration_ms` columns on the task row track the transition
 //! timestamps, all in the same audit-chained transaction.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -53,7 +54,7 @@ async fn boot() -> (String, AppState, tempfile::TempDir) {
 #[tokio::test]
 async fn task_timing_cache_tracks_in_progress_then_done() {
     let (base, state, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
@@ -145,7 +146,7 @@ async fn task_timing_cache_tracks_in_progress_then_done() {
 #[tokio::test]
 async fn plan_timing_cache_tracks_active_then_completed() {
     let (base, state, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
@@ -242,7 +243,7 @@ async fn close_post_hoc_writes_timing_cache() {
 #[tokio::test]
 async fn audit_verify_cache_is_populated_and_invalidated_on_append() {
     let (base, state, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     client
         .post(format!("{base}/v1/plans"))

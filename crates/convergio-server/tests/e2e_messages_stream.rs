@@ -1,4 +1,5 @@
 //! P1.1 — `/v1/plans/:plan_id/messages/stream` SSE end-to-end test.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -98,7 +99,7 @@ async fn messages_stream_emits_published_messages() {
     let plan_id = "plan-stream-x";
 
     // Open the SSE stream first; `since=0` so we see history+future.
-    let stream_client = reqwest::Client::builder()
+    let stream_client = common::client_builder()
         .timeout(Duration::from_secs(15))
         .build()
         .unwrap();
@@ -118,7 +119,7 @@ async fn messages_stream_emits_published_messages() {
     );
 
     // Publish three messages on the matching topic.
-    let pub_client = reqwest::Client::new();
+    let pub_client = common::client();
     for i in 0..3 {
         let _: Value = pub_client
             .post(format!("{base}/v1/plans/{plan_id}/messages"))
@@ -154,7 +155,7 @@ async fn messages_stream_emits_published_messages() {
 async fn messages_stream_filters_by_topic() {
     let (base, _dir) = boot().await;
     let plan_id = "plan-filter-y";
-    let stream_client = reqwest::Client::builder()
+    let stream_client = common::client_builder()
         .timeout(Duration::from_secs(15))
         .build()
         .unwrap();
@@ -166,7 +167,7 @@ async fn messages_stream_filters_by_topic() {
         .await
         .unwrap();
 
-    let pub_client = reqwest::Client::new();
+    let pub_client = common::client();
     // Publish on the wrong topic first — must NOT be delivered.
     let _: Value = pub_client
         .post(format!("{base}/v1/plans/{plan_id}/messages"))
