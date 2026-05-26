@@ -43,9 +43,7 @@ impl Bridge {
             Err(r) => return r,
         };
         if format != "jsonschema" && format != "shacl" {
-            return crate::http::invalid(
-                "format must be \"jsonschema\" or \"shacl\"".into(),
-            );
+            return crate::http::invalid("format must be \"jsonschema\" or \"shacl\"".into());
         }
         let mut path = format!("/v1/ontology/export/{format}/object/{name}");
         if let Some(v) = params.get("version").and_then(Value::as_u64) {

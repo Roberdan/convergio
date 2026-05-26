@@ -17,11 +17,11 @@ mod help_actions;
 mod help_tests;
 mod http;
 
+#[cfg(test)]
+mod http_tests;
 mod ontology_action;
 #[cfg(test)]
 mod ontology_e2e_tests;
-#[cfg(test)]
-mod http_tests;
 
 use anyhow::Result;
 use bridge::Bridge;
