@@ -85,4 +85,5 @@ do not edit between the markers.
 | [0059](./0059-tui-ontology-inspector.md) | 0059. TUI Ontology Inspector (read-only) | proposed |
 | [0060](./0060-deterministic-graph-output.md) | 0060. Deterministic Diff / Mermaid / Graphviz output format | proposed |
 | [0061](./0061-capability-search-local.md) | -0061 — `cvg capability search` (local-only slice of W9) | accepted |
+| [0062](./0062-dispatch-choice-audit-row.md) | -0062 — Dispatch-choice audit row (W8 slice) | accepted |
 <!-- END AUTO -->

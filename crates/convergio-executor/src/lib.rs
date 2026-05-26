@@ -59,6 +59,7 @@
 #![forbid(unsafe_code)]
 
 mod defaults;
+mod dispatch_choice;
 mod error;
 mod executor;
 mod graph_seed;
