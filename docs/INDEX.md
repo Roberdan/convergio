@@ -165,7 +165,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/plans/v0.2-friction-log.md` | plan | - | - | 207 |
 | `docs/plans/v1.0-production-ready.md` | plan | - | - | 743 |
 | `docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
-| `docs/release.md` | - | - | - | 106 |
+| `docs/release.md` | - | - | - | 131 |
 | `docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |
 | `docs/reviews/PRD-001-pre-PR-review-v1.md` | - | - | - | 114 |
 | `docs/reviews/crate-audits/convergio-api.md` | - | - | - | 24 |
