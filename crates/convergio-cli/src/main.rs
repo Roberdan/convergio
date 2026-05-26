@@ -163,6 +163,11 @@ pub(crate) enum Command {
         #[command(subcommand)]
         sub: commands::pr::PrCommand,
     },
+    /// Public transparency artefact generators.
+    Public {
+        #[command(subcommand)]
+        sub: commands::public::PublicCommand,
+    },
     /// User-level daemon service management.
     Service {
         #[command(subcommand)]
