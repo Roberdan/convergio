@@ -1,0 +1,464 @@
+name: Promote
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag that published the signed promotion manifest"
+        required: true
+        type: string
+      enable_canary:
+        description: "If true, run prod-canary + optional bake before prod"
+        required: false
+        type: boolean
+        default: false
+      bake_minutes:
+        description: "Minutes to wait between prod-canary and prod"
+        required: false
+        type: string
+        default: "0"
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  COSIGN_YES: "true"
+  OIDC_ISSUER: https://token.actions.githubusercontent.com
+  # This should match the workflow identity used to sign artifacts in release.yml.
+  CERT_IDENTITY_RE: ^https://github.com/${{ github.repository }}/.github/workflows/release\\.yml@refs/tags/.*$
+
+jobs:
+  fetch:
+    name: Fetch + verify manifest
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_qualified: ${{ steps.out.outputs.image_qualified }}
+      manifest_sha256: ${{ steps.out.outputs.manifest_sha256 }}
+      release_tag: ${{ inputs.release_tag }}
+    steps:
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.0
+
+      - name: Download signed bundle from GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release download "${{ inputs.release_tag }}" \
+            -p "convergio-artifact-manifest.json" \
+            -p "convergio-artifact-manifest.json.sig" \
+            -p "convergio-artifact-manifest.json.crt" \
+            -p "convergio-image.DIGEST" \
+            -p "convergio-image.DIGEST.sig" \
+            -p "convergio-image.DIGEST.crt" \
+            -p "convergio-image.spdx.json" \
+            -p "convergio-image.spdx.json.sig" \
+            -p "convergio-image.spdx.json.crt" \
+            -p "convergio-artifact-manifest.SHA256SUMS" \
+            -p "convergio-artifact-manifest.SHA256SUMS.sig" \
+            -p "convergio-artifact-manifest.SHA256SUMS.crt"
+
+      - name: Verify bundle signatures + checksums (keyless)
+        run: |
+          set -euo pipefail
+
+          cosign verify-blob \
+            --certificate convergio-artifact-manifest.json.crt \
+            --signature convergio-artifact-manifest.json.sig \
+            --certificate-oidc-issuer "${OIDC_ISSUER}" \
+            --certificate-identity-regexp "${CERT_IDENTITY_RE}" \
+            convergio-artifact-manifest.json
+
+          cosign verify-blob \
+            --certificate convergio-image.DIGEST.crt \
+            --signature convergio-image.DIGEST.sig \
+            --certificate-oidc-issuer "${OIDC_ISSUER}" \
+            --certificate-identity-regexp "${CERT_IDENTITY_RE}" \
+            convergio-image.DIGEST
+
+          cosign verify-blob \
+            --certificate convergio-image.spdx.json.crt \
+            --signature convergio-image.spdx.json.sig \
+            --certificate-oidc-issuer "${OIDC_ISSUER}" \
+            --certificate-identity-regexp "${CERT_IDENTITY_RE}" \
+            convergio-image.spdx.json
+
+          cosign verify-blob \
+            --certificate convergio-artifact-manifest.SHA256SUMS.crt \
+            --signature convergio-artifact-manifest.SHA256SUMS.sig \
+            --certificate-oidc-issuer "${OIDC_ISSUER}" \
+            --certificate-identity-regexp "${CERT_IDENTITY_RE}" \
+            convergio-artifact-manifest.SHA256SUMS
+
+          shasum -a 256 -c convergio-artifact-manifest.SHA256SUMS
+
+      - name: Parse outputs
+        id: out
+        run: |
+          set -euo pipefail
+          image=$(jq -r '.image.qualified' convergio-artifact-manifest.json)
+          sha=$(shasum -a 256 convergio-artifact-manifest.json | awk '{print $1}')
+          echo "image_qualified=${image}" >> "$GITHUB_OUTPUT"
+          echo "manifest_sha256=${sha}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify image signature (keyless)
+        run: |
+          set -euo pipefail
+          cosign verify \
+            --certificate-oidc-issuer "${OIDC_ISSUER}" \
+            --certificate-identity-regexp "${CERT_IDENTITY_RE}" \
+            "${{ steps.out.outputs.image_qualified }}" >/dev/null
+
+      - name: Verify image SBOM attestation exists (keyless)
+        run: |
+          set -euo pipefail
+          cosign verify-attestation \
+            --certificate-oidc-issuer "${OIDC_ISSUER}" \
+            --certificate-identity-regexp "${CERT_IDENTITY_RE}" \
+            --type spdxjson \
+            "${{ steps.out.outputs.image_qualified }}" >/dev/null
+
+      - name: Upload verified bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: promotion-input
+          path: |
+            convergio-artifact-manifest.json
+            convergio-artifact-manifest.json.sig
+            convergio-artifact-manifest.json.crt
+            convergio-image.DIGEST
+            convergio-image.DIGEST.sig
+            convergio-image.DIGEST.crt
+            convergio-image.spdx.json
+            convergio-image.spdx.json.sig
+            convergio-image.spdx.json.crt
+            convergio-artifact-manifest.SHA256SUMS
+            convergio-artifact-manifest.SHA256SUMS.sig
+            convergio-artifact-manifest.SHA256SUMS.crt
+
+  dev:
+    name: Promote to dev
+    needs: fetch
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: promotion-input
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.0
+
+      - name: Create + sign promotion record
+        run: |
+          set -euo pipefail
+          now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          cat > promotion-dev.json <<'JSON'
+          {
+            "schema_version": "1",
+            "promoted_at": "REPLACE_NOW",
+            "from": null,
+            "to": "dev",
+            "release_tag": "REPLACE_TAG",
+            "manifest_sha256": "REPLACE_MANIFEST_SHA",
+            "image": "REPLACE_IMAGE"
+          }
+          JSON
+          sed -i.bak \
+            -e "s/REPLACE_NOW/${now}/" \
+            -e "s/REPLACE_TAG/${{ needs.fetch.outputs.release_tag }}/" \
+            -e "s/REPLACE_MANIFEST_SHA/${{ needs.fetch.outputs.manifest_sha256 }}/" \
+            -e "s|REPLACE_IMAGE|${{ needs.fetch.outputs.image_qualified }}|" \
+            promotion-dev.json
+          rm -f promotion-dev.json.bak
+
+          cosign sign-blob --yes \
+            --output-signature promotion-dev.json.sig \
+            --output-certificate promotion-dev.json.crt \
+            promotion-dev.json
+
+      - name: Upload promotion record
+        uses: actions/upload-artifact@v4
+        with:
+          name: promotion-dev
+          path: |
+            promotion-dev.json
+            promotion-dev.json.sig
+            promotion-dev.json.crt
+
+  stage:
+    name: Promote to stage
+    needs: [dev, fetch]
+    runs-on: ubuntu-latest
+    environment: stage
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: promotion-input
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.0
+
+      - name: Create + sign promotion record
+        run: |
+          set -euo pipefail
+          now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          cat > promotion-stage.json <<'JSON'
+          {
+            "schema_version": "1",
+            "promoted_at": "REPLACE_NOW",
+            "from": "dev",
+            "to": "stage",
+            "release_tag": "REPLACE_TAG",
+            "manifest_sha256": "REPLACE_MANIFEST_SHA",
+            "image": "REPLACE_IMAGE"
+          }
+          JSON
+          sed -i.bak \
+            -e "s/REPLACE_NOW/${now}/" \
+            -e "s/REPLACE_TAG/${{ needs.fetch.outputs.release_tag }}/" \
+            -e "s/REPLACE_MANIFEST_SHA/${{ needs.fetch.outputs.manifest_sha256 }}/" \
+            -e "s|REPLACE_IMAGE|${{ needs.fetch.outputs.image_qualified }}|" \
+            promotion-stage.json
+          rm -f promotion-stage.json.bak
+
+          cosign sign-blob --yes \
+            --output-signature promotion-stage.json.sig \
+            --output-certificate promotion-stage.json.crt \
+            promotion-stage.json
+
+      - name: Upload promotion record
+        uses: actions/upload-artifact@v4
+        with:
+          name: promotion-stage
+          path: |
+            promotion-stage.json
+            promotion-stage.json.sig
+            promotion-stage.json.crt
+
+  preprod:
+    name: Promote to preprod
+    needs: [stage, fetch]
+    runs-on: ubuntu-latest
+    environment: preprod
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: promotion-input
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.0
+
+      - name: Create + sign promotion record
+        run: |
+          set -euo pipefail
+          now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          cat > promotion-preprod.json <<'JSON'
+          {
+            "schema_version": "1",
+            "promoted_at": "REPLACE_NOW",
+            "from": "stage",
+            "to": "preprod",
+            "release_tag": "REPLACE_TAG",
+            "manifest_sha256": "REPLACE_MANIFEST_SHA",
+            "image": "REPLACE_IMAGE"
+          }
+          JSON
+          sed -i.bak \
+            -e "s/REPLACE_NOW/${now}/" \
+            -e "s/REPLACE_TAG/${{ needs.fetch.outputs.release_tag }}/" \
+            -e "s/REPLACE_MANIFEST_SHA/${{ needs.fetch.outputs.manifest_sha256 }}/" \
+            -e "s|REPLACE_IMAGE|${{ needs.fetch.outputs.image_qualified }}|" \
+            promotion-preprod.json
+          rm -f promotion-preprod.json.bak
+
+          cosign sign-blob --yes \
+            --output-signature promotion-preprod.json.sig \
+            --output-certificate promotion-preprod.json.crt \
+            promotion-preprod.json
+
+      - name: Upload promotion record
+        uses: actions/upload-artifact@v4
+        with:
+          name: promotion-preprod
+          path: |
+            promotion-preprod.json
+            promotion-preprod.json.sig
+            promotion-preprod.json.crt
+
+  prod_canary:
+    name: Promote to prod-canary
+    needs: [preprod, fetch]
+    if: ${{ inputs.enable_canary }}
+    runs-on: ubuntu-latest
+    environment: prod-canary
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: promotion-input
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.0
+
+      - name: Create + sign promotion record
+        run: |
+          set -euo pipefail
+          now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          cat > promotion-prod-canary.json <<'JSON'
+          {
+            "schema_version": "1",
+            "promoted_at": "REPLACE_NOW",
+            "from": "preprod",
+            "to": "prod-canary",
+            "release_tag": "REPLACE_TAG",
+            "manifest_sha256": "REPLACE_MANIFEST_SHA",
+            "image": "REPLACE_IMAGE",
+            "canary": true
+          }
+          JSON
+          sed -i.bak \
+            -e "s/REPLACE_NOW/${now}/" \
+            -e "s/REPLACE_TAG/${{ needs.fetch.outputs.release_tag }}/" \
+            -e "s/REPLACE_MANIFEST_SHA/${{ needs.fetch.outputs.manifest_sha256 }}/" \
+            -e "s|REPLACE_IMAGE|${{ needs.fetch.outputs.image_qualified }}|" \
+            promotion-prod-canary.json
+          rm -f promotion-prod-canary.json.bak
+
+          cosign sign-blob --yes \
+            --output-signature promotion-prod-canary.json.sig \
+            --output-certificate promotion-prod-canary.json.crt \
+            promotion-prod-canary.json
+
+      - name: Upload promotion record
+        uses: actions/upload-artifact@v4
+        with:
+          name: promotion-prod-canary
+          path: |
+            promotion-prod-canary.json
+            promotion-prod-canary.json.sig
+            promotion-prod-canary.json.crt
+
+  bake:
+    name: Bake
+    needs: prod_canary
+    if: ${{ inputs.enable_canary && inputs.bake_minutes != '0' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait
+        run: |
+          set -euo pipefail
+          mins="${{ inputs.bake_minutes }}"
+          case "$mins" in
+            ''|*[!0-9]*) echo "bake_minutes must be an integer"; exit 1;;
+          esac
+          echo "Baking for ${mins} minute(s)..."
+          sleep "$((mins * 60))"
+
+  prod_direct:
+    name: Promote to prod
+    needs: [preprod, fetch]
+    if: ${{ !inputs.enable_canary }}
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: promotion-input
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.0
+
+      - name: Create + sign promotion record
+        run: |
+          set -euo pipefail
+          now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          cat > promotion-prod.json <<'JSON'
+          {
+            "schema_version": "1",
+            "promoted_at": "REPLACE_NOW",
+            "from": "preprod",
+            "to": "prod",
+            "release_tag": "REPLACE_TAG",
+            "manifest_sha256": "REPLACE_MANIFEST_SHA",
+            "image": "REPLACE_IMAGE"
+          }
+          JSON
+          sed -i.bak \
+            -e "s/REPLACE_NOW/${now}/" \
+            -e "s/REPLACE_TAG/${{ needs.fetch.outputs.release_tag }}/" \
+            -e "s/REPLACE_MANIFEST_SHA/${{ needs.fetch.outputs.manifest_sha256 }}/" \
+            -e "s|REPLACE_IMAGE|${{ needs.fetch.outputs.image_qualified }}|" \
+            promotion-prod.json
+          rm -f promotion-prod.json.bak
+
+          cosign sign-blob --yes \
+            --output-signature promotion-prod.json.sig \
+            --output-certificate promotion-prod.json.crt \
+            promotion-prod.json
+
+      - name: Upload promotion record
+        uses: actions/upload-artifact@v4
+        with:
+          name: promotion-prod
+          path: |
+            promotion-prod.json
+            promotion-prod.json.sig
+            promotion-prod.json.crt
+
+  prod:
+    name: Promote to prod (after canary)
+    needs: [prod_canary, bake, fetch]
+    if: ${{ inputs.enable_canary }}
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: promotion-input
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.0
+
+      - name: Create + sign promotion record
+        run: |
+          set -euo pipefail
+          now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          cat > promotion-prod.json <<'JSON'
+          {
+            "schema_version": "1",
+            "promoted_at": "REPLACE_NOW",
+            "from": "prod-canary",
+            "to": "prod",
+            "release_tag": "REPLACE_TAG",
+            "manifest_sha256": "REPLACE_MANIFEST_SHA",
+            "image": "REPLACE_IMAGE",
+            "canary": true,
+            "bake_minutes": "REPLACE_BAKE"
+          }
+          JSON
+          sed -i.bak \
+            -e "s/REPLACE_NOW/${now}/" \
+            -e "s/REPLACE_BAKE/${{ inputs.bake_minutes }}/" \
+            -e "s/REPLACE_TAG/${{ needs.fetch.outputs.release_tag }}/" \
+            -e "s/REPLACE_MANIFEST_SHA/${{ needs.fetch.outputs.manifest_sha256 }}/" \
+            -e "s|REPLACE_IMAGE|${{ needs.fetch.outputs.image_qualified }}|" \
+            promotion-prod.json
+          rm -f promotion-prod.json.bak
+
+          cosign sign-blob --yes \
+            --output-signature promotion-prod.json.sig \
+            --output-certificate promotion-prod.json.crt \
+            promotion-prod.json
+
+      - name: Upload promotion record
+        uses: actions/upload-artifact@v4
+        with:
+          name: promotion-prod
+          path: |
+            promotion-prod.json
+            promotion-prod.json.sig
+            promotion-prod.json.crt
