@@ -918,6 +918,7 @@ dependencies = [
  "convergio-fleet",
  "convergio-graph",
  "convergio-lifecycle",
+ "convergio-ontology",
  "convergio-server",
  "reqwest",
  "rmcp",
