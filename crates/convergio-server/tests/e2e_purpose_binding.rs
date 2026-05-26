@@ -15,7 +15,6 @@ async fn missing_or_invalid_purpose_id_is_rejected() {
     let probes: &[(&str, &str)] = &[
         ("GET", "/v1/health"),
         ("GET", "/v1/status"),
-        ("GET", "/v1/api/actions"),
         ("GET", "/v1/gates/preconditions"),
         ("GET", "/v1/plans"),
         (

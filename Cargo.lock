@@ -695,6 +695,7 @@ name = "convergio-cli-plan-run"
 version = "0.3.33"
 dependencies = [
  "anyhow",
+ "convergio-api",
  "convergio-i18n",
  "futures-util",
  "reqwest",
@@ -709,6 +710,7 @@ version = "0.3.33"
 dependencies = [
  "anyhow",
  "clap",
+ "convergio-api",
  "convergio-i18n",
  "reqwest",
  "serde",
@@ -724,6 +726,7 @@ dependencies = [
  "axum",
  "chrono",
  "clap",
+ "convergio-api",
  "convergio-i18n",
  "reqwest",
  "serde",

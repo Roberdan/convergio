@@ -50,7 +50,7 @@ async fn gateway_caches_by_prompt_model_and_retrieval_set_and_emits_provenance_o
     );
     std::env::set_var("LLM_GATEWAY_AZURE_OPENAI_URL", &stub);
 
-    let client = reqwest::Client::new();
+    let client = common::client();
     let req = json!({
         "purpose": "summarize",
         "model_id": "azure:gpt-4o-mini",

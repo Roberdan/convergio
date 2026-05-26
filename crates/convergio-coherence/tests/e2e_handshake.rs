@@ -19,6 +19,9 @@ use std::time::Duration;
 use tempfile::tempdir;
 use tokio::net::TcpListener;
 
+const PURPOSE_ID_HEADER: &str = "x-purpose-id";
+const TEST_PURPOSE_ID: &str = "00000000-0000-4000-8000-000000000443";
+
 async fn boot() -> (String, tempfile::TempDir) {
     let dir = tempdir().expect("tempdir");
     let db_path = dir.path().join("state.db");
@@ -105,6 +108,7 @@ async fn handshake_full_round_trip_succeeds() {
             "{base}/v1/plans/{}/messages/tail?topic=coordination/handshake&limit=10",
             report.plan_id
         ))
+        .header(PURPOSE_ID_HEADER, TEST_PURPOSE_ID)
         .send()
         .await
         .expect("tail request")
@@ -168,6 +172,7 @@ async fn handshake_full_round_trip_succeeds() {
             "{base}/v1/plans/{}/messages?topic=coordination/handshake&limit=10",
             report.plan_id
         ))
+        .header(PURPOSE_ID_HEADER, TEST_PURPOSE_ID)
         .send()
         .await
         .expect("poll request")
@@ -181,6 +186,7 @@ async fn handshake_full_round_trip_succeeds() {
 
     let audit: Value = http
         .get(format!("{base}/v1/audit/verify"))
+        .header(PURPOSE_ID_HEADER, TEST_PURPOSE_ID)
         .send()
         .await
         .expect("audit request")

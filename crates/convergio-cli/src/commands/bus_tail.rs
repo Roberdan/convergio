@@ -118,7 +118,22 @@ async fn stream_once(
     if let Some(t) = topic {
         url.push_str(&format!("&topic={t}"));
     }
-    let resp = reqwest::Client::new().get(&url).send().await?;
+    let purpose = std::env::var("CONVERGIO_PURPOSE_ID")
+        .ok()
+        .filter(|v| !v.trim().is_empty())
+        .unwrap_or_else(|| "00000000-0000-0000-0000-000000000000".to_string());
+
+    let mut headers = reqwest::header::HeaderMap::new();
+    if let Ok(v) = reqwest::header::HeaderValue::from_str(&purpose) {
+        headers.insert(convergio_api::PURPOSE_ID_HEADER, v);
+    }
+
+    let resp = reqwest::Client::builder()
+        .default_headers(headers)
+        .build()?
+        .get(&url)
+        .send()
+        .await?;
     if resp.status() == reqwest::StatusCode::NOT_FOUND {
         return Err(StreamErr::NotStreaming);
     }

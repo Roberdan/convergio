@@ -8,7 +8,7 @@ use serde_json::json;
 #[tokio::test]
 async fn gdpr_request_fulfills_access_and_audits() {
     let (base, pool, _dir) = common::boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let res = client
         .post(format!("{base}/v1/gdpr/requests"))
         .json(&json!({
@@ -43,7 +43,7 @@ async fn gdpr_request_fulfills_access_and_audits() {
 #[tokio::test]
 async fn gdpr_request_rejects_empty_subject() {
     let (base, _pool, _dir) = common::boot().await;
-    let res = reqwest::Client::new()
+    let res = common::client()
         .post(format!("{base}/v1/gdpr/requests"))
         .json(&json!({
             "subject": " ",

@@ -5,6 +5,7 @@
 
 use crate::ApiError;
 use axum::extract::Request;
+use axum::http::Method;
 use axum::middleware::Next;
 use axum::response::Response;
 use uuid::Uuid;
@@ -15,6 +16,10 @@ pub struct PurposeId(pub Uuid);
 
 /// Reject any request without a valid `x-purpose-id` UUID header.
 pub async fn enforce(mut req: Request, next: Next) -> Result<Response, ApiError> {
+    if is_bootstrap_read(req.method(), req.uri().path()) {
+        return Ok(next.run(req).await);
+    }
+
     let raw = match req.headers().get(convergio_api::PURPOSE_ID_HEADER) {
         Some(v) => v,
         None => {
@@ -51,4 +56,8 @@ pub async fn enforce(mut req: Request, next: Next) -> Result<Response, ApiError>
 
     req.extensions_mut().insert(PurposeId(purpose_id));
     Ok(next.run(req).await)
+}
+
+fn is_bootstrap_read(method: &Method, path: &str) -> bool {
+    *method == Method::GET && matches!(path, "/v1/api/actions")
 }
