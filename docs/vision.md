@@ -368,7 +368,7 @@ goes in a capability bundle, not in this repo.
 The work that materialises this vision is tracked in
 [`ROADMAP.md`](./ROADMAP.md) as four waves:
 
-- **Wave 0** (now): the urban code (this file + ADR-0016/0017/0018/0019)
+- **Wave 0** (now): the urban code (this file + ADR-0016/0017/0018/0019/0064)
   and the first multi-agent coordination client (PRD-001 Claude Code
   adapter)
 - **Wave 1**: close the P3 a11y honesty gap, ship the
@@ -422,5 +422,5 @@ closed. We are honest about the building codes that are mechanical
 *today* and the ones that are *promised by date X*. Both kinds are
 in the constitution; only the first kind makes the city safe.
 
-— last reviewed 2026-05-01, see ADR-0016 / 0017 / 0018 / 0019 /
+— last reviewed 2026-05-01, see ADR-0016 / 0017 / 0018 / 0019 / 0064 /
 0020 / 0021 for the decisions that operationalise this document.
