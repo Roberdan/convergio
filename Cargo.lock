@@ -638,6 +638,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "convergio-capability-registry"
+version = "0.3.31"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "ed25519-dalek",
+ "hex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+ "url",
+]
+
+[[package]]
 name = "convergio-cli"
 version = "0.3.31"
 dependencies = [
