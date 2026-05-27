@@ -920,6 +920,18 @@ dependencies = [
 [[package]]
 name = "convergio-ontology"
 version = "0.3.31"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "convergio-db",
+ "serde",
+ "serde_json",
+ "sha2",
+ "sqlx",
+ "tempfile",
+ "thiserror 1.0.69",
+ "tokio",
+]
 
 [[package]]
 name = "convergio-parse-multi"
@@ -984,6 +996,7 @@ dependencies = [
  "convergio-graph",
  "convergio-i18n",
  "convergio-lifecycle",
+ "convergio-ontology",
  "convergio-planner",
  "convergio-server-core",
  "convergio-thor",

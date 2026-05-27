@@ -78,6 +78,7 @@ Chosen option: **3**.
 | `convergio-embed` *(proposed, ADR-0038 F1)* | 700 — 799 | `0700_embeddings.sql` |
 | `convergio-fleet` *(proposed, ADR-0038 F2/F3)* | 800 — 899 | `0800_fleet.sql`, `0801_fleet_plans.sql` |
 | `convergio-parse-multi` *(proposed, ADR-0038 F2)* | 900 — 999 | reserved (parser is mostly stateless; range held for future fixture/cache tables) |
+| `convergio-ontology` | 1000 — 1099 | `1000_ontology_init.sql` (ADR-0053) |
 
 A migration's `version` is the integer prefix on the filename (sqlx
 convention). New crates must pick the next free hundred. Ranges marked
