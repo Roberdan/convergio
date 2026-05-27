@@ -760,6 +760,7 @@ version = "0.3.31"
 dependencies = [
  "async-trait",
  "chrono",
+ "convergio-a11y-axe",
  "convergio-api",
  "convergio-db",
  "ed25519-dalek",
