@@ -19,6 +19,206 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
 | `.pr-body.md` | - | - | - | 83 |
+| `.worktrees/copilot-hookfix/.claude/skills/cvg-spawn/SKILL.md` | - | - | - | 131 |
+| `.worktrees/copilot-hookfix/.github/pull_request_template.md` | - | - | - | 64 |
+| `.worktrees/copilot-hookfix/.pr-body.md` | - | - | - | 83 |
+| `.worktrees/copilot-hookfix/AGENTS.md` | - | - | - | 607 |
+| `.worktrees/copilot-hookfix/ARCHITECTURE.md` | - | - | - | 271 |
+| `.worktrees/copilot-hookfix/CHANGELOG.md` | - | - | - | 1343 |
+| `.worktrees/copilot-hookfix/CODE_OF_CONDUCT.md` | - | - | - | 40 |
+| `.worktrees/copilot-hookfix/COMPLIANCE.md` | - | - | - | 110 |
+| `.worktrees/copilot-hookfix/CONSTITUTION.md` | - | - | - | 486 |
+| `.worktrees/copilot-hookfix/CONTRIBUTING.md` | - | - | - | 176 |
+| `.worktrees/copilot-hookfix/README.md` | - | - | - | 453 |
+| `.worktrees/copilot-hookfix/ROADMAP.md` | - | - | - | 536 |
+| `.worktrees/copilot-hookfix/SECURITY.md` | - | - | - | 57 |
+| `.worktrees/copilot-hookfix/STATUS.md` | - | - | - | 40 |
+| `.worktrees/copilot-hookfix/assets/branding/README.md` | - | - | - | 57 |
+| `.worktrees/copilot-hookfix/crates/AGENTS.md` | - | - | - | 30 |
+| `.worktrees/copilot-hookfix/crates/convergio-a11y-axe/AGENTS.md` | - | - | - | 34 |
+| `.worktrees/copilot-hookfix/crates/convergio-api/AGENTS.md` | - | - | - | 34 |
+| `.worktrees/copilot-hookfix/crates/convergio-api/README.md` | - | - | - | 7 |
+| `.worktrees/copilot-hookfix/crates/convergio-brand/AGENTS.md` | - | - | - | 45 |
+| `.worktrees/copilot-hookfix/crates/convergio-bus/AGENTS.md` | - | - | - | 31 |
+| `.worktrees/copilot-hookfix/crates/convergio-bus/README.md` | - | - | - | 56 |
+| `.worktrees/copilot-hookfix/crates/convergio-capability-registry/AGENTS.md` | - | - | - | 35 |
+| `.worktrees/copilot-hookfix/crates/convergio-cli-plan-run/AGENTS.md` | - | - | - | 17 |
+| `.worktrees/copilot-hookfix/crates/convergio-cli-plan-run/README.md` | - | - | - | 5 |
+| `.worktrees/copilot-hookfix/crates/convergio-cli-pr/AGENTS.md` | - | - | - | 12 |
+| `.worktrees/copilot-hookfix/crates/convergio-cli-pr/README.md` | - | - | - | 5 |
+| `.worktrees/copilot-hookfix/crates/convergio-cli-session/AGENTS.md` | - | - | - | 61 |
+| `.worktrees/copilot-hookfix/crates/convergio-cli-session/README.md` | - | - | - | 33 |
+| `.worktrees/copilot-hookfix/crates/convergio-cli/AGENTS.md` | - | - | - | 44 |
+| `.worktrees/copilot-hookfix/crates/convergio-cli/README.md` | - | - | - | 38 |
+| `.worktrees/copilot-hookfix/crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
+| `.worktrees/copilot-hookfix/crates/convergio-coherence/AGENTS.md` | - | - | - | 80 |
+| `.worktrees/copilot-hookfix/crates/convergio-coherence/README.md` | - | - | - | 40 |
+| `.worktrees/copilot-hookfix/crates/convergio-db/AGENTS.md` | - | - | - | 29 |
+| `.worktrees/copilot-hookfix/crates/convergio-db/README.md` | - | - | - | 26 |
+| `.worktrees/copilot-hookfix/crates/convergio-durability/AGENTS.md` | - | - | - | 96 |
+| `.worktrees/copilot-hookfix/crates/convergio-embed/AGENTS.md` | - | - | - | 73 |
+| `.worktrees/copilot-hookfix/crates/convergio-executor/AGENTS.md` | - | - | - | 28 |
+| `.worktrees/copilot-hookfix/crates/convergio-executor/README.md` | - | - | - | 10 |
+| `.worktrees/copilot-hookfix/crates/convergio-fleet-routes/AGENTS.md` | - | - | - | 34 |
+| `.worktrees/copilot-hookfix/crates/convergio-fleet/AGENTS.md` | - | - | - | 78 |
+| `.worktrees/copilot-hookfix/crates/convergio-fleet/CLAUDE.md` | - | - | - | 3 |
+| `.worktrees/copilot-hookfix/crates/convergio-graph/AGENTS.md` | - | - | - | 64 |
+| `.worktrees/copilot-hookfix/crates/convergio-i18n/AGENTS.md` | - | - | - | 25 |
+| `.worktrees/copilot-hookfix/crates/convergio-i18n/README.md` | - | - | - | 43 |
+| `.worktrees/copilot-hookfix/crates/convergio-lifecycle/AGENTS.md` | - | - | - | 27 |
+| `.worktrees/copilot-hookfix/crates/convergio-lifecycle/README.md` | - | - | - | 63 |
+| `.worktrees/copilot-hookfix/crates/convergio-mcp/AGENTS.md` | - | - | - | 29 |
+| `.worktrees/copilot-hookfix/crates/convergio-mcp/README.md` | - | - | - | 12 |
+| `.worktrees/copilot-hookfix/crates/convergio-ontology/AGENTS.md` | - | - | - | 72 |
+| `.worktrees/copilot-hookfix/crates/convergio-ontology/README.md` | - | - | - | 21 |
+| `.worktrees/copilot-hookfix/crates/convergio-parse-multi/AGENTS.md` | - | - | - | 63 |
+| `.worktrees/copilot-hookfix/crates/convergio-parse-multi/CLAUDE.md` | - | - | - | 1 |
+| `.worktrees/copilot-hookfix/crates/convergio-planner/AGENTS.md` | - | - | - | 32 |
+| `.worktrees/copilot-hookfix/crates/convergio-planner/README.md` | - | - | - | 23 |
+| `.worktrees/copilot-hookfix/crates/convergio-runner/AGENTS.md` | - | - | - | 53 |
+| `.worktrees/copilot-hookfix/crates/convergio-server-core/AGENTS.md` | - | - | - | 58 |
+| `.worktrees/copilot-hookfix/crates/convergio-server/AGENTS.md` | - | - | - | 28 |
+| `.worktrees/copilot-hookfix/crates/convergio-server/README.md` | - | - | - | 70 |
+| `.worktrees/copilot-hookfix/crates/convergio-thor/AGENTS.md` | - | - | - | 25 |
+| `.worktrees/copilot-hookfix/crates/convergio-thor/README.md` | - | - | - | 22 |
+| `.worktrees/copilot-hookfix/crates/convergio-tui/AGENTS.md` | - | - | - | 121 |
+| `.worktrees/copilot-hookfix/crates/convergio-tui/README.md` | - | - | - | 104 |
+| `.worktrees/copilot-hookfix/docs/AGENTS.md` | - | - | - | 86 |
+| `.worktrees/copilot-hookfix/docs/INDEX.md` | - | - | - | 242 |
+| `.worktrees/copilot-hookfix/docs/OPTIMIZATIONS.md` | - | - | - | 314 |
+| `.worktrees/copilot-hookfix/docs/adr/0000-template.md` | - | [] | proposed \| accepted \| deprecated \| superseded by [NNNN](NNNN-title.md) | 55 |
+| `.worktrees/copilot-hookfix/docs/adr/0001-four-layer-architecture.md` | - | [] | accepted | 77 |
+| `.worktrees/copilot-hookfix/docs/adr/0002-audit-hash-chain.md` | - | [] | accepted | 121 |
+| `.worktrees/copilot-hookfix/docs/adr/0003-migration-coexistence.md` | - | [] | accepted | 133 |
+| `.worktrees/copilot-hookfix/docs/adr/0004-three-sacred-principles.md` | - | [] | accepted | 104 |
+| `.worktrees/copilot-hookfix/docs/adr/0005-internationalization-first.md` | - | [] | accepted | 119 |
+| `.worktrees/copilot-hookfix/docs/adr/0006-crdt-storage.md` | - | [convergio-durability, convergio-server, convergio-api] | accepted | 209 |
+| `.worktrees/copilot-hookfix/docs/adr/0007-workspace-coordination.md` | - | [convergio-durability, convergio-server, convergio-api] | accepted | 192 |
+| `.worktrees/copilot-hookfix/docs/adr/0008-downloadable-capabilities.md` | - | [] | proposed | 403 |
+| `.worktrees/copilot-hookfix/docs/adr/0009-agent-client-protocol-adapter.md` | - | [] | proposed | 100 |
+| `.worktrees/copilot-hookfix/docs/adr/0010-retire-convergio-worktree-crate.md` | - | [] | accepted | 92 |
+| `.worktrees/copilot-hookfix/docs/adr/0011-thor-only-done.md` | - | [] | accepted | 195 |
+| `.worktrees/copilot-hookfix/docs/adr/0012-ooda-aware-validation.md` | - | [] | accepted | 283 |
+| `.worktrees/copilot-hookfix/docs/adr/0013-split-durability-into-three-crates.md` | - | [convergio-durability, convergio-server, convergio-api] | proposed | 205 |
+| `.worktrees/copilot-hookfix/docs/adr/0014-code-graph-tier3-retrieval.md` | - | [convergio-graph, convergio-cli, convergio-server, convergio-durability] | accepted | 274 |
+| `.worktrees/copilot-hookfix/docs/adr/0015-documentation-as-derived-state.md` | - | [convergio-cli] | accepted | 211 |
+| `.worktrees/copilot-hookfix/docs/adr/0016-long-tail-vertical-accelerators.md` | - | [] | proposed | 227 |
+| `.worktrees/copilot-hookfix/docs/adr/0017-ise-hve-alignment.md` | - | [convergio-durability] | proposed | 253 |
+| `.worktrees/copilot-hookfix/docs/adr/0018-urbanism-over-architecture.md` | - | [] | proposed | 303 |
+| `.worktrees/copilot-hookfix/docs/adr/0019-thinking-stack-gstack-vendored.md` | - | [convergio-mcp, convergio-cli] | proposed | 261 |
+| `.worktrees/copilot-hookfix/docs/adr/0020-model-evaluation-framework.md` | - | [convergio-durability, convergio-executor, convergio-mcp] | proposed | 281 |
+| `.worktrees/copilot-hookfix/docs/adr/0021-okr-on-plans.md` | - | [convergio-durability, convergio-cli, convergio-thor] | proposed | 321 |
+| `.worktrees/copilot-hookfix/docs/adr/0022-adversarial-review-service.md` | - | [convergio-mcp, convergio-cli, convergio-durability] | proposed | 269 |
+| `.worktrees/copilot-hookfix/docs/adr/0023-observability-tier.md` | - | [convergio-server, convergio-durability, convergio-cli, convergio-cli-pr, convergio-bus] | proposed | 245 |
+| `.worktrees/copilot-hookfix/docs/adr/0024-bus-poll-exclude-sender.md` | - | [convergio-bus, convergio-server, convergio-cli] | accepted | 133 |
+| `.worktrees/copilot-hookfix/docs/adr/0025-system-session-events-topic.md` | - | [convergio-bus, convergio-server, convergio-mcp, convergio-api] | accepted | 285 |
+| `.worktrees/copilot-hookfix/docs/adr/0026-plan-wave-milestone-vocabulary.md` | - | [convergio-durability, convergio-server, convergio-cli] | accepted | 206 |
+| `.worktrees/copilot-hookfix/docs/adr/0027-executor-loop-wired-in-daemon.md` | - | [convergio-server, convergio-executor] | accepted | 127 |
+| `.worktrees/copilot-hookfix/docs/adr/0028-runner-kinds-shell-claude-copilot.md` | - | [convergio-server, convergio-mcp] | accepted | 136 |
+| `.worktrees/copilot-hookfix/docs/adr/0029-tui-dashboard-crate-separation.md` | - | [convergio-cli, convergio-tui] | accepted | 222 |
+| `.worktrees/copilot-hookfix/docs/adr/0030-crate-versioning-policy.md` | - | [] | accepted | 105 |
+| `.worktrees/copilot-hookfix/docs/adr/0031-materialised-timing-cache.md` | - | [convergio-durability, convergio-tui] | accepted | 83 |
+| `.worktrees/copilot-hookfix/docs/adr/0032-vendor-cli-runners.md` | - | [convergio-runner, convergio-executor, convergio-cli] | accepted | 122 |
+| `.worktrees/copilot-hookfix/docs/adr/0033-runner-permission-profiles.md` | - | [convergio-runner, convergio-cli] | accepted | 119 |
+| `.worktrees/copilot-hookfix/docs/adr/0034-per-task-runner-fields.md` | - | [convergio-durability, convergio-executor, convergio-runner, convergio-cli, convergio-planner, convergio-server] | accepted | 94 |
+| `.worktrees/copilot-hookfix/docs/adr/0035-runner-registry-toml.md` | - | [convergio-runner, convergio-executor, convergio-cli] | accepted | 100 |
+| `.worktrees/copilot-hookfix/docs/adr/0036-opus-backed-planner.md` | - | [convergio-planner, convergio-server] | accepted | 101 |
+| `.worktrees/copilot-hookfix/docs/adr/0037-brand-kit-and-claim.md` | - | [convergio-brand, convergio-cli, convergio-tui, convergio-server, convergio-i18n] | accepted | 91 |
+| `.worktrees/copilot-hookfix/docs/adr/0038-fleet-retrieval-cross-repo-graph.md` | - | [convergio-graph, convergio-db, convergio-server, convergio-cli, convergio-durability, convergio-api] | accepted | 1159 |
+| `.worktrees/copilot-hookfix/docs/adr/0039-doc-coherence-sweep.md` | - | [convergio-cli, convergio-coherence, convergio-server, convergio-durability, convergio-graph] | accepted | 259 |
+| `.worktrees/copilot-hookfix/docs/adr/0040-split-coherence-into-its-own-crate.md` | - | [convergio-cli, convergio-coherence] | accepted | 186 |
+| `.worktrees/copilot-hookfix/docs/adr/0041-split-session-into-its-own-crate.md` | - | [convergio-cli, convergio-cli-session] | accepted | 200 |
+| `.worktrees/copilot-hookfix/docs/adr/0042-wave-sequence-gate-parallel-safe.md` | - | [convergio-durability, convergio-server, convergio-api, convergio-cli] | accepted | 262 |
+| `.worktrees/copilot-hookfix/docs/adr/0043-api-id-and-payload-consistency.md` | - | [convergio-server, convergio-api, convergio-mcp, convergio-cli] | accepted | 154 |
+| `.worktrees/copilot-hookfix/docs/adr/0044-plan-execution-contract.md` | - | [convergio-cli, convergio-coherence] | accepted | 110 |
+| `.worktrees/copilot-hookfix/docs/adr/0045-per-host-realtime-context-push.md` | - | [convergio-cli-session] | accepted | 113 |
+| `.worktrees/copilot-hookfix/docs/adr/0046-stdout-relay-to-bus.md` | - | [convergio-lifecycle, convergio-server] | accepted | 77 |
+| `.worktrees/copilot-hookfix/docs/adr/0047-action-type-registry-actions-json.md` | - | [convergio-api, convergio-server, convergio-mcp] | proposed | 59 |
+| `.worktrees/copilot-hookfix/docs/adr/0048-compensating-action-types.md` | - | [convergio-durability, convergio-server] | proposed | 65 |
+| `.worktrees/copilot-hookfix/docs/adr/0049-f3-fleet-retrospective.md` | - | [convergio-fleet, convergio-embed, convergio-graph, convergio-server, convergio-mcp, convergio-api] | accepted | 169 |
+| `.worktrees/copilot-hookfix/docs/adr/0050-prompt-injection-gate.md` | - | [convergio-durability] | accepted | 127 |
+| `.worktrees/copilot-hookfix/docs/adr/0051-a11y-gate-phase-1.md` | - | [convergio-durability] | accepted | 97 |
+| `.worktrees/copilot-hookfix/docs/adr/0051-ontology-runtime-core.md` | - | [convergio-ontology, convergio-db, convergio-graph, convergio-api] | proposed | 130 |
+| `.worktrees/copilot-hookfix/docs/adr/0052-smart-thor-real-validation.md` | - | - | accepted | 111 |
+| `.worktrees/copilot-hookfix/docs/adr/0052-typed-actions-framework.md` | - | [convergio-api, convergio-server, convergio-ontology, convergio-durability] | proposed | 119 |
+| `.worktrees/copilot-hookfix/docs/adr/0053-ai-openai-runner-adapter.md` | - | - | accepted | 84 |
+| `.worktrees/copilot-hookfix/docs/adr/0053-bitemporal-store-lineage.md` | - | [convergio-ontology, convergio-db, convergio-durability] | proposed | 126 |
+| `.worktrees/copilot-hookfix/docs/adr/0053-ontology-runtime-core.md` | - | [convergio-ontology, convergio-db, convergio-graph, convergio-api] | proposed | 130 |
+| `.worktrees/copilot-hookfix/docs/adr/0054-cvg-status-agents.md` | - | - | accepted | 53 |
+| `.worktrees/copilot-hookfix/docs/adr/0054-provenance-bundle-purpose-registry.md` | - | [convergio-ontology, convergio-durability, convergio-api] | proposed | 136 |
+| `.worktrees/copilot-hookfix/docs/adr/0055-entity-resolution-service.md` | - | [convergio-ontology, convergio-api] | proposed | 134 |
+| `.worktrees/copilot-hookfix/docs/adr/0055-plan-objectives-and-coherence-gate.md` | - | - | accepted | 69 |
+| `.worktrees/copilot-hookfix/docs/adr/0056-plan-templates.md` | - | - | accepted | 90 |
+| `.worktrees/copilot-hookfix/docs/adr/0056-scenario-branching-workshop.md` | - | [convergio-ontology, convergio-durability] | proposed | 123 |
+| `.worktrees/copilot-hookfix/docs/adr/0057-connector-sdk-federated-query.md` | - | [convergio-ontology, convergio-api] | proposed | 134 |
+| `.worktrees/copilot-hookfix/docs/adr/0058-llm-gateway-primitive.md` | - | [convergio-api, convergio-server, convergio-ontology] | proposed | 142 |
+| `.worktrees/copilot-hookfix/docs/adr/0059-tui-ontology-inspector.md` | - | [convergio-tui, convergio-ontology, convergio-api] | proposed | 149 |
+| `.worktrees/copilot-hookfix/docs/adr/0060-deterministic-graph-output.md` | - | [convergio-ontology, convergio-cli] | proposed | 118 |
+| `.worktrees/copilot-hookfix/docs/adr/0061-capability-search-local.md` | - | - | accepted | 74 |
+| `.worktrees/copilot-hookfix/docs/adr/0062-dispatch-choice-audit-row.md` | - | - | accepted | 70 |
+| `.worktrees/copilot-hookfix/docs/adr/0063-task-taxonomy-eval-skeleton.md` | - | - | accepted | 68 |
+| `.worktrees/copilot-hookfix/docs/adr/0064-a11y-axe-local-stub.md` | - | - | accepted | 67 |
+| `.worktrees/copilot-hookfix/docs/adr/0072-remote-capability-registry.md` | - | [convergio-cli, convergio-server, convergio-durability] | proposed | 237 |
+| `.worktrees/copilot-hookfix/docs/adr/0073-eu-sovereign-pivot.md` | - | - | accepted | 178 |
+| `.worktrees/copilot-hookfix/docs/adr/README.md` | - | - | - | 94 |
+| `.worktrees/copilot-hookfix/docs/agent-instruction-guidelines.md` | - | - | - | 123 |
+| `.worktrees/copilot-hookfix/docs/agent-protocol.md` | - | - | - | 131 |
+| `.worktrees/copilot-hookfix/docs/agent-resume-packet.md` | - | - | - | 301 |
+| `.worktrees/copilot-hookfix/docs/agents/README.md` | - | - | - | 101 |
+| `.worktrees/copilot-hookfix/docs/incidents/2026-05-08-dirty-state-postmortem.md` | - | - | - | 230 |
+| `.worktrees/copilot-hookfix/docs/incidents/2026-05-19-cvg-service-start-orphan.md` | - | - | - | 76 |
+| `.worktrees/copilot-hookfix/docs/incidents/2026-05-19-cvg-service-stop-orphan.md` | - | - | - | 93 |
+| `.worktrees/copilot-hookfix/docs/multi-agent-operating-model.md` | - | - | - | 485 |
+| `.worktrees/copilot-hookfix/docs/plans/2026-05-01-triage-pass.md` | - | - | - | 75 |
+| `.worktrees/copilot-hookfix/docs/plans/AGENTS.md` | - | - | - | 22 |
+| `.worktrees/copilot-hookfix/docs/plans/README.md` | - | - | - | 31 |
+| `.worktrees/copilot-hookfix/docs/plans/convergio-local-public-readiness.md` | - | - | Published v0.1.0 | 244 |
+| `.worktrees/copilot-hookfix/docs/plans/fleet-retrieval-cross-repo-graph.md` | - | - | F1 complete (α/β/γ/δ/ε/ζ landed); 30-fixture curated bench done; F2 GO | 174 |
+| `.worktrees/copilot-hookfix/docs/plans/v0.1.x-friction-log.md` | - | - | - | 257 |
+| `.worktrees/copilot-hookfix/docs/plans/v0.2-fresh-eyes-test-result.md` | - | - | - | 168 |
+| `.worktrees/copilot-hookfix/docs/plans/v0.2-friction-log.md` | - | - | - | 207 |
+| `.worktrees/copilot-hookfix/docs/plans/v1.0-production-ready.md` | - | - | - | 743 |
+| `.worktrees/copilot-hookfix/docs/prd/0001-claude-code-adapter.md` | - | - | proposed | 359 |
+| `.worktrees/copilot-hookfix/docs/release.md` | - | - | - | 106 |
+| `.worktrees/copilot-hookfix/docs/reviews/PRD-001-adversarial-review-v1.md` | - | - | - | 109 |
+| `.worktrees/copilot-hookfix/docs/reviews/PRD-001-pre-PR-review-v1.md` | - | - | - | 114 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-api.md` | - | - | - | 24 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-brand.md` | - | - | - | 29 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-bus.md` | - | - | - | 34 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-cli-plan-run.md` | - | - | - | 28 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-cli-pr.md` | - | - | - | 36 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-cli-session.md` | - | - | - | 33 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-cli.md` | - | - | - | 38 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-coherence.md` | - | - | - | 39 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-db.md` | - | - | - | 25 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-durability.md` | - | - | - | 35 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-embed.md` | - | - | - | 31 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-executor.md` | - | - | - | 32 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-fleet.md` | - | - | - | 28 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-graph.md` | - | - | - | 40 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-i18n.md` | - | - | - | 31 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-lifecycle.md` | - | - | - | 33 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-mcp.md` | - | - | - | 33 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-parse-multi.md` | - | - | - | 39 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-planner.md` | - | - | - | 31 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-runner.md` | - | - | - | 31 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-server.md` | - | - | - | 37 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-thor.md` | - | - | - | 26 |
+| `.worktrees/copilot-hookfix/docs/reviews/crate-audits/convergio-tui.md` | - | - | - | 40 |
+| `.worktrees/copilot-hookfix/docs/setup.md` | - | - | - | 102 |
+| `.worktrees/copilot-hookfix/docs/spec/README.md` | - | - | - | 10 |
+| `.worktrees/copilot-hookfix/docs/spec/f2-13-measurement.md` | - | - | - | 89 |
+| `.worktrees/copilot-hookfix/docs/spec/fleet-retrieval-cross-repo-graph.md` | - | - | - | 697 |
+| `.worktrees/copilot-hookfix/docs/spec/fleet-retrieval-golden-methodology.md` | - | - | - | 264 |
+| `.worktrees/copilot-hookfix/docs/spec/v3-durability-layer.md` | - | - | - | 145 |
+| `.worktrees/copilot-hookfix/docs/templates/adversarial-challenge.md` | - | - | - | 139 |
+| `.worktrees/copilot-hookfix/docs/vision.md` | - | - | - | 451 |
+| `.worktrees/copilot-hookfix/docs/wip-commit-template.md` | - | - | - | 98 |
+| `.worktrees/copilot-hookfix/examples/claude-skill-quickstart/README.md` | - | - | - | 131 |
+| `.worktrees/copilot-hookfix/examples/skills/cvg-attach-cursor/README.md` | - | - | - | 57 |
+| `.worktrees/copilot-hookfix/examples/skills/cvg-attach-cursor/rules.md` | - | - | - | 92 |
+| `.worktrees/copilot-hookfix/examples/skills/cvg-attach/README.md` | - | - | - | 158 |
+| `.worktrees/copilot-hookfix/examples/skills/cvg-attach/SKILL.md` | - | - | - | 87 |
 | `AGENTS.md` | agent-rules | - | - | 605 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
 | `CHANGELOG.md` | release | - | - | 1343 |
