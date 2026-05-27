@@ -63,12 +63,23 @@ fn lookup_unknown_key_returns_unknown() {
 }
 
 #[test]
-fn revoked_entry_rejected_at_load() {
+fn revoked_entry_loads_but_not_selectable() {
     let (mut e, _) = fixture_entry("root-a");
     e.revoked = true;
-    let json = serialize(&[&e]);
-    let err = TrustStore::with_builtin(&json).unwrap_err();
-    assert!(matches!(err, RegistryError::TrustStoreEntry(_)));
+    let store = TrustStore::with_builtin(&serialize(&[&e])).unwrap();
+    assert_eq!(store.len(), 1, "revoked entries still load (ADR-0072)");
+    assert!(
+        store.lookup("root-a", now_in_window()).is_none(),
+        "revoked entries are never selectable"
+    );
+    assert_eq!(
+        store.lookup_detail("root-a", now_in_window()).unwrap_err(),
+        TrustLookupRefusal::Revoked
+    );
+    assert!(
+        store.active_hex_keys(now_in_window()).is_empty(),
+        "revoked entries do not appear in active_hex_keys"
+    );
 }
 
 #[test]
@@ -139,4 +150,29 @@ fn entry_verifying_key_signs_and_verifies() {
     // Tampered message must fail.
     let bad = b"convergio-w9-X1";
     assert!(vk.verify(bad, &sig).is_err());
+}
+
+#[test]
+fn active_hex_keys_bridges_to_hex_consumers() {
+    // Three entries: active, revoked, out-of-window. Only the active one
+    // should show up. Hex encoding must match what
+    // `convergio-durability::TrustedCapabilityKey.public_key` expects:
+    // 64 lowercase hex chars, no `0x` prefix.
+    let (active, _) = fixture_entry("root-active");
+    let (mut revoked, _) = fixture_entry("root-revoked");
+    revoked.revoked = true;
+    let (mut future, _) = fixture_entry("root-future");
+    future.valid_from = Utc.with_ymd_and_hms(2099, 1, 1, 0, 0, 0).unwrap();
+    future.valid_until = Utc.with_ymd_and_hms(2100, 1, 1, 0, 0, 0).unwrap();
+
+    let store = TrustStore::with_builtin(&serialize(&[&active, &revoked, &future])).unwrap();
+    let keys = store.active_hex_keys(now_in_window());
+
+    assert_eq!(keys.len(), 1, "only one entry is currently selectable");
+    let (kid, hex) = &keys[0];
+    assert_eq!(kid, "root-active");
+    assert_eq!(hex.len(), 64, "ed25519 pubkey is 32 bytes = 64 hex chars");
+    assert!(hex
+        .chars()
+        .all(|c| c.is_ascii_hexdigit() && !c.is_ascii_uppercase()));
 }

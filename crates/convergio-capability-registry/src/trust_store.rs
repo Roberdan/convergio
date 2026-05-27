@@ -49,21 +49,17 @@ pub struct TrustStoreEntry {
 }
 
 impl TrustStoreEntry {
-    /// Decoded Ed25519 verifying key. Validates algorithm tag, base64
-    /// shape, key length, and revocation status. Validity windows are
-    /// checked separately by [`TrustStore::lookup`] (they depend on
-    /// "now", which the caller controls in tests).
+    /// Decoded Ed25519 verifying key. Validates algorithm tag, key
+    /// length, and base64 shape. **Does not** check revocation status
+    /// or validity window — both depend on context the entry alone
+    /// cannot see (revocation is decided at lookup time by
+    /// [`TrustStore::lookup`], windows depend on "now" which the
+    /// caller controls).
     pub fn verifying_key(&self) -> Result<VerifyingKey> {
         if !self.algorithm.eq_ignore_ascii_case("ed25519") {
             return Err(RegistryError::TrustStoreEntry(format!(
                 "{}: unsupported algorithm {:?}",
                 self.key_id, self.algorithm
-            )));
-        }
-        if self.revoked {
-            return Err(RegistryError::TrustStoreEntry(format!(
-                "{}: revoked",
-                self.key_id
             )));
         }
         let raw = base64::decode(&self.public_key_b64).map_err(|e| {
@@ -171,6 +167,32 @@ impl TrustStore {
     /// Iterate over all entries (does not filter by validity window).
     pub fn entries(&self) -> impl Iterator<Item = &TrustStoreEntry> {
         self.by_id.values()
+    }
+
+    /// Bridge helper for [`convergio-durability`](../../convergio-durability)
+    /// and other downstream verifiers that key off a hex-encoded
+    /// public key.
+    ///
+    /// Yields `(key_id, public_key_hex)` for every entry that is
+    /// *currently selectable* at `now` (not revoked, within its
+    /// validity window). Hex output is lowercase, no `0x` prefix —
+    /// matches `convergio-durability::TrustedCapabilityKey.public_key`.
+    ///
+    /// Revoked or out-of-window keys are silently dropped so the
+    /// downstream verifier physically cannot pick them. This is the
+    /// same invariant [`Self::lookup`] already enforces.
+    pub fn active_hex_keys(&self, now: DateTime<Utc>) -> Vec<(String, String)> {
+        self.by_id
+            .values()
+            .filter(|e| !e.revoked && now >= e.valid_from && now < e.valid_until)
+            .filter_map(|e| {
+                let raw = base64::decode(&e.public_key_b64).ok()?;
+                if raw.len() != ED25519_PUBLIC_KEY_LEN {
+                    return None;
+                }
+                Some((e.key_id.clone(), hex::encode(raw)))
+            })
+            .collect()
     }
 
     /// Number of entries (including revoked).
