@@ -99,6 +99,7 @@ convergio/
 ADR-0015 — do not edit between the markers):**
 
 <!-- BEGIN AUTO:workspace_members -->
+- `convergio-a11y-axe` — W11 local-stub axe-core wrapper for Convergio A11yGate phase 2 (ADR-0064)
 - `convergio-api` — Shared agent-facing action contract for Convergio integrations
 - `convergio-brand` — Brand kit for Convergio: palette, claim, banner, boot animation — shared by CLI, TUI, daemon
 - `convergio-bus` — Layer 2 of Convergio: persistent agent message bus (topic + direct + ack), scoped per plan
@@ -239,7 +240,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 1276 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 1279 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
