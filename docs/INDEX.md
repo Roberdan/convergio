@@ -19,14 +19,14 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
 | `.pr-body.md` | - | - | - | 83 |
-| `AGENTS.md` | agent-rules | - | - | 603 |
+| `AGENTS.md` | agent-rules | - | - | 605 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
 | `CHANGELOG.md` | release | - | - | 1343 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `COMPLIANCE.md` | - | - | - | 110 |
 | `CONSTITUTION.md` | constitution | - | - | 486 |
 | `CONTRIBUTING.md` | governance | - | - | 176 |
-| `README.md` | entry | - | - | 451 |
+| `README.md` | entry | - | - | 453 |
 | `ROADMAP.md` | roadmap | - | - | 536 |
 | `SECURITY.md` | governance | - | - | 57 |
 | `STATUS.md` | - | - | - | 40 |
@@ -38,13 +38,14 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-brand/AGENTS.md` | crate-rules | - | - | 45 |
 | `crates/convergio-bus/AGENTS.md` | crate-rules | - | - | 31 |
 | `crates/convergio-bus/README.md` | crate-readme | - | - | 56 |
+| `crates/convergio-capability-registry/AGENTS.md` | crate-rules | - | - | 35 |
 | `crates/convergio-cli-plan-run/AGENTS.md` | crate-rules | - | - | 17 |
 | `crates/convergio-cli-plan-run/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-pr/AGENTS.md` | crate-rules | - | - | 12 |
 | `crates/convergio-cli-pr/README.md` | crate-readme | - | - | 5 |
 | `crates/convergio-cli-session/AGENTS.md` | crate-rules | - | - | 61 |
 | `crates/convergio-cli-session/README.md` | crate-readme | - | - | 33 |
-| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 43 |
+| `crates/convergio-cli/AGENTS.md` | crate-rules | - | - | 44 |
 | `crates/convergio-cli/README.md` | crate-readme | - | - | 38 |
 | `crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
 | `crates/convergio-coherence/AGENTS.md` | crate-rules | - | - | 80 |
@@ -65,7 +66,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-lifecycle/README.md` | crate-readme | - | - | 63 |
 | `crates/convergio-mcp/AGENTS.md` | crate-rules | - | - | 29 |
 | `crates/convergio-mcp/README.md` | crate-readme | - | - | 12 |
-| `crates/convergio-ontology/AGENTS.md` | crate-rules | - | - | 71 |
+| `crates/convergio-ontology/AGENTS.md` | crate-rules | - | - | 72 |
 | `crates/convergio-ontology/README.md` | crate-readme | - | - | 21 |
 | `crates/convergio-parse-multi/AGENTS.md` | crate-rules | - | - | 63 |
 | `crates/convergio-parse-multi/CLAUDE.md` | crate-rules | - | - | 1 |
