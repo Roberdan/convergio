@@ -1,0 +1,32 @@
+Convergio
+Copyright (C) 2026 Roberto D'Angelo and Convergio contributors.
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License version 3 as
+published by the Free Software Foundation. See the LICENSE file at the
+root of this repository for the full text.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the LICENSE
+file for details.
+
+The AGPL-3.0 was selected on 2026-05-27 as part of the EU-sovereign
+pivot (ADR-0073, ADR-0074). It replaces the prior Convergio Community
+License v1.3 to make the network-use copyleft obligation explicit for
+SaaS deployments.
+
+Contributors (alphabetical):
+
+  Roberto D'Angelo  <https://github.com/Roberdan>
+  GitHub Actions    (automated bot)
+  Dependabot        (automated bot)
+  Copilot           (AI assistant)
+
+This file is updated on a best-effort basis from `git shortlog -sn`.
+If you contributed and your name is missing, please open a PR.
+
+Third-party components retain their original licenses (Apache-2.0,
+MIT, BSD-3-Clause, MPL-2.0, ISC, Unicode-3.0, etc.) as enumerated in
+the workspace `Cargo.lock` and enforced by `cargo deny check licenses`.
+See `deny.toml` for the allowlist.

@@ -13,7 +13,7 @@
 
 [![CI](https://github.com/Roberdan/convergio/actions/workflows/ci.yml/badge.svg)](https://github.com/Roberdan/convergio/actions/workflows/ci.yml)
 [![Release](https://github.com/Roberdan/convergio/actions/workflows/release.yml/badge.svg)](https://github.com/Roberdan/convergio/actions/workflows/release.yml)
-[![License: Convergio Community (AGPLv3 transition planned)](https://img.shields.io/badge/license-Convergio%20Community%20(AGPLv3%20planned)-blue)](https://github.com/Roberdan/convergio/blob/main/LICENSE)
+[![License: AGPL-3.0-or-later](https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg)](https://github.com/Roberdan/convergio/blob/main/LICENSE)
 [![Rust](https://img.shields.io/badge/rust-stable-orange)](https://www.rust-lang.org/)
 [![Zero Warnings](https://img.shields.io/badge/warnings-0-brightgreen)](#)
 [![EU sovereignty: by construction](https://img.shields.io/badge/EU%20sovereignty-by%20construction-1a5fb4)](./COMPLIANCE.md)
@@ -39,9 +39,10 @@ Convergio fixes both loops:
 - 📒 **Tamper-evident audit** — every refusal lands in a
   hash-chained log you can verify from outside the daemon.
 - 🇪🇺 **EU-sovereign by construction** — local-first, no telemetry,
-  no remote control plane, OSI-licensed (AGPLv3 transition planned,
-  W13). Deployable in regulated public-sector, healthcare and civic
-  contexts. See [`COMPLIANCE.md`](./COMPLIANCE.md).
+  no remote control plane, OSI-licensed under **AGPL-3.0-or-later**
+  (see [`LICENSE`](./LICENSE), ADR-0074). Deployable in regulated
+  public-sector, healthcare and civic contexts. See
+  [`COMPLIANCE.md`](./COMPLIANCE.md).
 - 🔌 **Vendor-agnostic** — drives Claude Code, Copilot CLI, Qwen,
   Codex, Gemini, or your own runner. No API keys held, no SaaS.
 - 🧱 **Typed ontology (in progress)** — schema registry, bitemporal
@@ -448,6 +449,15 @@ documented in [ADR-0019](./docs/adr/0019-thinking-stack-gstack-vendored.md).
 
 ## License
 
-Convergio Community License v1.3 (source-available, not OSI-approved). See [LICENSE](./LICENSE).
+**GNU Affero General Public License v3.0 or later** (`AGPL-3.0-or-later`),
+OSI-approved copyleft with network-use clause. See [`LICENSE`](./LICENSE)
+for the full text and [`NOTICE`](./NOTICE) for attribution.
+
+Contributions are accepted under the project CLA — see
+[`CONTRIBUTING-CLA.md`](./CONTRIBUTING-CLA.md). The relicensing rationale
+is in [`docs/adr/0074-relicense-agplv3.md`](./docs/adr/0074-relicense-agplv3.md).
+The prior Convergio Community License v1.3 governs releases up to and
+including `v0.x` snapshots taken before 2026-05-27; AGPL-3.0-or-later
+applies to all subsequent commits.
 
 <!-- ci re-trigger -->

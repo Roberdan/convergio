@@ -348,8 +348,8 @@ it should tell you the entry point.
 
 - `Cargo.lock` — automatic only via `cargo update`
 - Generated migration files — never hand-edit; create a new migration
-- `LICENSE` — Convergio Community License v1.3, immutable (mirrors the
-  license used in the legacy `github.com/Roberdan/convergio` repo)
+- `LICENSE` — **AGPL-3.0-or-later** (see ADR-0074). Any future
+  relicense requires a new ADR superseding 0074.
 - Anything in `target/`
 
 ## MCP tools available

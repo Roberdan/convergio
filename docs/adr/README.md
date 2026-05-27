@@ -91,4 +91,5 @@ do not edit between the markers.
 | [0064](./0064-a11y-axe-local-stub.md) | -0064 — A11yGate phase 2 local-stub via external `axe` binary | accepted |
 | [0072](./0072-remote-capability-registry.md) | 0072. Remote capability registry (W9) | proposed |
 | [0073](./0073-eu-sovereign-pivot.md) | -0073 — EU-sovereign pivot: open ontology platform, AI-native, local-first | accepted |
+| [0074](./0074-relicense-agplv3.md) | -0074 — Relicense Convergio to AGPL-3.0-or-later | accepted |
 <!-- END AUTO -->

@@ -28,7 +28,8 @@ allow = [
     "BSL-1.0",
     "CDLA-Permissive-2.0",
     "ISC",
-    "LicenseRef-Convergio-Community-1.3",
+    "AGPL-3.0",
+    "AGPL-3.0-or-later",
     "MIT",
     # MPL-2.0 is a weak copyleft (file-level): permissive for our
     # link-and-redistribute use case. Pulled in transitively via

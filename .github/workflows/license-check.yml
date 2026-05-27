@@ -1,0 +1,45 @@
+name: license-check
+
+on:
+  pull_request:
+    paths:
+      - LICENSE
+      - NOTICE
+      - deny.toml
+      - Cargo.toml
+      - Cargo.lock
+      - "crates/**/Cargo.toml"
+      - ".github/workflows/license-check.yml"
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  cargo-deny-licenses:
+    name: cargo deny check licenses
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny
+        env:
+          RUSTFLAGS: ""
+
+      - name: cargo deny check licenses
+        run: cargo deny --locked check licenses
+
+      - name: assert LICENSE is AGPL-3.0
+        run: |
+          if ! head -2 LICENSE | grep -q "GNU AFFERO GENERAL PUBLIC LICENSE"; then
+            echo "::error file=LICENSE::LICENSE file does not start with the AGPL-3.0 header."
+            echo "ADR-0074 mandates AGPL-3.0-or-later."
+            exit 1
+          fi

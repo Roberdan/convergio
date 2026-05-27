@@ -170,7 +170,11 @@ Security issues go through `SECURITY.md` (private disclosure).
 
 ## License
 
-By contributing you agree that your contributions are licensed under the
-Convergio Community License v1.3, the same as the project. See
-[LICENSE](./LICENSE) — in particular the "Contributions" section
-(Contributor License Grant).
+By contributing you agree that your contributions are licensed under
+**AGPL-3.0-or-later**, the same as the project. See [LICENSE](./LICENSE)
+for the full license text and [CONTRIBUTING-CLA.md](./CONTRIBUTING-CLA.md)
+for the Contributor License Agreement that all contributors must accept
+(sign-off via PR body line `Signed-off-by: <name> <email>` and explicit
+`I agree to the Convergio CLA` acknowledgement). See
+[ADR-0074](./docs/adr/0074-relicense-agplv3.md) for the rationale behind
+moving from Convergio Community License v1.3 to AGPL-3.0-or-later.
