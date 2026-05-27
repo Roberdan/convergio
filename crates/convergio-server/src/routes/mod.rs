@@ -11,6 +11,7 @@ pub mod dispatch;
 pub mod embed;
 pub mod evidence;
 pub mod gate_preconditions;
+pub mod gdpr;
 pub mod graph;
 pub mod health;
 pub(crate) mod limits;

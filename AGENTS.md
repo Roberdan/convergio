@@ -125,6 +125,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-executor` — Layer 4 (reference) of Convergio: dispatcher loop that picks ready tasks and spawns agents
 - `convergio-fleet` — Fleet abstraction for Convergio: fleet
 - `convergio-fleet-routes` — Fleet HTTP route module (ADR-0038) — extracted from convergio-server
+- `convergio-gdpr` — GDPR data-subject-rights handlers for Convergio (ADR-0076)
 - `convergio-graph` — Tier-3 code-graph layer for Convergio (ADR-0014)
 - `convergio-i18n` — Internationalization (P5) — Fluent-backed message bundles for every user-facing string in Convergio
 - `convergio-lifecycle` — Layer 3 of Convergio: spawn, supervise, heartbeat and reap long-running agent processes
@@ -252,7 +253,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 1352 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 1358 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:

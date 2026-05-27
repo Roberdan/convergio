@@ -37,6 +37,7 @@ module.exports = {
         'server-core',
         'ontology',
         'provenance',
+        'gdpr',
         // meta scopes
         'docs',
         'adr',

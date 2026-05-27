@@ -19,7 +19,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
 | `.pr-body.md` | - | - | - | 83 |
-| `AGENTS.md` | agent-rules | - | - | 608 |
+| `AGENTS.md` | agent-rules | - | - | 609 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
 | `CHANGELOG.md` | release | - | - | 1353 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -60,6 +60,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-fleet-routes/AGENTS.md` | crate-rules | - | - | 34 |
 | `crates/convergio-fleet/AGENTS.md` | crate-rules | - | - | 78 |
 | `crates/convergio-fleet/CLAUDE.md` | crate-rules | - | - | 3 |
+| `crates/convergio-gdpr/AGENTS.md` | crate-rules | - | - | 27 |
+| `crates/convergio-gdpr/README.md` | crate-readme | - | - | 11 |
 | `crates/convergio-graph/AGENTS.md` | crate-rules | - | - | 64 |
 | `crates/convergio-i18n/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-i18n/README.md` | crate-readme | - | - | 43 |
@@ -163,7 +165,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0073-eu-sovereign-pivot.md` | adr | - | accepted | 178 |
 | `docs/adr/0074-relicense-agplv3.md` | adr | - | accepted | 137 |
 | `docs/adr/0075-w3c-prov-provenance-bundles.md` | adr | - | accepted | 109 |
-| `docs/adr/README.md` | adr | - | - | 96 |
+| `docs/adr/0076-gdpr-data-subject-rights.md` | adr | - | accepted | 98 |
+| `docs/adr/README.md` | adr | - | - | 97 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
