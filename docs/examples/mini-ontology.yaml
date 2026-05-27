@@ -1,0 +1,60 @@
+# Mini ontology — demo fixture only.
+#
+# This file is **not production data**. It exists so the integration
+# test in `crates/convergio-ontology/tests/mini_ontology.rs` (W1 T7,
+# ADR-0053) can exercise the full register → export → diff loop end
+# to end with a hand-readable schema.
+#
+# Convergio ships zero domain ontologies of its own — see the
+# crate-level `AGENTS.md`. Real `ObjectType` definitions live in
+# verticals (e.g. `convergio-edu`, `convergio-research`).
+#
+# Shape:
+#   schema_version: monotonic per (name, kind); first row MUST be 1.
+#   breaking:       true only when bumping a major (gates enforce this).
+#   description:    use "" instead of omitting — keeps semantic body
+#                   deterministic across reruns (ADR-0053 § Determinism).
+schema_version: 1
+objects:
+  - name: Person
+    title: Person
+    description: A natural person.
+    body: {}
+  - name: Organisation
+    title: Organisation
+    description: A legal entity that can employ people.
+    body: {}
+links:
+  - name: WorksFor
+    title: Works for
+    description: Employment relation between a person and an organisation.
+    from_object: Person
+    to_object: Organisation
+    body: {}
+properties:
+  - name: email
+    title: Email
+    description: Primary email address.
+    owner_kind: object
+    owner_name: Person
+    datatype: string
+    required: true
+    body:
+      maxLength: 254
+  - name: age
+    title: ""
+    description: ""
+    owner_kind: object
+    owner_name: Person
+    datatype: integer
+    required: false
+    body:
+      minimum: 0
+  - name: legal_name
+    title: Legal name
+    description: Registered legal name.
+    owner_kind: object
+    owner_name: Organisation
+    datatype: string
+    required: true
+    body: {}
