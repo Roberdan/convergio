@@ -1,0 +1,31 @@
+[package]
+name = "convergio-capability-registry"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "W9-F1: remote capability registry fetcher + trust store (read-only HTTPS + Ed25519). See ADR-0072."
+
+[lints]
+workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+ed25519-dalek = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+reqwest = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+url = "2"
+async-trait = "0.1"
+
+[dev-dependencies]
+tempfile = { workspace = true }
+tokio = { workspace = true }
