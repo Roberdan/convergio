@@ -86,6 +86,7 @@ pub(crate) async fn run(
                 .await
         }
         Command::Bus { sub } => commands::bus::run(&client, &bundle, output, sub).await,
+        Command::Ontology { sub } => commands::ontology::run(&client, &bundle, output, sub).await,
         Command::Discover { since, agent_id } => {
             let args = commands::discover::DiscoverArgs { since, agent_id };
             commands::discover::run(&client, &bundle, output, args).await

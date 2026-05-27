@@ -65,7 +65,8 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-ontology` stats:** 8 `*.rs` files / 19 public items / 1067 lines (under `src/`).
+**`convergio-ontology` stats:** 9 `*.rs` files / 23 public items / 1375 lines (under `src/`).
 
-No files within 50 lines of the 300-line cap.
+Files approaching the 300-line cap:
+- `src/shacl.rs` (266 lines)
 <!-- END AUTO -->

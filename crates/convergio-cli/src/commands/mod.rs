@@ -51,6 +51,7 @@ mod graph_render;
 pub mod health;
 pub mod mcp;
 pub mod monitor;
+pub mod ontology;
 pub mod plan;
 mod plan_run;
 pub mod plan_templates;
@@ -131,6 +132,25 @@ impl Client {
             .await
             .with_context(|| format!("GET {url}"))?;
         json_or_err(resp).await
+    }
+
+    /// `GET path` and return the raw response bytes. Used by
+    /// byte-identical export endpoints (ontology, actions.json) that
+    /// must not round-trip through `serde_json::to_string`.
+    pub async fn get_bytes(&self, path: &str) -> Result<Vec<u8>> {
+        let url = format!("{}{}", self.base, path);
+        let resp = self
+            .inner
+            .get(&url)
+            .send()
+            .await
+            .with_context(|| format!("GET {url}"))?;
+        let status = resp.status();
+        let bytes = resp.bytes().await.with_context(|| format!("read {url}"))?;
+        if !status.is_success() {
+            anyhow::bail!("GET {url} → {status}: {}", String::from_utf8_lossy(&bytes));
+        }
+        Ok(bytes.to_vec())
     }
 
     /// `POST path` with `body` and parse the JSON body into `T`.

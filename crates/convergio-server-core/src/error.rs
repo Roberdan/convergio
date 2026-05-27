@@ -7,6 +7,7 @@ use convergio_bus::BusError;
 use convergio_durability::DurabilityError;
 use convergio_fleet::FleetError;
 use convergio_lifecycle::LifecycleError;
+use convergio_ontology::Error as OntologyError;
 use serde_json::json;
 
 /// API-facing error.
@@ -37,8 +38,16 @@ pub enum ApiError {
     Graph(convergio_graph::GraphError),
     /// Fleet repo management error (ADR-0038, F2-6).
     Fleet(FleetError),
+    /// Ontology runtime error (ADR-0053).
+    Ontology(OntologyError),
     /// Internal server error (catch-all with stable code).
     Internal(String),
+}
+
+impl From<OntologyError> for ApiError {
+    fn from(e: OntologyError) -> Self {
+        Self::Ontology(e)
+    }
 }
 
 impl From<FleetError> for ApiError {
@@ -261,6 +270,21 @@ impl IntoResponse for ApiError {
                 ),
             },
             ApiError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, "internal", msg.clone()),
+            ApiError::Ontology(e) => match e {
+                OntologyError::NotFound { .. } => {
+                    (StatusCode::NOT_FOUND, "not_found", e.to_string())
+                }
+                OntologyError::VersionConflict { .. } => (
+                    StatusCode::CONFLICT,
+                    "ontology_version_conflict",
+                    e.to_string(),
+                ),
+                _ => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "ontology_error",
+                    e.to_string(),
+                ),
+            },
         };
 
         let body = json!({

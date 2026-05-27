@@ -38,5 +38,6 @@ convergio-embed = { workspace = true }
 convergio-fleet = { workspace = true }
 convergio-graph = { workspace = true }
 convergio-lifecycle = { workspace = true }
+convergio-ontology = { workspace = true }
 convergio-server = { workspace = true }
 tempfile = { workspace = true }

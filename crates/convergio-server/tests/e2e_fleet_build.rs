@@ -43,6 +43,7 @@ async fn boot() -> (String, Arc<FleetStore>, Arc<EmbedStore>, tempfile::TempDir)
         bus: Arc::new(Bus::new(pool.clone())),
         fleet: fleet.clone(),
         fleet_plans: Arc::new(convergio_fleet::FleetPlanStore::new(pool.clone())),
+        ontology: Arc::new(convergio_ontology::Store::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool)),
         graph,
         embed: embed.clone(),
