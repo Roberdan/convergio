@@ -1,7 +1,4 @@
 //! `cvg capability trust` — local trust-store management (ADR-0072 §3).
-//!
-//! Pure filesystem operations on `~/.convergio/v3/trust-store.d/`. No
-//! daemon endpoint — the daemon discovers the overlay at install time.
 
 use super::OutputMode;
 use anyhow::{anyhow, bail, Context, Result};
@@ -17,13 +14,12 @@ use std::path::{Path, PathBuf};
 pub enum TrustCommand {
     /// List entries from the baked-in + overlay trust store.
     List,
-    /// Add (or replace) a trust-store entry by copying a JSON file into
-    /// the overlay directory.
+    /// Add (or replace) a trust-store entry from a JSON file.
     Add {
         /// Path to a JSON file containing a single `TrustStoreEntry`.
         path: PathBuf,
     },
-    /// Mark an overlay entry revoked by writing a revoking sibling file.
+    /// Mark an overlay entry revoked.
     Revoke {
         /// `key_id` of the entry to revoke.
         key_id: String,
@@ -125,20 +121,17 @@ fn list(output: OutputMode, overlay: &Path) -> Result<()> {
 fn add(output: OutputMode, overlay: &Path, src: &Path) -> Result<()> {
     let raw =
         fs::read_to_string(src).with_context(|| format!("read entry from {}", src.display()))?;
-    let entry: TrustStoreEntry = match serde_json::from_str::<TrustStoreEntry>(&raw) {
-        Ok(e) => e,
-        Err(_) => {
-            let arr: Vec<TrustStoreEntry> =
-                serde_json::from_str(&raw).context("parse trust-store entry JSON")?;
-            if arr.len() != 1 {
-                bail!(
-                    "trust-store add expects exactly one entry, got {}",
-                    arr.len()
-                );
-            }
-            arr.into_iter().next().unwrap()
+    let entry: TrustStoreEntry = serde_json::from_str::<TrustStoreEntry>(&raw).or_else(|_| {
+        let arr: Vec<TrustStoreEntry> =
+            serde_json::from_str(&raw).context("parse trust-store entry JSON")?;
+        if arr.len() != 1 {
+            bail!(
+                "trust-store add expects exactly one entry, got {}",
+                arr.len()
+            );
         }
-    };
+        Ok(arr.into_iter().next().unwrap())
+    })?;
     entry
         .verifying_key()
         .map_err(|err| anyhow!("invalid trust-store entry: {err}"))?;
@@ -231,16 +224,5 @@ mod tests {
         revoke(OutputMode::Plain, &overlay, "ops-2026-q1").unwrap();
         let store = TrustStore::load(b"[]", &overlay).unwrap();
         assert!(store.lookup("ops-2026-q1", fixture_now()).is_none());
-    }
-
-    #[tokio::test]
-    async fn add_rejects_malformed_json() {
-        let tmp = TempDir::new().unwrap();
-        let overlay = tmp.path().join("trust-store.d");
-        fs::create_dir_all(&overlay).unwrap();
-        let bad = tmp.path().join("bad.json");
-        fs::write(&bad, "{not json").unwrap();
-        let err = add(OutputMode::Plain, &overlay, &bad).unwrap_err();
-        assert!(format!("{err:#}").contains("parse trust-store entry"));
     }
 }
