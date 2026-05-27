@@ -42,6 +42,7 @@ mod jsonschema;
 mod model;
 mod reads;
 mod semantic;
+mod shacl;
 mod store;
 
 pub use error::{Error, Result};
@@ -52,4 +53,5 @@ pub use jsonschema::{
 pub use model::{
     LinkTypeRecord, ObjectTypeRecord, OwnerKind, PropertyTypeRecord, TypeKind, TypeRecordRef,
 };
+pub use shacl::{build_object_shacl_bytes, export_object_shacl, shacl_datatype, ShaclType};
 pub use store::Store;
