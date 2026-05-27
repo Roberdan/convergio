@@ -1,0 +1,10 @@
+// ontology lineage
+// object=Person
+digraph ontology_lineage {
+  rankdir=LR;
+  "v1" [label="Person v1\n188acd7dc1cb5bc2e85d059f8d577d9217d2bd8dc0a0d8f64ad0cf7121891536"];
+  "v2" [label="Person v2\n7226a6b61d17328412d9de16d01c7fb2e95540ca1a2d44d635cec801db59e365"];
+  "v3" [label="Person v3 (breaking)\n40a349a8f4421fafed84b47f0c734c4a12e30a5d0bc9c331f1912142cf906b7e"];
+  "v1" -> "v2" [style=solid];
+  "v2" -> "v3" [style=bold];
+}

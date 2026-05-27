@@ -36,20 +36,28 @@
 
 #![forbid(unsafe_code)]
 
+mod diff;
 mod error;
+mod graph_render;
 mod hash;
 mod jsonschema;
+mod lineage;
 mod model;
 mod reads;
 mod semantic;
 mod shacl;
 mod store;
 
+pub use diff::{diff_object, ObjectDiff, PropertyChange, PropertyRef};
 pub use error::{Error, Result};
+pub use graph_render::{
+    render_diff_dot, render_diff_mermaid, render_lineage_dot, render_lineage_mermaid,
+};
 pub use hash::content_hash;
 pub use jsonschema::{
     build_object_schema_bytes, datatype_fragment, export_object_schema, JSON_SCHEMA_DRAFT,
 };
+pub use lineage::{lineage_object, Lineage, LineageNode};
 pub use model::{
     LinkTypeRecord, ObjectTypeRecord, OwnerKind, PropertyTypeRecord, TypeKind, TypeRecordRef,
 };

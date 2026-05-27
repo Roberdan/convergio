@@ -1,0 +1,12 @@
+// ontology diff
+// object=Person from=1 to=2
+digraph ontology_diff {
+  rankdir=LR;
+  "obj_from" [label="Person v1\n188acd7dc1cb5bc2e85d059f8d577d9217d2bd8dc0a0d8f64ad0cf7121891536"];
+  "obj_to" [label="Person v2\n7226a6b61d17328412d9de16d01c7fb2e95540ca1a2d44d635cec801db59e365"];
+  "obj_from" -> "obj_to" [style=bold];
+  "add_age" [label="age\nc26ee6021590692755c1b027c947571313b0f15fbc87d06b4169d02c4514451e" color=green];
+  "obj_to" -> "add_age" [label="added"];
+  "mod_email" [label="email\n8aab87c7fdac74fbabcefbae6405ab4431819eed707940fe6c2b2f77afacd5a2->beaa72328e01ba2febadbe3eccae6836c011f836056a9b50c161719258b853ec" color=orange];
+  "obj_to" -> "mod_email" [label="modified"];
+}

@@ -25,6 +25,7 @@ pub fn router(state: AppState) -> Router {
         .merge(crate::routes::crdt::router())
         .merge(crate::routes::messages::router())
         .merge(crate::routes::ontology::router())
+        .merge(crate::routes::ontology_graph::router())
         .merge(crate::routes::system_messages::router())
         .merge(crate::routes::agent_registry::router())
         .merge(crate::routes::agents::router())

@@ -168,4 +168,58 @@ impl Store {
         }
         Ok(out)
     }
+
+    /// Snapshot the properties of an `ObjectType` at a given owner
+    /// schema_version: for each property name where there exists at
+    /// least one revision with `schema_version <= cutoff`, return the
+    /// highest such revision. Sorted by name ASC (determinism).
+    ///
+    /// This is the building block for the `diff` and `lineage`
+    /// surfaces (ADR-0060): comparing two snapshots at different
+    /// cutoffs is a set diff over `(name, content_hash)` pairs.
+    pub async fn list_object_properties_at(
+        &self,
+        object_name: &str,
+        cutoff: i64,
+    ) -> Result<Vec<PropertyTypeRecord>> {
+        let rows = sqlx::query(
+            "SELECT name, MAX(schema_version) AS max_v \
+             FROM ontology_property_types \
+             WHERE owner_kind = 'object' AND owner_name = ? AND schema_version <= ? \
+             GROUP BY name ORDER BY name ASC",
+        )
+        .bind(object_name)
+        .bind(cutoff)
+        .fetch_all(self.pool.inner())
+        .await?;
+        let mut out = Vec::with_capacity(rows.len());
+        for r in rows {
+            let name: String = r.try_get("name")?;
+            let v: i64 = r.try_get("max_v")?;
+            if let Some(rec) = self.get_property(&name, v).await? {
+                out.push(rec);
+            }
+        }
+        Ok(out)
+    }
+
+    /// List every known revision of an `ObjectType` in ascending
+    /// `schema_version` order. Powers `cvg ontology lineage`.
+    pub async fn list_object_versions(&self, object_name: &str) -> Result<Vec<ObjectTypeRecord>> {
+        let rows = sqlx::query(
+            "SELECT schema_version FROM ontology_object_types \
+             WHERE name = ? ORDER BY schema_version ASC",
+        )
+        .bind(object_name)
+        .fetch_all(self.pool.inner())
+        .await?;
+        let mut out = Vec::with_capacity(rows.len());
+        for r in rows {
+            let v: i64 = r.try_get("schema_version")?;
+            if let Some(rec) = self.get_object(object_name, v).await? {
+                out.push(rec);
+            }
+        }
+        Ok(out)
+    }
 }

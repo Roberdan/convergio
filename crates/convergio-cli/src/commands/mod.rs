@@ -52,6 +52,8 @@ pub mod health;
 pub mod mcp;
 pub mod monitor;
 pub mod ontology;
+pub mod ontology_diff;
+pub mod ontology_types;
 pub mod plan;
 mod plan_run;
 pub mod plan_templates;
