@@ -47,11 +47,26 @@ fn overlay_dir() -> Result<PathBuf> {
     Ok(PathBuf::from(home).join(".convergio/v3/trust-store.d"))
 }
 
+fn safe_filename(s: &str) -> String {
+    s.chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect()
+}
+
+fn baked_in_bytes() -> &'static [u8] {
+    b"[]"
+}
+
 fn list(output: OutputMode, overlay: &Path) -> Result<()> {
-    let baked = baked_in_bytes();
-    let store = TrustStore::load(baked, overlay).context("load trust store")?;
+    let store = TrustStore::load(baked_in_bytes(), overlay).context("load trust store")?;
     let now = Utc::now();
-    let active: Vec<(String, String)> = store.active_hex_keys(now);
+    let active = store.active_hex_keys(now);
     let entries: Vec<&TrustStoreEntry> = store.entries().collect();
     match output {
         OutputMode::Json => {
@@ -59,12 +74,9 @@ fn list(output: OutputMode, overlay: &Path) -> Result<()> {
                 .iter()
                 .map(|e| {
                     json!({
-                        "key_id": e.key_id,
-                        "owner": e.owner,
-                        "valid_from": e.valid_from,
-                        "valid_until": e.valid_until,
-                        "revoked": e.revoked,
-                        "algorithm": e.algorithm,
+                        "key_id": e.key_id, "owner": e.owner,
+                        "valid_from": e.valid_from, "valid_until": e.valid_until,
+                        "revoked": e.revoked, "algorithm": e.algorithm,
                     })
                 })
                 .collect();
@@ -113,7 +125,6 @@ fn list(output: OutputMode, overlay: &Path) -> Result<()> {
 fn add(output: OutputMode, overlay: &Path, src: &Path) -> Result<()> {
     let raw =
         fs::read_to_string(src).with_context(|| format!("read entry from {}", src.display()))?;
-    // Accept either a single entry or an array; normalize to a single entry.
     let entry: TrustStoreEntry = match serde_json::from_str::<TrustStoreEntry>(&raw) {
         Ok(e) => e,
         Err(_) => {
@@ -135,18 +146,7 @@ fn add(output: OutputMode, overlay: &Path, src: &Path) -> Result<()> {
         bail!("trust-store entry has empty key_id");
     }
     let ts = Utc::now().format("%Y%m%dT%H%M%SZ").to_string();
-    let safe_id: String = entry
-        .key_id
-        .chars()
-        .map(|c| {
-            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
-                c
-            } else {
-                '_'
-            }
-        })
-        .collect();
-    let dest = overlay.join(format!("{ts}-{safe_id}.json"));
+    let dest = overlay.join(format!("{ts}-{}.json", safe_filename(&entry.key_id)));
     fs::write(&dest, serde_json::to_string_pretty(&vec![entry.clone()])?)
         .with_context(|| format!("write {}", dest.display()))?;
     match output {
@@ -155,20 +155,17 @@ fn add(output: OutputMode, overlay: &Path, src: &Path) -> Result<()> {
             json!({"added": entry.key_id, "path": dest.display().to_string()})
         ),
         OutputMode::Plain => println!("added={} path={}", entry.key_id, dest.display()),
-        OutputMode::Human => {
-            println!(
-                "added trust-store entry `{}` → {}",
-                entry.key_id,
-                dest.display()
-            )
-        }
+        OutputMode::Human => println!(
+            "added trust-store entry `{}` → {}",
+            entry.key_id,
+            dest.display()
+        ),
     }
     Ok(())
 }
 
 fn revoke(output: OutputMode, overlay: &Path, key_id: &str) -> Result<()> {
-    let baked = baked_in_bytes();
-    let store = TrustStore::load(baked, overlay).context("load trust store")?;
+    let store = TrustStore::load(baked_in_bytes(), overlay).context("load trust store")?;
     let existing = store
         .entries()
         .find(|e| e.key_id == key_id)
@@ -179,17 +176,7 @@ fn revoke(output: OutputMode, overlay: &Path, key_id: &str) -> Result<()> {
         ..existing
     };
     let ts = Utc::now().format("%Y%m%dT%H%M%SZ").to_string();
-    let safe_id: String = key_id
-        .chars()
-        .map(|c| {
-            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
-                c
-            } else {
-                '_'
-            }
-        })
-        .collect();
-    let dest = overlay.join(format!("{ts}-{safe_id}-revoked.json"));
+    let dest = overlay.join(format!("{ts}-{}-revoked.json", safe_filename(key_id)));
     fs::write(&dest, serde_json::to_string_pretty(&vec![revoked_entry])?)
         .with_context(|| format!("write {}", dest.display()))?;
     match output {
@@ -198,19 +185,12 @@ fn revoke(output: OutputMode, overlay: &Path, key_id: &str) -> Result<()> {
             json!({"revoked": key_id, "path": dest.display().to_string()})
         ),
         OutputMode::Plain => println!("revoked={key_id} path={}", dest.display()),
-        OutputMode::Human => {
-            println!(
-                "revoked trust-store entry `{key_id}` via {}",
-                dest.display()
-            )
-        }
+        OutputMode::Human => println!(
+            "revoked trust-store entry `{key_id}` via {}",
+            dest.display()
+        ),
     }
     Ok(())
-}
-
-fn baked_in_bytes() -> &'static [u8] {
-    // Empty baked-in store; daemon ships its own via include_bytes!.
-    b"[]"
 }
 
 #[cfg(test)]
@@ -219,7 +199,6 @@ mod tests {
     use convergio_capability_registry::trust_store::fixture_entry;
     use tempfile::TempDir;
 
-    /// Inside the fixture validity window (2026-01-01 .. 2027-01-01).
     fn fixture_now() -> chrono::DateTime<Utc> {
         "2026-06-01T00:00:00Z".parse().unwrap()
     }
@@ -233,8 +212,7 @@ mod tests {
         let entry_path = tmp.path().join("entry.json");
         fs::write(&entry_path, serde_json::to_string_pretty(&entry).unwrap()).unwrap();
         add(OutputMode::Plain, &overlay, &entry_path).unwrap();
-        let listed = fs::read_dir(&overlay).unwrap().count();
-        assert_eq!(listed, 1);
+        assert_eq!(fs::read_dir(&overlay).unwrap().count(), 1);
         let store = TrustStore::load(b"[]", &overlay).unwrap();
         assert!(store.lookup("ops-2026-q1", fixture_now()).is_some());
     }
@@ -245,8 +223,11 @@ mod tests {
         let overlay = tmp.path().join("trust-store.d");
         fs::create_dir_all(&overlay).unwrap();
         let (entry, _sk) = fixture_entry("ops-2026-q1");
-        let path = overlay.join("00-base.json");
-        fs::write(&path, serde_json::to_string_pretty(&vec![entry]).unwrap()).unwrap();
+        fs::write(
+            overlay.join("00-base.json"),
+            serde_json::to_string_pretty(&vec![entry]).unwrap(),
+        )
+        .unwrap();
         revoke(OutputMode::Plain, &overlay, "ops-2026-q1").unwrap();
         let store = TrustStore::load(b"[]", &overlay).unwrap();
         assert!(store.lookup("ops-2026-q1", fixture_now()).is_none());
