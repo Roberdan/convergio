@@ -18,6 +18,7 @@ workspace = true
 convergio-api = { workspace = true }
 convergio-db = { workspace = true }
 convergio-a11y-axe = { workspace = true }
+convergio-provenance = { workspace = true }
 
 sqlx = { workspace = true }
 tokio = { workspace = true }

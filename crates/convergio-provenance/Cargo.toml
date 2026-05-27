@@ -1,0 +1,22 @@
+[package]
+name = "convergio-provenance"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "W3C-PROV-JSON provenance bundles for Convergio ontology objects (ADR-0075)."
+readme = "README.md"
+
+[lints]
+workspace = true
+
+[dependencies]
+chrono = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+anyhow = { workspace = true }

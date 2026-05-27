@@ -228,6 +228,10 @@ pub enum DurabilityError {
     #[error(transparent)]
     Json(#[from] serde_json::Error),
 
+    /// Provenance serialization error.
+    #[error(transparent)]
+    Provenance(#[from] convergio_provenance::ProvenanceError),
+
     /// Migration runner failure.
     #[error(transparent)]
     Migrate(#[from] sqlx::migrate::MigrateError),

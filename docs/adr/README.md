@@ -92,4 +92,5 @@ do not edit between the markers.
 | [0072](./0072-remote-capability-registry.md) | 0072. Remote capability registry (W9) | proposed |
 | [0073](./0073-eu-sovereign-pivot.md) | -0073 — EU-sovereign pivot: open ontology platform, AI-native, local-first | accepted |
 | [0074](./0074-relicense-agplv3.md) | -0074 — Relicense Convergio to AGPL-3.0-or-later | accepted |
+| [0075](./0075-w3c-prov-provenance-bundles.md) | -0075 — W3C-PROV-JSON provenance bundles | accepted |
 <!-- END AUTO -->
