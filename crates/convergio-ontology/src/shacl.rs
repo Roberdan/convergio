@@ -55,10 +55,7 @@ pub fn build_object_shacl_bytes(
     Ok(bytes)
 }
 
-fn build_object_shacl_value(
-    object: &ObjectTypeRecord,
-    properties: &[PropertyTypeRecord],
-) -> Value {
+fn build_object_shacl_value(object: &ObjectTypeRecord, properties: &[PropertyTypeRecord]) -> Value {
     let mut props_sorted: Vec<&PropertyTypeRecord> = properties.iter().collect();
     props_sorted.sort_by(|a, b| a.name.cmp(&b.name));
 
