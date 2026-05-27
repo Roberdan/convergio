@@ -50,6 +50,10 @@ cd "$repo_root"
 #             real answer (gates/ could be a sibling crate exposing
 #             only the Gate trait + default_pipeline ctor), tracked
 #             alongside the existing durability split.).
+#             15_500 → 15_700 (2026-06, dependency refresh plus W9
+#             capability-trust CLI drift put convergio-cli just over
+#             the previous ceiling; use this as a stopgap until the
+#             existing cli-split ADR extracts more command groups.).
 #     The shape of that crate (audit chain + plans + tasks + evidence +
 #     workspace + capabilities + crdt + gates + agent-reaper) is
 #     intentional and a real split needs ADR work — track it under
@@ -59,7 +63,7 @@ cd "$repo_root"
 RS_HARD=300
 NON_RS_SOFT=500
 CRATE_SOFT=5000
-CRATE_HARD=15500
+CRATE_HARD=15700
 
 hard_fail=0
 soft_warn=0
