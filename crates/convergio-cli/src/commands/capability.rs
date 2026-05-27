@@ -61,6 +61,11 @@ pub enum CapabilityCommand {
         #[arg(long = "trusted-key")]
         trusted_keys: Vec<String>,
     },
+    /// Manage the local trust store (ADR-0072).
+    Trust {
+        #[command(subcommand)]
+        sub: super::capability_trust::TrustCommand,
+    },
 }
 
 /// Run a capability registry subcommand.
@@ -103,6 +108,7 @@ pub async fn run(
             )
             .await
         }
+        CapabilityCommand::Trust { sub } => super::capability_trust::run(output, sub).await,
     }
 }
 
@@ -264,18 +270,7 @@ async fn verify_signature(
 }
 
 fn parse_trusted_keys(values: Vec<String>) -> Result<Vec<TrustedKey>> {
-    values
-        .into_iter()
-        .map(|value| {
-            let (key_id, public_key) = value
-                .split_once(':')
-                .ok_or_else(|| anyhow::anyhow!("trusted key must be key_id:hex_public_key"))?;
-            Ok(TrustedKey {
-                key_id: key_id.into(),
-                public_key: public_key.into(),
-            })
-        })
-        .collect()
+    super::capability_types::parse_trusted_keys(values)
 }
 
 fn render_human(bundle: &Bundle, caps: &[Capability]) {

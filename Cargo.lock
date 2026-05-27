@@ -667,6 +667,7 @@ dependencies = [
  "clap",
  "convergio-api",
  "convergio-brand",
+ "convergio-capability-registry",
  "convergio-cli-plan-run",
  "convergio-cli-pr",
  "convergio-cli-session",

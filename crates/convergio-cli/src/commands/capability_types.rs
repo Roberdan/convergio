@@ -1,8 +1,24 @@
 //! Private data shapes for `cvg capability`.
 
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::path::PathBuf;
+
+pub(super) fn parse_trusted_keys(values: Vec<String>) -> Result<Vec<TrustedKey>> {
+    values
+        .into_iter()
+        .map(|value| {
+            let (key_id, public_key) = value
+                .split_once(':')
+                .ok_or_else(|| anyhow::anyhow!("trusted key must be key_id:hex_public_key"))?;
+            Ok(TrustedKey {
+                key_id: key_id.into(),
+                public_key: public_key.into(),
+            })
+        })
+        .collect()
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(super) struct Capability {
