@@ -141,6 +141,7 @@ convergio-fleet = { path = "crates/convergio-fleet" }
 convergio-fleet-routes = { path = "crates/convergio-fleet-routes" }
 convergio-server-core = { path = "crates/convergio-server-core" }
 convergio-ontology = { path = "crates/convergio-ontology" }
+convergio-a11y-axe = { path = "crates/convergio-a11y-axe" }
 
 [workspace.lints.rust]
 missing_docs = "warn"

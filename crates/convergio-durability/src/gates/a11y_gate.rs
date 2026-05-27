@@ -24,6 +24,7 @@ use super::{Gate, GateContext, GatePrecondition};
 use crate::error::{DurabilityError, Result};
 use crate::model::TaskStatus;
 use crate::store::EvidenceStore;
+use convergio_a11y_axe::{run_html, AxeStatus};
 use regex::Regex;
 use serde_json::Value;
 
@@ -103,6 +104,15 @@ impl Gate for A11yGate {
             if is_cli_kind(kind) {
                 self.check_cli(kind, &strings, &mut violations);
             }
+            if is_html_kind(kind) {
+                if let AxeStatus::Ok(report) = run_html(&joined) {
+                    for v in report.violations {
+                        if matches!(v.impact.as_str(), "serious" | "critical") {
+                            violations.push(format!("{kind}#axe:{}", v.id));
+                        }
+                    }
+                }
+            }
         }
 
         if violations.is_empty() {
@@ -171,6 +181,10 @@ fn is_markdown_kind(kind: &str) -> bool {
 
 fn is_cli_kind(kind: &str) -> bool {
     matches!(kind, "cli_output" | "terminal" | "tui_snapshot")
+}
+
+fn is_html_kind(kind: &str) -> bool {
+    matches!(kind, "html_output" | "html" | "component_render")
 }
 
 /// Detects an H1→H3 (or any other skipped-level) sequence. We allow

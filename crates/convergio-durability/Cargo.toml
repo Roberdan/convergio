@@ -17,6 +17,7 @@ workspace = true
 [dependencies]
 convergio-api = { workspace = true }
 convergio-db = { workspace = true }
+convergio-a11y-axe = { workspace = true }
 
 sqlx = { workspace = true }
 tokio = { workspace = true }

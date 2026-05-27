@@ -64,7 +64,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-lifecycle/README.md` | crate-readme | - | - | 63 |
 | `crates/convergio-mcp/AGENTS.md` | crate-rules | - | - | 29 |
 | `crates/convergio-mcp/README.md` | crate-readme | - | - | 12 |
-| `crates/convergio-ontology/AGENTS.md` | crate-rules | - | - | 70 |
+| `crates/convergio-ontology/AGENTS.md` | crate-rules | - | - | 71 |
 | `crates/convergio-ontology/README.md` | crate-readme | - | - | 21 |
 | `crates/convergio-parse-multi/AGENTS.md` | crate-rules | - | - | 63 |
 | `crates/convergio-parse-multi/CLAUDE.md` | crate-rules | - | - | 1 |
@@ -84,7 +84,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0000-template.md` | adr | [] | proposed \| accepted \| deprecated \| superseded by [NNNN](NNNN-title.md) | 55 |
 | `docs/adr/0001-four-layer-architecture.md` | adr | [] | accepted | 77 |
 | `docs/adr/0002-audit-hash-chain.md` | adr | [] | accepted | 121 |
-| `docs/adr/0003-migration-coexistence.md` | adr | [] | accepted | 132 |
+| `docs/adr/0003-migration-coexistence.md` | adr | [] | accepted | 133 |
 | `docs/adr/0004-three-sacred-principles.md` | adr | [] | accepted | 104 |
 | `docs/adr/0005-internationalization-first.md` | adr | [] | accepted | 119 |
 | `docs/adr/0006-crdt-storage.md` | adr | [convergio-durability, convergio-server, convergio-api] | accepted | 209 |
