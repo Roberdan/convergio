@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:convergio:template:edci:accreditation-self-assessment:v1",
+  "title": "EDCI/ELM accreditation self-assessment response (template)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["meta", "governance", "data_readiness"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["institution_name", "country", "assessment_date"],
+      "properties": {
+        "institution_name": { "type": "string" },
+        "unit_name": { "type": "string" },
+        "country": { "type": "string" },
+        "assessment_date": { "type": "string", "format": "date" },
+        "responsible_person": { "type": "string" }
+      }
+    },
+    "governance": {
+      "type": "array",
+      "description": "ESG-inspired checklist items.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "question_en", "question_it", "answer", "evidence", "gaps"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^B[0-9]+$" },
+          "question_en": { "type": "string" },
+          "question_it": { "type": "string" },
+          "answer": { "type": "string" },
+          "evidence": { "type": "array", "items": { "type": "string" } },
+          "gaps": { "type": "string" }
+        }
+      }
+    },
+    "data_readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accreditation"],
+      "properties": {
+        "accreditation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["title", "type_uri", "accrediting_agent_name"],
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "type_uri": { "type": "string", "description": "Controlled list URI (EDC AP references publications.europa.eu datasets)." },
+            "accrediting_agent_name": { "type": "string" },
+            "decision_uri": { "type": "string" },
+            "issued_at": { "type": "string", "format": "date-time" },
+            "valid_from": { "type": "string", "format": "date-time" },
+            "valid_until": { "type": "string", "format": "date-time" },
+            "review_date": { "type": "string", "format": "date-time" },
+            "report_url": { "type": "string" },
+            "scope": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "accredited_org_name": { "type": "string" },
+                "accredited_qualification": { "type": "string" },
+                "eqf_levels": { "type": "array", "items": { "type": "string" } },
+                "iscedf_codes": { "type": "array", "items": { "type": "string" } },
+                "jurisdictions": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
