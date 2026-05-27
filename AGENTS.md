@@ -11,21 +11,26 @@ If you are a human, read [README.md](./README.md) first.
 
 ## Project in one paragraph
 
-Convergio is the **leash** for AI agents. It is a Rust HTTP daemon
-that refuses the agent's work when the work does not meet five
-non-negotiable principles (CONSTITUTION § Sacred principles):
+Convergio is an **open, local-first, EU-sovereign platform where
+AI agents and humans converge on data both can trust**. A Rust
+HTTP daemon refuses an AI agent's work when the work does not meet
+six non-negotiable principles (CONSTITUTION § Sacred principles):
 
 1. **Zero tolerance** for technical debt, errors, warnings — any programming language
 2. **Security first**, including LLM-specific threats
 3. **Accessibility first**, both in agent output and in our own CLI
 4. **No scaffolding only** — every feature must be fully wired
 5. **Internationalization first** — Italian + English day one, no hardcoded user-facing English
+6. **Sovereignty by construction** — local-first, no remote control plane, no telemetry, OSI-approved license
 
-Principles are enforced server-side via the gate pipeline. The agent
-attaches evidence of work done; gates scan that evidence and refuse
-`submitted`/`done` transitions with HTTP 409 if any rule is violated.
-Underneath sit a hash-chained audit log (so nothing can be silently
-rewritten), a reaper (so agent death does not lose state), an
+Principles 1–5 are enforced server-side via the gate pipeline. The
+agent attaches evidence of work done; gates scan that evidence and
+refuse `submitted`/`done` transitions with HTTP 409 if any rule is
+violated. Principle 6 is enforced by architecture: removing the
+option to violate it instead of asking nicely. Underneath sit a
+hash-chained audit log (so nothing can be silently rewritten), a
+typed ontology runtime (so AI agents and humans share the same
+schema), a reaper (so agent death does not lose state), an
 agent-to-agent message bus, and process supervision.
 
 Single-user, local-first, SQLite-only. Drop-in under any local
@@ -34,9 +39,14 @@ shell scripts, your own Python).
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for layer diagrams,
 [CONSTITUTION.md](./CONSTITUTION.md) for the non-negotiable rules,
+[COMPLIANCE.md](./COMPLIANCE.md) for the regulatory matrix (GDPR /
+AI Act / NIS2 / DORA),
 [docs/adr/0004-three-sacred-principles.md](./docs/adr/0004-three-sacred-principles.md)
-for the rationale, [docs/spec/v3-durability-layer.md](./docs/spec/v3-durability-layer.md)
-for the original spec.
+for the original rationale,
+[docs/adr/0073-eu-sovereign-pivot.md](./docs/adr/0073-eu-sovereign-pivot.md)
+for the current positioning, and
+[docs/spec/v3-durability-layer.md](./docs/spec/v3-durability-layer.md)
+for the original durability spec.
 
 ## Stack
 

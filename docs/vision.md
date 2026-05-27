@@ -5,10 +5,35 @@
 This file is the long-form rationale behind Convergio's direction. The
 [`ROADMAP.md`](./ROADMAP.md) lists what ships when; the
 [`CONSTITUTION.md`](./CONSTITUTION.md) lists what is non-negotiable; the
-[`docs/adr/`](./docs/adr/) folder records each major decision. This document
-exists to answer a single question for every reader, contributor, and agent:
+[`COMPLIANCE.md`](./COMPLIANCE.md) lists how the platform maps to EU
+regulation; the [`docs/adr/`](./docs/adr/) folder records each major
+decision. This document exists to answer a single question for every
+reader, contributor, and agent:
 
 **Why does Convergio exist, and what kind of artifact is it trying to be?**
+
+---
+
+## 0. One line
+
+Convergio is the **open, local-first, EU-sovereign platform where AI
+agents and humans converge on data both can trust** — the *good*
+Palantir, built for places Palantir cannot go.
+
+It is *one* artifact with two reinforcing layers:
+
+- **The leash** (Layer 1) — server-side gates, hash-chained audit,
+  the six sacred principles. Refuses unsafe work. Enforced today.
+- **The ontology** (Layer 2) — typed schema registry, bitemporal
+  store, provenance bundle, purpose registry, typed actions,
+  scenario branching. The shared substrate AI and humans converge
+  on. Status declared per primitive in [`COMPLIANCE.md`](./COMPLIANCE.md).
+
+The leash makes the ontology trustable. The ontology makes the
+leash productive. Removing either collapses the artifact into yet
+another agent orchestrator. See
+[ADR-0073](./docs/adr/0073-eu-sovereign-pivot.md) for the full
+framing.
 
 ---
 

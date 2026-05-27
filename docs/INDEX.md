@@ -19,13 +19,14 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
 | `.pr-body.md` | - | - | - | 83 |
-| `AGENTS.md` | agent-rules | - | - | 593 |
+| `AGENTS.md` | agent-rules | - | - | 603 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
 | `CHANGELOG.md` | release | - | - | 1343 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
-| `CONSTITUTION.md` | constitution | - | - | 437 |
+| `COMPLIANCE.md` | - | - | - | 110 |
+| `CONSTITUTION.md` | constitution | - | - | 486 |
 | `CONTRIBUTING.md` | governance | - | - | 176 |
-| `README.md` | entry | - | - | 414 |
+| `README.md` | entry | - | - | 451 |
 | `ROADMAP.md` | roadmap | - | - | 536 |
 | `SECURITY.md` | governance | - | - | 57 |
 | `STATUS.md` | - | - | - | 40 |
@@ -78,7 +79,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 22 |
 | `crates/convergio-tui/AGENTS.md` | crate-rules | - | - | 121 |
 | `crates/convergio-tui/README.md` | crate-readme | - | - | 104 |
-| `docs/AGENTS.md` | - | - | - | 63 |
+| `docs/AGENTS.md` | - | - | - | 86 |
 | `docs/INDEX.md` | - | - | - | - |
 | `docs/OPTIMIZATIONS.md` | - | - | - | 314 |
 | `docs/adr/0000-template.md` | adr | [] | proposed \| accepted \| deprecated \| superseded by [NNNN](NNNN-title.md) | 55 |
@@ -154,7 +155,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0063-task-taxonomy-eval-skeleton.md` | adr | - | accepted | 68 |
 | `docs/adr/0064-a11y-axe-local-stub.md` | adr | - | accepted | 67 |
 | `docs/adr/0072-remote-capability-registry.md` | adr | [convergio-cli, convergio-server, convergio-durability] | proposed | 237 |
-| `docs/adr/README.md` | adr | - | - | 93 |
+| `docs/adr/0073-eu-sovereign-pivot.md` | adr | - | **accepted** | 172 |
+| `docs/adr/README.md` | adr | - | - | 94 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
@@ -206,7 +208,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/spec/fleet-retrieval-golden-methodology.md` | spec | - | - | 264 |
 | `docs/spec/v3-durability-layer.md` | spec | - | - | 145 |
 | `docs/templates/adversarial-challenge.md` | - | - | - | 139 |
-| `docs/vision.md` | - | - | - | 426 |
+| `docs/vision.md` | - | - | - | 451 |
 | `docs/wip-commit-template.md` | - | - | - | 98 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
 | `examples/skills/cvg-attach-cursor/README.md` | example | - | - | 57 |

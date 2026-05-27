@@ -61,3 +61,26 @@ Drill into a single ADR, plan, or spec **only when the task demands it**.
 - [`setup.md`](./setup.md) / [`release.md`](./release.md) — operator docs.
 - [`wip-commit-template.md`](./wip-commit-template.md) — pause/handoff protocol.
 - [`adr/`](./adr/) — decisions that constrain implementation.
+
+## Canonical-doc registry
+
+Single source of truth for each load-bearing top-level document.
+If two docs disagree, the one listed here wins; the other one is a
+bug. Last-reviewed dates are checked by `cvg coherence check`
+(advisory, ADR-0015 pattern).
+
+| Doc | Authority for | Last reviewed |
+|---|---|---|
+| [`../README.md`](../README.md) | user-facing pitch, quickstart, is/is-not | 2026-05-27 |
+| [`vision.md`](./vision.md) | long-form rationale, urbanism frame | 2026-05-27 |
+| [`../CONSTITUTION.md`](../CONSTITUTION.md) | non-negotiable rules (P1..P6) | 2026-05-27 |
+| [`../ARCHITECTURE.md`](../ARCHITECTURE.md) | layer diagrams, request lifecycle | — |
+| [`../COMPLIANCE.md`](../COMPLIANCE.md) | EU regulatory mapping, sovereignty posture | 2026-05-27 |
+| [`../AGENTS.md`](../AGENTS.md) | cross-vendor agent instructions, stack | 2026-05-27 |
+| [`adr/0073-eu-sovereign-pivot.md`](./adr/0073-eu-sovereign-pivot.md) | current positioning ADR | 2026-05-27 |
+| [`../ROADMAP.md`](../ROADMAP.md) | what ships when | — |
+
+When a PR touches the positioning, the **sovereignty posture**, or
+the **regulatory claims**, bump the `Last reviewed` for *every* row
+the change affects in the same PR. A drift between rows is a
+`compliance-drift` issue.
