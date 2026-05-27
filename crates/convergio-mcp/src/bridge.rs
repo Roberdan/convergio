@@ -184,6 +184,8 @@ mod tests {
         convergio_lifecycle::init(&pool)
             .await
             .expect("lifecycle init");
+        convergio_embed::init(&pool).await.expect("embed init");
+        convergio_fleet::init(&pool).await.expect("fleet init");
         let ontology = Arc::new(convergio_ontology::Store::new(pool.clone()));
         ontology.migrate().await.expect("ontology migrate");
 

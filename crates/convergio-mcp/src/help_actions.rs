@@ -21,6 +21,7 @@ const FAMILIES: &[FamilyHelp] = &[
     agent_registry,
     capability,
     workspace,
+    ontology,
 ];
 
 /// Resolve a single action's help body by walking each capability family.
@@ -262,6 +263,26 @@ fn workspace(action: Action) -> Option<Value> {
         Action::ProcessMergeQueue => json!({"params": {}}),
         Action::ListMergeQueue => json!({"params": {}}),
         Action::ListWorkspaceConflicts => json!({"params": {}}),
+        _ => return None,
+    })
+}
+
+fn ontology(action: Action) -> Option<Value> {
+    Some(match action {
+        Action::OntologyList => json!({"params": {}}),
+        Action::OntologyDescribe => json!({
+            "params": {
+                "kind": "object | link",
+                "name": "string"
+            }
+        }),
+        Action::OntologyExport => json!({
+            "params": {
+                "name": "string",
+                "format": "jsonschema | shacl",
+                "version": "integer?"
+            }
+        }),
         _ => return None,
     })
 }

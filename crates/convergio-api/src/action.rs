@@ -89,6 +89,16 @@ pub enum Action {
     FleetPlanShow,
     /// Run the gate pipeline across every linked repo (F3-3, read-only).
     FleetPlanValidate,
+    /// List ontology types (ObjectType + LinkType) in the registry (ADR-0053).
+    #[serde(rename = "ontology.list")]
+    OntologyList,
+    /// Describe one ontology type with its inline properties (ADR-0053).
+    #[serde(rename = "ontology.describe")]
+    OntologyDescribe,
+    /// Export an ontology ObjectType as byte-identical JSON-Schema or
+    /// SHACL/JSON-LD (ADR-0053).
+    #[serde(rename = "ontology.export")]
+    OntologyExport,
 }
 
 impl Action {
@@ -133,6 +143,9 @@ impl Action {
         Self::FleetPlanCreate,
         Self::FleetPlanShow,
         Self::FleetPlanValidate,
+        Self::OntologyList,
+        Self::OntologyDescribe,
+        Self::OntologyExport,
     ];
 
     /// Stable snake_case action name.
@@ -177,6 +190,9 @@ impl Action {
             Self::FleetPlanCreate => "fleet_plan_create",
             Self::FleetPlanShow => "fleet_plan_show",
             Self::FleetPlanValidate => "fleet_plan_validate",
+            Self::OntologyList => "ontology.list",
+            Self::OntologyDescribe => "ontology.describe",
+            Self::OntologyExport => "ontology.export",
         }
     }
 
@@ -211,6 +227,7 @@ impl Action {
             | Self::ListWorkspaceConflicts => "workspace",
             Self::PublishMessage | Self::PollMessages | Self::AckMessage => "validation",
             Self::FleetPlanCreate | Self::FleetPlanShow | Self::FleetPlanValidate => "fleet",
+            Self::OntologyList | Self::OntologyDescribe | Self::OntologyExport => "ontology",
         }
     }
 
@@ -257,6 +274,11 @@ impl Action {
             Self::FleetPlanShow => "Show a fleet plan with its per-repo links.",
             Self::FleetPlanValidate => {
                 "Run the gate pipeline across every linked repo (read-only)."
+            }
+            Self::OntologyList => "List ontology types (ObjectType + LinkType) in the registry.",
+            Self::OntologyDescribe => "Describe one ontology type with its inline properties.",
+            Self::OntologyExport => {
+                "Export an ontology ObjectType as JSON-Schema or SHACL/JSON-LD."
             }
         }
     }

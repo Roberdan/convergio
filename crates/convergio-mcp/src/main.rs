@@ -16,8 +16,12 @@ mod help_actions;
 #[cfg(test)]
 mod help_tests;
 mod http;
+
 #[cfg(test)]
 mod http_tests;
+mod ontology_action;
+#[cfg(test)]
+mod ontology_e2e_tests;
 
 use anyhow::Result;
 use bridge::Bridge;
