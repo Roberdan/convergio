@@ -26,6 +26,7 @@ members = [
     "crates/convergio-fleet-routes",
     "crates/convergio-server-core",
     "crates/convergio-ontology",
+    "crates/convergio-a11y-axe",
 ]
 resolver = "2"
 
