@@ -1,3 +1,9 @@
+---
+status: accepted
+date: 2026-05-27
+deciders: Roberto D'Angelo
+---
+
 # ADR-0073 — EU-sovereign pivot: open ontology platform, AI-native, local-first
 
 - Status: **accepted**

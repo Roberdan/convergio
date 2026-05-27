@@ -155,7 +155,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0063-task-taxonomy-eval-skeleton.md` | adr | - | accepted | 68 |
 | `docs/adr/0064-a11y-axe-local-stub.md` | adr | - | accepted | 67 |
 | `docs/adr/0072-remote-capability-registry.md` | adr | [convergio-cli, convergio-server, convergio-durability] | proposed | 237 |
-| `docs/adr/0073-eu-sovereign-pivot.md` | adr | - | **accepted** | 172 |
+| `docs/adr/0073-eu-sovereign-pivot.md` | adr | - | accepted | 178 |
 | `docs/adr/README.md` | adr | - | - | 94 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
