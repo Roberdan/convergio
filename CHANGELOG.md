@@ -16,6 +16,13 @@ MVP scope notes.
   CLA (`CONTRIBUTING-CLA.md`) required for new contributions. See
   [ADR-0074](docs/adr/0074-relicense-agplv3.md) for the rationale.
 
+## [0.3.33](https://github.com/Roberdan/convergio/compare/convergio-v0.3.32...convergio-v0.3.33) (2026-06-05)
+
+
+### Bug Fixes
+
+* **executor:** add tracker-only dispatch guards ([#472](https://github.com/Roberdan/convergio/issues/472)) ([5785ad3](https://github.com/Roberdan/convergio/commit/5785ad397f773cdf4ea931667e82f8b187511e2e))
+
 ## [0.3.32](https://github.com/Roberdan/convergio/compare/convergio-v0.3.31...convergio-v0.3.32) (2026-06-05)
 
 
