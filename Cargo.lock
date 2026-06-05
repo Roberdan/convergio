@@ -764,6 +764,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "convergio-connector"
+version = "0.3.33"
+dependencies = [
+ "async-trait",
+ "hex",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sha2",
+ "tempfile",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "convergio-db"
 version = "0.3.33"
 dependencies = [

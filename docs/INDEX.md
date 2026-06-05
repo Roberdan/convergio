@@ -19,7 +19,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
 | `.pr-body.md` | - | - | - | 83 |
-| `AGENTS.md` | agent-rules | - | - | 612 |
+| `AGENTS.md` | agent-rules | - | - | 613 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
 | `CHANGELOG.md` | release | - | - | 1420 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -51,6 +51,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-cli/tests/fixtures/changelog_sample.md` | - | - | - | 38 |
 | `crates/convergio-coherence/AGENTS.md` | crate-rules | - | - | 80 |
 | `crates/convergio-coherence/README.md` | crate-readme | - | - | 40 |
+| `crates/convergio-connector/AGENTS.md` | crate-rules | - | - | 23 |
 | `crates/convergio-db/AGENTS.md` | crate-rules | - | - | 29 |
 | `crates/convergio-db/README.md` | crate-readme | - | - | 26 |
 | `crates/convergio-durability/AGENTS.md` | crate-rules | - | - | 99 |

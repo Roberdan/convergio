@@ -31,6 +31,7 @@ members = [
     "crates/convergio-gdpr",
     "crates/convergio-a11y-axe",
     "crates/convergio-capability-registry",
+    "crates/convergio-connector",
 ]
 resolver = "2"
 
@@ -151,6 +152,7 @@ convergio-provenance = { path = "crates/convergio-provenance" }
 convergio-gdpr = { path = "crates/convergio-gdpr" }
 convergio-a11y-axe = { path = "crates/convergio-a11y-axe" }
 convergio-capability-registry = { path = "crates/convergio-capability-registry" }
+convergio-connector = { path = "crates/convergio-connector" }
 
 [workspace.lints.rust]
 missing_docs = "warn"

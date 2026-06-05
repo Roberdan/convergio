@@ -119,6 +119,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-cli-pr` — Pull-request commands (cvg pr) extracted from convergio-cli
 - `convergio-cli-session` — Session lifecycle commands (cvg session) extracted from convergio-cli
 - `convergio-coherence` — Documentation/code coherence verifiers for Convergio (`cvg coherence` suite)
+- `convergio-connector` — (no description)
 - `convergio-db` — SQLite database pool for the local Convergio runtime
 - `convergio-durability` — Layer 1 of Convergio: plans, tasks, evidence, hash-chained audit log, gate pipeline
 - `convergio-embed` — Embeddings storage and pluggable embedder trait for Convergio Tier-3 retrieval (ADR-0038, F1)
@@ -254,7 +255,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 1389 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 1396 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
