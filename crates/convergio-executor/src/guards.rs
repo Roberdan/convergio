@@ -88,6 +88,15 @@ pub fn enforce(repo_root: &Path) -> Result<()> {
 /// guard still trips on the same counts, just without the
 /// per-worktree blame line.
 pub fn enforce_with_holders(repo_root: &Path, holders: &[WorktreeHolder]) -> Result<()> {
+    enforce_with_pressure(repo_root, holders, 0)
+}
+
+/// Enforce using both physical worktree directories and active workspace leases.
+pub fn enforce_with_pressure(
+    repo_root: &Path,
+    holders: &[WorktreeHolder],
+    active_workspace_leases: usize,
+) -> Result<()> {
     if std::env::var(KILL_SWITCH_ENV).as_deref() == Ok("1") {
         return Err(ExecutorError::Worktree(format!(
             "dispatch refused: {KILL_SWITCH_ENV}=1 (kill switch active)"
@@ -102,7 +111,8 @@ pub fn enforce_with_holders(repo_root: &Path, holders: &[WorktreeHolder]) -> Res
     let cap_count = env_usize(COUNT_CAP_ENV, DEFAULT_MAX_WORKTREES);
     let cap_bytes = env_u64(BYTES_CAP_ENV, DEFAULT_MAX_WORKTREES_BYTES);
 
-    let count = count_subdirs(&worktrees);
+    let worktree_count = count_subdirs(&worktrees);
+    let count = worktree_count.max(active_workspace_leases);
     if count >= cap_count {
         let holders_render = crate::guards_format::render_holders(holders);
         let suffix = if holders_render.is_empty() {
@@ -111,7 +121,7 @@ pub fn enforce_with_holders(repo_root: &Path, holders: &[WorktreeHolder]) -> Res
             format!(" In use: {holders_render}.")
         };
         return Err(ExecutorError::Worktree(format!(
-            "dispatch refused: {count}/{cap_count} worktrees in use ({COUNT_CAP_ENV}).{suffix} \
+            "dispatch refused: {count}/{cap_count} dispatch slots in use ({worktree_count} worktrees, {active_workspace_leases} active workspace leases; {COUNT_CAP_ENV}).{suffix} \
              To recover: \
              (1) `git -C {repo} worktree list` to inspect, \
              (2) `git -C {repo} worktree remove --force <path>` for stale ones, \
@@ -235,6 +245,20 @@ mod tests {
     }
 
     #[test]
+    fn lease_pressure_counts_against_cap() {
+        let tmp = fresh_repo();
+        env::remove_var(KILL_SWITCH_ENV);
+        env::set_var(COUNT_CAP_ENV, "2");
+        let result = enforce_with_pressure(tmp.path(), &[], 2);
+        env::remove_var(COUNT_CAP_ENV);
+        let msg = result.expect_err("lease pressure must refuse").to_string();
+        assert!(
+            msg.contains("0 worktrees, 2 active workspace leases"),
+            "got: {msg}"
+        );
+    }
+
+    #[test]
     fn count_cap_error_enumerates_holders() {
         let tmp = fresh_repo();
         let wt = tmp.path().join(".claude").join("worktrees");
@@ -266,7 +290,7 @@ mod tests {
         env::remove_var(COUNT_CAP_ENV);
         let err = result.expect_err("must refuse");
         let msg = err.to_string();
-        assert!(msg.contains("2/2 worktrees in use"), "got: {msg}");
+        assert!(msg.contains("2/2 dispatch slots in use"), "got: {msg}");
         assert!(msg.contains("agent-abc1234"), "got: {msg}");
         assert!(msg.contains("plan #7"), "got: {msg}");
         assert!(msg.contains("agent-def5678"), "got: {msg}");

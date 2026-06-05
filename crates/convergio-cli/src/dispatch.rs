@@ -67,7 +67,10 @@ pub(crate) async fn run(
         Command::Service { sub } => commands::service::run(&bundle, sub).await,
         Command::Session { sub } => commands::session::run(&client, &bundle, output, sub).await,
         Command::Solve { mission } => commands::solve::run(&client, &mission).await,
-        Command::Dispatch => commands::dispatch::run(&client).await,
+        Command::Dispatch {
+            no_dispatch,
+            executor,
+        } => commands::dispatch::run(&client, no_dispatch, executor).await,
         Command::Validate {
             plan_id,
             wave,

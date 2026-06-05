@@ -253,7 +253,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 1358 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 1361 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:
@@ -501,7 +501,7 @@ following hold. Implementation lives in
 | Env var                                | Default | Effect when exceeded |
 |----------------------------------------|---------|----------------------|
 | `CONVERGIO_DISPATCH_DISABLED=1`        | unset   | hard kill switch — refuse all spawns until cleared |
-| `CONVERGIO_GUARD_MAX_WORKTREES`        | `2`     | refuse if `<repo>/.claude/worktrees/` already has ≥ N child dirs |
+| `CONVERGIO_GUARD_MAX_WORKTREES`        | `2`     | refuse if dispatch slots (worktrees or active workspace leases) are ≥ N |
 | `CONVERGIO_GUARD_MAX_WORKTREES_BYTES`  | `5 GiB` | refuse if total bytes under `<repo>/.claude/worktrees/` ≥ cap |
 | `CONVERGIO_EXECUTOR_MAX_PARALLEL`      | unset   | per-tick fan-out cap (separate from disk guard above) |
 
@@ -523,6 +523,8 @@ git -C "$CONVERGIO_REPO_PATH" worktree list \
 # resume
 launchctl unsetenv CONVERGIO_DISPATCH_DISABLED
 ```
+
+`cvg fleet dispatch --repo <name>` is the canonical multi-repo entry point: it resolves the registered repo path and applies the same per-repo worktree/lease cap there. Use `--executor none` or `--no-dispatch` for tracker-only checks that must not spawn workers.
 
 The launchd plist at `~/Library/LaunchAgents/com.convergio.v3.plist`
 is also expected to set `KeepAlive=false` and `RunAtLoad=false` so
