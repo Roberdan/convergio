@@ -5,6 +5,7 @@ use crate::audit::{append_tx, AuditLog, EntityKind};
 use crate::error::Result;
 use crate::gates::{self, Pipeline};
 use crate::model::{NewPlan, NewTask, Plan, PlanStatus, Task, TaskStatus};
+use crate::ontology_branch_store::OntologyBranchStore;
 use crate::store::{
     CrdtStore, EvidenceStore, PlanPrLinksStore, PlanStore, TaskStore, WorkspaceStore, WorktreeStore,
 };
@@ -75,6 +76,11 @@ impl Durability {
     /// Plan↔PR link store accessor (P2-3 / F47).
     pub fn plan_pr_links(&self) -> PlanPrLinksStore {
         PlanPrLinksStore::new(self.pool.clone())
+    }
+
+    /// Ontology branch + overlay entry store accessor.
+    pub fn ontology(&self) -> OntologyBranchStore {
+        OntologyBranchStore::new(self.pool.clone())
     }
 
     /// Audit log accessor.

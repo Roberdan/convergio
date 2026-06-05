@@ -44,41 +44,22 @@ pub enum ApiError {
     Internal(String),
 }
 
-impl From<OntologyError> for ApiError {
-    fn from(e: OntologyError) -> Self {
-        Self::Ontology(e)
-    }
+macro_rules! from_variant {
+    ($err:ty, $variant:ident) => {
+        impl From<$err> for ApiError {
+            fn from(e: $err) -> Self {
+                Self::$variant(e)
+            }
+        }
+    };
 }
 
-impl From<FleetError> for ApiError {
-    fn from(e: FleetError) -> Self {
-        Self::Fleet(e)
-    }
-}
-
-impl From<convergio_graph::GraphError> for ApiError {
-    fn from(e: convergio_graph::GraphError) -> Self {
-        Self::Graph(e)
-    }
-}
-
-impl From<DurabilityError> for ApiError {
-    fn from(e: DurabilityError) -> Self {
-        Self::Durability(e)
-    }
-}
-
-impl From<BusError> for ApiError {
-    fn from(e: BusError) -> Self {
-        Self::Bus(e)
-    }
-}
-
-impl From<LifecycleError> for ApiError {
-    fn from(e: LifecycleError) -> Self {
-        Self::Lifecycle(e)
-    }
-}
+from_variant!(OntologyError, Ontology);
+from_variant!(FleetError, Fleet);
+from_variant!(convergio_graph::GraphError, Graph);
+from_variant!(DurabilityError, Durability);
+from_variant!(BusError, Bus);
+from_variant!(LifecycleError, Lifecycle);
 
 impl From<convergio_planner::PlannerError> for ApiError {
     fn from(e: convergio_planner::PlannerError) -> Self {
@@ -175,6 +156,31 @@ impl IntoResponse for ApiError {
                 DurabilityError::IllegalPlanTransition { .. } => (
                     StatusCode::CONFLICT,
                     "illegal_plan_transition",
+                    e.to_string(),
+                ),
+                DurabilityError::OntologyBranchNameEmpty => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "ontology_branch_name_empty",
+                    e.to_string(),
+                ),
+                DurabilityError::IllegalOntologyBranchTransition { .. } => (
+                    StatusCode::CONFLICT,
+                    "illegal_ontology_branch_transition",
+                    e.to_string(),
+                ),
+                DurabilityError::OntologyBranchClosed { .. } => (
+                    StatusCode::CONFLICT,
+                    "ontology_branch_closed",
+                    e.to_string(),
+                ),
+                DurabilityError::InvalidOntologyBranch { .. } => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "invalid_ontology_branch",
+                    e.to_string(),
+                ),
+                DurabilityError::InvalidOntologyEntry { .. } => (
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "invalid_ontology_entry",
                     e.to_string(),
                 ),
                 DurabilityError::WorkspaceLeaseConflict { .. } => (
@@ -287,12 +293,7 @@ impl IntoResponse for ApiError {
             },
         };
 
-        let body = json!({
-            "error": {
-                "code": code,
-                "message": message,
-            }
-        });
+        let body = json!({"error": {"code": code, "message": message}});
         (status, Json(body)).into_response()
     }
 }

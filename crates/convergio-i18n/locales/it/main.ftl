@@ -60,6 +60,18 @@ crdt-conflicts-empty = Nessun conflitto CRDT aperto.
 crdt-conflicts-header = Conflitti CRDT aperti:
 crdt-conflict-line = - { $entity }/{ $id } campo { $field } tipo { $type }
 
+# ---------- CLI: ontologia ----------
+ontology-branch-created = Branch ontologia creato: { $id } ({ $name })
+ontology-branch-list-empty = Nessun branch ontologia.
+ontology-branch-list-header = { $count } branch ontologia:
+ontology-branch-list-line = - { $id } { $name } [{ $status }]
+ontology-branch-transitioned = Branch ontologia { $id } passato allo stato: { $status }
+ontology-entry-resolved = Voce ontologia { $key } (sorgente: { $source })
+ontology-source-branch = branch
+ontology-source-main = principale
+ontology-source-none = nessuno
+ontology-json-invalid = JSON non valido: { $value }
+
 # ---------- CLI: workspace ----------
 workspace-leases-empty = Nessun lease workspace attivo.
 workspace-leases-header = Lease workspace attivi:

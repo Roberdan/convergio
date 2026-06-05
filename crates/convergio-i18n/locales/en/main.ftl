@@ -60,6 +60,18 @@ crdt-conflicts-empty = No unresolved CRDT conflicts.
 crdt-conflicts-header = Unresolved CRDT conflicts:
 crdt-conflict-line = - { $entity }/{ $id } field { $field } type { $type }
 
+# ---------- CLI: ontology ----------
+ontology-branch-created = Ontology branch created: { $id } ({ $name })
+ontology-branch-list-empty = No ontology branches.
+ontology-branch-list-header = { $count } ontology branches:
+ontology-branch-list-line = - { $id } { $name } [{ $status }]
+ontology-branch-transitioned = Ontology branch { $id } moved to: { $status }
+ontology-entry-resolved = Ontology entry { $key } (source: { $source })
+ontology-source-branch = branch
+ontology-source-main = main
+ontology-source-none = none
+ontology-json-invalid = Invalid JSON: { $value }
+
 # ---------- CLI: workspace ----------
 workspace-leases-empty = No active workspace leases.
 workspace-leases-header = Active workspace leases:

@@ -216,6 +216,42 @@ pub enum DurabilityError {
         to: &'static str,
     },
 
+    /// Ontology branch name must be non-empty.
+    #[error("ontology branch name must be non-empty")]
+    OntologyBranchNameEmpty,
+
+    /// Ontology branch transition does not follow the lifecycle graph.
+    #[error("illegal ontology branch transition: {from} → {to}")]
+    IllegalOntologyBranchTransition {
+        /// Current status tag.
+        from: &'static str,
+        /// Target status tag.
+        to: &'static str,
+    },
+
+    /// A write was attempted against a closed (merged/discarded) branch.
+    #[error("ontology branch {id} is closed ({status}); writes are not allowed")]
+    OntologyBranchClosed {
+        /// Branch id.
+        id: String,
+        /// Current status tag.
+        status: String,
+    },
+
+    /// Ontology branch data is invalid.
+    #[error("invalid ontology branch: {reason}")]
+    InvalidOntologyBranch {
+        /// Validation failure reason.
+        reason: String,
+    },
+
+    /// Ontology entry data is invalid.
+    #[error("invalid ontology entry: {reason}")]
+    InvalidOntologyEntry {
+        /// Validation failure reason.
+        reason: String,
+    },
+
     /// Underlying database error.
     #[error(transparent)]
     Db(#[from] convergio_db::DbError),
