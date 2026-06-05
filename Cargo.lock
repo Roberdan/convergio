@@ -969,6 +969,7 @@ dependencies = [
  "chrono",
  "convergio-db",
  "convergio-durability",
+ "schemars",
  "serde",
  "serde_json",
  "serde_yaml",

@@ -36,6 +36,7 @@
 
 #![forbid(unsafe_code)]
 
+pub mod actions;
 mod diff;
 mod error;
 mod graph_render;
