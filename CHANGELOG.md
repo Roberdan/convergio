@@ -16,6 +16,66 @@ MVP scope notes.
   CLA (`CONTRIBUTING-CLA.md`) required for new contributions. See
   [ADR-0074](docs/adr/0074-relicense-agplv3.md) for the rationale.
 
+## [0.3.32](https://github.com/Roberdan/convergio/compare/convergio-v0.3.31...convergio-v0.3.32) (2026-06-05)
+
+
+### Features
+
+* **a11y-axe:** local-stub axe-core wrapper crate (W11, ADR-0064) ([#454](https://github.com/Roberdan/convergio/issues/454)) ([8b57512](https://github.com/Roberdan/convergio/commit/8b5751223c501e5d2917c292afe05be2006f12d3))
+* **capability-registry:** bridge trust store + cvg capability trust CLI (W9-F2,F3) ([#459](https://github.com/Roberdan/convergio/issues/459)) ([110bbfa](https://github.com/Roberdan/convergio/commit/110bbfaa36d26e408d2061d53492a03d673f6a83))
+* **ci:** signed promotion bundle ([#422](https://github.com/Roberdan/convergio/issues/422)) ([d327dfe](https://github.com/Roberdan/convergio/commit/d327dfebeecf9c1537377c3c96840943927b1f52))
+* **cli:** add cvg capability search (w9 local slice, adr-0061) ([#410](https://github.com/Roberdan/convergio/issues/410)) ([0e50bbe](https://github.com/Roberdan/convergio/commit/0e50bbeb5b739b3128f414c3e0c17fde4ff2bbd3))
+* **cli:** add cvg plan-templates list/show/render (w6, adr-0056) ([#409](https://github.com/Roberdan/convergio/issues/409)) ([d963df1](https://github.com/Roberdan/convergio/commit/d963df11b5e3ef4240066380a15e95641832e973))
+* **cli:** add cvg status --agents (w5, adr-0054) ([#402](https://github.com/Roberdan/convergio/issues/402)) ([379afc1](https://github.com/Roberdan/convergio/commit/379afc18bb6da3ef204e2b7d1fab18ee20b387e0))
+* **durability:** add a11y gate phase 1 with built-in checks ([#399](https://github.com/Roberdan/convergio/issues/399)) ([a6084e9](https://github.com/Roberdan/convergio/commit/a6084e90e6757fad8fee257b35cffe81de5b1cab))
+* **durability:** add plan_objectives + plan_coherence_gate (w4, adr-0055) ([#403](https://github.com/Roberdan/convergio/issues/403)) ([384e3a5](https://github.com/Roberdan/convergio/commit/384e3a59403a85aebbef6b810be114dca346b06c))
+* **durability:** add prompt-injection gate for evidence payloads ([00848b5](https://github.com/Roberdan/convergio/commit/00848b57f90f14e4bc07d1e7f638ffc408b4906e))
+* **durability:** add PromptInjectionGate (W2) ([6743057](https://github.com/Roberdan/convergio/commit/6743057f9878859ba2fa28623e18e2f6ce48788a))
+* **durability:** task_taxonomy + eval_outcomes skeleton (w10, adr-0063) ([#424](https://github.com/Roberdan/convergio/issues/424)) ([ad180cb](https://github.com/Roberdan/convergio/commit/ad180cb498ffb3df381016da29e533af020ef1c9))
+* **durability:** wire A11yGate to convergio-a11y-axe (W11) ([#455](https://github.com/Roberdan/convergio/issues/455)) ([5ba0aed](https://github.com/Roberdan/convergio/commit/5ba0aede079976750e7da7e7b78debeb0adbb9c8))
+* **executor:** emit dispatch.choice audit row on every spawn (w8, adr-0062) ([#412](https://github.com/Roberdan/convergio/issues/412)) ([db9d215](https://github.com/Roberdan/convergio/commit/db9d21543113378244589b1284e9e95c20d5a386))
+* **gdpr:** implement data subject rights ([#461](https://github.com/Roberdan/convergio/issues/461)) ([ad723cf](https://github.com/Roberdan/convergio/commit/ad723cff4610612efb4c7c15572f3e0e64dcc96e))
+* **mcp:** wire ontology.* actions for W1 T6 (ADR-0053) ([#421](https://github.com/Roberdan/convergio/issues/421)) ([3a1e16a](https://github.com/Roberdan/convergio/commit/3a1e16a1b2ac09120743827169f80ca40181a7e9))
+* **ontology:** cvg ontology CLI + /v1/ontology/* HTTP routes (W1 task 5) ([#420](https://github.com/Roberdan/convergio/issues/420)) ([4f3401a](https://github.com/Roberdan/convergio/commit/4f3401aeeca4da3ab5fc9403e58d964eb69cf4d1))
+* **ontology:** demo mini-ontology fixture + integration test (W1 T7) ([#423](https://github.com/Roberdan/convergio/issues/423)) ([20608e4](https://github.com/Roberdan/convergio/commit/20608e470699d1ca11e57198d4c8bed89d03fce0))
+* **ontology:** deterministic JSON-Schema export per ObjectType (W1 task 3) ([#413](https://github.com/Roberdan/convergio/issues/413)) ([d8bd659](https://github.com/Roberdan/convergio/commit/d8bd6592b5adbd764376a2e3417d54951ea7276e))
+* **ontology:** deterministic SHACL/JSON-LD export (W1 task 4) ([#415](https://github.com/Roberdan/convergio/issues/415)) ([56e81c1](https://github.com/Roberdan/convergio/commit/56e81c16d54f541d5b0142f216a0a1150cc74f4f))
+* **ontology:** mermaid/dot output for diff/lineage W1 T9 (ADR-0060) ([#426](https://github.com/Roberdan/convergio/issues/426)) ([b74f250](https://github.com/Roberdan/convergio/commit/b74f250f6899eef542f44a1b8f569377f7b25be6))
+* **ontology:** scaffold convergio-ontology crate ([#404](https://github.com/Roberdan/convergio/issues/404)) ([1594b96](https://github.com/Roberdan/convergio/commit/1594b9653027e2fb453dee95060807c70a3afe5a))
+* **ontology:** SQLite schema + Store for ontology registry (W1 task 2) ([#406](https://github.com/Roberdan/convergio/issues/406)) ([2d3f033](https://github.com/Roberdan/convergio/commit/2d3f033e464a95367cc2933ba29bc2d9365a9c6d))
+* **provenance:** implement prov-json audit bundles ([#460](https://github.com/Roberdan/convergio/issues/460)) ([b375c67](https://github.com/Roberdan/convergio/commit/b375c674753828b6b28a9391617697088dfbf42b))
+* **repo:** add convergio-capability-registry crate (W9-F1) ([#457](https://github.com/Roberdan/convergio/issues/457)) ([3c3f7b1](https://github.com/Roberdan/convergio/commit/3c3f7b12c19bfe784c04eccf3e9d17499496b68f))
+* **repo:** relicense convergio to agpl-3.0-or-later (adr-0074) ([#458](https://github.com/Roberdan/convergio/issues/458)) ([f61ac45](https://github.com/Roberdan/convergio/commit/f61ac45daef15a99906cf2bf59b958bceab66f19))
+* **runner:** add openai vendor adapter (w7, adr-0053) ([#401](https://github.com/Roberdan/convergio/issues/401)) ([6bc0d1f](https://github.com/Roberdan/convergio/commit/6bc0d1f13150515538165417404784e5acbf64e9))
+* **server:** install remote capability packages ([#471](https://github.com/Roberdan/convergio/issues/471)) ([b92863d](https://github.com/Roberdan/convergio/commit/b92863db283a5b4c18f5a05b16c4374a4f871202))
+* **thor:** smart thor — cargo:auto recipe, audited runs, skip-when-trusted ([#400](https://github.com/Roberdan/convergio/issues/400)) ([91aca49](https://github.com/Roberdan/convergio/commit/91aca49c4a4b6eeb77c1d1174bc2900f11e9586c))
+
+
+### Bug Fixes
+
+* **docs:** add yaml frontmatter to adr-0073 ([3a5ee5a](https://github.com/Roberdan/convergio/commit/3a5ee5a019c552c411bd9234979f4dc67a63332f))
+* **durability:** reaper invokes on_reap hook + warn! visibility ([#408](https://github.com/Roberdan/convergio/issues/408)) ([#414](https://github.com/Roberdan/convergio/issues/414)) ([8794c56](https://github.com/Roberdan/convergio/commit/8794c56934d620d8460bb2da1af16f07db18e807))
+* **durability:** tighten promptinjectiongate opt-out per codex review ([ee5acc1](https://github.com/Roberdan/convergio/commit/ee5acc1d0b57e252da0e8c7b95eff39b445bb721))
+* **executor:** exclude phantom in_progress tasks from dispatch budget ([#411](https://github.com/Roberdan/convergio/issues/411)) ([ce3292e](https://github.com/Roberdan/convergio/commit/ce3292eb13f5defd1085329f84c13c00077bcd92)), closes [#405](https://github.com/Roberdan/convergio/issues/405)
+* **executor:** trim dispatch_one comment to satisfy 300-line cap ([#419](https://github.com/Roberdan/convergio/issues/419)) ([b8f9603](https://github.com/Roberdan/convergio/commit/b8f9603bfbdc60bc17428e38b2afc45ecd49220f))
+* **executor:** warn! on guard refusal + cvg doctor env check ([#407](https://github.com/Roberdan/convergio/issues/407)) ([#416](https://github.com/Roberdan/convergio/issues/416)) ([cbe696c](https://github.com/Roberdan/convergio/commit/cbe696cbd9436d6bf93a58774e77a8321f3541ab))
+* **repo:** skip worktrees in docs walkers and allow adr/ontology scopes ([#453](https://github.com/Roberdan/convergio/issues/453)) ([8eea7b2](https://github.com/Roberdan/convergio/commit/8eea7b2eb20eedae84ebea40964dba0a751be500))
+
+
+### Documentation
+
+* add vertical accelerator demand-signal note (edu+research) ([#425](https://github.com/Roberdan/convergio/issues/425)) ([244e5d4](https://github.com/Roberdan/convergio/commit/244e5d4e1fe30deaf95a69a98d800826ba9350b7))
+* **adr:** adr-0072 remote capability registry (w9 design) ([#452](https://github.com/Roberdan/convergio/issues/452)) ([330fb90](https://github.com/Roberdan/convergio/commit/330fb903b80012a6c589ec5e23fab97bdaec2271))
+* **docs:** add ontology runtime architecture records 0051-0060 ([9bda3b5](https://github.com/Roberdan/convergio/commit/9bda3b508a79919a7bdcb94c41b4d552d09bb395))
+* **docs:** regenerate index after rebase onto adr 0051-0060 ([e26f249](https://github.com/Roberdan/convergio/commit/e26f24924498646ad718b9c5568f3faa3d52d462))
+* **plans:** mark W1–W11 as shipped in v1.0 plan ([#462](https://github.com/Roberdan/convergio/issues/462)) ([171a8b1](https://github.com/Roberdan/convergio/commit/171a8b178d2a994397c25b6f7d98b67f799f46da))
+* **repo:** address codex review on v1.0 plan ([8b8c88f](https://github.com/Roberdan/convergio/commit/8b8c88fbde3e8157dd3f8e433e1ca13fbdb8c9ba))
+* **repo:** pivot to eu-sovereign open ontology framing (adr-0073) ([69aab5a](https://github.com/Roberdan/convergio/commit/69aab5a30c38ff9ad7a17c1c93c0d73f22d1f4e7))
+* **repo:** realign roadmap and readme to v0.3.31 reality + v1.0 plan ([aa23d87](https://github.com/Roberdan/convergio/commit/aa23d87d9ca55a2380c04054fce7110e8733895f))
+* **repo:** realign roadmap and readme to v0.3.31 reality + v1.0 plan ([3ab9b2f](https://github.com/Roberdan/convergio/commit/3ab9b2f57e2af6e8778386be749f634a089640e8))
+* **repo:** refresh docs index after adding v1.0 plan ([cb31a05](https://github.com/Roberdan/convergio/commit/cb31a05ae3340d2613c7d4798716d820d708b25f))
+* **repo:** regenerate docs index for v1.0 plan update ([27be7af](https://github.com/Roberdan/convergio/commit/27be7af25fb548e036541bf19c072dc2caf49c8d))
+
 ## [0.3.31](https://github.com/Roberdan/convergio/compare/convergio-v0.3.30...convergio-v0.3.31) (2026-05-20)
 
 
