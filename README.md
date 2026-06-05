@@ -2,8 +2,8 @@
   <img src="assets/branding/lockup-hex-wordmark.png" alt="Convergio" width="520">
 </p>
 
-<p align="center"><strong>Convergio — Make machines prove it.</strong><br>
-<em>The machine that builds machines — and proves they work.</em></p>
+<p align="center"><strong>Convergio — where AI agents and humans converge on data both can trust.</strong><br>
+<em>Open, local-first, EU-sovereign. The good Palantir, for places Palantir cannot go.</em></p>
 
 <p align="center">
   <img src="assets/branding/demo-gate-refusal.gif" alt="cvg demo — a dirty task is refused with HTTP 409 gate_refused, then a clean task passes Thor and the audit chain is verified" width="780">
@@ -13,47 +13,84 @@
 
 [![CI](https://github.com/Roberdan/convergio/actions/workflows/ci.yml/badge.svg)](https://github.com/Roberdan/convergio/actions/workflows/ci.yml)
 [![Release](https://github.com/Roberdan/convergio/actions/workflows/release.yml/badge.svg)](https://github.com/Roberdan/convergio/actions/workflows/release.yml)
-[![License: Convergio Community](https://img.shields.io/badge/license-Convergio%20Community-blue)](https://github.com/Roberdan/convergio/blob/main/LICENSE)
+[![License: Convergio Community (AGPLv3 transition planned)](https://img.shields.io/badge/license-Convergio%20Community%20(AGPLv3%20planned)-blue)](https://github.com/Roberdan/convergio/blob/main/LICENSE)
 [![Rust](https://img.shields.io/badge/rust-stable-orange)](https://www.rust-lang.org/)
 [![Zero Warnings](https://img.shields.io/badge/warnings-0-brightgreen)](#)
+[![EU sovereignty: by construction](https://img.shields.io/badge/EU%20sovereignty-by%20construction-1a5fb4)](./COMPLIANCE.md)
 
-> **Make machines prove it.** A local Rust daemon that refuses an AI
-> coding agent's "done" when the evidence doesn't match the claim.
+> **Make machines prove it. Make data trustable.** A local Rust
+> daemon that refuses an AI agent's "done" when the evidence
+> doesn't match the claim — *and* a typed ontology layer (in progress)
+> so AI and humans share the same schema, the same history, and the
+> same audit chain.
 
 ## The 30-second pitch
 
-You let an AI agent code for you. It says **"done"**. You check —
-TODOs, `unwrap()`, skipped tests, hardcoded strings. You redo it.
+You let an AI agent code for you, or read for you, or decide for
+you. It says **"done"**. You check — TODOs, `unwrap()`, skipped
+tests, hardcoded strings, hallucinated rows, missing provenance.
+You redo it. Or worse, you don't notice.
 
-Convergio fixes that loop:
+Convergio fixes both loops:
 
 - 🛑 **Refuses unsafe `done`** — server-side gates reject the
   transition with HTTP 409 when evidence contains debt markers,
   scaffolding tells, secrets, or a non-clean build.
 - 📒 **Tamper-evident audit** — every refusal lands in a
   hash-chained log you can verify from outside the daemon.
+- 🇪🇺 **EU-sovereign by construction** — local-first, no telemetry,
+  no remote control plane, OSI-licensed (AGPLv3 transition planned,
+  W13). Deployable in regulated public-sector, healthcare and civic
+  contexts. See [`COMPLIANCE.md`](./COMPLIANCE.md).
 - 🔌 **Vendor-agnostic** — drives Claude Code, Copilot CLI, Qwen,
-  Codex, Gemini, or your own runner. No API keys, no SaaS.
+  Codex, Gemini, or your own runner. No API keys held, no SaaS.
+- 🧱 **Typed ontology (in progress)** — schema registry, bitemporal
+  store, provenance bundle, purpose registry, typed actions. The
+  shared substrate AI and humans converge on. Status declared per
+  primitive in [`COMPLIANCE.md`](./COMPLIANCE.md).
 
 100% local. SQLite-only. Try it in 60 seconds → [Quickstart](#quickstart).
 
 Convergio cannot make an agent truthful — but it raises the cost of
-lying, and makes every refusal non-falsifiable.
+lying, and makes every refusal non-falsifiable. See
+[ADR-0073 (EU-sovereign pivot)](./docs/adr/0073-eu-sovereign-pivot.md)
+and [`docs/vision.md`](./docs/vision.md) for the full framing.
 
 ## What Convergio is — and is not
 
 | Convergio is… | Convergio is not… |
 |---|---|
+| The **convergence layer** — typed ontology + gates + audit, where AI agents and humans operate on the same trustable substrate. | A model, a SaaS, a closed-source data platform. |
 | The **execution layer** — plan → dispatch → audit → gate. | The strategic / planning layer. |
 | The **leash** that decides which task runs on which model. | A model. Convergio never calls a raw API; it spawns the operator's own vendor CLI. |
-| **Local-first**, single-user, SQLite-only. | A SaaS. There is no Convergio cloud. |
+| **Local-first**, single-user, SQLite-only, **EU-sovereign by construction**. | A SaaS. There is no Convergio cloud. |
 | **Vendor-agnostic** — claude, copilot, qwen, codex, gemini. | Tied to a single vendor. |
 | **Composable** — drives any framework that emits a plan. | An agent framework. |
+| The **good Palantir** — open, auditable, operator-owned, deployable where Palantir cannot go (EU public sector, civic infrastructure, NGOs). | A Palantir clone. The closed, geopolitical, contractor-only model is exactly what Convergio refuses. |
 
 > Composes with planners like [`gstack`](https://github.com/garrytan/gstack)
 > (strategic layer) and aligns technically with the
 > [ISE Engineering Fundamentals Playbook](https://microsoft.github.io/code-with-engineering-playbook/ISE/).
 > See [Composability and alignment](#composability-and-alignment) below for the full picture.
+
+## Compliance posture (honest status)
+
+Convergio aims at deployable use in EU regulated contexts (GDPR,
+EU AI Act, NIS2, DORA, EU Data Act, eIDAS). The
+[`COMPLIANCE.md`](./COMPLIANCE.md) matrix maps every requirement to
+a Convergio primitive with one of three honest statuses:
+
+- ✅ **enforced** — implemented and CI-checked today (hash-chain
+  audit, local-first binding, no telemetry, six sacred principles
+  P1..P6).
+- 🟡 **partial** — primitive exists, full enforcement pending (typed
+  ontology runtime, bitemporal store, purpose registry — tracked
+  under W15/W16/W17 in the EU-sovereign pivot plan).
+- 🟠 **planned** — designed in ADR, not implemented yet
+  (cross-tenant scenario branching, formal eIDAS signing path).
+
+No EU-sovereignty claim is made without a verification command. See
+[`COMPLIANCE.md`](./COMPLIANCE.md) § "Verification".
 
 ## Why Convergio
 
@@ -412,3 +449,5 @@ documented in [ADR-0019](./docs/adr/0019-thinking-stack-gstack-vendored.md).
 ## License
 
 Convergio Community License v1.3 (source-available, not OSI-approved). See [LICENSE](./LICENSE).
+
+<!-- ci re-trigger -->

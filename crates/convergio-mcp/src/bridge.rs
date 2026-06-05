@@ -184,6 +184,10 @@ mod tests {
         convergio_lifecycle::init(&pool)
             .await
             .expect("lifecycle init");
+        convergio_embed::init(&pool).await.expect("embed init");
+        convergio_fleet::init(&pool).await.expect("fleet init");
+        let ontology = Arc::new(convergio_ontology::Store::new(pool.clone()));
+        ontology.migrate().await.expect("ontology migrate");
 
         let state = AppState {
             durability: Arc::new(Durability::new(pool.clone())),
@@ -196,6 +200,7 @@ mod tests {
             ),
             fleet: Arc::new(convergio_fleet::FleetStore::new(pool.clone())),
             fleet_plans: Arc::new(convergio_fleet::FleetPlanStore::new(pool.clone())),
+            ontology,
             audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
         };
         let app: Router = router(state);

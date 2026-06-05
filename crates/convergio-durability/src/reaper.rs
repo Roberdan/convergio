@@ -7,6 +7,12 @@
 //! transition-time sync — P2-1), and writes one `task.reaped`
 //! audit row per release.
 //!
+//! Optionally, callers can register an [`OnReap`] hook that fires
+//! after each successful release — the server uses this to remove
+//! the reaped task's git worktree from disk (issue #408). The hook
+//! is best-effort and called outside the release transaction so an
+//! error there never undoes the audit row.
+//!
 //! There is **exactly one** of these per daemon. If you find yourself
 //! adding a second background loop in Layer 1, stop and consider
 //! whether it belongs in a Layer 4 crate instead — see
@@ -21,8 +27,13 @@ use std::sync::Arc;
 use tokio::task::JoinHandle;
 use tracing::{debug, info, warn};
 
+/// Hook fired once per successfully-released task. Receives the
+/// task id. Used by the server to remove the reaped worktree from
+/// disk; Layer 1 stays git-agnostic.
+pub type OnReap = Arc<dyn Fn(&str) + Send + Sync + 'static>;
+
 /// Reaper configuration.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ReaperConfig {
     /// Task heartbeat older than this releases the task.
     pub timeout: Duration,
@@ -32,6 +43,22 @@ pub struct ReaperConfig {
     pub agent_reaper_enabled: bool,
     /// Agent heartbeat older than this triggers retirement.
     pub agent_threshold: Duration,
+    /// Optional best-effort hook invoked once per reaped task,
+    /// outside the release transaction. The server wires this to
+    /// remove the agent's git worktree from disk.
+    pub on_reap: Option<OnReap>,
+}
+
+impl std::fmt::Debug for ReaperConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ReaperConfig")
+            .field("timeout", &self.timeout)
+            .field("tick_interval", &self.tick_interval)
+            .field("agent_reaper_enabled", &self.agent_reaper_enabled)
+            .field("agent_threshold", &self.agent_threshold)
+            .field("on_reap", &self.on_reap.is_some())
+            .finish()
+    }
 }
 
 impl Default for ReaperConfig {
@@ -41,6 +68,7 @@ impl Default for ReaperConfig {
             tick_interval: Duration::seconds(60),
             agent_reaper_enabled: true,
             agent_threshold: Duration::seconds(3600),
+            on_reap: None,
         }
     }
 }
@@ -70,7 +98,13 @@ pub fn spawn(durability: Arc<Durability>, config: ReaperConfig) -> ReaperHandle 
             tokio::time::sleep(interval).await;
             match tick(&durability, &config).await {
                 Ok(TickResult { tasks, agents }) if tasks > 0 || agents > 0 => {
-                    info!(tasks_reaped = tasks, agents_retired = agents, "reaper tick")
+                    // Promoted to warn! (#408) — a reaped task is an
+                    // operator-actionable signal (dead agent, dropped
+                    // heartbeat), not routine noise. `info!` was
+                    // getting filtered out in default log configs and
+                    // operators only noticed after the dispatch budget
+                    // starved.
+                    warn!(tasks_reaped = tasks, agents_retired = agents, "reaper tick")
                 }
                 Ok(_) => debug!("reaper tick: nothing stale"),
                 Err(e) => warn!(error = %e, "reaper tick failed"),
@@ -101,6 +135,13 @@ pub async fn tick(durability: &Durability, config: &ReaperConfig) -> Result<Tick
     for (id, agent_id) in stale {
         if release_one(durability, &id, agent_id.as_deref(), &cutoff).await? {
             tasks += 1;
+            // Hook is best-effort and runs outside the release
+            // transaction. A panic here would kill the reaper loop,
+            // so the hook itself should not unwind — server callers
+            // wrap their cleanup in `catch_unwind`.
+            if let Some(hook) = &config.on_reap {
+                hook(&id);
+            }
         }
     }
 

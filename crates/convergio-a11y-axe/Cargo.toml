@@ -1,0 +1,14 @@
+[package]
+name = "convergio-a11y-axe"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+description = "W11 local-stub axe-core wrapper for Convergio A11yGate phase 2 (ADR-0064)"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }

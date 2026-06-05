@@ -97,6 +97,8 @@ async fn start(
     convergio_lifecycle::init(&pool).await?;
     let graph = Arc::new(convergio_graph::Store::new(pool.clone()));
     graph.migrate().await?;
+    let ontology = Arc::new(convergio_ontology::Store::new(pool.clone()));
+    ontology.migrate().await?;
     convergio_embed::init(&pool).await?;
     let embed = Arc::new(convergio_embed::EmbedStore::new(pool.clone()));
     let embedder = make_embedder();
@@ -108,6 +110,25 @@ async fn start(
     let bus = Arc::new(Bus::new(pool.clone()));
     let supervisor = Arc::new(Supervisor::new_with_bus(pool, (*bus).clone()));
 
+    let runner_defaults = RunnerDefaults::from_env();
+    let repo_path = std::env::var_os("CONVERGIO_REPO_PATH").map(std::path::PathBuf::from);
+
+    // Worktree cleanup hook for the reaper (#408). The reaper lives
+    // in Layer 1 and stays git-agnostic; the server is the only
+    // place that knows both `repo_path` and `worktree::cleanup`.
+    // `cleanup` shells out to `git worktree remove`, so we offload
+    // it to a blocking pool to avoid stalling the reaper tick.
+    let on_reap: Option<convergio_durability::reaper::OnReap> = repo_path.clone().map(|root| {
+        let root = Arc::new(root);
+        Arc::new(move |task_id: &str| {
+            let root = root.clone();
+            let task_id = task_id.to_string();
+            tokio::task::spawn_blocking(move || {
+                convergio_executor::worktree::cleanup(&root, &task_id);
+            });
+        }) as convergio_durability::reaper::OnReap
+    });
+
     let reaper_config = ReaperConfig {
         timeout: Duration::seconds(parse_env_i64("CONVERGIO_REAPER_TIMEOUT_SECS", 300)),
         tick_interval: Duration::seconds(parse_env_i64("CONVERGIO_REAPER_TICK_SECS", 60)),
@@ -116,6 +137,7 @@ async fn start(
             "CONVERGIO_AGENT_REAPER_THRESHOLD_SECS",
             3600,
         )),
+        on_reap,
     };
     let _reaper = reaper::spawn(durability.clone(), reaper_config);
 
@@ -123,9 +145,6 @@ async fn start(
         tick_interval: Duration::seconds(parse_env_i64("CONVERGIO_WATCHER_TICK_SECS", 30)),
     };
     let _watcher = watcher::spawn((*supervisor).clone(), watcher_config);
-
-    let runner_defaults = RunnerDefaults::from_env();
-    let repo_path = std::env::var_os("CONVERGIO_REPO_PATH").map(std::path::PathBuf::from);
     tracing::info!(
         runner_kind = %runner_defaults.kind,
         runner_profile = ?runner_defaults.profile,
@@ -166,6 +185,7 @@ async fn start(
         embedder: embedder.clone(),
         fleet: fleet.clone(),
         fleet_plans: fleet_plans.clone(),
+        ontology: ontology.clone(),
         audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let app = router(state);

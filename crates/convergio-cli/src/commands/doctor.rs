@@ -69,6 +69,7 @@ async fn build_report(client: &Client) -> DoctorReport {
         Some(env!("CARGO_PKG_VERSION")),
     );
     check_binary(&mut checks, "convergio-mcp", false, None);
+    check_env(&mut checks);
 
     let daemon_ok = check_daemon(&mut checks, client).await;
     if daemon_ok {
@@ -112,6 +113,21 @@ fn check_config(checks: &mut Vec<DoctorCheck>, home: Option<&Path>) {
             "config_file",
             format!("{} missing; run `cvg setup`", config.display()),
         ));
+    }
+}
+
+fn check_env(checks: &mut Vec<DoctorCheck>) {
+    for f in super::doctor_env::check_env() {
+        let status = if f.set {
+            CheckStatus::Ok
+        } else {
+            CheckStatus::Warn
+        };
+        checks.push(DoctorCheck {
+            name: f.name,
+            status,
+            message: f.message,
+        });
     }
 }
 

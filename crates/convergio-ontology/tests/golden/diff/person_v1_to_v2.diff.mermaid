@@ -1,0 +1,8 @@
+%% ontology diff
+%% object=Person from=1 to=2
+flowchart LR
+  obj_from["Person v1 (188acd7)"]
+  obj_to["Person v2 (7226a6b)"]
+  obj_from ==> obj_to
+  obj_to -->|added| add_age["age (c26ee60)"]
+  obj_to -->|modified 8aab87c→beaa723| mod_email["email"]

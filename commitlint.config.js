@@ -35,8 +35,11 @@ module.exports = {
         'fleet',
         'fleet-routes',
         'server-core',
+        'ontology',
         // meta scopes
         'docs',
+        'adr',
+        'ontology',
         'ci',
         'chore',
         'repo',

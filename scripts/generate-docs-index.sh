@@ -33,15 +33,15 @@ cd "$repo_root"
 
 mode="${1:-write}"
 out="docs/INDEX.md"
-# macOS `mktemp` requires the X template to be at the very end of the path;
-# keep the `.md` suffix out of the template for portability.
-tmp=$(mktemp /tmp/convergio-docs-index.XXXXXX)
+scratch_dir="$repo_root/.claude/tmp"
+mkdir -p "$scratch_dir"
+tmp=$(mktemp "$scratch_dir/convergio-docs-index.XXXXXX")
 trap 'rm -f "$tmp"' EXIT
 
 # Collect every Markdown file we want to index. (Portable: macOS
 # ships bash 3.2 which lacks `mapfile`, so use a plain while loop
 # and a temp list file.)
-files_list=$(mktemp /tmp/convergio-docs-files.XXXXXX)
+files_list=$(mktemp "$scratch_dir/convergio-docs-files.XXXXXX")
 trap 'rm -f "$tmp" "$files_list"' EXIT
 {
     find . -type f -name "*.md" \
@@ -50,6 +50,8 @@ trap 'rm -f "$tmp" "$files_list"' EXIT
         -not -path "./node_modules/*" \
         -not -path "./dist/*" \
         -not -path "./.claude/*" \
+        -not -path "./worktrees/*" \
+        -not -path "./.worktrees/*" \
         2>/dev/null \
     | sed 's|^\./||'
     # Always include docs/INDEX.md so the index lists itself even

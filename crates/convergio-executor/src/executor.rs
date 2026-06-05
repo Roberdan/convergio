@@ -102,11 +102,17 @@ impl Executor {
         Ok(dispatched)
     }
 
+    /// Count tasks actively held by an agent. Excludes phantom
+    /// `in_progress` rows with null `agent_id` that would
+    /// otherwise zero the dispatch budget (#405).
     async fn count_in_progress(&self) -> Result<usize> {
-        let row: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tasks WHERE status = 'in_progress'")
-            .fetch_one(self.durability.pool().inner())
-            .await
-            .map_err(convergio_durability::DurabilityError::from)?;
+        let row: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM tasks \
+             WHERE status = 'in_progress' AND agent_id IS NOT NULL",
+        )
+        .fetch_one(self.durability.pool().inner())
+        .await
+        .map_err(convergio_durability::DurabilityError::from)?;
         Ok(row.0 as usize)
     }
 
@@ -132,14 +138,10 @@ impl Executor {
     }
 
     async fn dispatch_one(&self, task_id: &str, plan_id: &str) -> Result<()> {
-        // W1-B atomic claim + pre-check guards: cap-exceeded is
-        // transient, so skip claim+compensate to avoid flipping
-        // tasks to Failed under disk pressure (convergio-edu bug
-        // 2026-05-12). Claim+compensate stays for real spawn errors.
         if let Some(repo_root) = self.repo_path.as_ref() {
             let holders = crate::holders::collect(&self.durability, repo_root).await;
             if let Err(e) = crate::guards::enforce_with_holders(repo_root, &holders) {
-                tracing::debug!(task_id, plan_id, error = %e, "skipping dispatch — guard refused");
+                tracing::warn!(task_id, plan_id, error = %e, "skipping dispatch — guard refused (#407)");
                 return Ok(());
             }
         }
@@ -166,8 +168,12 @@ impl Executor {
             return Ok(());
         };
         let spawn_result = if is_legacy_shell {
+            crate::dispatch_choice::record_for_task(&self.durability, &task, plan_id, &kind, true)
+                .await;
             self.spawn_legacy(task_id, plan_id).await
         } else {
+            crate::dispatch_choice::record_for_task(&self.durability, &task, plan_id, &kind, false)
+                .await;
             self.spawn_via_runner(&task, plan_id).await
         };
         if let Err(err) = spawn_result {

@@ -73,6 +73,7 @@ do not edit between the markers.
 | [0052](./0052-smart-thor-real-validation.md) | -0052 — Smart Thor: real validation, audited pipeline runs, and skip-when-trusted | accepted |
 | [0052](./0052-smart-thor-real-validation.md) | 0052. Typed Actions Framework over the Ontology | proposed |
 | [0053](./0053-bitemporal-store-lineage.md) | 0053. Bitemporal Store + Lineage over Ontology Objects | proposed |
+| [0053](./0053-bitemporal-store-lineage.md) | 0051. Ontology Runtime Core (`convergio-ontology` crate) | proposed |
 | [0053](./0053-bitemporal-store-lineage.md) | 0053 — OpenAI vendor runner adapter | accepted |
 | [0054](./0054-provenance-bundle-purpose-registry.md) | 0054. Provenance Bundle & Purpose Registry | proposed |
 | [0054](./0054-provenance-bundle-purpose-registry.md) | 0054 — `cvg status --agents` live agent listing | accepted |
@@ -85,4 +86,9 @@ do not edit between the markers.
 | [0059](./0059-tui-ontology-inspector.md) | 0059. TUI Ontology Inspector (read-only) | proposed |
 | [0060](./0060-deterministic-graph-output.md) | 0060. Deterministic Diff / Mermaid / Graphviz output format | proposed |
 | [0061](./0061-capability-search-local.md) | -0061 — `cvg capability search` (local-only slice of W9) | accepted |
+| [0062](./0062-dispatch-choice-audit-row.md) | -0062 — Dispatch-choice audit row (W8 slice) | accepted |
+| [0063](./0063-task-taxonomy-eval-skeleton.md) | -0063 — Task taxonomy + eval outcome ledger skeleton (W10 slice) | accepted |
+| [0064](./0064-a11y-axe-local-stub.md) | -0064 — A11yGate phase 2 local-stub via external `axe` binary | accepted |
+| [0072](./0072-remote-capability-registry.md) | 0072. Remote capability registry (W9) | proposed |
+| [0073](./0073-eu-sovereign-pivot.md) | -0073 — EU-sovereign pivot: open ontology platform, AI-native, local-first | accepted |
 <!-- END AUTO -->

@@ -19,6 +19,7 @@ pub mod bus_extra;
 pub mod bus_render;
 pub mod bus_tail;
 pub mod capability;
+mod capability_trust;
 mod capability_types;
 pub mod coherence;
 pub mod crdt;
@@ -33,6 +34,7 @@ mod docs_generators_crate;
 mod docs_merge_driver;
 mod docs_rewrite;
 pub mod doctor;
+mod doctor_env;
 mod doctor_zombies;
 pub mod embed;
 pub mod evidence;
@@ -50,6 +52,9 @@ mod graph_render;
 pub mod health;
 pub mod mcp;
 pub mod monitor;
+pub mod ontology;
+pub mod ontology_diff;
+pub mod ontology_types;
 pub mod plan;
 mod plan_run;
 pub mod plan_templates;
@@ -130,6 +135,25 @@ impl Client {
             .await
             .with_context(|| format!("GET {url}"))?;
         json_or_err(resp).await
+    }
+
+    /// `GET path` and return the raw response bytes. Used by
+    /// byte-identical export endpoints (ontology, actions.json) that
+    /// must not round-trip through `serde_json::to_string`.
+    pub async fn get_bytes(&self, path: &str) -> Result<Vec<u8>> {
+        let url = format!("{}{}", self.base, path);
+        let resp = self
+            .inner
+            .get(&url)
+            .send()
+            .await
+            .with_context(|| format!("GET {url}"))?;
+        let status = resp.status();
+        let bytes = resp.bytes().await.with_context(|| format!("read {url}"))?;
+        if !status.is_success() {
+            anyhow::bail!("GET {url} → {status}: {}", String::from_utf8_lossy(&bytes));
+        }
+        Ok(bytes.to_vec())
     }
 
     /// `POST path` with `body` and parse the JSON body into `T`.

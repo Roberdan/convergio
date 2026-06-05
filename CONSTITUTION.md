@@ -1,7 +1,13 @@
 # Convergio Constitution
 
-These rules keep Convergio focused: a local runtime that refuses
-low-quality AI-agent work before it is marked done.
+These rules keep Convergio focused: an **open, local-first,
+EU-sovereign platform where AI agents and humans converge on data
+both can trust**. A local runtime refuses low-quality AI-agent work
+before it is marked done (P1..P5); a sovereignty principle (P6) keeps
+the platform deployable wherever surrendering control to a third
+party is not acceptable. See [ADR-0073](./docs/adr/0073-eu-sovereign-pivot.md)
+for the framing and [`COMPLIANCE.md`](./COMPLIANCE.md) for the
+regulatory mapping.
 
 ---
 
@@ -80,6 +86,49 @@ Operationally:
 - Fluent bundles ship for `en` and `it`
 - coverage tests assert both locales expose the same keys
 - machine-readable API error codes stay stable English identifiers
+
+## P6. Sovereignty by construction — *partial*
+
+Convergio is built so an operator in a regulated EU jurisdiction
+(public administration, public health, university, civic
+infrastructure, NGO) can run it without surrendering control of
+data, model choice, or operational surface to any third party.
+
+Sovereignty is **a property of the artifact**, not a checkbox in a
+form. It is enforced by removing the option to violate it, not by
+asking nicely.
+
+Operationally:
+
+- **Local-first by default** — daemon binds `127.0.0.1`; SQLite on
+  the operator's disk; no remote control plane; no Convergio cloud.
+- **No telemetry, no phone-home** — the daemon never opens an
+  outbound connection the operator did not configure (the spawned
+  vendor CLIs may, on the operator's own credentials — see
+  `COMPLIANCE.md` § 3).
+- **Model choice is the operator's** — Convergio does not store,
+  require or proxy any LLM API key; it spawns the operator's own
+  vendor CLI (Claude Code, Copilot CLI, Codex, Gemini, Qwen, custom).
+- **OSI-approved license** — once the AGPL-3.0-or-later relicense
+  lands (tracked under W13 in the EU-sovereign pivot plan), the
+  full source is OSI-approved and reproducible.
+- **Tamper-evident audit** — hash-chained log (ADR-0002); any silent
+  rewrite breaks `cvg audit verify`.
+- **EU-data-residency-compatible** — no architectural assumption
+  forces data through a non-EU region; the operator controls where
+  the binary runs.
+
+Promotion to `enforced` requires: (1) license relicense merged;
+(2) CI grep that fails the build on any new outbound network
+default; (3) `COMPLIANCE.md` § 2 sovereignty table all-green.
+
+Any PR that introduces a remote-call default, a telemetry hook, a
+SaaS-only feature, or a hosted control-plane assumption is a § 6
+violation and must be refused, regardless of how convenient the
+feature is.
+
+See [`COMPLIANCE.md`](./COMPLIANCE.md) for the regulatory mapping
+this principle backs.
 
 ---
 
