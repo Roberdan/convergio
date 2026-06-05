@@ -97,6 +97,15 @@ impl TaskStore {
         rows.into_iter().map(TryInto::try_into).collect()
     }
 
+    /// List tasks, newest first.
+    pub async fn list(&self, limit: i64) -> Result<Vec<Task>> {
+        let rows = sqlx::query_as::<_, TaskRow>(LIST_ALL)
+            .bind(limit)
+            .fetch_all(self.pool.inner())
+            .await?;
+        rows.into_iter().map(TryInto::try_into).collect()
+    }
+
     /// List recently completed tasks with plan context, newest first.
     pub async fn list_recent_done(&self, limit: i64) -> Result<Vec<RecentCompletedTask>> {
         let rows = sqlx::query_as::<_, RecentCompletedTaskRow>(
@@ -189,6 +198,11 @@ const LIST_STALE_BY_PLAN: &str =
      FROM tasks WHERE plan_id = ? AND status IN ('pending', 'failed') \
      AND updated_at < ? ORDER BY wave ASC, sequence ASC";
 
+const LIST_ALL: &str = "SELECT id, plan_id, wave, sequence, title, description, status, agent_id, \
+     evidence_required, last_heartbeat_at, created_at, updated_at, \
+     started_at, ended_at, duration_ms, runner_kind, profile, max_budget_usd \
+     FROM tasks ORDER BY created_at DESC LIMIT ?";
+
 #[derive(sqlx::FromRow)]
 struct TaskRow {
     id: String,
@@ -224,12 +238,8 @@ struct RecentCompletedTaskRow {
 impl TryFrom<TaskRow> for Task {
     type Error = DurabilityError;
     fn try_from(r: TaskRow) -> Result<Self> {
-        // Corrupt persisted state is an explicit durability error
-        // (CONSTITUTION P1, zero tolerance): never silently normalise
-        // an unknown status back to `Pending` (which would re-enter
-        // scheduling) or an unparseable evidence requirement set back
-        // to `[]` (which would let a bad row sail through the
-        // evidence gate).
+        // Corrupt persisted state is an explicit durability error (CONSTITUTION P1):
+        // never silently normalise unknown status or invalid evidence requirements.
         let status = TaskStatus::parse(&r.status).ok_or_else(|| DurabilityError::NotFound {
             entity: "task_status",
             id: format!("{}={}", r.id, r.status),
