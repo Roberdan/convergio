@@ -1,0 +1,39 @@
+[package]
+name = "convergio-reports"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+
+[dependencies]
+convergio-db.workspace = true
+convergio-ontology.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+sha2.workspace = true
+hex.workspace = true
+tracing.workspace = true
+sqlx.workspace = true
+
+docx-rs = { version = "0.4" }
+lopdf = { version = "0.34", features = ["embed_image", "nom_parser"] }
+
+minijinja = { version = "2", default-features = false, features = ["builtins", "serde", "std_collections"] }
+jsonschema = "0.21"
+base64 = "0.22"
+qrcode = "0.14"
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+[dev-dependencies]
+tempfile.workspace = true
+tokio.workspace = true
+
+[lints]
+workspace = true

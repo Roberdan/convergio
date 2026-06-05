@@ -13,6 +13,7 @@ use convergio_graph::Store as GraphStore;
 use convergio_lifecycle::Supervisor;
 use convergio_ontology::Store as OntologyStore;
 use convergio_ops::Ops;
+use convergio_reports::ReportTemplateStore;
 use std::sync::{Arc, Mutex};
 
 /// Application state injected into every handler.
@@ -43,6 +44,8 @@ pub struct AppState {
     pub fleet_plans: Arc<FleetPlanStore>,
     /// Ontology Runtime Core schema registry (ADR-0053).
     pub ontology: Arc<OntologyStore>,
+    /// Report template store and rendering facade (ADR-0003 range 501–599).
+    pub reports: Arc<ReportTemplateStore>,
     /// Memoised full-chain audit verify result. Keyed by tail `seq`; auto-
     /// invalidated when a new audit row is appended (tail advances). Shared
     /// across all clones via `Arc` — one warm call benefits every concurrent

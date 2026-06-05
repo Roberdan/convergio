@@ -23,6 +23,7 @@ convergio-lifecycle = { workspace = true }
 convergio-ontology = { workspace = true }
 convergio-planner = { workspace = true }
 convergio-thor = { workspace = true }
+convergio-reports = { workspace = true }
 
 axum = { workspace = true }
 serde_json = { workspace = true }

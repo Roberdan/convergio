@@ -136,6 +136,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-parse-multi` — Multi-language AST parsing layer for Convergio fleet retrieval (ADR-0038, F2)
 - `convergio-planner` — Layer 4 (reference) of Convergio: turns a natural-language mission into a structured plan
 - `convergio-provenance` — W3C-PROV-JSON provenance bundles for Convergio ontology objects (ADR-0075)
+- `convergio-reports` — (no description)
 - `convergio-runner` — Vendor-CLI runners for Convergio agents (Claude Code + GitHub Copilot CLI)
 - `convergio-server` — Local HTTP daemon for Convergio
 - `convergio-server-core` — Shared HTTP-layer primitives for the Convergio daemon: AppState + ApiError + IntoResponse mapping
@@ -255,7 +256,7 @@ count for weeks before it was caught; ADR-0015 turns this kind of
 derived state into auto-regenerated sections):
 
 <!-- BEGIN AUTO:test_count -->
-**Tests declared:** 1400 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
+**Tests declared:** 1404 (counted from `#[test]` + `#[tokio::test]` annotations under `crates/`; live runner count via `cargo test --workspace`).
 <!-- END AUTO -->
 
 The full top-level CLI surface is also auto-regenerated:

@@ -117,10 +117,12 @@ async fn list_types_returns_seeded_object_with_hash() {
         .await
         .unwrap();
     let objects = body["objects"].as_array().unwrap();
-    assert_eq!(objects.len(), 1);
-    assert_eq!(objects[0]["name"], "Person");
-    assert_eq!(objects[0]["schema_version"], 1);
-    assert_eq!(objects[0]["content_hash"].as_str().unwrap().len(), 64);
+    let person = objects
+        .iter()
+        .find(|o| o["name"] == "Person")
+        .expect("Person object present");
+    assert_eq!(person["schema_version"], 1);
+    assert_eq!(person["content_hash"].as_str().unwrap().len(), 64);
 }
 
 #[tokio::test]

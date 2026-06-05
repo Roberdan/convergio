@@ -68,6 +68,7 @@ pub async fn boot() -> (String, Pool, TempDir) {
     convergio_fleet::init(&pool).await.expect("fleet init");
     let ontology = Arc::new(convergio_ontology::Store::new(pool.clone()));
     ontology.migrate().await.expect("ontology migrate");
+    convergio_reports::init(&pool).await.expect("reports init");
 
     let state = AppState {
         durability: Arc::new(Durability::new(pool.clone())),
@@ -80,6 +81,7 @@ pub async fn boot() -> (String, Pool, TempDir) {
         fleet: Arc::new(convergio_fleet::FleetStore::new(pool.clone())),
         fleet_plans: Arc::new(convergio_fleet::FleetPlanStore::new(pool.clone())),
         ontology,
+        reports: Arc::new(convergio_reports::ReportTemplateStore::new(pool.clone())),
         audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let app = router(state);

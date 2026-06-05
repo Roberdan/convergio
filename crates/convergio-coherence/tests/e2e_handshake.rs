@@ -35,6 +35,7 @@ async fn boot() -> (String, tempfile::TempDir) {
         .expect("init lifecycle");
     let ontology = Arc::new(convergio_ontology::Store::new(pool.clone()));
     ontology.migrate().await.expect("migrate ontology");
+    convergio_reports::init(&pool).await.expect("reports init");
     convergio_ops::init(&pool).await.expect("init ops");
     let state = AppState {
         durability: Arc::new(Durability::new(pool.clone())),
@@ -47,6 +48,7 @@ async fn boot() -> (String, tempfile::TempDir) {
         fleet_plans: Arc::new(convergio_fleet::FleetPlanStore::new(pool.clone())),
         ops: Arc::new(convergio_ops::Ops::new(pool.clone())),
         ontology,
+        reports: Arc::new(convergio_reports::ReportTemplateStore::new(pool.clone())),
         audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let listener = TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], 0)))
