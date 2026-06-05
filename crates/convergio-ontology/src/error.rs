@@ -51,6 +51,15 @@ pub enum Error {
         name: String,
     },
 
+    /// A referenced object instance does not exist under the given tenant.
+    #[error("object instance not found in tenant: tenant_id={tenant_id} id={id}")]
+    InstanceNotFound {
+        /// Tenant scope.
+        tenant_id: String,
+        /// Missing object id.
+        id: String,
+    },
+
     /// Feature exists on the API surface but its underlying primitive
     /// has not landed yet. The W1 `branch-diff` command returns this
     /// because branching itself ships in a later ADR (ADR-0059).
