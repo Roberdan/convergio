@@ -172,3 +172,25 @@ fn canonical_json_covers_numeric_edge_cases() {
     assert_eq!(canonical_json(&json!({"n": 1})).unwrap(), r#"{"n":1}"#);
     assert_eq!(canonical_json(&json!({"n": 1.0})).unwrap(), r#"{"n":1.0}"#);
 }
+
+#[tokio::test]
+async fn append_with_provenance_writes_chained_bundle() {
+    let (dur, _dir) = fresh_dur().await;
+    let (entry, prov) = dur
+        .audit()
+        .append_with_provenance(
+            EntityKind::Plan,
+            "plan-1",
+            "plan.created",
+            &json!({"title": "EU"}),
+            Some("agent-1"),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(entry.seq, 1);
+    assert_eq!(prov.seq, 2);
+    assert_eq!(prov.transition, "provenance.bundle_emitted");
+    assert!(prov.payload.contains("wasGeneratedBy"));
+    assert!(dur.audit().verify(None, None).await.unwrap().ok);
+}

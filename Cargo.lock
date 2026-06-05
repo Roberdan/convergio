@@ -784,6 +784,7 @@ dependencies = [
  "convergio-a11y-axe",
  "convergio-api",
  "convergio-db",
+ "convergio-provenance",
  "ed25519-dalek",
  "hex",
  "regex",
@@ -991,6 +992,17 @@ dependencies = [
  "thiserror 1.0.69",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "convergio-provenance"
+version = "0.3.31"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
