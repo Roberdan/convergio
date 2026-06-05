@@ -37,6 +37,7 @@ async fn capability_registry_lists_seeded_capabilities() {
 
     let state = AppState {
         durability: Arc::new(dur),
+        ops: Arc::new(convergio_ops::Ops::new(pool.clone())),
         bus: Arc::new(Bus::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool.clone())),
         graph: Arc::new(convergio_graph::Store::new(pool.clone())),

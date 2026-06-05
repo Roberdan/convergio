@@ -23,6 +23,7 @@ async fn boot() -> (String, TempDir) {
         .await
         .unwrap();
     init(&pool).await.unwrap();
+    convergio_ops::init(&pool).await.unwrap();
     convergio_bus::init(&pool).await.unwrap();
     convergio_lifecycle::init(&pool).await.unwrap();
     convergio_embed::init(&pool).await.unwrap();
@@ -31,6 +32,7 @@ async fn boot() -> (String, TempDir) {
 
     let state = AppState {
         durability: Arc::new(Durability::new(pool.clone())),
+        ops: Arc::new(convergio_ops::Ops::new(pool.clone())),
         bus: Arc::new(Bus::new(pool.clone())),
         supervisor: Arc::new(Supervisor::new(pool.clone())),
         graph,

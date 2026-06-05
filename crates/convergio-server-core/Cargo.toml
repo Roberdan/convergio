@@ -15,6 +15,7 @@ workspace = true
 [dependencies]
 convergio-bus = { workspace = true }
 convergio-durability = { workspace = true }
+convergio-ops = { workspace = true }
 convergio-embed = { workspace = true }
 convergio-fleet = { workspace = true }
 convergio-graph = { workspace = true }

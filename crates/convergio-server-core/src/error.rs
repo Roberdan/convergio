@@ -19,9 +19,7 @@ pub enum ApiError {
         /// Human-readable message.
         message: String,
     },
-    /// Request was syntactically valid but failed a semantic rule
-    /// (returned as HTTP 422). Used for typed-route field validation
-    /// (e.g. reserved audit kinds, payload shape).
+    /// Request passed syntax but failed a semantic rule (HTTP 422).
     Validation {
         /// Stable error code (e.g. `kind_reserved`).
         code: &'static str,
@@ -34,9 +32,9 @@ pub enum ApiError {
     Bus(BusError),
     /// Layer 3 error.
     Lifecycle(LifecycleError),
-    /// Tier-3 graph layer error (ADR-0014).
+    /// Tier-3 graph layer error.
     Graph(convergio_graph::GraphError),
-    /// Fleet repo management error (ADR-0038, F2-6).
+    /// Fleet repo management error.
     Fleet(FleetError),
     /// Ontology runtime error (ADR-0053).
     Ontology(OntologyError),
@@ -173,16 +171,12 @@ impl IntoResponse for ApiError {
                     "ontology_branch_closed",
                     e.to_string(),
                 ),
-                DurabilityError::InvalidOntologyBranch { .. } => (
-                    StatusCode::UNPROCESSABLE_ENTITY,
-                    "invalid_ontology_branch",
-                    e.to_string(),
-                ),
-                DurabilityError::InvalidOntologyEntry { .. } => (
-                    StatusCode::UNPROCESSABLE_ENTITY,
-                    "invalid_ontology_entry",
-                    e.to_string(),
-                ),
+                DurabilityError::InvalidOntologyBranch { .. } => {
+                    invalid("invalid_ontology_branch", e)
+                }
+                DurabilityError::InvalidOntologyEntry { .. } => {
+                    invalid("invalid_ontology_entry", e)
+                }
                 DurabilityError::WorkspaceLeaseConflict { .. } => (
                     StatusCode::CONFLICT,
                     "workspace_lease_conflict",
@@ -203,6 +197,10 @@ impl IntoResponse for ApiError {
                     "invalid_capability",
                     e.to_string(),
                 ),
+                DurabilityError::InvalidOpsWorkflow { .. } => invalid("invalid_ops_workflow", e),
+                DurabilityError::InvalidOpsWorkflowInstance { .. } => {
+                    invalid("invalid_ops_workflow_instance", e)
+                }
                 DurabilityError::InvalidEvidence { .. } => (
                     StatusCode::UNPROCESSABLE_ENTITY,
                     "invalid_evidence",
@@ -296,4 +294,7 @@ impl IntoResponse for ApiError {
         let body = json!({"error": {"code": code, "message": message}});
         (status, Json(body)).into_response()
     }
+}
+fn invalid(code: &'static str, e: &DurabilityError) -> (StatusCode, &'static str, String) {
+    (StatusCode::UNPROCESSABLE_ENTITY, code, e.to_string())
 }
