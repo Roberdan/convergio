@@ -230,6 +230,10 @@ audit-compensate-action = Azione compensante:
 { $action }
 
 # ---------- CLI: actions ----------
+
+# ---------- CLI: pubblico ----------
+public-algorithms-generated = Registro algoritmi generato per il tenant { $tenant } ({ $count } voci): { $path }
+
 actions-list-empty = Nessuna azione trovata.
 actions-list-header = { $count ->
     [one] Un'azione:

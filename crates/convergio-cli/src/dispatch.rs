@@ -64,6 +64,7 @@ pub(crate) async fn run(
         Command::Workspace { sub } => commands::workspace::run(&client, &bundle, output, sub).await,
         Command::Mcp { sub } => commands::mcp::run(&bundle, sub).await,
         Command::Pr { sub } => commands::pr::run(&client, &bundle, output, sub).await,
+        Command::Public { sub } => commands::public::run(&bundle, output, sub).await,
         Command::Service { sub } => commands::service::run(&bundle, sub).await,
         Command::Session { sub } => commands::session::run(&client, &bundle, output, sub).await,
         Command::Solve { mission } => commands::solve::run(&client, &mission).await,
