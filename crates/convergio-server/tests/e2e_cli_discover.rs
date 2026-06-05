@@ -9,6 +9,7 @@
 //! 2. `GET /v1/plans` — id, title, status.
 //! 3. `GET /v1/plans/:id/topics` — topic, count, last_at.
 //! 4. `GET /v1/plans/:id/tasks` — agent_id, status.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -56,7 +57,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn cvg_discover_sources_match_cli_expectations() {
     let (base, _dir) = boot().await;
-    let http = reqwest::Client::new();
+    let http = common::client();
 
     // Three synthetic peers with varying heartbeat ages.
     for id in ["alpha", "beta", "gamma"] {

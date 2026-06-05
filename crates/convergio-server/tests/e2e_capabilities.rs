@@ -1,4 +1,5 @@
 //! Capability registry API E2E tests.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -56,7 +57,7 @@ async fn capability_registry_lists_seeded_capabilities() {
         axum::serve(listener, router(state)).await.unwrap();
     });
     let base = format!("http://{addr}");
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let caps: Value = client
         .get(format!("{base}/v1/capabilities"))

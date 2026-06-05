@@ -6,6 +6,7 @@
 //! asserts each message's `consumed_at` is non-null in
 //! `GET /messages/tail` afterwards. Mirrors the shape of
 //! `e2e_session_register_and_poll.rs`.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_cli_session::register_and_poll::{run, Args};
@@ -57,7 +58,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn unicast_messages_are_consumed_after_register_and_poll() {
     let (base, _dir) = boot().await;
-    let http = reqwest::Client::new();
+    let http = common::client();
 
     // 1. Create a plan so unicast topics resolve.
     let plan: Value = http
@@ -152,7 +153,7 @@ async fn unicast_messages_are_consumed_after_register_and_poll() {
 #[tokio::test]
 async fn no_auto_ack_flag_leaves_consumed_at_null() {
     let (base, _dir) = boot().await;
-    let http = reqwest::Client::new();
+    let http = common::client();
     let plan: Value = http
         .post(format!("{base}/v1/plans"))
         .json(&json!({"title": "no-ack plan"}))

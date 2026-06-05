@@ -1,4 +1,5 @@
 //! Workspace lease API E2E tests.
+mod common;
 
 use chrono::{Duration, Utc};
 use convergio_bus::Bus;
@@ -76,7 +77,7 @@ fn patch(agent_id: &str) -> Value {
 #[tokio::test]
 async fn workspace_lease_api_refuses_overlap_until_release() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let first: Value = client
         .post(format!("{base}/v1/workspace/leases"))
@@ -134,7 +135,7 @@ async fn workspace_lease_api_refuses_overlap_until_release() {
 #[tokio::test]
 async fn patch_proposals_require_lease_coverage_and_record_conflicts() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let _: Value = client
         .post(format!("{base}/v1/workspace/leases"))

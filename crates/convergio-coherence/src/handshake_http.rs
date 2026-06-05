@@ -8,6 +8,9 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use std::time::{Duration, Instant};
 
+const PURPOSE_ID_HEADER: &str = "x-purpose-id";
+const HANDSHAKE_PURPOSE_ID: &str = "00000000-0000-4000-8000-000000000443";
+
 /// Lite shape of a published bus message — only the fields the
 /// handshake needs. Avoids depending on `convergio-bus`.
 #[derive(Debug, Clone, Deserialize)]
@@ -45,6 +48,7 @@ pub(crate) async fn create_plan(client: &reqwest::Client, daemon: &str) -> Resul
     let url = format!("{}/v1/plans", daemon.trim_end_matches('/'));
     let resp = client
         .post(&url)
+        .header(PURPOSE_ID_HEADER, HANDSHAKE_PURPOSE_ID)
         .json(&json!({"title": title, "description": null, "project": "coherence"}))
         .send()
         .await
@@ -71,6 +75,7 @@ pub(crate) async fn register_one(client: &reqwest::Client, daemon: &str, id: &st
     });
     let resp = client
         .post(&url)
+        .header(PURPOSE_ID_HEADER, HANDSHAKE_PURPOSE_ID)
         .json(&body)
         .send()
         .await
@@ -105,6 +110,7 @@ pub(crate) async fn heartbeat_one(client: &reqwest::Client, daemon: &str, id: &s
     );
     let resp = client
         .post(&url)
+        .header(PURPOSE_ID_HEADER, HANDSHAKE_PURPOSE_ID)
         .json(&json!({"status": "working"}))
         .send()
         .await
@@ -143,6 +149,7 @@ pub(crate) async fn publish(
     );
     let resp = client
         .post(&url)
+        .header(PURPOSE_ID_HEADER, HANDSHAKE_PURPOSE_ID)
         .json(&json!({"topic": topic, "sender": sender, "payload": payload}))
         .send()
         .await
@@ -180,6 +187,7 @@ pub(crate) async fn poll_for_seq(
         }
         let resp = client
             .get(&url)
+            .header(PURPOSE_ID_HEADER, HANDSHAKE_PURPOSE_ID)
             .query(&[
                 ("topic", topic),
                 ("cursor", &after_seq.to_string()),
@@ -217,6 +225,7 @@ pub(crate) async fn ack_one(
     );
     let resp = client
         .post(&url)
+        .header(PURPOSE_ID_HEADER, HANDSHAKE_PURPOSE_ID)
         .json(&json!({"consumer": consumer}))
         .send()
         .await
@@ -250,6 +259,7 @@ pub(crate) async fn retire_one(client: &reqwest::Client, daemon: &str, id: &str)
     );
     let resp = client
         .post(&url)
+        .header(PURPOSE_ID_HEADER, HANDSHAKE_PURPOSE_ID)
         .json(&json!({}))
         .send()
         .await

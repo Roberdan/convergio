@@ -7,7 +7,6 @@
 //! plan id, then creates the task through the durability facade.
 
 use convergio_durability::{Durability, NewPlan};
-use reqwest::Client;
 use serde_json::{json, Value};
 use sqlx::Executor as _;
 
@@ -16,7 +15,7 @@ mod common;
 #[tokio::test]
 async fn fleet_plan_lifecycle_roundtrip() {
     let (base, pool, _dir) = common::boot().await;
-    let http = Client::new();
+    let http = common::client();
 
     // --- create ---
     let create: Value = http
@@ -25,6 +24,8 @@ async fn fleet_plan_lifecycle_roundtrip() {
         .send()
         .await
         .expect("POST /v1/fleet/plans")
+        .error_for_status()
+        .expect("POST /v1/fleet/plans status")
         .json()
         .await
         .expect("decode created");
@@ -45,6 +46,8 @@ async fn fleet_plan_lifecycle_roundtrip() {
         .send()
         .await
         .expect("GET /v1/fleet/plans")
+        .error_for_status()
+        .expect("GET /v1/fleet/plans status")
         .json()
         .await
         .expect("decode list");
@@ -60,6 +63,8 @@ async fn fleet_plan_lifecycle_roundtrip() {
         .send()
         .await
         .expect("GET /v1/fleet/plans?scope=...")
+        .error_for_status()
+        .expect("GET filtered status")
         .json()
         .await
         .expect("decode filtered");
@@ -113,6 +118,8 @@ async fn fleet_plan_lifecycle_roundtrip() {
         .send()
         .await
         .expect("GET show")
+        .error_for_status()
+        .expect("GET show status")
         .json()
         .await
         .expect("decode view");
@@ -140,6 +147,8 @@ async fn fleet_plan_lifecycle_roundtrip() {
         .send()
         .await
         .expect("POST task")
+        .error_for_status()
+        .expect("POST task status")
         .json()
         .await
         .expect("decode task");

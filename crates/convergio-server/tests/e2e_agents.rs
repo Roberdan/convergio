@@ -1,4 +1,5 @@
 //! HTTP end-to-end test for Layer 3 (`convergio-lifecycle`).
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -49,7 +50,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn spawn_get_heartbeat_round_trip_over_http() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let proc: Value = client
         .post(format!("{base}/v1/agents/spawn"))
@@ -107,7 +108,7 @@ async fn spawn_get_heartbeat_round_trip_over_http() {
 #[tokio::test]
 async fn spawn_invalid_command_returns_422() {
     let (base, _dir) = boot().await;
-    let resp = reqwest::Client::new()
+    let resp = common::client()
         .post(format!("{base}/v1/agents/spawn"))
         .json(&json!({
             "kind": "shell",
@@ -126,7 +127,7 @@ async fn spawn_invalid_command_returns_422() {
 #[tokio::test]
 async fn spawn_runner_registers_agent_claims_task_and_tracks_process() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
@@ -190,7 +191,7 @@ async fn spawn_runner_accepts_claude_kind() {
     // may point anywhere local — so we use /bin/sleep here and just
     // verify the registry + process shape is correct.
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
@@ -243,7 +244,7 @@ async fn spawn_runner_accepts_claude_kind() {
 #[tokio::test]
 async fn spawn_runner_rejects_unknown_kind() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let resp = client
         .post(format!("{base}/v1/agents/spawn-runner"))

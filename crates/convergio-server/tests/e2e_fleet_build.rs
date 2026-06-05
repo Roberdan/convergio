@@ -2,6 +2,7 @@
 //!
 //! Boots the full daemon, registers a real directory as a fleet repo,
 //! calls the build endpoint, and verifies the response shape and DB state.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -66,7 +67,7 @@ async fn boot() -> (String, Arc<FleetStore>, Arc<EmbedStore>, tempfile::TempDir)
 
 /// Registers a real directory as a fleet repo via the HTTP API.
 async fn register_repo(base: &str, name: &str, path: &str, language: &str) {
-    let client = reqwest::Client::new();
+    let client = common::client();
     let resp = client
         .post(format!("{base}/v1/fleet/repos"))
         .json(&serde_json::json!({
@@ -88,7 +89,7 @@ async fn register_repo(base: &str, name: &str, path: &str, language: &str) {
 #[tokio::test]
 async fn build_empty_fleet_returns_ok_with_zero_counts() {
     let (base, _fleet, _embed, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let body: Value = client
         .post(format!("{base}/v1/fleet/build"))
         .json(&serde_json::json!({}))
@@ -107,7 +108,7 @@ async fn build_empty_fleet_returns_ok_with_zero_counts() {
 #[tokio::test]
 async fn build_with_real_dir_embeds_files() {
     let (base, fleet, embed, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     // Use the crate migrations dir as a small real directory with .sql files.
     // We register it under a custom extension set that includes "sql" — but since
@@ -145,7 +146,7 @@ async fn build_with_real_dir_embeds_files() {
 #[tokio::test]
 async fn build_is_idempotent() {
     let (base, _fleet, embed, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let src_dir = env!("CARGO_MANIFEST_DIR");
     register_repo(&base, "idempotent-repo", src_dir, "rust").await;
 
@@ -187,7 +188,7 @@ async fn build_is_idempotent() {
 #[tokio::test]
 async fn disabled_repo_is_skipped_by_build() {
     let (base, _fleet, embed, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let src_dir = env!("CARGO_MANIFEST_DIR");
     register_repo(&base, "disabled-repo", src_dir, "rust").await;
 
@@ -219,7 +220,7 @@ async fn disabled_repo_is_skipped_by_build() {
 #[tokio::test]
 async fn refresh_similarity_returns_edge_count() {
     let (base, fleet, _embed, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let src_dir = env!("CARGO_MANIFEST_DIR");
     register_repo(&base, "repo-a", src_dir, "rust").await;
 

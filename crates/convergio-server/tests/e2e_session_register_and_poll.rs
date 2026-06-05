@@ -6,6 +6,7 @@
 //! registered session. The CLI smoke test in
 //! `crates/convergio-cli-session/tests/cli_smoke_session_register.rs`
 //! covers the clap surface; this file covers the daemon contract.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -54,7 +55,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn register_heartbeat_and_poll_round_trip_is_audited() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let agent_id = "claude-code-test";
 
     // 1. Register.

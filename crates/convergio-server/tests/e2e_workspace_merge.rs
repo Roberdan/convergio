@@ -1,4 +1,5 @@
 //! Workspace merge queue E2E tests.
+mod common;
 
 use chrono::{Duration, Utc};
 use convergio_bus::Bus;
@@ -128,7 +129,7 @@ async fn submit_enqueue(client: &reqwest::Client, base: &str, body: Value) -> Va
 #[tokio::test]
 async fn merge_queue_merges_different_files_and_refuses_stale_same_file() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     for (agent, path) in [("agent-a", "src/lib.rs"), ("agent-b", "src/main.rs")] {
         let _: Value = client
             .post(format!("{base}/v1/workspace/leases"))

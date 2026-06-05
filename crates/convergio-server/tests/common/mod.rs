@@ -16,10 +16,31 @@ use convergio_db::Pool;
 use convergio_durability::{init, Durability};
 use convergio_lifecycle::Supervisor;
 use convergio_server::{router, AppState};
+use reqwest::header::{HeaderMap, HeaderValue};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tempfile::{tempdir, TempDir};
 use tokio::net::TcpListener;
+
+/// Purpose id used by E2E tests when talking to the in-process daemon.
+pub const TEST_PURPOSE_ID: &str = "00000000-0000-0000-0000-000000000001";
+
+/// Default reqwest client builder that includes a valid purpose header.
+#[allow(dead_code)]
+pub fn client_builder() -> reqwest::ClientBuilder {
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        convergio_api::PURPOSE_ID_HEADER,
+        HeaderValue::from_static(TEST_PURPOSE_ID),
+    );
+    reqwest::Client::builder().default_headers(headers)
+}
+
+/// Default reqwest client with the purpose header.
+#[allow(dead_code)]
+pub fn client() -> reqwest::Client {
+    client_builder().build().expect("reqwest client")
+}
 
 /// Spin up an in-process Convergio daemon backed by a temp SQLite
 /// pool. Returns the bound base URL (`http://127.0.0.1:N`), the

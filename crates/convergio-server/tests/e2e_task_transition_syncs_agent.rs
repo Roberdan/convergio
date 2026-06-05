@@ -56,7 +56,7 @@ async fn make_task(client: &reqwest::Client, base: &str) -> String {
 #[tokio::test]
 async fn claim_sets_current_task_id_and_working_status() {
     let (base, _pool, _dir) = common::boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     register_agent(&client, &base, "agent-x").await;
     let task_id = make_task(&client, &base).await;
 
@@ -85,7 +85,7 @@ async fn claim_sets_current_task_id_and_working_status() {
 #[tokio::test]
 async fn submit_clears_current_task_id_and_marks_idle() {
     let (base, _pool, _dir) = common::boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     register_agent(&client, &base, "agent-y").await;
     let task_id = make_task(&client, &base).await;
 
@@ -123,7 +123,7 @@ async fn submit_clears_current_task_id_and_marks_idle() {
 #[tokio::test]
 async fn unregistered_agent_transition_does_not_error() {
     let (base, _pool, _dir) = common::boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let task_id = make_task(&client, &base).await;
 
     let resp = client
@@ -142,7 +142,7 @@ async fn unregistered_agent_transition_does_not_error() {
 #[tokio::test]
 async fn second_claim_overwrites_current_task_pointer() {
     let (base, _pool, _dir) = common::boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     register_agent(&client, &base, "agent-z").await;
     let task_a = make_task(&client, &base).await;
     let task_b = make_task(&client, &base).await;

@@ -6,7 +6,7 @@
 
 mod common;
 
-use common::boot;
+use common::{boot, client};
 use convergio_ontology::{OwnerKind, Store};
 use serde_json::{json, Value};
 
@@ -108,7 +108,9 @@ async fn seed_person_jsonschema(store: &Store) {
 async fn list_types_returns_seeded_object_with_hash() {
     let (base, pool, _dir) = boot().await;
     seed_person_shacl(&Store::new(pool)).await;
-    let body: Value = reqwest::get(format!("{base}/v1/ontology/types"))
+    let body: Value = client()
+        .get(format!("{base}/v1/ontology/types"))
+        .send()
         .await
         .unwrap()
         .json()
@@ -125,7 +127,9 @@ async fn list_types_returns_seeded_object_with_hash() {
 async fn describe_object_inlines_properties() {
     let (base, pool, _dir) = boot().await;
     seed_person_shacl(&Store::new(pool)).await;
-    let body: Value = reqwest::get(format!("{base}/v1/ontology/types/object/Person"))
+    let body: Value = client()
+        .get(format!("{base}/v1/ontology/types/object/Person"))
+        .send()
         .await
         .unwrap()
         .json()
@@ -143,14 +147,16 @@ async fn describe_object_inlines_properties() {
 async fn export_jsonschema_matches_crate_golden() {
     let (base, pool, _dir) = boot().await;
     seed_person_jsonschema(&Store::new(pool)).await;
-    let bytes = reqwest::get(format!(
-        "{base}/v1/ontology/export/jsonschema/object/Person"
-    ))
-    .await
-    .unwrap()
-    .bytes()
-    .await
-    .unwrap();
+    let bytes = client()
+        .get(format!(
+            "{base}/v1/ontology/export/jsonschema/object/Person"
+        ))
+        .send()
+        .await
+        .unwrap()
+        .bytes()
+        .await
+        .unwrap();
     let actual = std::str::from_utf8(&bytes).unwrap();
     let golden = include_str!("../../convergio-ontology/tests/golden/person_v1.jsonschema.json");
     assert_eq!(
@@ -163,7 +169,9 @@ async fn export_jsonschema_matches_crate_golden() {
 async fn export_shacl_matches_crate_golden() {
     let (base, pool, _dir) = boot().await;
     seed_person_shacl(&Store::new(pool)).await;
-    let bytes = reqwest::get(format!("{base}/v1/ontology/export/shacl/object/Person"))
+    let bytes = client()
+        .get(format!("{base}/v1/ontology/export/shacl/object/Person"))
+        .send()
         .await
         .unwrap()
         .bytes()
@@ -181,7 +189,9 @@ async fn export_shacl_matches_crate_golden() {
 async fn export_unknown_format_is_400() {
     let (base, pool, _dir) = boot().await;
     seed_person_shacl(&Store::new(pool)).await;
-    let resp = reqwest::get(format!("{base}/v1/ontology/export/yaml/object/Person"))
+    let resp = client()
+        .get(format!("{base}/v1/ontology/export/yaml/object/Person"))
+        .send()
         .await
         .unwrap();
     assert_eq!(resp.status(), 400);
@@ -192,7 +202,9 @@ async fn export_unknown_format_is_400() {
 #[tokio::test]
 async fn describe_unknown_object_is_404() {
     let (base, _pool, _dir) = boot().await;
-    let resp = reqwest::get(format!("{base}/v1/ontology/types/object/Nope"))
+    let resp = client()
+        .get(format!("{base}/v1/ontology/types/object/Nope"))
+        .send()
         .await
         .unwrap();
     assert_eq!(resp.status(), 404);

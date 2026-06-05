@@ -1,4 +1,5 @@
 //! CRDT diagnostics and conflict-gate E2E tests.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -61,7 +62,7 @@ fn op(actor_id: &str, counter: i64, task_id: &str, field: &str, crdt: &str, valu
 #[tokio::test]
 async fn crdt_conflicts_are_listed_and_block_task_submission() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
         .json(&json!({"title": "crdt api plan"}))

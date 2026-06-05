@@ -1,4 +1,5 @@
 //! HTTP E2E tests for signed local capability install.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -117,7 +118,7 @@ async fn install_file_requires_good_signature_and_installs_atomically() {
     std::env::set_var("HOME", home.path());
     let package_dir = tempdir().unwrap();
     let (package_path, signature, trusted_keys) = package(&package_dir);
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let mut bad_signature = hex::decode(&signature).unwrap();
     bad_signature[0] ^= 0xff;

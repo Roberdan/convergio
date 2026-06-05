@@ -1,4 +1,5 @@
 //! Task context packet E2E tests.
+mod common;
 
 use convergio_bus::{Bus, NewMessage};
 use convergio_db::Pool;
@@ -99,7 +100,7 @@ async fn context_packet_collects_task_state_messages_agents_and_agent_docs() {
     });
     let base = format!("http://{addr}");
 
-    let packet: Value = reqwest::Client::new()
+    let packet: Value = common::client()
         .post(format!("{base}/v1/tasks/{}/context", task.id))
         .json(&json!({"workspace_path": src.join("lib.rs")}))
         .send()
@@ -118,7 +119,7 @@ async fn context_packet_collects_task_state_messages_agents_and_agent_docs() {
     assert_eq!(packet["agent_instructions"][0]["content"], "src rules");
     assert_eq!(packet["agent_instructions"][1]["content"], "root rules");
 
-    let invalid: Value = reqwest::Client::new()
+    let invalid: Value = common::client()
         .post(format!("{base}/v1/tasks/{}/context", task.id))
         .json(&json!({"message_limit": 101}))
         .send()

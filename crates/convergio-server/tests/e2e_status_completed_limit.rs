@@ -35,7 +35,7 @@ async fn status_negative_completed_limit_is_clamped() {
             .expect("set completed");
     }
 
-    let client = reqwest::Client::new();
+    let client = common::client();
     let body: Value = client
         .get(format!("{base}/v1/status?completed_limit=-1"))
         .send()

@@ -143,17 +143,14 @@ jobs:
           cargo run -q -p convergio-server -- start --bind 127.0.0.1:18421 &
           DAEMON_PID=$!
           trap 'kill $DAEMON_PID 2>/dev/null || true; rm -f /tmp/convergio-handshake-ci.db*' EXIT
-          # Probe up to 120s (240 × 0.5s) — health + actual mutating
-          # route. /v1/health alone returns OK before migrations
-          # finish, so probe POST /v1/plans too. Fail loud if the
-          # daemon never becomes ready, instead of silently running
-          # the verifier against an uninitialised target.
+          # Probe up to 120s (240 × 0.5s) — health + the bootstrap
+          # action catalog used by MCP/CLI discovery. /v1/api/actions is
+          # intentionally exempt from purpose binding so this smoke check
+          # cannot create durable rows while waiting for the daemon.
           ready=0
           for _ in $(seq 1 240); do
-            if curl -fsS http://127.0.0.1:18421/v1/health >/dev/null 2>&1 \
-              && curl -fsS -X POST http://127.0.0.1:18421/v1/plans \
-                -H 'content-type: application/json' \
-                -d '{"title":"ci-probe","description":null,"project":"coherence"}' >/dev/null 2>&1; then
+            if curl -fsS -H 'x-purpose-id: 00000000-0000-4000-8000-000000000443' http://127.0.0.1:18421/v1/health >/dev/null 2>&1 \
+              && curl -fsS http://127.0.0.1:18421/v1/api/actions >/dev/null 2>&1; then
               ready=1
               break
             fi

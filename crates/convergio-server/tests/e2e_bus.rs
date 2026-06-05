@@ -14,7 +14,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn publish_poll_ack_round_trip_over_http() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let plan_id = "plan-x";
 
     // Publish two messages.
@@ -79,7 +79,7 @@ async fn publish_poll_ack_round_trip_over_http() {
 #[tokio::test]
 async fn ack_unknown_returns_404() {
     let (base, _dir) = boot().await;
-    let resp = reqwest::Client::new()
+    let resp = common::client()
         .post(format!("{base}/v1/messages/no-such-id/ack"))
         .json(&json!({}))
         .send()
@@ -93,7 +93,7 @@ async fn ack_unknown_returns_404() {
 #[tokio::test]
 async fn corrupt_message_timestamp_returns_invalid_timestamp() {
     let (base, dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let plan_id = "plan-corrupt";
     let message: Value = client
         .post(format!("{base}/v1/plans/{plan_id}/messages"))
@@ -130,7 +130,7 @@ async fn corrupt_message_timestamp_returns_invalid_timestamp() {
 #[tokio::test]
 async fn poll_rejects_unbounded_limit() {
     let (base, _dir) = boot().await;
-    let resp = reqwest::Client::new()
+    let resp = common::client()
         .get(format!("{base}/v1/plans/plan-x/messages?topic=t&limit=101"))
         .send()
         .await
@@ -143,7 +143,7 @@ async fn poll_rejects_unbounded_limit() {
 #[tokio::test]
 async fn tail_returns_acked_messages_and_topics_summarises() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let plan_id = "plan-tail";
 
     for (topic, i) in [("alpha", 0), ("alpha", 1), ("beta", 0)] {
@@ -224,7 +224,7 @@ async fn tail_returns_acked_messages_and_topics_summarises() {
 #[tokio::test]
 async fn tail_supports_since_cursor() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
     let plan_id = "plan-cursor";
     for i in 0..4 {
         let _: Value = client

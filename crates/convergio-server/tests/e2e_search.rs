@@ -72,7 +72,7 @@ async fn search_fuses_structured_semantic_operational() {
         .await
         .expect("upsert embed");
 
-    let client = reqwest::Client::new();
+    let client = common::client();
     let body: Value = client
         .get(format!("{base}/api/search"))
         .query(&[("q", "search")])

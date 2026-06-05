@@ -3,6 +3,7 @@
 //! Boots the HTTP router in-process, creates a real durability task via
 //! the public API, builds a tiny local workspace graph, then asks the
 //! server for the task-scoped context pack.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -119,7 +120,7 @@ The fixture crate owns the task context code.
 async fn graph_for_task_uses_real_durability_task() {
     let (base, _state_dir) = boot().await;
     let workspace = write_fixture_workspace();
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))

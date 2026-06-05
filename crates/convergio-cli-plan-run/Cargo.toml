@@ -15,6 +15,7 @@ categories = ["development-tools"]
 workspace = true
 
 [dependencies]
+convergio-api = { workspace = true }
 convergio-i18n = { workspace = true }
 anyhow = { workspace = true }
 futures-util = "0.3"

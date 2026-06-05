@@ -7,7 +7,6 @@
 
 mod common;
 
-use reqwest::Client;
 use serde_json::{json, Value};
 
 /// Replicates the exact HTTP sequence that `cvg task complete --pr` drives.
@@ -17,7 +16,7 @@ async fn task_complete_full_flow_produces_done_with_intact_audit() {
     // Embed tables are not migrated by common::boot — init them here so
     // that /v1/embed/for-task and ?semantic=1 work in this test.
     convergio_embed::init(&pool).await.expect("embed init");
-    let c = Client::new();
+    let c = common::client();
 
     // --- Setup -----------------------------------------------------------
     let plan: Value = c
@@ -216,7 +215,7 @@ async fn task_complete_full_flow_produces_done_with_intact_audit() {
 #[tokio::test]
 async fn task_complete_validate_idempotent() {
     let (base, _pool, _dir) = common::boot().await;
-    let c = Client::new();
+    let c = common::client();
 
     let plan: Value = c
         .post(format!("{base}/v1/plans"))

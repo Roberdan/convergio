@@ -3,6 +3,7 @@
 //! Boots the convergio-server router in-process against a tempdir
 //! SQLite, drives the full lifecycle of a plan + task + evidence over
 //! HTTP, and verifies the audit chain.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -53,7 +54,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn full_lifecycle_with_audit_verification() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     // Health probe
     let health: Value = client
@@ -167,7 +168,7 @@ async fn full_lifecycle_with_audit_verification() {
 #[tokio::test]
 async fn status_summarizes_active_plans_and_completed_tasks() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))

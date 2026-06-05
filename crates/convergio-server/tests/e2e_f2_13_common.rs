@@ -17,6 +17,23 @@ use std::sync::Arc;
 use tempfile::tempdir;
 use tokio::net::TcpListener;
 
+use reqwest::header::{HeaderMap, HeaderValue};
+
+pub const TEST_PURPOSE_ID: &str = "00000000-0000-0000-0000-000000000001";
+
+pub fn client_builder() -> reqwest::ClientBuilder {
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        convergio_api::PURPOSE_ID_HEADER,
+        HeaderValue::from_static(TEST_PURPOSE_ID),
+    );
+    reqwest::Client::builder().default_headers(headers)
+}
+
+pub fn client() -> reqwest::Client {
+    client_builder().build().expect("reqwest client")
+}
+
 #[cfg(feature = "fastembed")]
 pub fn make_embedder() -> Arc<dyn convergio_embed::Embedder> {
     use convergio_embed::MultilingualE5Embedder;
@@ -107,7 +124,7 @@ pub async fn boot_with_embedder(
 }
 
 pub async fn register_repo(base: &str, name: &str, path: &str, lang: &str) {
-    let resp = reqwest::Client::new()
+    let resp = client()
         .post(format!("{base}/v1/fleet/repos"))
         .json(&serde_json::json!({
             "name": name,

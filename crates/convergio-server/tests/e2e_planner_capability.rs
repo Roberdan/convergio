@@ -1,4 +1,5 @@
 //! E2E proof for the first planner capability action.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -106,7 +107,7 @@ async fn installed_planner_capability_can_solve_a_plan() {
     std::env::set_var("HOME", home.path());
     let package_dir = tempdir().unwrap();
     let (package_path, signature, trusted_keys) = planner_package(&package_dir);
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let missing = client
         .post(format!("{base}/v1/capabilities/planner/solve"))

@@ -16,7 +16,6 @@
 
 mod common;
 
-use reqwest::Client;
 use serde_json::Value;
 use std::sync::{Arc, Mutex, PoisonError};
 
@@ -54,7 +53,7 @@ async fn audit_verify_recovers_from_poisoned_cache() {
     // panicked under the lock; we cannot reproduce that without
     // forking, so the e2e leg is a smoke that the route still
     // responds.
-    let client = Client::new();
+    let client = common::client();
     let resp = client
         .get(format!("{base}/v1/audit/verify"))
         .send()

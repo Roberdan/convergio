@@ -4,6 +4,7 @@
 //! checks the audit chain has the expected `plan.active` and
 //! `plan.completed` rows, and verifies that an illegal jump returns
 //! HTTP 409.
+mod common;
 
 use convergio_bus::Bus;
 use convergio_db::Pool;
@@ -54,7 +55,7 @@ async fn boot() -> (String, tempfile::TempDir) {
 #[tokio::test]
 async fn forward_lifecycle_writes_audit_rows() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
@@ -117,7 +118,7 @@ async fn forward_lifecycle_writes_audit_rows() {
 #[tokio::test]
 async fn illegal_transition_returns_409() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
@@ -149,7 +150,7 @@ async fn illegal_transition_returns_409() {
 #[tokio::test]
 async fn idempotent_same_status_succeeds() {
     let (base, _dir) = boot().await;
-    let client = reqwest::Client::new();
+    let client = common::client();
 
     let plan: Value = client
         .post(format!("{base}/v1/plans"))
