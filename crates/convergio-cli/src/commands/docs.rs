@@ -111,10 +111,17 @@ async fn regenerate(output: OutputMode, root: &Path, check: bool) -> Result<()> 
         if !path.is_file() || path.extension().and_then(|s| s.to_str()) != Some("md") {
             continue;
         }
-        if path
-            .components()
-            .any(|c| matches!(c.as_os_str().to_str(), Some("target") | Some(".git")))
-        {
+        if path.components().any(|c| {
+            matches!(
+                c.as_os_str().to_str(),
+                Some("target")
+                    | Some(".git")
+                    | Some("node_modules")
+                    | Some(".claude")
+                    | Some(".worktrees")
+                    | Some("worktrees")
+            )
+        }) {
             continue;
         }
         let original =

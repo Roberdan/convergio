@@ -38,6 +38,8 @@ module.exports = {
         'ontology',
         // meta scopes
         'docs',
+        'adr',
+        'ontology',
         'ci',
         'chore',
         'repo',
