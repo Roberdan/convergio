@@ -874,6 +874,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "convergio-gdpr"
+version = "0.3.31"
+dependencies = [
+ "chrono",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "convergio-graph"
 version = "0.3.31"
 dependencies = [
@@ -1040,6 +1050,7 @@ dependencies = [
  "convergio-executor",
  "convergio-fleet",
  "convergio-fleet-routes",
+ "convergio-gdpr",
  "convergio-graph",
  "convergio-i18n",
  "convergio-lifecycle",
