@@ -42,6 +42,8 @@ pub mod fleet;
 pub(crate) mod fleet_build;
 pub(crate) mod fleet_cleanup;
 pub(crate) mod fleet_cleanup_render;
+pub(crate) mod fleet_detect;
+pub(crate) mod fleet_dispatch;
 pub(crate) mod fleet_duplicates;
 pub(crate) mod fleet_patterns;
 pub(crate) mod fleet_plan;

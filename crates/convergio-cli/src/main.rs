@@ -178,8 +178,15 @@ pub(crate) enum Command {
         /// Mission text — newline-separated tasks.
         mission: String,
     },
-    /// Run one executor tick (dispatches pending tasks).
-    Dispatch,
+    /// Run one executor tick. Use --executor none/--no-dispatch for tracker-only mode.
+    Dispatch {
+        /// Do not spawn workers; return tracker-only dispatch status.
+        #[arg(long)]
+        no_dispatch: bool,
+        /// Executor mode. `none` is tracker-only.
+        #[arg(long, value_enum, default_value_t = commands::dispatch::ExecutorMode::Default)]
+        executor: commands::dispatch::ExecutorMode,
+    },
     /// Run Thor on a plan, or `--self-test` for the H11 fixture run.
     Validate {
         /// Plan id (omit when `--self-test` is set).

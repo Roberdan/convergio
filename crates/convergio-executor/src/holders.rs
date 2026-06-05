@@ -29,3 +29,14 @@ pub(crate) async fn collect(durability: &Durability, repo_root: &Path) -> Vec<Wo
         }
     }
 }
+
+/// Count active workspace leases for dispatch pressure accounting.
+pub(crate) async fn active_lease_count(durability: &Durability) -> usize {
+    match durability.workspace().active_leases().await {
+        Ok(v) => v.len(),
+        Err(e) => {
+            tracing::warn!(error = %e, "workspace lease count failed; assuming zero");
+            0
+        }
+    }
+}

@@ -1,11 +1,11 @@
 //! `cvg fleet ...` — fleet repo + plan management (ADR-0038, F2/F3).
 //! Pure HTTP; the daemon owns the stores.
 
+use super::fleet_detect::{default_parser, detect_language, read_derives_from};
 use super::{fleet_plan::FleetPlanCommand, Client, OutputMode};
 use anyhow::{Context, Result};
 use clap::Subcommand;
 use serde_json::{json, Value};
-use std::path::Path;
 
 /// Fleet subcommands.
 #[derive(Subcommand)]
@@ -68,10 +68,21 @@ pub enum FleetCommand {
         #[arg(long, default_value_t = 2)]
         min_repos: usize,
     },
-    /// Cross-repo plan management (ADR-0038, F3-2).
+    /// Cross-repo plan management.
     #[command(subcommand)]
     Plan(FleetPlanCommand),
-    /// List cross-repo near-exact duplicate pairs (cosine ≥ threshold).
+    /// List cross-repo duplicate pairs.
+    /// Dispatch one executor tick scoped to a fleet repo.
+    Dispatch {
+        /// Registered fleet repo name.
+        repo: String,
+        /// Do not spawn workers; return tracker-only status.
+        #[arg(long)]
+        no_dispatch: bool,
+        /// Executor mode. `none` is tracker-only.
+        #[arg(long, value_enum, default_value_t = super::dispatch::ExecutorMode::Default)]
+        executor: super::dispatch::ExecutorMode,
+    },
     Duplicates {
         /// Cosine similarity threshold (default 0.95).
         #[arg(long, default_value_t = 0.95)]
@@ -119,6 +130,11 @@ pub async fn run(client: &Client, output: OutputMode, cmd: FleetCommand) -> Resu
             super::fleet_patterns::run(client, output, min_repos).await
         }
         FleetCommand::Plan(cmd) => super::fleet_plan::run(client, output, cmd).await,
+        FleetCommand::Dispatch {
+            repo,
+            no_dispatch,
+            executor,
+        } => super::fleet_dispatch::run(client, output, &repo, no_dispatch, executor).await,
         FleetCommand::Duplicates {
             cosine,
             repo_pair,
@@ -258,43 +274,5 @@ fn print_repo_table(repos: &[Value]) {
             last,
             r["path"].as_str().unwrap_or("?"),
         );
-    }
-}
-
-/// Read `derives_from` from `<repo>/convergio.yaml` without pulling in a YAML
-/// dep. The file is expected to have a simple `key: value` format.
-fn read_derives_from(repo_root: &Path) -> Option<String> {
-    let yaml_path = repo_root.join("convergio.yaml");
-    let content = std::fs::read_to_string(&yaml_path).ok()?;
-    for line in content.lines() {
-        let trimmed = line.trim();
-        if let Some(rest) = trimmed.strip_prefix("derives_from:") {
-            let value = rest.trim().trim_matches('"').trim_matches('\'').to_owned();
-            if !value.is_empty() {
-                return Some(value);
-            }
-        }
-    }
-    None
-}
-
-fn detect_language(repo_root: &Path) -> String {
-    if repo_root.join("Cargo.toml").exists() {
-        return "rust".to_owned();
-    }
-    if repo_root.join("package.json").exists() {
-        return "typescript".to_owned();
-    }
-    if repo_root.join("pyproject.toml").exists() || repo_root.join("setup.py").exists() {
-        return "python".to_owned();
-    }
-    "unknown".to_owned()
-}
-
-fn default_parser(language: &str) -> String {
-    if language == "rust" {
-        "syn".to_owned()
-    } else {
-        "tree-sitter".to_owned()
     }
 }
