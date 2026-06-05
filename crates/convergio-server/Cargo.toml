@@ -39,6 +39,7 @@ convergio-fleet = { workspace = true }
 convergio-ontology = { workspace = true }
 convergio-fleet-routes = { workspace = true }
 convergio-server-core = { workspace = true }
+convergio-capability-registry = { workspace = true }
 
 axum = { workspace = true }
 clap = { workspace = true }
