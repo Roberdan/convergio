@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows Semantic Versioning before 1.0 with explicit
 MVP scope notes.
 
+## Unreleased
+
+### BREAKING
+
+* **license:** relicense to **AGPL-3.0-or-later** (was Convergio
+  Community License v1.3). Network-use copyleft now applies — any
+  hosted deployment serving third parties must publish modifications.
+  CLA (`CONTRIBUTING-CLA.md`) required for new contributions. See
+  [ADR-0074](docs/adr/0074-relicense-agplv3.md) for the rationale.
+
 ## [0.3.31](https://github.com/Roberdan/convergio/compare/convergio-v0.3.30...convergio-v0.3.31) (2026-05-20)
 
 

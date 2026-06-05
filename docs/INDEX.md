@@ -21,12 +21,13 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `.pr-body.md` | - | - | - | 83 |
 | `AGENTS.md` | agent-rules | - | - | 607 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
-| `CHANGELOG.md` | release | - | - | 1343 |
+| `CHANGELOG.md` | release | - | - | 1353 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
 | `COMPLIANCE.md` | - | - | - | 110 |
 | `CONSTITUTION.md` | constitution | - | - | 486 |
-| `CONTRIBUTING.md` | governance | - | - | 176 |
-| `README.md` | entry | - | - | 453 |
+| `CONTRIBUTING-CLA.md` | - | - | - | 96 |
+| `CONTRIBUTING.md` | governance | - | - | 180 |
+| `README.md` | entry | - | - | 463 |
 | `ROADMAP.md` | roadmap | - | - | 536 |
 | `SECURITY.md` | governance | - | - | 57 |
 | `STATUS.md` | - | - | - | 40 |
@@ -157,7 +158,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0064-a11y-axe-local-stub.md` | adr | - | accepted | 67 |
 | `docs/adr/0072-remote-capability-registry.md` | adr | [convergio-cli, convergio-server, convergio-durability] | proposed | 237 |
 | `docs/adr/0073-eu-sovereign-pivot.md` | adr | - | accepted | 178 |
-| `docs/adr/README.md` | adr | - | - | 94 |
+| `docs/adr/0074-relicense-agplv3.md` | adr | - | accepted | 137 |
+| `docs/adr/README.md` | adr | - | - | 95 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
