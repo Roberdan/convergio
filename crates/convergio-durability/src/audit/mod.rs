@@ -18,7 +18,13 @@ mod provenance;
 pub use action::Action;
 pub use canonical::canonical_json;
 pub use hash::{compute_hash, GENESIS_HASH};
-pub(crate) use log::append_tx;
+
+/// Append one audit entry inside an existing SQLite transaction.
+///
+/// Exposed so sibling crates can perform atomic writes that include an
+/// audit row in the same DB transaction (ADR-0002).
+pub use log::append_tx;
+
 pub use log::AuditLog;
 pub use model::{AuditEntry, EntityKind, VerifyReport};
 pub use provenance::bundle_for_entry;

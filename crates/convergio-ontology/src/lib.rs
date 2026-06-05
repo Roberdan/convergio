@@ -42,7 +42,9 @@ mod graph_render;
 mod hash;
 mod jsonschema;
 mod lineage;
+mod migrate;
 mod model;
+mod object_events;
 mod reads;
 mod semantic;
 mod shacl;
@@ -58,8 +60,10 @@ pub use jsonschema::{
     build_object_schema_bytes, datatype_fragment, export_object_schema, JSON_SCHEMA_DRAFT,
 };
 pub use lineage::{lineage_object, Lineage, LineageNode};
+pub use migrate::init;
 pub use model::{
     LinkTypeRecord, ObjectTypeRecord, OwnerKind, PropertyTypeRecord, TypeKind, TypeRecordRef,
 };
+pub use object_events::{NewObjectEvent, ObjectEvent, ObjectEventsStore};
 pub use shacl::{build_object_shacl_bytes, export_object_shacl, shacl_datatype, ShaclType};
 pub use store::Store;
