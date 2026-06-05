@@ -2,6 +2,7 @@
 
 use crate::app::AppState;
 use crate::capability_install::{install_file, InstallFileRequest};
+use crate::capability_remote::{install_remote, InstallRemoteRequest};
 use crate::error::ApiError;
 use axum::extract::{Path, State};
 use axum::routing::{get, post};
@@ -9,7 +10,22 @@ use axum::{Json, Router};
 use convergio_durability::{
     Capability, CapabilitySignatureRequest, CapabilitySignatureVerification, DurabilityError,
 };
+use serde::Deserialize;
 use serde_json::{json, Value};
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+enum InstallRequest {
+    Local(InstallFileRequest),
+    Remote {
+        #[serde(default)]
+        remote: bool,
+        registry_url: String,
+        name: String,
+        #[serde(default)]
+        version: Option<String>,
+    },
+}
 
 /// Mount capability registry routes.
 pub fn router() -> Router<AppState> {
@@ -43,9 +59,34 @@ async fn verify_signature(
 
 async fn install(
     State(state): State<AppState>,
-    Json(body): Json<InstallFileRequest>,
+    Json(body): Json<InstallRequest>,
 ) -> Result<Json<Capability>, ApiError> {
-    Ok(Json(install_file(&state.durability, body).await?))
+    let installed = match body {
+        InstallRequest::Local(body) => install_file(&state.durability, body).await?,
+        InstallRequest::Remote {
+            remote,
+            registry_url,
+            name,
+            version,
+        } => {
+            if !remote {
+                return Err(DurabilityError::InvalidCapability {
+                    reason: "remote install request must set remote=true".into(),
+                }
+                .into());
+            }
+            install_remote(
+                &state.durability,
+                InstallRemoteRequest {
+                    registry_url,
+                    name,
+                    version,
+                },
+            )
+            .await?
+        }
+    };
+    Ok(Json(installed))
 }
 
 async fn disable(

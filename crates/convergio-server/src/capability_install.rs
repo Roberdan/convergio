@@ -26,18 +26,18 @@ pub(crate) struct InstallFileRequest {
 }
 
 #[derive(Debug, Deserialize)]
-struct CapabilityManifest {
-    name: String,
-    version: String,
+pub(crate) struct CapabilityManifest {
+    pub(crate) name: String,
+    pub(crate) version: String,
     #[serde(default)]
     platforms: Option<Vec<String>>,
 }
 
-struct LoadedPackage {
-    bytes: Vec<u8>,
-    checksum: String,
-    manifest: CapabilityManifest,
-    manifest_json: serde_json::Value,
+pub(crate) struct LoadedPackage {
+    pub(crate) bytes: Vec<u8>,
+    pub(crate) checksum: String,
+    pub(crate) manifest: CapabilityManifest,
+    pub(crate) manifest_json: serde_json::Value,
 }
 
 pub(crate) async fn install_file(
@@ -54,14 +54,45 @@ async fn install_file_at_root(
     root: &Path,
 ) -> Result<Capability, ApiError> {
     let package = load_package(&request.package_path)?;
+    install_loaded_package(
+        dur,
+        package,
+        request.signature,
+        request.trusted_keys,
+        root,
+        "local-file".into(),
+    )
+    .await
+}
+
+pub(crate) async fn install_package_bytes(
+    dur: &Durability,
+    bytes: Vec<u8>,
+    signature: String,
+    trusted_keys: Vec<TrustedCapabilityKey>,
+    source: String,
+) -> Result<Capability, ApiError> {
+    let root = default_capability_root()?;
+    let package = load_package_bytes(bytes)?;
+    install_loaded_package(dur, package, signature, trusted_keys, &root, source).await
+}
+
+async fn install_loaded_package(
+    dur: &Durability,
+    package: LoadedPackage,
+    signature: String,
+    trusted_keys: Vec<TrustedCapabilityKey>,
+    root: &Path,
+    source: String,
+) -> Result<Capability, ApiError> {
     validate_platform(&package.manifest)?;
     dur.verify_capability_signature(CapabilitySignatureRequest {
         name: package.manifest.name.clone(),
         version: package.manifest.version.clone(),
         checksum: package.checksum.clone(),
         manifest: package.manifest_json.clone(),
-        signature: request.signature.clone(),
-        trusted_keys: request.trusted_keys,
+        signature: signature.clone(),
+        trusted_keys,
     })
     .await?;
 
@@ -85,11 +116,11 @@ async fn install_file_at_root(
             name: package.manifest.name,
             version: package.manifest.version,
             status: "installed".into(),
-            source: "local-file".into(),
+            source,
             root_path: Some(final_root.display().to_string()),
             manifest: package.manifest_json,
             checksum: Some(package.checksum),
-            signature: Some(request.signature),
+            signature: Some(signature),
         })
         .await;
     match registered {
@@ -107,6 +138,13 @@ fn load_package(path: &str) -> Result<LoadedPackage, ApiError> {
         return invalid("capability package is too large");
     }
     let bytes = std::fs::read(path).map_err(invalid_package)?;
+    load_package_bytes(bytes)
+}
+
+pub(crate) fn load_package_bytes(bytes: Vec<u8>) -> Result<LoadedPackage, ApiError> {
+    if bytes.len() as u64 > MAX_PACKAGE_BYTES {
+        return invalid("capability package is too large");
+    }
     let checksum = format!("sha256:{}", hex::encode(Sha256::digest(&bytes)));
     let manifest_source = read_manifest(&bytes)?;
     let manifest: CapabilityManifest = toml::from_str(&manifest_source).map_err(invalid_package)?;
