@@ -1,0 +1,11 @@
+.git
+.github
+.claude
+**/target
+**/.DS_Store
+**/*.tar.gz
+**/*.zip
+**/*.spdx.json
+**/*.SHA256SUMS
+**/*.sig
+**/*.crt

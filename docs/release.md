@@ -69,10 +69,35 @@ and not a 2FA code. The Apple ID must belong to the developer team.
 ## CI release workflow
 
 `.github/workflows/release.yml` runs fmt, clippy, tests, `cargo deny`,
-and `cargo audit` before building unsigned Linux and macOS tarballs on
-release tags. Each release artifact is paired with an SPDX JSON SBOM,
-SHA-256 checksums, and a GitHub build-provenance attestation created with
-OIDC. These checks do not require repository secrets.
+and `cargo audit` before publishing release artifacts on tags.
+
+It produces:
+
+- Linux + macOS tarballs
+- SPDX JSON SBOMs (for binaries + image)
+- SHA-256 checksums
+- GitHub build-provenance attestations (OIDC)
+- **Keyless cosign signatures** (`.sig` + `.crt`) for each tarball/SBOM/checksum
+- A **daemon container image** pushed to GHCR (`ghcr.io/<owner>/<repo>`) and signed with cosign
+- A signed **promotion bundle** consisting of:
+  - `convergio-artifact-manifest.json` (immutable manifest)
+  - `convergio-image.DIGEST` (pinned image digest)
+  - `convergio-image.spdx.json` (image SBOM)
+  - `convergio-artifact-manifest.SHA256SUMS` (checksums for the bundle)
+
+The image SBOM is both uploaded as a signed Release asset and attached to the
+image as a keyless cosign attestation (`--type spdxjson`).
+
+## Promotion DAG (dev → stage → preprod → prod)
+
+`.github/workflows/promotion.yml` is a manual `workflow_dispatch` pipeline that:
+
+1. Downloads the signed promotion bundle from the GitHub Release
+2. Verifies blob signatures + SHA256SUMS, verifies the image signature, and asserts the image has an SBOM attestation
+3. Records a signed promotion step for each environment (GitHub Environments)
+
+It supports an optional `prod-canary` hop and a configurable bake wait before
+final promotion to `prod`.
 
 To notarize in CI later, add GitHub secrets for either:
 

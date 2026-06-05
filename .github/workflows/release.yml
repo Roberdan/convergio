@@ -114,6 +114,23 @@ jobs:
             convergio-${{ matrix.name }}.spdx.json \
             > convergio-${{ matrix.name }}.SHA256SUMS
 
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.0
+
+      - name: Sign release artifacts (keyless)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in \
+            convergio-${{ matrix.name }}.tar.gz \
+            convergio-${{ matrix.name }}.spdx.json \
+            convergio-${{ matrix.name }}.SHA256SUMS; do
+            cosign sign-blob --yes \
+              --output-signature "${f}.sig" \
+              --output-certificate "${f}.crt" \
+              "$f"
+          done
+
       - name: Attest release artifacts
         uses: actions/attest-build-provenance@v2
         with:
@@ -127,8 +144,14 @@ jobs:
           name: convergio-${{ matrix.name }}
           path: |
             convergio-${{ matrix.name }}.tar.gz
+            convergio-${{ matrix.name }}.tar.gz.sig
+            convergio-${{ matrix.name }}.tar.gz.crt
             convergio-${{ matrix.name }}.spdx.json
+            convergio-${{ matrix.name }}.spdx.json.sig
+            convergio-${{ matrix.name }}.spdx.json.crt
             convergio-${{ matrix.name }}.SHA256SUMS
+            convergio-${{ matrix.name }}.SHA256SUMS.sig
+            convergio-${{ matrix.name }}.SHA256SUMS.crt
 
       - name: Upload to GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
@@ -137,6 +160,189 @@ jobs:
         run: |
           gh release upload "${GITHUB_REF_NAME}" \
             "convergio-${{ matrix.name }}.tar.gz" \
+            "convergio-${{ matrix.name }}.tar.gz.sig" \
+            "convergio-${{ matrix.name }}.tar.gz.crt" \
             "convergio-${{ matrix.name }}.spdx.json" \
+            "convergio-${{ matrix.name }}.spdx.json.sig" \
+            "convergio-${{ matrix.name }}.spdx.json.crt" \
             "convergio-${{ matrix.name }}.SHA256SUMS" \
+            "convergio-${{ matrix.name }}.SHA256SUMS.sig" \
+            "convergio-${{ matrix.name }}.SHA256SUMS.crt" \
             --clobber
+
+  image:
+    name: image + promotion manifest
+    needs: policy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+      attestations: write
+    env:
+      IMAGE_REF: ghcr.io/${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_REF }}:${{ github.ref_name }}
+            ${{ env.IMAGE_REF }}:sha-${{ github.sha }}
+
+      - name: Record image digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "${{ steps.build.outputs.digest }}" > convergio-image.DIGEST
+
+      - name: Generate image SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.IMAGE_REF }}@${{ steps.build.outputs.digest }}
+          format: spdx-json
+          output-file: convergio-image.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.0
+
+      - name: Sign image (keyless)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cosign sign --yes "${{ env.IMAGE_REF }}@${{ steps.build.outputs.digest }}"
+
+      - name: Attest image SBOM (keyless)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cosign attest --yes \
+            --predicate convergio-image.spdx.json \
+            --type spdxjson \
+            "${{ env.IMAGE_REF }}@${{ steps.build.outputs.digest }}"
+
+      - name: Generate promotion manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./scripts/gen_release_artifact_manifest.py \
+            --tag "${GITHUB_REF_NAME}" \
+            --git-sha "${GITHUB_SHA}" \
+            --git-ref "${GITHUB_REF}" \
+            --image-ref "${{ env.IMAGE_REF }}" \
+            --image-digest "${{ steps.build.outputs.digest }}" \
+            --out convergio-artifact-manifest.json
+
+      - name: Sign promotion manifest (keyless)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cosign sign-blob --yes \
+            --output-signature convergio-artifact-manifest.json.sig \
+            --output-certificate convergio-artifact-manifest.json.crt \
+            convergio-artifact-manifest.json
+
+      - name: Sign image digest + SBOM (keyless)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cosign sign-blob --yes \
+            --output-signature convergio-image.DIGEST.sig \
+            --output-certificate convergio-image.DIGEST.crt \
+            convergio-image.DIGEST
+
+          cosign sign-blob --yes \
+            --output-signature convergio-image.spdx.json.sig \
+            --output-certificate convergio-image.spdx.json.crt \
+            convergio-image.spdx.json
+
+      - name: Checksums (manifest bundle)
+        shell: bash
+        run: |
+          set -euo pipefail
+          shasum -a 256 \
+            convergio-image.DIGEST \
+            convergio-image.spdx.json \
+            convergio-artifact-manifest.json \
+            > convergio-artifact-manifest.SHA256SUMS
+
+      - name: Sign checksums (keyless)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cosign sign-blob --yes \
+            --output-signature convergio-artifact-manifest.SHA256SUMS.sig \
+            --output-certificate convergio-artifact-manifest.SHA256SUMS.crt \
+            convergio-artifact-manifest.SHA256SUMS
+
+      - name: Attest promotion artifacts
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            convergio-image.DIGEST
+            convergio-image.DIGEST.sig
+            convergio-image.DIGEST.crt
+            convergio-image.spdx.json
+            convergio-image.spdx.json.sig
+            convergio-image.spdx.json.crt
+            convergio-artifact-manifest.json
+            convergio-artifact-manifest.json.sig
+            convergio-artifact-manifest.json.crt
+            convergio-artifact-manifest.SHA256SUMS
+            convergio-artifact-manifest.SHA256SUMS.sig
+            convergio-artifact-manifest.SHA256SUMS.crt
+
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${GITHUB_REF_NAME}" \
+            convergio-image.DIGEST \
+            convergio-image.DIGEST.sig \
+            convergio-image.DIGEST.crt \
+            convergio-image.spdx.json \
+            convergio-image.spdx.json.sig \
+            convergio-image.spdx.json.crt \
+            convergio-artifact-manifest.json \
+            convergio-artifact-manifest.json.sig \
+            convergio-artifact-manifest.json.crt \
+            convergio-artifact-manifest.SHA256SUMS \
+            convergio-artifact-manifest.SHA256SUMS.sig \
+            convergio-artifact-manifest.SHA256SUMS.crt \
+            --clobber
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: convergio-promotion-manifest
+          path: |
+            convergio-image.DIGEST
+            convergio-image.DIGEST.sig
+            convergio-image.DIGEST.crt
+            convergio-image.spdx.json
+            convergio-image.spdx.json.sig
+            convergio-image.spdx.json.crt
+            convergio-artifact-manifest.json
+            convergio-artifact-manifest.json.sig
+            convergio-artifact-manifest.json.crt
+            convergio-artifact-manifest.SHA256SUMS
+            convergio-artifact-manifest.SHA256SUMS.sig
+            convergio-artifact-manifest.SHA256SUMS.crt
