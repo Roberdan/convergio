@@ -24,6 +24,8 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
+mod bitemporal;
+
 /// `POST/GET /v1/fleet/repos`, `PATCH /v1/fleet/repos/:name`,
 /// `POST /v1/fleet/build`, `GET /v1/fleet/patterns`.
 pub mod fleet;

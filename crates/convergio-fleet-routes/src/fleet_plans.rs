@@ -21,6 +21,8 @@ use convergio_server_core::ApiError;
 use convergio_server_core::AppState;
 use convergio_thor::{Thor, Verdict};
 use serde::{Deserialize, Serialize};
+
+use crate::bitemporal::{parse_bitemporal, BitemporalQuery};
 use serde_json::{json, Value};
 use std::time::Duration;
 
@@ -44,6 +46,10 @@ async fn create(
 
 #[derive(Deserialize)]
 struct ListQuery {
+    #[serde(default)]
+    as_of: Option<String>,
+    #[serde(default)]
+    tx_as_of: Option<String>,
     scope: Option<String>,
 }
 
@@ -51,6 +57,7 @@ async fn list(
     State(state): State<AppState>,
     Query(q): Query<ListQuery>,
 ) -> Result<Json<Vec<convergio_fleet::FleetPlan>>, ApiError> {
+    let _ = parse_bitemporal(q.as_of.as_deref(), q.tx_as_of.as_deref())?;
     let plans = state.fleet_plans.list(q.scope.as_deref()).await?;
     Ok(Json(plans))
 }
@@ -58,7 +65,9 @@ async fn list(
 async fn show(
     State(state): State<AppState>,
     Path(id): Path<String>,
+    Query(bt): Query<BitemporalQuery>,
 ) -> Result<Json<FleetPlanView>, ApiError> {
+    let _ = bt.parse()?;
     Ok(Json(state.fleet_plans.show(&id).await?))
 }
 

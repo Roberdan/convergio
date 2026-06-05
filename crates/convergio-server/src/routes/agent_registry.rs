@@ -10,6 +10,7 @@
 
 use crate::app::AppState;
 use crate::error::ApiError;
+use crate::routes::bitemporal::{parse_bitemporal, BitemporalQuery};
 use axum::extract::{Path, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
@@ -72,6 +73,10 @@ async fn register(
 
 #[derive(Debug, Default, Deserialize)]
 struct AgentListQuery {
+    #[serde(default)]
+    as_of: Option<String>,
+    #[serde(default)]
+    tx_as_of: Option<String>,
     /// Filter by canonical agent status (`working`, `idle`, `ready`, `terminated`, …).
     status: Option<String>,
     /// Maximum number of rows to return. Caps at 1000 server-side.
@@ -82,6 +87,7 @@ async fn list(
     State(state): State<AppState>,
     Query(q): Query<AgentListQuery>,
 ) -> Result<Json<Vec<AgentRecord>>, ApiError> {
+    let _ = parse_bitemporal(q.as_of.as_deref(), q.tx_as_of.as_deref())?;
     let limit = q.limit.map(|n| n.clamp(1, 1000));
     Ok(Json(
         state
@@ -95,7 +101,9 @@ async fn list(
 async fn get_one(
     State(state): State<AppState>,
     Path(id): Path<String>,
+    Query(bt): Query<BitemporalQuery>,
 ) -> Result<Json<AgentRecord>, ApiError> {
+    let _ = bt.parse()?;
     Ok(Json(state.durability.agents().get(&id).await?))
 }
 
@@ -134,6 +142,10 @@ async fn summaries(
 
 #[derive(Deserialize)]
 struct DetailsQuery {
+    #[serde(default)]
+    as_of: Option<String>,
+    #[serde(default)]
+    tx_as_of: Option<String>,
     #[serde(default = "default_audit_limit")]
     audit_limit: i64,
     #[serde(default = "default_pr_limit")]
@@ -152,6 +164,7 @@ async fn details(
     Path(id): Path<String>,
     Query(q): Query<DetailsQuery>,
 ) -> Result<Json<AgentDetails>, ApiError> {
+    let _ = parse_bitemporal(q.as_of.as_deref(), q.tx_as_of.as_deref())?;
     let store = state.durability.agents();
     let summary = store.summary(&id).await?;
     let task_id = summary.agent.current_task_id.clone();

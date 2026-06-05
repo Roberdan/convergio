@@ -2,6 +2,7 @@
 
 use crate::app::AppState;
 use crate::error::ApiError;
+use crate::routes::bitemporal::{parse_bitemporal, BitemporalQuery};
 use axum::extract::{Path, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
@@ -21,6 +22,10 @@ pub fn router() -> Router<AppState> {
 
 #[derive(Deserialize)]
 struct ListQuery {
+    #[serde(default)]
+    as_of: Option<String>,
+    #[serde(default)]
+    tx_as_of: Option<String>,
     #[serde(default = "default_limit")]
     limit: i64,
 }
@@ -41,6 +46,7 @@ async fn list(
     State(state): State<AppState>,
     Query(q): Query<ListQuery>,
 ) -> Result<Json<Vec<Plan>>, ApiError> {
+    let _ = parse_bitemporal(q.as_of.as_deref(), q.tx_as_of.as_deref())?;
     let plans = state.durability.plans().list(q.limit).await?;
     Ok(Json(plans))
 }
@@ -48,7 +54,9 @@ async fn list(
 async fn by_id(
     State(state): State<AppState>,
     Path(id): Path<String>,
+    Query(bt): Query<BitemporalQuery>,
 ) -> Result<Json<Plan>, ApiError> {
+    let _ = bt.parse()?;
     // Accept either a plain integer plan number or a UUID.
     if let Ok(num) = id.parse::<i64>() {
         let plan = state
@@ -105,6 +113,10 @@ async fn transition(
 
 #[derive(Deserialize)]
 struct TriageQuery {
+    #[serde(default)]
+    as_of: Option<String>,
+    #[serde(default)]
+    tx_as_of: Option<String>,
     #[serde(default = "default_stale_days")]
     stale_days: i64,
 }
@@ -118,6 +130,7 @@ async fn triage(
     Path(id): Path<String>,
     Query(q): Query<TriageQuery>,
 ) -> Result<Json<Vec<Task>>, ApiError> {
+    let _ = parse_bitemporal(q.as_of.as_deref(), q.tx_as_of.as_deref())?;
     let before = Utc::now() - Duration::days(q.stale_days);
     let tasks = state
         .durability

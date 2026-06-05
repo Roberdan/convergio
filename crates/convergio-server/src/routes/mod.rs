@@ -4,6 +4,7 @@ pub mod agent_registry;
 pub mod agents;
 pub mod api_actions;
 pub mod audit;
+pub(crate) mod bitemporal;
 pub mod capabilities;
 pub mod context;
 pub mod crdt;

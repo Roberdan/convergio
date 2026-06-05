@@ -2,7 +2,8 @@
 
 use crate::app::AppState;
 use crate::error::ApiError;
-use axum::extract::{Path, State};
+use crate::routes::bitemporal::BitemporalQuery;
+use axum::extract::{Path, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use convergio_durability::{NewTask, Task, TaskStatus};
@@ -51,7 +52,9 @@ async fn create(
 async fn list(
     State(state): State<AppState>,
     Path(plan_id): Path<String>,
+    Query(bt): Query<BitemporalQuery>,
 ) -> Result<Json<Vec<Task>>, ApiError> {
+    let _ = bt.parse()?;
     let tasks = state.durability.tasks().list_by_plan(&plan_id).await?;
     Ok(Json(tasks))
 }
@@ -59,7 +62,9 @@ async fn list(
 async fn by_id(
     State(state): State<AppState>,
     Path(id): Path<String>,
+    Query(bt): Query<BitemporalQuery>,
 ) -> Result<Json<Task>, ApiError> {
+    let _ = bt.parse()?;
     let task = state.durability.tasks().get(&id).await?;
     Ok(Json(task))
 }
