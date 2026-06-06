@@ -33,6 +33,7 @@ members = [
     "crates/convergio-capability-registry",
     "crates/convergio-connector",
     "crates/convergio-reports",
+    "crates/convergio-ontology-author",
 ]
 resolver = "2"
 
