@@ -373,6 +373,29 @@ Current scope:
   `GET /v1/gates/preconditions` to ask "what evidence does this
   gate need?" before bouncing off a refused submit
 
+Recently shipped (v0.3.32 → v0.3.35):
+
+- **EU-sovereign layer** — relicensed to **AGPL-3.0-or-later**
+  (ADR-0074); `convergio-provenance` W3C PROV-JSON bundles for
+  ontology objects (ADR-0075); `convergio-gdpr` data-subject-rights
+  handlers (Art. 15/16/17/18/20/21/22) wired at
+  `POST /v1/gdpr/requests` with an audit row per fulfilment
+  (ADR-0076); purpose-binding middleware (every request carries an
+  `x-purpose-id`)
+- **Ontology runtime** — typed object / link / property storage, a
+  bitemporal object event log, an actions base + registry with
+  idempotency, SHACL + JSON-Schema export, semantic helpers and
+  graph projection (`convergio-ontology`, ADR-0051)
+- **Hybrid retrieval** — `convergio-embed` semantic search fused with
+  structural code-graph hits (RRF / linear blend) on the graph search
+  surface
+- **Platform features** — report engine + `ReportTemplate` object
+  type (`convergio-reports`), connector framework + reference
+  SIS/Canvas connectors (`convergio-connector`), an LLM-gateway entry
+  point, a public algorithm register, a unified search route, and
+  tracker-only dispatch (`--executor none` / `--no-dispatch`)
+  alongside `cvg fleet dispatch` per-repo worktree caps
+
 Out of scope for this MVP:
 
 - remote multi-user deployment

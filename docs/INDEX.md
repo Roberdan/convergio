@@ -27,7 +27,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `CONSTITUTION.md` | constitution | - | - | 486 |
 | `CONTRIBUTING-CLA.md` | - | - | - | 96 |
 | `CONTRIBUTING.md` | governance | - | - | 180 |
-| `README.md` | entry | - | - | 463 |
+| `README.md` | entry | - | - | 486 |
 | `ROADMAP.md` | roadmap | - | - | 536 |
 | `SECURITY.md` | governance | - | - | 57 |
 | `STATUS.md` | - | - | - | 40 |
