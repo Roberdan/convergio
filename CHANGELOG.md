@@ -16,6 +16,13 @@ MVP scope notes.
   CLA (`CONTRIBUTING-CLA.md`) required for new contributions. See
   [ADR-0074](docs/adr/0074-relicense-agplv3.md) for the rationale.
 
+## [0.3.36](https://github.com/Roberdan/convergio/compare/convergio-v0.3.35...convergio-v0.3.36) (2026-06-06)
+
+
+### Documentation
+
+* **repo:** record v0.3.32-v0.3.35 shipped features in project status ([#477](https://github.com/Roberdan/convergio/issues/477)) ([eebd055](https://github.com/Roberdan/convergio/commit/eebd055f1a4c872fc25b6b1ed76f3e13d8aabb6c))
+
 ## [0.3.35](https://github.com/Roberdan/convergio/compare/convergio-v0.3.34...convergio-v0.3.35) (2026-06-06)
 
 
