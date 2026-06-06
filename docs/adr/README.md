@@ -95,4 +95,7 @@ do not edit between the markers.
 | [0075](./0075-w3c-prov-provenance-bundles.md) | -0075 — W3C-PROV-JSON provenance bundles | accepted |
 | [0076](./0076-gdpr-data-subject-rights.md) | -0076 — GDPR data-subject-rights handlers | accepted |
 | [0077](./0077-workbench-ui-stack-tauri-vs-nextjs.md) | 0064. Choose the Convergio Workbench UI stack (Tauri-first) | proposed |
+| [0078](./0078-postgres-backend-for-deployed-scale.md) | -0078 — Add a PostgreSQL backend for deployed multi-user scale | proposed |
+| [0079](./0079-azure-single-tenant-deployment.md) | -0079 — Deploy verticals as customer-owned single-tenant on Azure EU | proposed |
+| [0080](./0080-llm-assisted-ontology-authoring.md) | -0080 — LLM-assisted ontology authoring (ontology-author) | proposed |
 <!-- END AUTO -->
