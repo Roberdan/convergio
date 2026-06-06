@@ -56,6 +56,7 @@ pub mod mcp;
 pub mod monitor;
 pub mod ontology;
 pub mod ontology_diff;
+pub mod ontology_import;
 pub mod ontology_types;
 pub mod plan;
 mod plan_run;

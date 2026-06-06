@@ -41,6 +41,7 @@ mod diff;
 mod error;
 mod graph_render;
 mod hash;
+mod import;
 mod jsonschema;
 mod lineage;
 mod migrate;
@@ -58,6 +59,9 @@ pub use graph_render::{
     render_diff_dot, render_diff_mermaid, render_lineage_dot, render_lineage_mermaid,
 };
 pub use hash::content_hash;
+pub use import::{
+    import_draft, ImportDraft, ImportLink, ImportObject, ImportProperty, ImportReport,
+};
 pub use jsonschema::{
     build_object_schema_bytes, datatype_fragment, export_object_schema, JSON_SCHEMA_DRAFT,
 };
