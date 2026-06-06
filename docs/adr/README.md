@@ -94,4 +94,5 @@ do not edit between the markers.
 | [0074](./0074-relicense-agplv3.md) | -0074 — Relicense Convergio to AGPL-3.0-or-later | accepted |
 | [0075](./0075-w3c-prov-provenance-bundles.md) | -0075 — W3C-PROV-JSON provenance bundles | accepted |
 | [0076](./0076-gdpr-data-subject-rights.md) | -0076 — GDPR data-subject-rights handlers | accepted |
+| [0077](./0077-workbench-ui-stack-tauri-vs-nextjs.md) | 0064. Choose the Convergio Workbench UI stack (Tauri-first) | proposed |
 <!-- END AUTO -->
