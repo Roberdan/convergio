@@ -1033,6 +1033,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "convergio-ontology-author"
+version = "0.3.36"
+dependencies = [
+ "chrono",
+ "clap",
+ "convergio-ontology",
+ "convergio-provenance",
+ "schemars",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "convergio-ops"
 version = "0.3.36"
 dependencies = [

@@ -1,0 +1,31 @@
+[package]
+name = "convergio-ontology-author"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "LLM-assisted ontology authoring (ADR-0080): turn input documents and/or a generic intent into a standard, validated, provenance-tracked ontology draft (OWL/SHACL/JSON-Schema)."
+readme = "README.md"
+
+[lints]
+workspace = true
+
+[dependencies]
+convergio-ontology = { path = "../convergio-ontology" }
+convergio-provenance = { path = "../convergio-provenance" }
+chrono = { workspace = true }
+clap = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+
+[[bin]]
+name = "convergio-ontology-author"
+path = "src/bin/convergio-ontology-author.rs"
