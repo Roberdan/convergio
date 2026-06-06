@@ -225,6 +225,9 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/spec/fleet-retrieval-golden-methodology.md` | spec | - | - | 264 |
 | `docs/spec/v3-durability-layer.md` | spec | - | - | 145 |
 | `docs/templates/adversarial-challenge.md` | - | - | - | 139 |
+| `docs/templates/edci-accreditation-self-assessment.md` | - | - | - | 138 |
+| `docs/templates/edci-diploma-supplement.md` | - | - | - | 151 |
+| `docs/templates/edci-transcript-of-records.md` | - | - | - | 82 |
 | `docs/vision.md` | - | - | - | 451 |
 | `docs/wip-commit-template.md` | - | - | - | 98 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |

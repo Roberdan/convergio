@@ -1,0 +1,136 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "adms": "http://www.w3.org/ns/adms#",
+    "cred": "https://www.w3.org/2018/credentials#",
+    "dc": "http://purl.org/dc/terms/",
+    "elm": "http://data.europa.eu/snb/model/elm/",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "id": "@id",
+    "type": "@type",
+    "issuer": {
+      "@id": "cred:issuer",
+      "@type": "@id"
+    },
+    "credentialSubject": {
+      "@id": "cred:credentialSubject",
+      "@type": "@id"
+    },
+    "issued": {
+      "@id": "dc:issued",
+      "@type": "xsd:dateTime"
+    },
+    "title": {
+      "@id": "dc:title"
+    },
+    "description": {
+      "@id": "dc:description"
+    },
+    "identifier": {
+      "@id": "adms:identifier"
+    }
+  },
+  "id": "urn:convergio:template:edci:transcript-of-records:v1:{{transcript_id}}",
+  "type": [
+    "cred:VerifiableCredential",
+    "elm:EuropeanDigitalCredential"
+  ],
+  "title": [
+    { "@value": "Transcript of Records", "@language": "en" },
+    { "@value": "Certificato degli esami / Transcript of Records", "@language": "it" }
+  ],
+  "issued": "{{issued_at_iso_datetime}}",
+  "description": [
+    {
+      "@value": "Template JSON-LD graph aligned to the European Learning Model (ELM) vocabulary. Fill and validate against the relevant EDC application profile constraints before issuing as an EDCI credential.",
+      "@language": "en"
+    },
+    {
+      "@value": "Grafo JSON-LD di template allineato al vocabolario ELM. Compilare e validare rispetto ai vincoli del profilo applicativo EDC prima di emettere una credenziale EDCI.",
+      "@language": "it"
+    }
+  ],
+  "issuer": "urn:convergio:org:{{issuer_id}}",
+  "credentialSubject": "urn:convergio:person:{{person_id}}",
+  "@graph": [
+    {
+      "id": "urn:convergio:org:{{issuer_id}}",
+      "type": "elm:Organisation",
+      "skos:prefLabel": [
+        { "@value": "{{issuer_name}}", "@language": "en" },
+        { "@value": "{{issuer_name}}", "@language": "it" }
+      ]
+    },
+    {
+      "id": "urn:convergio:person:{{person_id}}",
+      "type": "elm:Person",
+      "foaf:firstName": "{{holder_given_names}}",
+      "foaf:familyName": "{{holder_family_name}}",
+      "elm:dateOfBirth": "{{holder_birth_date}}",
+      "adms:identifier": [
+        {
+          "type": "elm:Identifier",
+          "skos:notation": "{{holder_student_id}}",
+          "dc:type": {
+            "type": "skos:Concept",
+            "skos:prefLabel": [
+              { "@value": "Student ID", "@language": "en" },
+              { "@value": "Matricola", "@language": "it" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "urn:convergio:learning-achievement:{{achievement_id}}",
+      "type": "elm:LearningAchievement",
+      "dc:title": [
+        { "@value": "{{programme_title}}", "@language": "en" },
+        { "@value": "{{programme_title_it}}", "@language": "it" }
+      ],
+      "elm:hasPart": [
+        "urn:convergio:learning-activity:{{activity_1_id}}"
+      ]
+    },
+    {
+      "id": "urn:convergio:learning-activity:{{activity_1_id}}",
+      "type": "elm:LearningActivity",
+      "dc:title": [
+        { "@value": "{{activity_1_title}}", "@language": "en" },
+        { "@value": "{{activity_1_title_it}}", "@language": "it" }
+      ],
+      "elm:creditPoint": {
+        "type": "elm:CreditPoint",
+        "elm:value": "{{activity_1_ects}}"
+      },
+      "elm:additionalNote": [
+        {
+          "type": "elm:Note",
+          "dc:description": [
+            { "@value": "Grade / Voto: {{activity_1_grade}}", "@language": "en" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "urn:convergio:web-resource:{{transcript_id}}:pdf",
+      "type": "elm:WebResource",
+      "dc:title": [
+        { "@value": "Transcript of Records (PDF)", "@language": "en" },
+        { "@value": "Transcript of Records (PDF)", "@language": "it" }
+      ],
+      "elm:contentUrl": "{{pdf_url}}",
+      "dc:format": "application/pdf"
+    }
+  ],
+  "elm:supplementaryDocument": [
+    "urn:convergio:web-resource:{{transcript_id}}:pdf"
+  ],
+  "elm:hasPart": [
+    "urn:convergio:learning-achievement:{{achievement_id}}",
+    "urn:convergio:learning-activity:{{activity_1_id}}"
+  ]
+}
