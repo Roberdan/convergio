@@ -1,0 +1,9 @@
+name = "connector-sis-ethos"
+version = "0.1.0"
+platforms = ["any"]
+
+# Reference-only metadata. Convergio core stores this manifest but does not
+# execute connectors yet (ADR-0057 is still proposed).
+[connector]
+kind = "sis"
+source_system = "banner-ethos-rest"

@@ -1,0 +1,22 @@
+schema: convergio.connector.reference.v1
+connector_id: connector-sis-ethos
+mode: pull
+source:
+  system: banner-ethos-rest
+  auth:
+    type: oauth2_client_credentials
+    token_url: https://sis.example.edu/auth/oauth2/token
+    scopes:
+      - ethos.api.read
+  api:
+    base_url: https://sis.example.edu/ethos/api
+    rate_limit:
+      max_rps: 5
+    pagination:
+      strategy: next_link
+artifacts:
+  ontology_mapping: ontology-mapping.yaml
+  dpa_reference: dpa-reference.md
+notes:
+  - This is a reference connector declaration only.
+  - It is meant to be bundled as a Convergio capability package.

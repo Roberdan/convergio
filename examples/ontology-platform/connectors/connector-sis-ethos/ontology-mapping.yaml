@@ -1,0 +1,67 @@
+schema: convergio.ontology.mapping.v1
+connector_id: connector-sis-ethos
+source:
+  system: banner-ethos-rest
+  entities:
+    person: /persons
+    email: /persons/{personGuid}/emails
+objects:
+  - object_type: edu.student
+    source_entity: person
+    identity:
+      source_key_field: personGuid
+    fields:
+      - source: personGuid
+        target_property: edu.student.source_key
+        purpose: edu.registry
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Public task: maintaining the official student registry."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-01
+          annex: "Annex A / Student registry / identifiers"
+      - source: bannerId
+        target_property: edu.student.student_number
+        purpose: edu.registry
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Student administration identifier used for enrolments and transcripts."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-01
+          annex: "Annex A / Student registry / identifiers"
+      - source: names.legal.first
+        target_property: edu.person.legal_first_name
+        purpose: edu.registry
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Required to identify the student in official records."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-01
+          annex: "Annex A / Student registry / identity"
+      - source: names.legal.last
+        target_property: edu.person.legal_last_name
+        purpose: edu.registry
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Required to identify the student in official records."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-01
+          annex: "Annex A / Student registry / identity"
+      - source: dateOfBirth
+        target_property: edu.person.date_of_birth
+        purpose: edu.registry
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Identity disambiguation and legal reporting where applicable."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-01
+          annex: "Annex A / Student registry / identity"
+      - source: emails[0].address
+        target_property: edu.person.email
+        purpose: edu.communications
+        lawful_basis:
+          gdpr_article: "6(1)(e)"
+          rationale: "Operational communications for enrolled students."
+        dpa_reference:
+          document_id: DPA-UNIV-2026-01
+          annex: "Annex B / Communications / contact"

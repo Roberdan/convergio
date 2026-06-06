@@ -228,6 +228,9 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/vision.md` | - | - | - | 451 |
 | `docs/wip-commit-template.md` | - | - | - | 98 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
+| `examples/ontology-platform/connectors/README.md` | example | - | - | 14 |
+| `examples/ontology-platform/connectors/connector-canvas-rest-lti13/dpa-reference.md` | - | - | - | 21 |
+| `examples/ontology-platform/connectors/connector-sis-ethos/dpa-reference.md` | - | - | - | 21 |
 | `examples/skills/cvg-attach-cursor/README.md` | example | - | - | 57 |
 | `examples/skills/cvg-attach-cursor/rules.md` | - | - | - | 92 |
 | `examples/skills/cvg-attach/README.md` | example | - | - | 158 |
