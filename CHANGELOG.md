@@ -16,6 +16,21 @@ MVP scope notes.
   CLA (`CONTRIBUTING-CLA.md`) required for new contributions. See
   [ADR-0074](docs/adr/0074-relicense-agplv3.md) for the rationale.
 
+## [0.3.34](https://github.com/Roberdan/convergio/compare/convergio-v0.3.33...convergio-v0.3.34) (2026-06-06)
+
+
+### Features
+
+* **cli:** add public algorithm register generator ([#438](https://github.com/Roberdan/convergio/issues/438)) ([fa04641](https://github.com/Roberdan/convergio/commit/fa04641286084370d179375b9c93d55b371dec70))
+* **durability:** add ontology branches ([#433](https://github.com/Roberdan/convergio/issues/433)) ([de707a4](https://github.com/Roberdan/convergio/commit/de707a4248ff653bc47767203ff270ee597dd511))
+* **ontology:** add action base and registry ([#437](https://github.com/Roberdan/convergio/issues/437)) ([bf0363a](https://github.com/Roberdan/convergio/commit/bf0363a941b530c00f5b0716c35f1b491ac65675))
+* **ontology:** add object storage tables ([#446](https://github.com/Roberdan/convergio/issues/446)) ([2c0ebe5](https://github.com/Roberdan/convergio/commit/2c0ebe54e4a657b02bc7944b60023fc0e45a31f3))
+* **repo:** add bitemporal object event log ([#418](https://github.com/Roberdan/convergio/issues/418)) ([a2be226](https://github.com/Roberdan/convergio/commit/a2be2269ab1ac54c4c978be40b4ffe597639a477))
+* **server:** add as_of read params ([#449](https://github.com/Roberdan/convergio/issues/449)) ([26ed924](https://github.com/Roberdan/convergio/commit/26ed9240df65d5890e6956c112b934b23b139ed7))
+* **server:** add llm gateway mvp ([#434](https://github.com/Roberdan/convergio/issues/434)) ([100a837](https://github.com/Roberdan/convergio/commit/100a83712d91ad760c982aed2e51846361af989c))
+* **server:** add report templates and rendering ([#444](https://github.com/Roberdan/convergio/issues/444)) ([763707c](https://github.com/Roberdan/convergio/commit/763707c488a0428e8001bac1fecc69b5e6ec26cb))
+* **server:** add unified /api/search ([#435](https://github.com/Roberdan/convergio/issues/435)) ([c19e12b](https://github.com/Roberdan/convergio/commit/c19e12bb7d6891840ad7ba64a0793ad3f7a7a4e7))
+
 ## [0.3.33](https://github.com/Roberdan/convergio/compare/convergio-v0.3.32...convergio-v0.3.33) (2026-06-05)
 
 
