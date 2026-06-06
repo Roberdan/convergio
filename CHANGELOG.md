@@ -16,6 +16,19 @@ MVP scope notes.
   CLA (`CONTRIBUTING-CLA.md`) required for new contributions. See
   [ADR-0074](docs/adr/0074-relicense-agplv3.md) for the rationale.
 
+## [0.3.35](https://github.com/Roberdan/convergio/compare/convergio-v0.3.34...convergio-v0.3.35) (2026-06-06)
+
+
+### Features
+
+* **docs:** edci diploma/transcript/accreditation templates ([#463](https://github.com/Roberdan/convergio/issues/463)) ([5dbf798](https://github.com/Roberdan/convergio/commit/5dbf798c1d9743f518d9829d74fd2546a3e531b4))
+
+
+### Documentation
+
+* **docs:** add dpia refresh for ontology platform ([#436](https://github.com/Roberdan/convergio/issues/436)) ([c179cdd](https://github.com/Roberdan/convergio/commit/c179cdd656a1b8d38b84867f813d436516dc6252))
+* **docs:** decide workbench ui stack ([#447](https://github.com/Roberdan/convergio/issues/447)) ([0467aec](https://github.com/Roberdan/convergio/commit/0467aec9529135f7ebc4a97cdf5486523b6e9005))
+
 ## [0.3.34](https://github.com/Roberdan/convergio/compare/convergio-v0.3.33...convergio-v0.3.34) (2026-06-06)
 
 
