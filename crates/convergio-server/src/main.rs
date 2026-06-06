@@ -105,9 +105,11 @@ async fn start(
     let embed = Arc::new(convergio_embed::EmbedStore::new(pool.clone()));
     let embedder = make_embedder();
     convergio_ontology::init(&pool).await?;
+    convergio_reports::init(&pool).await?;
     convergio_fleet::init(&pool).await?;
     let fleet = Arc::new(convergio_fleet::FleetStore::new(pool.clone()));
     let fleet_plans = Arc::new(convergio_fleet::FleetPlanStore::new(pool.clone()));
+    let reports = Arc::new(convergio_reports::ReportTemplateStore::new(pool.clone()));
 
     let durability = Arc::new(Durability::new(pool.clone()));
     let ops = Arc::new(convergio_ops::Ops::new(pool.clone()));
@@ -191,6 +193,7 @@ async fn start(
         fleet: fleet.clone(),
         fleet_plans: fleet_plans.clone(),
         ontology: ontology.clone(),
+        reports: reports.clone(),
         audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let app = router(state);

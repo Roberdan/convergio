@@ -45,6 +45,7 @@ pub fn router(state: AppState) -> Router {
         .merge(crate::routes::gate_preconditions::router())
         .merge(crate::routes::search::router())
         .merge(crate::routes::gdpr::router())
+        .merge(crate::routes::reports::router())
         .layer(axum::middleware::from_fn(crate::purpose::enforce))
         .layer(TraceLayer::new_for_http())
         .with_state(state)

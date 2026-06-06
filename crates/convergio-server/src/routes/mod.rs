@@ -24,6 +24,7 @@ pub mod ontology_graph;
 pub mod ops;
 pub mod plans;
 pub mod pr_links;
+pub mod reports;
 pub mod search;
 pub mod solve;
 pub mod status;

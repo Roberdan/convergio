@@ -42,6 +42,7 @@ convergio-fleet-routes = { workspace = true }
 convergio-server-core = { workspace = true }
 convergio-capability-registry = { workspace = true }
 convergio-gdpr = { workspace = true }
+convergio-reports = { workspace = true }
 
 axum = { workspace = true }
 clap = { workspace = true }
@@ -62,6 +63,7 @@ tar = { workspace = true }
 toml = { workspace = true }
 uuid = { workspace = true }
 reqwest = { workspace = true }
+base64 = "0.22"
 
 [dev-dependencies]
 reqwest = { workspace = true }

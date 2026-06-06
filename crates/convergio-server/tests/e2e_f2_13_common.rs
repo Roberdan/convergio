@@ -105,10 +105,11 @@ pub async fn boot_with_embedder(
         fleet: fleet.clone(),
         fleet_plans: Arc::new(convergio_fleet::FleetPlanStore::new(pool.clone())),
         ontology: Arc::new(convergio_ontology::Store::new(pool.clone())),
-        supervisor: Arc::new(Supervisor::new(pool)),
+        supervisor: Arc::new(Supervisor::new(pool.clone())),
         graph,
         embed: embed.clone(),
         embedder,
+        reports: Arc::new(convergio_reports::ReportTemplateStore::new(pool.clone())),
         audit_verify_cache: Arc::new(std::sync::Mutex::new(None)),
     };
     let app = router(state);

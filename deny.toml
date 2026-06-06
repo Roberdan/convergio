@@ -31,6 +31,8 @@ allow = [
     "AGPL-3.0",
     "AGPL-3.0-or-later",
     "MIT",
+    # OSI-approved MIT No Attribution; transitive via jsonschema/referencing.
+    "MIT-0",
     # MPL-2.0 is a weak copyleft (file-level): permissive for our
     # link-and-redistribute use case. Pulled in transitively via
     # webpki-roots / similar; compatible with Convergio Community
