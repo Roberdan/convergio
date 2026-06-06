@@ -42,6 +42,13 @@ pub enum Error {
         version: i64,
     },
 
+    /// An import payload referenced object types it did not define.
+    #[error("import closure error: undefined references: {missing}")]
+    ImportClosure {
+        /// Semicolon-joined list of the missing references.
+        missing: String,
+    },
+
     /// Caller asked for an entry that does not exist.
     #[error("not found: {kind} `{name}`")]
     NotFound {

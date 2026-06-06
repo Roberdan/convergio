@@ -19,7 +19,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 |------|-------|---------|--------|-------|
 | `.github/pull_request_template.md` | - | - | - | 64 |
 | `.pr-body.md` | - | - | - | 83 |
-| `AGENTS.md` | agent-rules | - | - | 616 |
+| `AGENTS.md` | agent-rules | - | - | 617 |
 | `ARCHITECTURE.md` | architecture | - | - | 271 |
 | `CHANGELOG.md` | release | - | - | 1455 |
 | `CODE_OF_CONDUCT.md` | governance | - | - | 40 |
@@ -86,7 +86,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-reports/CLAUDE.md` | crate-rules | - | - | 0 |
 | `crates/convergio-runner/AGENTS.md` | crate-rules | - | - | 53 |
 | `crates/convergio-server-core/AGENTS.md` | crate-rules | - | - | 58 |
-| `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 31 |
+| `crates/convergio-server/AGENTS.md` | crate-rules | - | - | 32 |
 | `crates/convergio-server/README.md` | crate-readme | - | - | 70 |
 | `crates/convergio-thor/AGENTS.md` | crate-rules | - | - | 25 |
 | `crates/convergio-thor/README.md` | crate-readme | - | - | 22 |
@@ -176,7 +176,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0078-postgres-backend-for-deployed-scale.md` | adr | - | proposed | 115 |
 | `docs/adr/0079-azure-single-tenant-deployment.md` | adr | - | proposed | 122 |
 | `docs/adr/0080-llm-assisted-ontology-authoring.md` | adr | - | proposed | 122 |
-| `docs/adr/README.md` | adr | - | - | 101 |
+| `docs/adr/0081-identity-and-access-for-deployed-verticals.md` | adr | - | proposed | 126 |
+| `docs/adr/README.md` | adr | - | - | 102 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |

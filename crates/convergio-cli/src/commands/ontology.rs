@@ -68,6 +68,12 @@ pub enum OntologyCommand {
         #[arg(long, value_enum, default_value_t = GraphFormatArg::Json)]
         format: GraphFormatArg,
     },
+    /// Import a self-contained ontology draft JSON (objects, properties
+    /// and links) — e.g. the `ontology.json` from an authoring tool.
+    Import {
+        /// Path to the ontology draft JSON file.
+        file: std::path::PathBuf,
+    },
 }
 
 /// Type family selector for `cvg ontology describe`.
@@ -112,6 +118,9 @@ pub async fn run(
         }
         OntologyCommand::BranchDiff { name, format } => {
             super::ontology_diff::branch_diff(client, output, &name, format).await
+        }
+        OntologyCommand::Import { file } => {
+            super::ontology_import::import(client, output, &file).await
         }
     }
 }

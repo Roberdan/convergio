@@ -17,11 +17,11 @@ use crate::AppState;
 use axum::extract::{Path, Query, State};
 use axum::http::header;
 use axum::response::IntoResponse;
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::{Json, Router};
 use convergio_ontology::{
-    export_object_schema, export_object_shacl, Error as OntologyError, LinkTypeRecord,
-    ObjectTypeRecord, PropertyTypeRecord,
+    export_object_schema, export_object_shacl, import_draft, Error as OntologyError, ImportDraft,
+    ImportReport, LinkTypeRecord, ObjectTypeRecord, PropertyTypeRecord,
 };
 use convergio_server_core::ApiError;
 use serde::{Deserialize, Serialize};
@@ -36,6 +36,21 @@ pub fn router() -> Router<AppState> {
             "/v1/ontology/export/:format/object/:name",
             get(export_object),
         )
+        .route("/v1/ontology/import", post(import_types))
+}
+
+async fn import_types(
+    State(state): State<AppState>,
+    Json(draft): Json<ImportDraft>,
+) -> Result<Json<ImportReport>, ApiError> {
+    match import_draft(&state.ontology, &draft).await {
+        Ok(r) => Ok(Json(r)),
+        Err(OntologyError::ImportClosure { missing }) => Err(ApiError::BadRequest {
+            code: "ontology_import_closure",
+            message: missing,
+        }),
+        Err(e) => Err(e.into()),
+    }
 }
 
 #[derive(Serialize)]
