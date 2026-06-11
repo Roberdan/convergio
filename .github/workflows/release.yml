@@ -115,7 +115,7 @@ jobs:
             > convergio-${{ matrix.name }}.SHA256SUMS
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.8.0
+        uses: sigstore/cosign-installer@v3.10.1
 
       - name: Sign release artifacts (keyless)
         shell: bash
@@ -221,7 +221,7 @@ jobs:
           upload-release-assets: false
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.8.0
+        uses: sigstore/cosign-installer@v3.10.1
 
       - name: Sign image (keyless)
         shell: bash
