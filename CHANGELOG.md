@@ -16,6 +16,13 @@ MVP scope notes.
   CLA (`CONTRIBUTING-CLA.md`) required for new contributions. See
   [ADR-0074](docs/adr/0074-relicense-agplv3.md) for the rationale.
 
+## [0.3.38](https://github.com/Roberdan/convergio/compare/convergio-v0.3.37...convergio-v0.3.38) (2026-06-14)
+
+
+### Bug Fixes
+
+* **api,cli,mcp,tui,coherence:** send x-purpose-id on all daemon clients ([b2a5b78](https://github.com/Roberdan/convergio/commit/b2a5b78afe551aa9d49c1029581885d5255f1c20))
+
 ## [0.3.37](https://github.com/Roberdan/convergio/compare/convergio-v0.3.36...convergio-v0.3.37) (2026-06-06)
 
 
