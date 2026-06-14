@@ -4,6 +4,19 @@ use crate::bridge_log;
 use crate::help;
 use crate::http::fallback_error;
 use convergio_api::{ActRequest, Action, HelpRequest, HelpTopic, HelpVerbosity};
+
+/// Build `HeaderMap` with the purpose-binding header required by the daemon.
+fn purpose_headers() -> reqwest::header::HeaderMap {
+    let purpose = std::env::var("CONVERGIO_PURPOSE_ID")
+        .ok()
+        .filter(|v| !v.trim().is_empty())
+        .unwrap_or_else(|| convergio_api::DEFAULT_PURPOSE_ID.to_string());
+    let mut headers = reqwest::header::HeaderMap::new();
+    if let Ok(v) = reqwest::header::HeaderValue::from_str(&purpose) {
+        headers.insert(convergio_api::PURPOSE_ID_HEADER, v);
+    }
+    headers
+}
 use rmcp::{
     handler::server::{router::tool::ToolRouter, wrapper::Parameters},
     model::{ServerCapabilities, ServerInfo},
@@ -68,9 +81,16 @@ impl From<ActParams> for ActRequest {
 
 impl Bridge {
     pub(crate) fn new(url: String) -> Self {
+        // Build the client with the purpose-binding header so the server's
+        // purpose-enforcement middleware accepts every convergio.act call.
+        // Falls back to a plain client on (unlikely) init failure.
+        let client = reqwest::Client::builder()
+            .default_headers(purpose_headers())
+            .build()
+            .unwrap_or_default();
         Self {
             url,
-            client: reqwest::Client::new(),
+            client,
             last_refusal: Arc::new(Mutex::new(None)),
             tool_router: Self::tool_router(),
         }

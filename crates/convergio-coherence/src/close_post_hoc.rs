@@ -81,7 +81,7 @@ pub async fn run(
 }
 
 async fn build_report(daemon: &str, since: &str, cutoff: DateTime<Utc>) -> Result<Report> {
-    let client = reqwest::Client::new();
+    let client = crate::http::daemon_client(std::time::Duration::from_secs(10))?;
     let rows = scan_audit(&client, daemon, cutoff).await?;
     let mut report = Report {
         since: since.to_string(),

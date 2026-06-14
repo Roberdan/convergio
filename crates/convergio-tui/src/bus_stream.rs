@@ -107,7 +107,10 @@ async fn supervisor(
     // dashboard recover. Surface Reconnecting between attempts so the
     // footer reflects reality.
     let client = loop {
-        match reqwest::Client::builder().build() {
+        match reqwest::Client::builder()
+            .default_headers(crate::http::purpose_headers())
+            .build()
+        {
             Ok(c) => break c,
             Err(e) => {
                 tracing::warn!(error = %e, "reqwest client init failed; retrying");

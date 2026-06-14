@@ -116,10 +116,7 @@ fn run_git_log(root: &Path, since: &str) -> Result<String> {
 /// Hit the daemon and return the registry. Soft-fails on any error.
 pub async fn fetch_agent_registry(daemon: &str) -> Result<Vec<AgentSummary>> {
     let url = format!("{}/v1/agent-registry/agents", daemon.trim_end_matches('/'));
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(2))
-        .build()
-        .with_context(|| "build http client")?;
+    let client = crate::http::daemon_client(Duration::from_secs(2))?;
     let resp = client
         .get(&url)
         .send()

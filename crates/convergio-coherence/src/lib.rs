@@ -47,6 +47,7 @@ mod handshake_render;
 mod handshake_run;
 #[cfg(test)]
 mod handshake_tests;
+mod http;
 mod parse;
 pub mod plan_execution;
 mod plan_execution_scan;

@@ -16,6 +16,8 @@ mod help_actions;
 #[cfg(test)]
 mod help_tests;
 mod http;
+#[cfg(test)]
+mod purpose_e2e_tests;
 
 #[cfg(test)]
 mod http_tests;

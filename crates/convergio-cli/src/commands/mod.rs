@@ -118,20 +118,8 @@ pub struct Client {
 impl Client {
     /// Build with the daemon base URL (e.g. `http://127.0.0.1:8420`).
     pub fn new(base: String) -> Self {
-        // Default purpose id: callers can override with CONVERGIO_PURPOSE_ID.
-        // This keeps `cvg` functional while the server requires purpose-binding.
-        let purpose = std::env::var("CONVERGIO_PURPOSE_ID")
-            .ok()
-            .filter(|v| !v.trim().is_empty())
-            .unwrap_or_else(|| "00000000-0000-0000-0000-000000000000".to_string());
-
-        let mut headers = reqwest::header::HeaderMap::new();
-        if let Ok(v) = reqwest::header::HeaderValue::from_str(&purpose) {
-            headers.insert(convergio_api::PURPOSE_ID_HEADER, v);
-        }
-
         let inner = reqwest::Client::builder()
-            .default_headers(headers)
+            .default_headers(crate::http::purpose_headers())
             .build()
             .expect("reqwest client");
 
@@ -153,6 +141,18 @@ impl Client {
             .await
             .with_context(|| format!("GET {url}"))?;
         json_or_err(resp).await
+    }
+
+    /// `GET path` — returns the raw `Response` for callers that need the HTTP
+    /// status code directly (e.g. `doctor`). Only transport errors become
+    /// `Err`; 4xx/5xx are returned as `Ok` so the caller can classify them.
+    pub async fn get_response(&self, path: &str) -> Result<reqwest::Response> {
+        let url = format!("{}{}", self.base, path);
+        self.inner
+            .get(&url)
+            .send()
+            .await
+            .with_context(|| format!("GET {url}"))
     }
 
     /// `GET path` and return the raw response bytes. Used by

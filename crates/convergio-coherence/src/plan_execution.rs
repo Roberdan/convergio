@@ -95,7 +95,7 @@ pub async fn run(
     plan_id: &str,
     strict: bool,
 ) -> Result<()> {
-    let client = reqwest::Client::new();
+    let client = crate::http::daemon_client(std::time::Duration::from_secs(10))?;
     let report = build_report(&client, daemon, plan_id).await?;
     match output {
         OutputMode::Json => println!("{}", serde_json::to_string_pretty(&report)?),

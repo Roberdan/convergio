@@ -8,6 +8,7 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use std::time::{Duration, Instant};
 
+// Mirrors convergio_api::PURPOSE_ID_HEADER; inlined to avoid a new crate dep.
 const PURPOSE_ID_HEADER: &str = "x-purpose-id";
 const HANDSHAKE_PURPOSE_ID: &str = "00000000-0000-4000-8000-000000000443";
 
@@ -31,10 +32,24 @@ pub(crate) enum PhaseFail {
     Other(String),
 }
 
-/// Build an HTTP client with the per-phase timeout pre-applied.
+/// Build an HTTP client with the per-phase timeout and default purpose-binding
+/// header pre-applied. Callers that need a per-request purpose override (e.g.
+/// `HANDSHAKE_PURPOSE_ID`) can still set the header on individual requests —
+/// the per-request header takes precedence over the default.
 pub(crate) fn build_client(timeout: Duration) -> Result<reqwest::Client> {
+    // Default purpose id so the purpose-binding middleware accepts calls from
+    // all daemon-backed verifiers. Handshake requests override per-request.
+    let purpose = std::env::var("CONVERGIO_PURPOSE_ID")
+        .ok()
+        .filter(|v| !v.trim().is_empty())
+        .unwrap_or_else(|| "00000000-0000-0000-0000-000000000000".to_string());
+    let mut headers = reqwest::header::HeaderMap::new();
+    if let Ok(v) = reqwest::header::HeaderValue::from_str(&purpose) {
+        headers.insert(PURPOSE_ID_HEADER, v);
+    }
     reqwest::Client::builder()
         .timeout(timeout)
+        .default_headers(headers)
         .build()
         .with_context(|| "build http client")
 }

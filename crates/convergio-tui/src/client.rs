@@ -59,6 +59,7 @@ impl Client {
             base,
             inner: reqwest::Client::builder()
                 .timeout(Duration::from_secs(3))
+                .default_headers(crate::http::purpose_headers())
                 .build()
                 .unwrap_or_else(|_| reqwest::Client::new()),
             enable_gh,

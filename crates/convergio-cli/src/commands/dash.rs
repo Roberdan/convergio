@@ -47,6 +47,7 @@ async fn opportunistic_retire_stale(daemon_url: &str) {
     });
     let client = match reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(3))
+        .default_headers(crate::http::purpose_headers())
         .build()
     {
         Ok(c) => c,

@@ -38,6 +38,15 @@ pub const ACT_TOOL: &str = "convergio.act";
 /// case-insensitive.
 pub const PURPOSE_ID_HEADER: &str = "x-purpose-id";
 
+/// Nil-UUID fallback used when `CONVERGIO_PURPOSE_ID` is not set.
+///
+/// All Convergio daemon clients (CLI, MCP, TUI, coherence verifiers) default
+/// to this value so the middleware accepts requests without requiring every
+/// operator to configure a custom purpose id. Callers that track a specific
+/// GDPR processing purpose should supply their own UUID via
+/// `CONVERGIO_PURPOSE_ID`.
+pub const DEFAULT_PURPOSE_ID: &str = "00000000-0000-0000-0000-000000000000";
+
 /// Action capabilities exposed to agents.
 pub const CAPABILITIES: &[&str] = &[
     "status",

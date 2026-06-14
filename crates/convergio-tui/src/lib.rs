@@ -27,6 +27,7 @@ pub mod client;
 pub mod client_gh;
 pub mod client_pr_cache;
 pub mod header_banner;
+pub(crate) mod http;
 pub mod keymap;
 pub mod mode;
 pub mod navigation;

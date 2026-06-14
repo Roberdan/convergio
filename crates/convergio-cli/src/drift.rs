@@ -102,6 +102,7 @@ pub fn render(bundle: &Bundle, decision: &DriftDecision, url: &str) -> String {
 pub async fn fetch_running_version(url: &str) -> Option<String> {
     let client = reqwest::Client::builder()
         .timeout(PROBE_TIMEOUT)
+        .default_headers(crate::http::purpose_headers())
         .build()
         .ok()?;
     let endpoint = format!("{url}/v1/health");

@@ -187,9 +187,11 @@ fn check_binary(
 }
 
 async fn check_daemon(checks: &mut Vec<DoctorCheck>, client: &Client) -> bool {
-    let url = format!("{}/v1/health", client.base());
-    let resp = reqwest::get(&url).await;
-    match resp {
+    // Use the shared Client (which carries x-purpose-id) instead of a bare
+    // reqwest::get so the server's purpose-binding middleware accepts the
+    // request.  get_response returns Ok for any HTTP status; only transport
+    // failures become Err, preserving "HTTP 4xx/5xx" diagnostics.
+    match client.get_response("/v1/health").await {
         Ok(resp) if resp.status().is_success() => match resp.json::<Value>().await {
             Ok(body) if body.get("service").and_then(Value::as_str) == Some("convergio") => {
                 let version = body.get("version").and_then(Value::as_str).unwrap_or("?");

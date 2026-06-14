@@ -7,6 +7,7 @@ use convergio_i18n::{detect_locale, Bundle};
 mod commands;
 mod dispatch;
 mod drift;
+mod http;
 
 #[derive(Parser)]
 #[command(name = "cvg", version, about = "Convergio CLI", long_about = None)]
