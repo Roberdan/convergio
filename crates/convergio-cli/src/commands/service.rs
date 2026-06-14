@@ -229,6 +229,20 @@ impl ServiceSpec {
     }
 }
 
+/// Stop the running daemon (if any) and start a fresh one via the
+/// platform service manager (launchd on macOS, systemd on Linux).
+///
+/// Called by `cvg update` after installing new binaries so the
+/// restarted daemon is a stable launchd-managed process that survives
+/// beyond the calling git hook's process group.
+/// Compare with the previous `pkill + spawn` approach which created
+/// a direct child process that died with the hook.
+pub(super) fn restart_via_service_manager() -> Result<()> {
+    let svc = ServiceSpec::current()?;
+    svc.stop_best_effort();
+    svc.start()
+}
+
 fn run_cmd(program: &str, args: &[&str]) -> Result<()> {
     let status = Command::new(program).args(args).status();
     match status {

@@ -1,17 +1,18 @@
 //! Step driver for `cvg update` (F50). Sequence: probe -> rebuild
 //! three crates -> sync `~/.cargo/bin` to `~/.local/bin` (F44) ->
-//! pkill + restart daemon with `~/.cargo/bin` first on PATH and
-//! `CONVERGIO_EXPECTED_VERSION` set (F45) -> re-probe + verify audit
-//! chain. `--if-needed` short-circuits when versions already match.
+//! stop + restart daemon via the platform service manager (launchd /
+//! systemd) so the new process survives beyond the calling git hook's
+//! process group -> re-probe + verify audit chain.
+//! `--if-needed` short-circuits when versions already match.
 
+use super::service::restart_via_service_manager;
 use super::Client;
 use super::OutputMode;
 use anyhow::{Context, Result};
 use convergio_i18n::Bundle;
 use serde_json::Value;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
-use std::time::Duration;
 
 /// Caller-visible flags translated from clap.
 #[derive(Clone, Copy, Debug)]
@@ -184,61 +185,18 @@ fn sync_shadowed_binaries(bundle: &Bundle) -> Result<()> {
     Ok(())
 }
 
-fn restart_daemon(workspace_version: &str) -> Result<()> {
-    // Best-effort kill of any running daemon. `pkill` returning 1 is
-    // fine (no match); other failures are real.
-    let kill_status = Command::new("pkill")
-        .args(["-f", "convergio start"])
-        .status();
-    if let Ok(s) = kill_status {
-        if !s.success() && s.code() != Some(1) {
-            anyhow::bail!("pkill convergio failed with status {s}");
-        }
-    }
-    std::thread::sleep(Duration::from_millis(800));
-
-    // F45: ensure ~/.cargo/bin is first on PATH so cargo metadata
-    // (used by `cvg graph build`) resolves under launchd-spawned
-    // daemons too.
-    let cargo_bin = cargo_bin().context("HOME is not set")?;
-    let new_path = match std::env::var("PATH") {
-        Ok(p) => format!("{}:{}", cargo_bin.display(), p),
-        Err(_) => format!("{}", cargo_bin.display()),
-    };
-
-    let log_path = home_dir()
-        .map(|h| h.join(".convergio").join("daemon.log"))
-        .unwrap_or_else(|| PathBuf::from("/tmp/convergio-daemon.log"));
-    if let Some(parent) = log_path.parent() {
-        let _ = std::fs::create_dir_all(parent);
-    }
-    let log_handle = std::fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(&log_path)
-        .with_context(|| format!("open daemon log {}", log_path.display()))?;
-    let log_err = log_handle.try_clone().context("clone daemon log handle")?;
-
-    let convergio_bin = which_or_default(&cargo_bin, "convergio");
-    Command::new(convergio_bin)
-        .arg("start")
-        .env("PATH", &new_path)
-        .env("CONVERGIO_EXPECTED_VERSION", workspace_version)
-        .stdout(log_handle)
-        .stderr(log_err)
-        .spawn()
-        .context("spawn convergio start")?;
-    std::thread::sleep(Duration::from_secs(3));
-    Ok(())
-}
-
-fn which_or_default(cargo_bin: &Path, name: &str) -> PathBuf {
-    let candidate = cargo_bin.join(name);
-    if candidate.is_file() {
-        candidate
-    } else {
-        PathBuf::from(name)
-    }
+fn restart_daemon(_workspace_version: &str) -> Result<()> {
+    // Restart via the platform service manager (launchd / systemd) so
+    // the daemon process is adopted by the init system and survives
+    // beyond the calling git hook's process group. Previously this used
+    // `pkill + spawn` which created a direct child that died with the
+    // hook; see the 2026-06-14 `cvg dash` incident.
+    //
+    // PATH (F45) and CONVERGIO_REPO_PATH are already set in the service
+    // unit file; CONVERGIO_EXPECTED_VERSION is omitted because the
+    // freshly-installed binary always matches the workspace version, so
+    // the drift flag would never fire in this flow.
+    restart_via_service_manager()
 }
 
 fn run_step(label: &str, cmd: &mut Command) -> Result<()> {
@@ -247,26 +205,4 @@ fn run_step(label: &str, cmd: &mut Command) -> Result<()> {
         anyhow::bail!("{label} failed with status {}", status.code().unwrap_or(-1));
     }
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn which_or_default_prefers_cargo_bin_when_present() {
-        let tempdir = tempfile::tempdir().expect("temp");
-        let bin = tempdir.path().join("cvg");
-        std::fs::write(&bin, "#!/bin/sh\n").expect("write");
-        assert_eq!(which_or_default(tempdir.path(), "cvg"), bin);
-    }
-
-    #[test]
-    fn which_or_default_falls_back_to_name() {
-        let tempdir = tempfile::tempdir().expect("temp");
-        assert_eq!(
-            which_or_default(tempdir.path(), "missing-bin"),
-            PathBuf::from("missing-bin")
-        );
-    }
 }
