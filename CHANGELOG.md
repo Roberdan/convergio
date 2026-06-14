@@ -16,6 +16,13 @@ MVP scope notes.
   CLA (`CONTRIBUTING-CLA.md`) required for new contributions. See
   [ADR-0074](docs/adr/0074-relicense-agplv3.md) for the rationale.
 
+## [0.3.39](https://github.com/Roberdan/convergio/compare/convergio-v0.3.38...convergio-v0.3.39) (2026-06-14)
+
+
+### Bug Fixes
+
+* **cli:** restart daemon via launchd in cvg update, not as direct child ([ede51f9](https://github.com/Roberdan/convergio/commit/ede51f9c6c0a92ba974c3f078d1ec96a0fdef0d1))
+
 ## [0.3.38](https://github.com/Roberdan/convergio/compare/convergio-v0.3.37...convergio-v0.3.38) (2026-06-14)
 
 
