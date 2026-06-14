@@ -16,6 +16,19 @@ MVP scope notes.
   CLA (`CONTRIBUTING-CLA.md`) required for new contributions. See
   [ADR-0074](docs/adr/0074-relicense-agplv3.md) for the rationale.
 
+## [0.3.37](https://github.com/Roberdan/convergio/compare/convergio-v0.3.36...convergio-v0.3.37) (2026-06-06)
+
+
+### Features
+
+* **ontology:** add ontology-author poc (adr-0080) ([#481](https://github.com/Roberdan/convergio/issues/481)) ([da6d853](https://github.com/Roberdan/convergio/commit/da6d853776188c10978f81a893be6a2e350270c1))
+* **ontology:** add registry import to close authoring loop ([#482](https://github.com/Roberdan/convergio/issues/482)) ([e97b6f4](https://github.com/Roberdan/convergio/commit/e97b6f49161a1a3875e47d6f59876762b07adf41))
+
+
+### Documentation
+
+* **adr:** add 0078-0080 for end-to-end platform deployment ([#479](https://github.com/Roberdan/convergio/issues/479)) ([a1e70f3](https://github.com/Roberdan/convergio/commit/a1e70f3126e2d0e08410eb9270d5be01293a4b48))
+
 ## [0.3.36](https://github.com/Roberdan/convergio/compare/convergio-v0.3.35...convergio-v0.3.36) (2026-06-06)
 
 
