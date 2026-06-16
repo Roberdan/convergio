@@ -7,7 +7,7 @@
 //! ```text
 //! plan_status → evidence → crdt_conflict → no_debt → no_stub
 //! → wire_check → no_secrets → prompt_injection → a11y → zero_warnings
-//! → wave_sequence → pr_link
+//! → wave_sequence → pr_link → plan_outcome
 //! ```
 //!
 //! Adding a gate:
@@ -23,6 +23,7 @@ mod no_debt_gate;
 mod no_secrets_gate;
 mod no_stub_gate;
 mod plan_coherence_gate;
+mod plan_outcome_gate;
 mod plan_status_gate;
 mod pr_link_gate;
 mod prompt_injection_gate;
@@ -37,6 +38,7 @@ pub use no_debt_gate::{DebtRule, NoDebtGate};
 pub use no_secrets_gate::{NoSecretsGate, SecretRule};
 pub use no_stub_gate::{NoStubGate, StubRule};
 pub use plan_coherence_gate::PlanCoherenceGate;
+pub use plan_outcome_gate::PlanOutcomeGate;
 pub use plan_status_gate::PlanStatusGate;
 pub use pr_link_gate::PrLinkGate;
 pub use prompt_injection_gate::{InjectionRule, PromptInjectionGate};
@@ -104,8 +106,10 @@ pub type Pipeline = Vec<Arc<dyn Gate>>;
 ///    markdown / CLI evidence payloads.
 /// 10. `ZeroWarningsGate` (P1) — build/lint/test signal must be clean.
 /// 11. `WaveSequenceGate` (queries dependencies in the same plan).
-/// 12. `PrLinkGate` last (only fires on `done`, cheap when it does
-///     fire — single `COUNT(*)` against `plan_pr_links`).
+/// 12. `PrLinkGate` (only fires on `done`, cheap — single `COUNT(*)`
+///     against `plan_pr_links`).
+/// 13. `PlanOutcomeGate` last (fires only on the final `done` that
+///     closes the plan; checks plan-wide success rate).
 pub fn default_pipeline() -> Pipeline {
     vec![
         Arc::new(PlanStatusGate),
@@ -121,6 +125,7 @@ pub fn default_pipeline() -> Pipeline {
         Arc::new(ZeroWarningsGate),
         Arc::new(WaveSequenceGate),
         Arc::new(PrLinkGate),
+        Arc::new(PlanOutcomeGate::new()),
     ]
 }
 
