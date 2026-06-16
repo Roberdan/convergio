@@ -6,8 +6,9 @@
 //!
 //! 1. A built-in recipe sentinel — `cargo:auto` — runs `cargo fmt
 //!    --check`, `clippy -D warnings`, and `cargo test --workspace` as
-//!    separate steps. Each step gets its own truncated tail so a
-//!    failing clippy doesn't drown a separately failing test.
+//!    separate steps, followed by optional coverage/a11y/i18n checks
+//!    (W3). Each step gets its own truncated tail so a failing clippy
+//!    doesn't drown a separately failing test.
 //! 2. Timeout is configurable via
 //!    `CONVERGIO_THOR_PIPELINE_TIMEOUT_SECS` (still defaults to 600s).
 //! 3. Every run — pass or fail — appends a `pipeline.run` audit row
@@ -19,6 +20,7 @@
 //!    pre-validated and Thor returns `Pass` immediately. This is the
 //!    seam fleet runs use to avoid re-running cargo on every repo.
 
+use crate::steps::{run_step, StepOutcome, CARGO_AUTO_STEPS};
 use convergio_durability::{audit::EntityKind, Durability};
 use serde::Serialize;
 use std::{process::Stdio, time::Duration};
@@ -48,38 +50,6 @@ enum Recipe {
     CargoAuto,
 }
 
-/// One step of a multi-step recipe.
-struct Step {
-    name: &'static str,
-    program: &'static str,
-    args: &'static [&'static str],
-}
-
-const CARGO_AUTO_STEPS: &[Step] = &[
-    Step {
-        name: "fmt",
-        program: "cargo",
-        args: &["fmt", "--all", "--check"],
-    },
-    Step {
-        name: "clippy",
-        program: "cargo",
-        args: &[
-            "clippy",
-            "--workspace",
-            "--all-targets",
-            "--",
-            "-D",
-            "warnings",
-        ],
-    },
-    Step {
-        name: "test",
-        program: "cargo",
-        args: &["test", "--workspace"],
-    },
-];
-
 /// Structured outcome of one pipeline run (canonicalized into the
 /// `pipeline.run` audit row).
 #[derive(Serialize)]
@@ -89,6 +59,9 @@ pub(crate) struct RunReport {
     failing_step: Option<String>,
     duration_ms: u128,
     steps_attempted: usize,
+    /// Number of optional steps that were skipped because the required
+    /// binary was absent or no matching test targets were found (W3).
+    steps_skipped: usize,
 }
 
 pub(crate) fn default_timeout() -> Duration {
@@ -121,22 +94,29 @@ pub(crate) fn from_command(command: Option<String>, timeout: Duration) -> Option
 /// return a verdict reason on failure.
 pub(crate) async fn run(pipeline: &Config, dur: &Durability, plan_id: &str) -> Option<String> {
     let start = std::time::Instant::now();
-    let (failing, attempted, recipe_label) = match &pipeline.recipe {
+    let (failing, attempted, skipped, recipe_label) = match &pipeline.recipe {
         Recipe::Shell(cmd) => {
             let res = run_shell(cmd, pipeline.timeout).await;
-            (res, 1, "shell")
+            (res, 1usize, 0usize, "shell")
         }
         Recipe::CargoAuto => {
             let mut failing: Option<String> = None;
-            let mut attempted = 0;
+            let mut attempted = 0usize;
+            let mut skipped = 0usize;
             for step in CARGO_AUTO_STEPS {
                 attempted += 1;
-                if let Some(reason) = run_step(step, pipeline.timeout).await {
-                    failing = Some(reason);
-                    break;
+                match run_step(step, pipeline.timeout).await {
+                    StepOutcome::Passed => {}
+                    StepOutcome::Skipped => {
+                        skipped += 1;
+                    }
+                    StepOutcome::Failed(reason) => {
+                        failing = Some(reason);
+                        break;
+                    }
                 }
             }
-            (failing, attempted, "cargo:auto")
+            (failing, attempted, skipped, "cargo:auto")
         }
     };
 
@@ -148,6 +128,7 @@ pub(crate) async fn run(pipeline: &Config, dur: &Durability, plan_id: &str) -> O
             .and_then(|r| r.split(':').next().map(|s| s.trim().to_string())),
         duration_ms: start.elapsed().as_millis(),
         steps_attempted: attempted,
+        steps_skipped: skipped,
     };
     let _ = dur
         .audit()
@@ -212,27 +193,6 @@ async fn run_shell(command: &str, dur_timeout: Duration) -> Option<String> {
     finalize("shell", command, child, dur_timeout).await
 }
 
-async fn run_step(step: &Step, dur_timeout: Duration) -> Option<String> {
-    let child = match Command::new(step.program)
-        .args(step.args)
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .kill_on_drop(true)
-        .spawn()
-    {
-        Ok(c) => c,
-        Err(e) => {
-            return Some(format!(
-                "{}: `{}` could not be invoked: {e}",
-                step.name, step.program
-            ))
-        }
-    };
-    let label = format!("{} {}", step.program, step.args.join(" "));
-    finalize(step.name, &label, child, dur_timeout).await
-}
-
 async fn finalize(
     name: &str,
     label: &str,
@@ -256,7 +216,7 @@ async fn finalize(
     }
 }
 
-fn timeout_label(value: Duration) -> String {
+pub(crate) fn timeout_label(value: Duration) -> String {
     if value.subsec_millis() == 0 {
         format!("{}s", value.as_secs())
     } else {
@@ -264,7 +224,7 @@ fn timeout_label(value: Duration) -> String {
     }
 }
 
-fn output_tail(stdout: &[u8], stderr: &[u8]) -> String {
+pub(crate) fn output_tail(stdout: &[u8], stderr: &[u8]) -> String {
     let mut output = Vec::with_capacity(stdout.len() + stderr.len());
     output.extend_from_slice(stdout);
     output.extend_from_slice(stderr);

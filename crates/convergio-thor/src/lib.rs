@@ -43,6 +43,7 @@
 
 mod error;
 mod pipeline;
+mod steps;
 mod thor;
 
 pub use error::{Result, ThorError};
