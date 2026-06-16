@@ -67,6 +67,7 @@ pub mod guards;
 mod guards_format;
 mod heartbeat;
 mod holders;
+mod routing;
 mod run_loop;
 pub mod worktree;
 

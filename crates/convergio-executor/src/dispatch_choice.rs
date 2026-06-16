@@ -19,15 +19,18 @@ use convergio_runner::RunnerKind;
 use serde::Serialize;
 use tracing::warn;
 
-/// Rationale labels for the routing decision. Forward-compatible —
-/// W8-full will add variants like `pareto_winner`, `cost_floor`,
-/// `latency_cap`, `cold_start`.
+/// Rationale labels for the routing decision (W8, ADR-0062).
+/// Forward-compatible — W8-full will add variants like `cost_floor`,
+/// `latency_cap`.
 #[derive(Debug, Clone, Copy, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum DispatchRationale {
     /// Task carried a `runner_kind` override.
     TaskOverride,
-    /// Task left runner unset; executor default was used.
+    /// The pass_rate/cost routing algorithm picked this runner from
+    /// historical `dispatch.choice` data.
+    ParetoWinner,
+    /// No usable history (cold start); executor default was used.
     Default,
     /// Legacy `/bin/echo`-style spawn (no runner registry involvement).
     Legacy,
@@ -37,6 +40,7 @@ impl DispatchRationale {
     fn as_str(self) -> &'static str {
         match self {
             Self::TaskOverride => "task_override",
+            Self::ParetoWinner => "pareto_winner",
             Self::Default => "default",
             Self::Legacy => "legacy",
         }
@@ -54,20 +58,19 @@ struct DispatchChoicePayload<'a> {
 /// Record a `dispatch.choice` audit row for a task. Logs and swallows
 /// errors — the executor must not refuse to spawn just because the
 /// audit emission failed.
+///
+/// `kind` is the runner actually being spawned (the routed decision,
+/// not a recomputed default) and `rationale` is why it was chosen.
+/// Both are decided once in `Executor::dispatch_one` and threaded
+/// here, so the audit row never disagrees with the spawned runner.
 pub(crate) async fn record_for_task(
     durability: &Durability,
     task: &Task,
     plan_id: &str,
     kind: &RunnerKind,
-    legacy: bool,
+    rationale: DispatchRationale,
 ) {
-    let rationale = if legacy {
-        DispatchRationale::Legacy
-    } else if task.runner_kind.is_some() {
-        DispatchRationale::TaskOverride
-    } else {
-        DispatchRationale::Default
-    };
+    let legacy = matches!(rationale, DispatchRationale::Legacy);
     let runner_kind = if legacy {
         "legacy-shell".to_string()
     } else {

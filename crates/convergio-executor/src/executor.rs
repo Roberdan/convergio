@@ -148,11 +148,10 @@ impl Executor {
         let task = self.durability.tasks().get(task_id).await?;
         let is_legacy_shell =
             task.runner_kind.is_none() && std::env::var("CONVERGIO_EXECUTOR_USE_RUNNER").is_err();
-        let kind = task
-            .runner_kind
-            .as_deref()
-            .and_then(|s| RunnerKind::from_str(s).ok())
-            .unwrap_or_else(|| self.defaults.kind.clone());
+        // Decide kind + rationale ONCE, then thread into both the audit
+        // row and the spawn (W8, ADR-0062) so they never disagree.
+        let (kind, rationale) =
+            crate::routing::decide(self.durability.pool(), &self.defaults.kind, &task).await;
         let task7 = task.id.get(..7).unwrap_or(&task.id);
         let agent_id = if is_legacy_shell {
             format!("legacy-{task7}")
@@ -167,14 +166,17 @@ impl Executor {
             tracing::debug!(task_id, plan_id, "claim lost — task no longer pending");
             return Ok(());
         };
+        let rationale = if is_legacy_shell {
+            crate::dispatch_choice::DispatchRationale::Legacy
+        } else {
+            rationale
+        };
+        crate::dispatch_choice::record_for_task(&self.durability, &task, plan_id, &kind, rationale)
+            .await;
         let spawn_result = if is_legacy_shell {
-            crate::dispatch_choice::record_for_task(&self.durability, &task, plan_id, &kind, true)
-                .await;
             self.spawn_legacy(task_id, plan_id).await
         } else {
-            crate::dispatch_choice::record_for_task(&self.durability, &task, plan_id, &kind, false)
-                .await;
-            self.spawn_via_runner(&task, plan_id).await
+            self.spawn_via_runner(&task, &kind, plan_id).await
         };
         if let Err(err) = spawn_result {
             warn!(task_id, plan_id, error = %err, "spawn failed — compensating to failed");
@@ -211,17 +213,15 @@ impl Executor {
             .await?)
     }
 
-    /// ADR-0034: per-task runner-based spawn.
+    /// ADR-0034: per-task runner-based spawn. `kind` is the routed
+    /// decision from [`Self::route`] — never recomputed here, so the
+    /// spawned runner matches the `dispatch.choice` audit row.
     async fn spawn_via_runner(
         &self,
         task: &convergio_durability::Task,
+        kind: &RunnerKind,
         plan_id: &str,
     ) -> Result<convergio_lifecycle::AgentProcess> {
-        let kind = task
-            .runner_kind
-            .as_deref()
-            .and_then(|s| RunnerKind::from_str(s).ok())
-            .unwrap_or_else(|| self.defaults.kind.clone());
         let profile = task
             .profile
             .as_deref()
@@ -257,7 +257,7 @@ impl Executor {
             profile,
         };
         let prepared =
-            for_kind_with_registry(&kind, &self.registry).and_then(|r| r.prepare(&ctx))?;
+            for_kind_with_registry(kind, &self.registry).and_then(|r| r.prepare(&ctx))?;
         let args: Vec<String> = prepared
             .args
             .iter()
