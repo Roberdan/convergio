@@ -871,6 +871,7 @@ dependencies = [
 name = "convergio-executor"
 version = "0.3.39"
 dependencies = [
+ "anyhow",
  "chrono",
  "convergio-db",
  "convergio-durability",
@@ -885,6 +886,7 @@ dependencies = [
  "thiserror 1.0.69",
  "tokio",
  "tracing",
+ "uuid",
 ]
 
 [[package]]

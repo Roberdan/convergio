@@ -58,6 +58,7 @@
 
 #![forbid(unsafe_code)]
 
+pub mod cost_tracker;
 mod defaults;
 mod dispatch_choice;
 mod error;

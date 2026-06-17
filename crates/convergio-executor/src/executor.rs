@@ -213,9 +213,8 @@ impl Executor {
             .await?)
     }
 
-    /// ADR-0034: per-task runner-based spawn. `kind` is the routed
-    /// decision from [`Self::route`] — never recomputed here, so the
-    /// spawned runner matches the `dispatch.choice` audit row.
+    /// ADR-0034: per-task runner-based spawn. `kind` is the routed decision;
+    /// spawned runner always matches the `dispatch.choice` audit row.
     async fn spawn_via_runner(
         &self,
         task: &convergio_durability::Task,
@@ -263,6 +262,7 @@ impl Executor {
             .iter()
             .map(|a| a.to_string_lossy().into_owned())
             .collect();
+        let spawn_started = std::time::Instant::now();
         let proc = self
             .supervisor
             .spawn(SpawnSpec {
@@ -276,15 +276,15 @@ impl Executor {
                 stdin_payload: Some(prepared.stdin_prompt),
             })
             .await?;
-        // Vendor CLIs in non-interactive mode don't tick the
-        // task heartbeat themselves; the sidecar does it for them
-        // and removes the worktree on terminal exit.
+        // Sidecar ticks heartbeat, cleans worktree, records W10 cost.
         if let Some(pid) = proc.pid {
             heartbeat::spawn(
                 self.durability.clone(),
                 self.repo_path.clone(),
                 task.id.clone(),
                 pid,
+                format!("{}:{}", kind.vendor, kind.model),
+                spawn_started,
             );
         }
         Ok(proc)
