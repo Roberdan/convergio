@@ -692,6 +692,7 @@ dependencies = [
  "cargo_metadata",
  "chrono",
  "clap",
+ "convergio-a11y-axe",
  "convergio-api",
  "convergio-brand",
  "convergio-capability-registry",

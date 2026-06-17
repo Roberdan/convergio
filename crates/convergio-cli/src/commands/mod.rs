@@ -19,6 +19,7 @@ pub mod bus_extra;
 pub mod bus_render;
 pub mod bus_tail;
 pub mod capability;
+mod capability_install;
 mod capability_trust;
 mod capability_types;
 pub mod coherence;

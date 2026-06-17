@@ -1,0 +1,21 @@
+{
+  "name": "a11y-axe",
+  "version": "4.9.1",
+  "description": "axe-core CLI wrapper for A11yGate phase 2",
+  "kind": "binary",
+  "env_var": "CONVERGIO_A11Y_AXE_BIN",
+  "platforms": {
+    "macos-aarch64": {
+      "url": "https://registry.npmjs.org/@axe-core/cli/-/cli-4.9.1.tgz",
+      "install_hint": "npm install -g @axe-core/cli"
+    },
+    "macos-x86_64": {
+      "url": "https://registry.npmjs.org/@axe-core/cli/-/cli-4.9.1.tgz",
+      "install_hint": "npm install -g @axe-core/cli"
+    },
+    "linux-x86_64": {
+      "url": "https://registry.npmjs.org/@axe-core/cli/-/cli-4.9.1.tgz",
+      "install_hint": "npm install -g @axe-core/cli"
+    }
+  }
+}

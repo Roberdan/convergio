@@ -1,6 +1,7 @@
 //! Private data shapes for `cvg capability`.
 
 use anyhow::Result;
+use convergio_i18n::Bundle;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::path::PathBuf;
@@ -64,4 +65,26 @@ pub(super) struct SignatureVerification {
     pub(super) name: String,
     pub(super) version: String,
     pub(super) key_id: String,
+}
+
+/// Render a list of capabilities to stdout in human-readable form.
+pub(super) fn render_human(bundle: &Bundle, caps: &[Capability]) {
+    if caps.is_empty() {
+        println!("{}", bundle.t("capabilities-empty", &[]));
+        return;
+    }
+    println!("{}", bundle.t("capabilities-header", &[]));
+    for cap in caps {
+        println!(
+            "{}",
+            bundle.t(
+                "capability-line",
+                &[
+                    ("name", &cap.name),
+                    ("version", &cap.version),
+                    ("status", &cap.status),
+                ],
+            )
+        );
+    }
 }

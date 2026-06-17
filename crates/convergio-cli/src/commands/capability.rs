@@ -1,5 +1,6 @@
 //! `cvg capability` — local capability registry diagnostics.
 
+use super::capability_install::run_install_capability;
 use super::capability_types::*;
 use super::{Client, OutputMode};
 use anyhow::Result;
@@ -66,6 +67,14 @@ pub enum CapabilityCommand {
         #[command(subcommand)]
         sub: super::capability_trust::TrustCommand,
     },
+    /// Print install hint for a named capability (e.g. `a11y-axe`).
+    ///
+    /// Advisory only — prints the install command and env-var wiring;
+    /// does not shell out automatically.
+    Install {
+        /// Capability name, e.g. `a11y-axe`.
+        name: String,
+    },
 }
 
 /// Run a capability registry subcommand.
@@ -109,6 +118,7 @@ pub async fn run(
             .await
         }
         CapabilityCommand::Trust { sub } => super::capability_trust::run(output, sub).await,
+        CapabilityCommand::Install { name } => Ok(run_install_capability(&name)?),
     }
 }
 
@@ -271,25 +281,4 @@ async fn verify_signature(
 
 fn parse_trusted_keys(values: Vec<String>) -> Result<Vec<TrustedKey>> {
     super::capability_types::parse_trusted_keys(values)
-}
-
-fn render_human(bundle: &Bundle, caps: &[Capability]) {
-    if caps.is_empty() {
-        println!("{}", bundle.t("capabilities-empty", &[]));
-        return;
-    }
-    println!("{}", bundle.t("capabilities-header", &[]));
-    for cap in caps {
-        println!(
-            "{}",
-            bundle.t(
-                "capability-line",
-                &[
-                    ("name", &cap.name),
-                    ("version", &cap.version),
-                    ("status", &cap.status),
-                ],
-            )
-        );
-    }
 }

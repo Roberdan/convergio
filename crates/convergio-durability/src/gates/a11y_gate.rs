@@ -105,12 +105,16 @@ impl Gate for A11yGate {
                 self.check_cli(kind, &strings, &mut violations);
             }
             if is_html_kind(kind) {
-                if let AxeStatus::Ok(report) = run_html(&joined) {
-                    for v in report.violations {
-                        if matches!(v.impact.as_str(), "serious" | "critical") {
-                            violations.push(format!("{kind}#axe:{}", v.id));
+                match run_html(&joined) {
+                    AxeStatus::Ok(report) => {
+                        for v in report.violations {
+                            if matches!(v.impact.as_str(), "serious" | "critical") {
+                                violations.push(format!("{kind}#axe:{}", v.id));
+                            }
                         }
                     }
+                    AxeStatus::NotConfigured => tracing::info!("a11y phase-2 skipped: set CONVERGIO_A11Y_AXE_BIN or run `cvg capability install a11y-axe`"),
+                    AxeStatus::Error(_) => {}
                 }
             }
         }
@@ -187,10 +191,7 @@ fn is_html_kind(kind: &str) -> bool {
     matches!(kind, "html_output" | "html" | "component_render")
 }
 
-/// Detects an H1→H3 (or any other skipped-level) sequence. We allow
-/// the document to *start* at any level — only forward jumps of more
-/// than one inside the document are flagged. Empty docs and docs with
-/// no headings pass trivially.
+/// Flags forward heading-level jumps > 1 (H1→H3 etc). Docs may start at any level.
 fn has_heading_skip(text: &str, heading_re: &Regex) -> bool {
     let mut last: Option<usize> = None;
     for cap in heading_re.captures_iter(text) {

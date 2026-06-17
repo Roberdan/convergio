@@ -17,6 +17,7 @@ name = "cvg"
 path = "src/main.rs"
 
 [dependencies]
+convergio-a11y-axe = { workspace = true }
 convergio-api = { workspace = true }
 convergio-brand = { workspace = true }
 convergio-capability-registry = { workspace = true }

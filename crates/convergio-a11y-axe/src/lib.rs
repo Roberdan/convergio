@@ -80,6 +80,14 @@ pub enum AxeStatus {
     Error(String),
 }
 
+/// Returns the raw JSON of the axe capability descriptor embedded in this crate.
+///
+/// The descriptor is used by `cvg capability install a11y-axe` to show the
+/// operator the correct install hint and download URL for their platform.
+pub fn capability_descriptor() -> &'static str {
+    include_str!("../capability.json")
+}
+
 /// Returns `Some(path)` when the env var is set and the path exists.
 pub fn configured_binary() -> Option<PathBuf> {
     let raw = env::var(AXE_BIN_ENV).ok()?;
@@ -161,6 +169,23 @@ mod tests {
             None => unsafe { env::remove_var(AXE_BIN_ENV) },
         }
         assert!(got.is_none());
+    }
+
+    #[test]
+    fn descriptor_is_valid_json() {
+        let v: serde_json::Value =
+            serde_json::from_str(capability_descriptor()).expect("descriptor must be valid JSON");
+        assert_eq!(v["name"], "a11y-axe");
+    }
+
+    #[test]
+    fn descriptor_has_macos_platform() {
+        let v: serde_json::Value =
+            serde_json::from_str(capability_descriptor()).expect("descriptor must be valid JSON");
+        assert!(
+            v["platforms"]["macos-aarch64"].is_object(),
+            "macos-aarch64 platform must be present"
+        );
     }
 
     #[test]
