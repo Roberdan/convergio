@@ -65,6 +65,7 @@ pub mod plan_templates;
 mod plan_triage;
 pub mod pr;
 pub mod public;
+pub mod purpose;
 pub mod service;
 pub(crate) mod service_port;
 pub(crate) mod service_unit;

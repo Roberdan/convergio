@@ -42,7 +42,8 @@ pub struct AppState {
     /// Fleet plan store (ADR-0038, F3-2): cross-repo plans with
     /// per-repo plan links.
     pub fleet_plans: Arc<FleetPlanStore>,
-    /// Ontology Runtime Core schema registry (ADR-0053).
+    /// Ontology Runtime Core schema registry (ADR-0053). Also exposes the
+    /// immutable purpose registry (ADR-0054 §B) via `ontology.purposes()`.
     pub ontology: Arc<OntologyStore>,
     /// Report template store and rendering facade (ADR-0003 range 501–599).
     pub reports: Arc<ReportTemplateStore>,

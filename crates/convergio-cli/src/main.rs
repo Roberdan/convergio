@@ -246,6 +246,11 @@ pub(crate) enum Command {
         #[command(subcommand)]
         sub: commands::ontology::OntologyCommand,
     },
+    /// Purpose registry: declare and list immutable processing purposes (ADR-0054).
+    Purpose {
+        #[command(subcommand)]
+        sub: commands::purpose::PurposeCommand,
+    },
     /// One-shot peer + bus + plan snapshot for a fresh agent session.
     Discover {
         /// Lookback window for active peers / bus topics. Default `30m`.

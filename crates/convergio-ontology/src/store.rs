@@ -27,6 +27,12 @@ impl Store {
         Self { pool }
     }
 
+    /// Access the immutable purpose registry (ADR-0054 §B), backed by the
+    /// same SQLite pool. Cheap to call — `Pool` clones share the handle.
+    pub fn purposes(&self) -> crate::purposes::PurposeStore {
+        crate::purposes::PurposeStore::new(self.pool.clone())
+    }
+
     /// Run pending migrations (range 1000-1099). Idempotent — safe
     /// to call on every daemon start. Coexists with sibling crates'
     /// migrators thanks to `set_ignore_missing(true)`, exactly the
