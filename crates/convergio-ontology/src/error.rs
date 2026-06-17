@@ -88,6 +88,14 @@ pub enum Error {
         reason: String,
     },
 
+    /// Attempted to register a purpose whose label already exists.
+    /// Purposes are immutable (ADR-0054 §B); re-declaring is refused.
+    #[error("purpose already exists: `{label}`")]
+    PurposeAlreadyExists {
+        /// The duplicate purpose label.
+        label: String,
+    },
+
     /// Feature exists on the API surface but its underlying primitive
     /// has not landed yet. The W1 `branch-diff` command returns this
     /// because branching itself ships in a later ADR (ADR-0059).

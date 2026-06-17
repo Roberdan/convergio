@@ -48,6 +48,7 @@ mod migrate;
 mod model;
 mod object_events;
 mod object_storage;
+mod purposes;
 mod reads;
 mod semantic;
 mod shacl;
@@ -74,5 +75,6 @@ pub use object_events::{NewObjectEvent, ObjectEvent, ObjectEventsStore};
 pub use object_storage::{
     LinkOp, ObjectInstance, ObjectLinkEvent, ObjectPropertyEvent, OntologyStore, PropertyOp,
 };
+pub use purposes::{PurposeRecord, PurposeStore};
 pub use shacl::{build_object_shacl_bytes, export_object_shacl, shacl_datatype, ShaclType};
 pub use store::Store;
