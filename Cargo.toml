@@ -26,6 +26,7 @@ members = [
     "crates/convergio-parse-multi",
     "crates/convergio-fleet",
     "crates/convergio-fleet-routes",
+    "crates/convergio-ontology-routes",
     "crates/convergio-server-core",
     "crates/convergio-provenance",
     "crates/convergio-gdpr",
@@ -149,6 +150,7 @@ convergio-coherence = { path = "crates/convergio-coherence" }
 convergio-parse-multi = { path = "crates/convergio-parse-multi" }
 convergio-fleet = { path = "crates/convergio-fleet" }
 convergio-fleet-routes = { path = "crates/convergio-fleet-routes" }
+convergio-ontology-routes = { path = "crates/convergio-ontology-routes" }
 convergio-server-core = { path = "crates/convergio-server-core" }
 convergio-provenance = { path = "crates/convergio-provenance" }
 convergio-gdpr = { path = "crates/convergio-gdpr" }

@@ -36,6 +36,7 @@ convergio-thor = { workspace = true }
 convergio-executor = { workspace = true }
 convergio-graph = { workspace = true }
 convergio-ontology = { workspace = true }
+convergio-ontology-routes = { workspace = true }
 convergio-embed = { workspace = true }
 convergio-fleet = { workspace = true }
 convergio-fleet-routes = { workspace = true }

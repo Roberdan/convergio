@@ -13,7 +13,6 @@
 //! Output bytes for `mermaid` / `dot` are byte-identical to the
 //! crate-level renderers (golden-tested in `convergio-ontology`).
 
-use crate::AppState;
 use axum::extract::{Path, Query, State};
 use axum::http::header;
 use axum::response::{IntoResponse, Response};
@@ -24,6 +23,7 @@ use convergio_ontology::{
     render_lineage_mermaid, Error as OntologyError,
 };
 use convergio_server_core::ApiError;
+use convergio_server_core::AppState;
 use serde::Deserialize;
 
 /// Mount the graph routes. Composed alongside the rest of the

@@ -1052,6 +1052,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "convergio-ontology-routes"
+version = "0.3.39"
+dependencies = [
+ "axum",
+ "convergio-durability",
+ "convergio-ontology",
+ "convergio-server-core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "convergio-ops"
 version = "0.3.39"
 dependencies = [
@@ -1170,6 +1182,7 @@ dependencies = [
  "convergio-i18n",
  "convergio-lifecycle",
  "convergio-ontology",
+ "convergio-ontology-routes",
  "convergio-ops",
  "convergio-planner",
  "convergio-reports",

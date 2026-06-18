@@ -133,6 +133,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-mcp` — MCP bridge for local Convergio daemon
 - `convergio-ontology` — Ontology Runtime Core for Convergio — schema registry of typed domain objects, links, and properties (ADR-0051)
 - `convergio-ontology-author` — LLM-assisted ontology authoring (ADR-0080): turn input documents and/or a generic intent into a standard, validated, provenance-tracked ontology draft (OWL/SHACL/JSON-Schema)
+- `convergio-ontology-routes` — Ontology Runtime HTTP route module (ADR-0053) — extracted from convergio-server
 - `convergio-ops` — (no description)
 - `convergio-parse-multi` — Multi-language AST parsing layer for Convergio fleet retrieval (ADR-0038, F2)
 - `convergio-planner` — Layer 4 (reference) of Convergio: turns a natural-language mission into a structured plan

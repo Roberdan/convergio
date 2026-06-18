@@ -1,0 +1,22 @@
+[package]
+name = "convergio-ontology-routes"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Ontology Runtime HTTP route module (ADR-0053) — extracted from convergio-server."
+readme = "AGENTS.md"
+
+[lints]
+workspace = true
+
+[dependencies]
+convergio-durability = { workspace = true }
+convergio-ontology = { workspace = true }
+convergio-server-core = { workspace = true }
+
+axum = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

@@ -13,7 +13,6 @@
 //! Bytes returned by the export endpoint are byte-identical to the
 //! crate-level exporter (golden-tested in `convergio-ontology`).
 
-use crate::AppState;
 use axum::extract::{Path, Query, State};
 use axum::http::header;
 use axum::response::IntoResponse;
@@ -24,6 +23,7 @@ use convergio_ontology::{
     ImportReport, LinkTypeRecord, ObjectTypeRecord, PropertyTypeRecord,
 };
 use convergio_server_core::ApiError;
+use convergio_server_core::AppState;
 use serde::{Deserialize, Serialize};
 
 /// Mount the ontology routes.

@@ -5,15 +5,15 @@
 //!
 //! This is the *registry* of declared "why" (purpose limitation), distinct
 //! from the request-level `x-purpose-id` binding middleware in
-//! `crate::purpose`. Registered purposes are immutable (the table refuses
+//! `convergio-server`. Registered purposes are immutable (the table refuses
 //! UPDATE/DELETE); re-declaring a label is a `400 purpose_already_exists`.
 
-use crate::AppState;
 use axum::extract::State;
 use axum::routing::post;
 use axum::{Json, Router};
 use convergio_ontology::{Error as OntologyError, PurposeRecord};
 use convergio_server_core::ApiError;
+use convergio_server_core::AppState;
 use serde::{Deserialize, Serialize};
 
 /// Mount the purpose-registry routes.
