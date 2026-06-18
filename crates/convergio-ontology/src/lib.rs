@@ -38,6 +38,7 @@
 
 pub mod actions;
 mod diff;
+mod er;
 mod error;
 mod graph_render;
 mod hash;
@@ -55,6 +56,7 @@ mod shacl;
 mod store;
 
 pub use diff::{diff_object, ObjectDiff, PropertyChange, PropertyRef};
+pub use er::{EntityResolver, MatchGroup, MatchKey, MatchRule, MatchStrategy, SAME_AS_LINK_TYPE};
 pub use error::{Error, Result};
 pub use graph_render::{
     render_diff_dot, render_diff_mermaid, render_lineage_dot, render_lineage_mermaid,
