@@ -40,6 +40,7 @@ convergio-ontology-routes = { workspace = true }
 convergio-embed = { workspace = true }
 convergio-fleet = { workspace = true }
 convergio-fleet-routes = { workspace = true }
+convergio-llm-gateway-routes = { workspace = true }
 convergio-server-core = { workspace = true }
 convergio-capability-registry = { workspace = true }
 convergio-gdpr = { workspace = true }

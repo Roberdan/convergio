@@ -130,6 +130,7 @@ ADR-0015 — do not edit between the markers):**
 - `convergio-graph` — Tier-3 code-graph layer for Convergio (ADR-0014)
 - `convergio-i18n` — Internationalization (P5) — Fluent-backed message bundles for every user-facing string in Convergio
 - `convergio-lifecycle` — Layer 3 of Convergio: spawn, supervise, heartbeat and reap long-running agent processes
+- `convergio-llm-gateway-routes` — LLM Gateway HTTP route module — extracted from convergio-server
 - `convergio-mcp` — MCP bridge for local Convergio daemon
 - `convergio-ontology` — Ontology Runtime Core for Convergio — schema registry of typed domain objects, links, and properties (ADR-0051)
 - `convergio-ontology-author` — LLM-assisted ontology authoring (ADR-0080): turn input documents and/or a generic intent into a standard, validated, provenance-tracked ontology draft (OWL/SHACL/JSON-Schema)

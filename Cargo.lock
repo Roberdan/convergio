@@ -987,6 +987,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "convergio-llm-gateway-routes"
+version = "0.3.39"
+dependencies = [
+ "axum",
+ "chrono",
+ "convergio-durability",
+ "convergio-provenance",
+ "convergio-server-core",
+ "hex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2",
+]
+
+[[package]]
 name = "convergio-mcp"
 version = "0.3.39"
 dependencies = [
@@ -1181,6 +1197,7 @@ dependencies = [
  "convergio-graph",
  "convergio-i18n",
  "convergio-lifecycle",
+ "convergio-llm-gateway-routes",
  "convergio-ontology",
  "convergio-ontology-routes",
  "convergio-ops",
