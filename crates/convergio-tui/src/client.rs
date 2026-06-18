@@ -235,7 +235,11 @@ impl Client {
         Ok(tasks)
     }
 
-    async fn get_json<T: for<'de> Deserialize<'de>>(&self, path: &str) -> Result<T> {
+    /// Read-only `GET` returning deserialised JSON. `pub(crate)` so the
+    /// ontology inspector fetchers in [`crate::client_ontology`] reuse
+    /// this client's purpose header + timeout configuration instead of
+    /// standing up a second HTTP stack.
+    pub(crate) async fn get_json<T: for<'de> Deserialize<'de>>(&self, path: &str) -> Result<T> {
         let url = format!("{}{path}", self.base);
         let resp = self
             .inner

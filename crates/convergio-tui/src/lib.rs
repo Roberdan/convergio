@@ -2,7 +2,9 @@
 //!
 //! Read-only multi-pane console (Plans, Tasks, Agents, PRs, Bus) that
 //! refreshes on a tick. Talks to the local Convergio daemon over HTTP
-//! and shells out to `gh pr list` for the PRs pane.
+//! and shells out to `gh pr list` for the PRs pane. Press `o` for the
+//! read-only **Ontology Inspector** (Types / Lineage / Branches, W6,
+//! ADR-0059), sourced from the ontology HTTP surface the daemon serves.
 //!
 //! Consumed only by the `cvg` binary (`convergio-cli`). Never imported
 //! by the daemon, MCP bridge, or any other agent-facing surface.
@@ -19,15 +21,17 @@
 //! ```
 //!
 //! Quit with `q`, refresh with `r`, change pane with `Tab`, scroll with
-//! `j` / `k`.
+//! `j` / `k`, and toggle the ontology inspector with `o`.
 
 pub mod agent_filter;
 pub mod bus_stream;
 pub mod client;
 pub mod client_gh;
+pub mod client_ontology;
 pub mod client_pr_cache;
 pub mod header_banner;
 pub(crate) mod http;
+pub mod inspector;
 pub mod keymap;
 pub mod mode;
 pub mod navigation;
@@ -41,6 +45,7 @@ pub mod theme;
 pub mod tick;
 pub mod time_fmt;
 pub mod types;
+pub mod version;
 
 pub mod panes {
     //! Per-pane renderers. Each module is independent and only depends
@@ -178,8 +183,14 @@ async fn event_loop(
                 }
             }
             poll = poll_key() => {
-                if let Some(action) = poll? {
-                    match keymap.translate(action) {
+                if let Some(key) = poll? {
+                    let act = keymap.translate(key);
+                    if state.section.is_inspector()
+                        && state.handle_inspector_action(&client, act).await
+                    {
+                        continue;
+                    }
+                    match act {
                         Action::Quit => break,
                         Action::RefreshNow => {
                             spawn_refresh(&client, &snap_tx, &mut refresh_in_flight);
@@ -209,6 +220,7 @@ async fn event_loop(
                         },
                         Action::ToggleHideExited => state.toggle_show_exited_agents(),
                         Action::ToggleShowTerminalTasks => state.toggle_show_terminal_tasks(),
+                        Action::ToggleInspector => state.enter_inspector(&client).await,
                         Action::Noop => {}
                     }
                 }
