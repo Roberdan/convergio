@@ -40,6 +40,16 @@ fn default_limit() -> u32 {
     100
 }
 
+impl Default for PullRequest {
+    fn default() -> Self {
+        Self {
+            stream: None,
+            since: None,
+            limit: default_limit(),
+        }
+    }
+}
+
 /// One page of pulled records.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PullPage<R> {
