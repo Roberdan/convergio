@@ -177,7 +177,8 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/adr/0079-azure-single-tenant-deployment.md` | adr | - | proposed | 122 |
 | `docs/adr/0080-llm-assisted-ontology-authoring.md` | adr | - | proposed | 122 |
 | `docs/adr/0081-identity-and-access-for-deployed-verticals.md` | adr | - | proposed | 126 |
-| `docs/adr/README.md` | adr | - | - | 102 |
+| `docs/adr/0082-purpose-mismatch-enforcement.md` | adr | - | proposed | 138 |
+| `docs/adr/README.md` | adr | - | - | 103 |
 | `docs/agent-instruction-guidelines.md` | - | - | - | 123 |
 | `docs/agent-protocol.md` | - | - | - | 131 |
 | `docs/agent-resume-packet.md` | - | - | - | 301 |
