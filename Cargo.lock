@@ -1185,6 +1185,7 @@ dependencies = [
  "convergio-ontology-routes",
  "convergio-ops",
  "convergio-planner",
+ "convergio-provenance",
  "convergio-reports",
  "convergio-server-core",
  "convergio-thor",

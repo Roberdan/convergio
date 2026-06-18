@@ -44,6 +44,7 @@ convergio-server-core = { workspace = true }
 convergio-capability-registry = { workspace = true }
 convergio-gdpr = { workspace = true }
 convergio-reports = { workspace = true }
+convergio-provenance = { workspace = true }
 
 axum = { workspace = true }
 clap = { workspace = true }
