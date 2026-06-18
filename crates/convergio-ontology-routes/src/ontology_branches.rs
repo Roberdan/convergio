@@ -1,11 +1,11 @@
 //! `/v1/ontology` branch overlay API.
 
-use crate::AppState;
 use axum::extract::{Path, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use convergio_durability::{OntologyBranch, OntologyBranchStatus, OntologyResolvedEntry};
 use convergio_server_core::ApiError;
+use convergio_server_core::AppState;
 use serde::Deserialize;
 
 /// Mount ontology branch routes.
