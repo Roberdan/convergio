@@ -99,4 +99,5 @@ do not edit between the markers.
 | [0079](./0079-azure-single-tenant-deployment.md) | -0079 — Deploy verticals as customer-owned single-tenant on Azure EU | proposed |
 | [0080](./0080-llm-assisted-ontology-authoring.md) | -0080 — LLM-assisted ontology authoring (ontology-author) | proposed |
 | [0081](./0081-identity-and-access-for-deployed-verticals.md) | -0081 — Identity & access for deployed verticals (Entra ID OIDC + RBAC/ABAC) | proposed |
+| [0082](./0082-purpose-mismatch-enforcement.md) | -0082 — Purpose-mismatch enforcement on the ontology write path | proposed |
 <!-- END AUTO -->
