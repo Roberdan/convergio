@@ -16,7 +16,6 @@ pub mod gdpr;
 pub mod graph;
 pub mod health;
 pub(crate) mod limits;
-pub mod llm_gateway;
 pub mod messages;
 pub mod ops;
 pub mod plans;

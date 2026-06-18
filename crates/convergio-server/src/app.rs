@@ -36,7 +36,7 @@ pub fn router(state: AppState) -> Router {
         .merge(crate::routes::workspace::router())
         .merge(crate::routes::graph::router())
         .merge(crate::routes::embed::router())
-        .merge(crate::routes::llm_gateway::router())
+        .merge(convergio_llm_gateway_routes::router())
         .merge(convergio_fleet_routes::router())
         .merge(crate::routes::telemetry::router())
         .merge(crate::routes::api_actions::router())

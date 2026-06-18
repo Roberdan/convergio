@@ -1,4 +1,9 @@
-//! LLM Gateway (MVP).
+//! # convergio-llm-gateway-routes
+//!
+//! LLM Gateway HTTP routes (MVP) — extracted from `convergio-server` to
+//! keep the daemon crate under its per-crate context-budget cap (same
+//! rationale and pattern as `convergio-fleet-routes` and
+//! `convergio-ontology-routes`).
 //!
 //! Internal-only endpoint providing:
 //! - multi-provider routing (Azure OpenAI primary; Anthropic + Mistral fallback)
@@ -8,6 +13,14 @@
 //! - optional output-schema validation of the provider response
 //! - response caching keyed by (prompt_hash, model_id, retrieval_set_hash)
 //! - W3C-PROV-JSON provenance emitted even on cache hits
+//!
+//! All routes share the canonical [`convergio_server_core::AppState`] and
+//! return [`convergio_server_core::ApiError`]. Behaviour is byte-identical
+//! to the pre-extraction routes; the move was structural. Mount with
+//! [`router`]; `convergio-server` calls it once during daemon assembly.
+
+#![forbid(unsafe_code)]
+#![deny(missing_docs)]
 
 mod config;
 mod egress;
