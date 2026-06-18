@@ -47,6 +47,17 @@ pub enum ConnectorError {
         /// Connector-provided error message.
         message: String,
     },
+
+    /// A federated query was refused by policy before any connector ran.
+    ///
+    /// This mirrors the daemon's "refuse rather than silently truncate"
+    /// posture: a query that violates declared federation limits is rejected
+    /// up front instead of being partially executed.
+    #[error("federation refused: {reason}")]
+    FederationRefused {
+        /// Stable, human-readable refusal reason.
+        reason: String,
+    },
 }
 
 impl ConnectorError {
@@ -65,6 +76,13 @@ impl ConnectorError {
         Self::Timeout {
             secs,
             what: what.into(),
+        }
+    }
+
+    /// Build a federation-refusal error with a stable reason.
+    pub fn federation_refused(reason: impl Into<String>) -> Self {
+        Self::FederationRefused {
+            reason: reason.into(),
         }
     }
 }
