@@ -60,6 +60,10 @@ fn header_stats(state: &AppState) -> Vec<String> {
 }
 
 fn draw_body(f: &mut Frame, area: Rect, state: &AppState) {
+    if state.section.is_inspector() {
+        crate::inspector::render::body(f, area, state);
+        return;
+    }
     if let AppMode::Detail(target) = &state.mode {
         panes::detail::render(f, area, state, target);
         return;
@@ -113,9 +117,17 @@ fn draw_footer(f: &mut Frame, area: Rect, state: &AppState) {
     let pane_name = format!("pane: {}", state.focus.label());
     let help = match state.mode {
         AppMode::Overview => {
-            "q quit  Enter scope  Esc clear  r refresh  Tab pane  j/k row  e exited"
+            "q quit  Enter scope  Esc clear  r refresh  Tab pane  j/k row  e exited  o ontology"
         }
         AppMode::Detail(_) => "Esc back  q quit  r refresh  j/k scroll",
+    };
+    let (pane_name, help) = if state.section.is_inspector() {
+        (
+            format!("inspector: {}", state.inspector.focus.label()),
+            crate::inspector::render::footer_help(),
+        )
+    } else {
+        (pane_name, help)
     };
     let line = Line::from(vec![
         conn,

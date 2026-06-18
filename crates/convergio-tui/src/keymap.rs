@@ -36,6 +36,10 @@ pub enum Action {
     /// listed in the Tasks pane. Default is to hide; pressing `t`
     /// reveals them so an operator can audit historical task runs.
     ToggleShowTerminalTasks,
+    /// Toggle the read-only Ontology Inspector section (W6,
+    /// ADR-0059). Pressing `o` swaps the ops dashboard for the
+    /// inspector and back.
+    ToggleInspector,
     /// Key was bound to no action — caller ignores.
     Noop,
 }
@@ -62,6 +66,7 @@ impl KeyMap {
             KeyCode::Char('k') | KeyCode::Up => Action::RowUp,
             KeyCode::Char('e') => Action::ToggleHideExited,
             KeyCode::Char('t') => Action::ToggleShowTerminalTasks,
+            KeyCode::Char('o') => Action::ToggleInspector,
             _ => Action::Noop,
         }
     }
@@ -156,5 +161,11 @@ mod tests {
             km.translate(key(Char('t'))),
             Action::ToggleShowTerminalTasks
         );
+    }
+
+    #[test]
+    fn o_toggles_inspector() {
+        let km = KeyMap;
+        assert_eq!(km.translate(key(Char('o'))), Action::ToggleInspector);
     }
 }

@@ -6,6 +6,7 @@
 
 use crate::bus_stream::{BusStreamHandle, Transport as BusTransport};
 use crate::client::{AgentProcess, BusMessage, Plan, PrSummary, RegistryAgent, TaskSummary};
+pub use crate::inspector::{InspectorState, Section};
 pub use crate::mode::{AppMode, DetailTarget, Scope};
 
 /// The panes rendered by the dashboard, in tab order.
@@ -145,6 +146,13 @@ pub struct AppState {
     /// statuses (`done`, `failed`) are hidden from the Tasks pane.
     /// Toggled with `t`. Data is not removed — only the view is filtered.
     pub show_terminal_tasks: bool,
+    /// Active top-level section: the ops dashboard or the read-only
+    /// Ontology Inspector (W6, ADR-0059). Toggled with `o`.
+    pub section: Section,
+    /// Ontology Inspector state: fetched type/lineage/branch data plus
+    /// the inspector's own focus + cursors. Populated lazily when the
+    /// operator enters the inspector section.
+    pub inspector: InspectorState,
 }
 
 /// Cursors for the four panes, addressable by [`Pane`].
@@ -162,20 +170,7 @@ pub struct PaneCursors {
     pub bus: Cursor,
 }
 
-/// Compile-time version of the `cvg` binary embedding this dashboard.
-/// Compared against the live daemon version to surface drift.
-pub const BINARY_VERSION: &str = env!("CARGO_PKG_VERSION");
-
-/// `Some(daemon)` when the daemon and the binary report different
-/// versions, `None` when they match or the daemon is unreachable.
-pub fn version_drift(daemon: Option<&str>) -> Option<String> {
-    let d = daemon?;
-    if d == BINARY_VERSION {
-        None
-    } else {
-        Some(d.to_string())
-    }
-}
+pub use crate::version::{version_drift, BINARY_VERSION};
 
 impl AppState {
     /// Re-point the Bus pane SSE subscription at the currently-scoped
