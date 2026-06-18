@@ -33,6 +33,14 @@ impl Store {
         crate::purposes::PurposeStore::new(self.pool.clone())
     }
 
+    /// Access the bitemporal `object_events` log (ADR-0053, W3), backed by
+    /// the same SQLite pool. Cheap to call — `Pool` clones share the
+    /// handle. Use it for the as-of reads in
+    /// [`crate::ObjectEventsStore`].
+    pub fn object_events(&self) -> crate::object_events::ObjectEventsStore {
+        crate::object_events::ObjectEventsStore::new(self.pool.clone())
+    }
+
     /// Run pending migrations (range 1000-1099). Idempotent — safe
     /// to call on every daemon start. Coexists with sibling crates'
     /// migrators thanks to `set_ignore_missing(true)`, exactly the

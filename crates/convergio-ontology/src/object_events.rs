@@ -44,7 +44,7 @@ pub struct NewObjectEvent {
 /// Store handle for `object_events`.
 #[derive(Clone)]
 pub struct ObjectEventsStore {
-    pool: Pool,
+    pub(crate) pool: Pool,
 }
 
 impl ObjectEventsStore {
@@ -146,7 +146,7 @@ impl ObjectEventsStore {
     }
 }
 
-fn row_to_event(row: sqlx::sqlite::SqliteRow) -> Result<ObjectEvent> {
+pub(crate) fn row_to_event(row: sqlx::sqlite::SqliteRow) -> Result<ObjectEvent> {
     let payload_s: String = row.get("payload");
     let payload: serde_json::Value = serde_json::from_str(&payload_s)?;
     Ok(ObjectEvent {
@@ -160,7 +160,7 @@ fn row_to_event(row: sqlx::sqlite::SqliteRow) -> Result<ObjectEvent> {
     })
 }
 
-fn parse_ts(s: String) -> Result<DateTime<Utc>> {
+pub(crate) fn parse_ts(s: String) -> Result<DateTime<Utc>> {
     let dt =
         DateTime::parse_from_rfc3339(&s).map_err(|e| Error::TimestampParse(format!("{e}: {s}")))?;
     Ok(dt.with_timezone(&Utc))

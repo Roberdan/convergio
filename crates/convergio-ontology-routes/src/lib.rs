@@ -16,6 +16,7 @@
 //! | Module               | Routes |
 //! |----------------------|--------|
 //! | [`ontology`]         | `/v1/ontology/types`, `export`, `import` |
+//! | [`events`]           | `/v1/ontology/events*` bitemporal as-of reads |
 //! | [`ontology_branches`]| `/v1/ontology` branch overlay |
 //! | [`ontology_graph`]   | `/v1/ontology/diff\|lineage\|branch-diff` |
 //! | [`purposes`]         | `/v1/purposes` registry (ADR-0054 §B) |
@@ -23,6 +24,8 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
+/// `/v1/ontology/events*` bitemporal as-of read surface (ADR-0053, W3).
+pub mod events;
 /// `/v1/ontology/types`, `/v1/ontology/export/*`, `/v1/ontology/import`.
 pub mod ontology;
 /// `/v1/ontology` branch overlay API (create/list/resolve).
@@ -40,6 +43,7 @@ use convergio_server_core::AppState;
 pub fn router() -> Router<AppState> {
     Router::new()
         .merge(ontology::router())
+        .merge(events::router())
         .merge(ontology_branches::router())
         .merge(ontology_graph::router())
         .merge(purposes::router())

@@ -48,6 +48,7 @@ mod lineage;
 mod migrate;
 mod model;
 mod object_events;
+mod object_events_query;
 mod object_storage;
 mod purposes;
 mod reads;
