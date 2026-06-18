@@ -11,6 +11,11 @@ impl ConnectorId {
     pub fn new(id: impl Into<String>) -> Self {
         Self(id.into())
     }
+
+    /// Borrow the id as a string slice.
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
 }
 
 /// Opaque watermark cursor carried across pull runs.

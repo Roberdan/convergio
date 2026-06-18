@@ -21,6 +21,8 @@ pub mod connectors;
 mod contract;
 mod crosswalk;
 mod error;
+/// Federated query path + refusal gate over multiple connectors (ADR-0057).
+pub mod federated;
 mod process_runner;
 /// Line-delimited JSON protocol for sandboxed connectors.
 pub mod protocol;
@@ -35,5 +37,9 @@ pub use connectors::{
 pub use contract::assert_basic_connector_contract;
 pub use crosswalk::{Crosswalk, CrosswalkField, CrosswalkParseReport};
 pub use error::{ConnectorError, FailureKind};
+pub use federated::{
+    FederatedExecutor, FederatedQuery, FederatedResult, FederatedSource, FederationPolicy,
+    MergedRecord, Projection, SourceCount,
+};
 pub use process_runner::{ProcessConnector, ProcessConnectorSpec};
 pub use types::{ConnectorId, SchemaHash, Watermark};
