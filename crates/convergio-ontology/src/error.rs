@@ -96,6 +96,25 @@ pub enum Error {
         label: String,
     },
 
+    /// A write targeted an `ObjectType` flagged `requires_purpose` but no
+    /// active purpose was supplied (ADR-0082). Purpose limitation refuses
+    /// processing without a declared purpose.
+    #[error("purpose required: object type `{object_type}` requires an active purpose")]
+    PurposeRequired {
+        /// The purpose-sensitive object type.
+        object_type: String,
+    },
+
+    /// A write supplied an active purpose that is not registered in the
+    /// purpose registry (ADR-0082). The "why" must be a declared purpose.
+    #[error("purpose mismatch: `{purpose}` is not a registered purpose for `{object_type}`")]
+    PurposeMismatch {
+        /// The purpose-sensitive object type.
+        object_type: String,
+        /// The unregistered purpose label that was supplied.
+        purpose: String,
+    },
+
     /// Feature exists on the API surface but its underlying primitive
     /// has not landed yet. The W1 `branch-diff` command returns this
     /// because branching itself ships in a later ADR (ADR-0059).

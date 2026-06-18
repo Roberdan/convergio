@@ -110,11 +110,19 @@ impl OntologyStore {
     }
 
     /// Create an object instance under `tenant_id`.
+    ///
+    /// If the target `ObjectType` is flagged `requires_purpose` (ADR-0082),
+    /// `purpose` must be `Some(label)` referencing a **registered** purpose
+    /// (`cvg purpose register`); otherwise the write is refused with
+    /// [`Error::PurposeRequired`] / [`Error::PurposeMismatch`]. Types that
+    /// are not flagged ignore `purpose` (opt-in, zero churn).
     pub async fn create_instance(
         &self,
         tenant_id: &str,
         object_type: &str,
+        purpose: Option<&str>,
     ) -> Result<ObjectInstance> {
+        self.admit_purpose(object_type, purpose).await?;
         let id = Uuid::new_v4().to_string();
         let created_at = Self::now();
         sqlx::query(
@@ -133,6 +141,56 @@ impl OntologyStore {
             r#type: object_type.to_owned(),
             created_at,
         })
+    }
+
+    /// Purpose-limitation admission for a write to `object_type` (ADR-0082).
+    /// No-op unless the type's latest schema sets `requires_purpose`.
+    async fn admit_purpose(&self, object_type: &str, purpose: Option<&str>) -> Result<()> {
+        if !self.type_requires_purpose(object_type).await? {
+            return Ok(());
+        }
+        match purpose {
+            None => Err(Error::PurposeRequired {
+                object_type: object_type.to_owned(),
+            }),
+            Some(label) if self.purpose_is_registered(label).await? => Ok(()),
+            Some(label) => Err(Error::PurposeMismatch {
+                object_type: object_type.to_owned(),
+                purpose: label.to_owned(),
+            }),
+        }
+    }
+
+    /// Read the `requires_purpose` flag from the type's latest schema body.
+    /// Unknown types are treated as not requiring a purpose here (type
+    /// existence is validated on the registration/import path).
+    async fn type_requires_purpose(&self, object_type: &str) -> Result<bool> {
+        let row: Option<(String,)> = sqlx::query_as(
+            "SELECT body_json FROM ontology_object_types WHERE name = ? \
+             ORDER BY schema_version DESC LIMIT 1",
+        )
+        .bind(object_type)
+        .fetch_optional(self.pool.inner())
+        .await?;
+        match row {
+            Some((body_json,)) => {
+                let body: serde_json::Value = serde_json::from_str(&body_json)?;
+                Ok(body
+                    .get("requires_purpose")
+                    .and_then(serde_json::Value::as_bool)
+                    .unwrap_or(false))
+            }
+            None => Ok(false),
+        }
+    }
+
+    /// Whether `label` exists in the purpose registry (ADR-0054 §B).
+    async fn purpose_is_registered(&self, label: &str) -> Result<bool> {
+        let row: Option<(i64,)> = sqlx::query_as("SELECT 1 FROM purposes WHERE label = ? LIMIT 1")
+            .bind(label)
+            .fetch_optional(self.pool.inner())
+            .await?;
+        Ok(row.is_some())
     }
 
     /// Append a link event to the `object_links` log.

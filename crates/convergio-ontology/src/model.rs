@@ -88,6 +88,18 @@ pub struct ObjectTypeRecord {
     pub audit_seq: Option<i64>,
 }
 
+impl ObjectTypeRecord {
+    /// Whether instances of this type may only be created/mutated under a
+    /// declared, registered purpose (ADR-0082). Stored as a `requires_purpose`
+    /// boolean in the schema `body`; defaults to `false` (opt-in).
+    pub fn requires_purpose(&self) -> bool {
+        self.body
+            .get("requires_purpose")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false)
+    }
+}
+
 /// A schema record for a typed relation between two object types.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LinkTypeRecord {
