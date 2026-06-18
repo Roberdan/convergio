@@ -71,7 +71,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `crates/convergio-mcp/AGENTS.md` | crate-rules | - | - | 29 |
 | `crates/convergio-mcp/README.md` | crate-readme | - | - | 12 |
 | `crates/convergio-ontology-author/README.md` | crate-readme | - | - | 52 |
-| `crates/convergio-ontology/AGENTS.md` | crate-rules | - | - | 73 |
+| `crates/convergio-ontology/AGENTS.md` | crate-rules | - | - | 74 |
 | `crates/convergio-ontology/README.md` | crate-readme | - | - | 9 |
 | `crates/convergio-ops/AGENTS.md` | crate-rules | - | - | 16 |
 | `crates/convergio-ops/CLAUDE.md` | crate-rules | - | - | 1 |

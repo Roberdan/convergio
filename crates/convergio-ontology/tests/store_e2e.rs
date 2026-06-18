@@ -84,11 +84,11 @@ async fn object_links_are_append_only() {
     let store = OntologyStore::new(pool.clone());
 
     let a = store
-        .create_instance(&tenant_id, "Person")
+        .create_instance(&tenant_id, "Person", None)
         .await
         .expect("create a");
     let b = store
-        .create_instance(&tenant_id, "Person")
+        .create_instance(&tenant_id, "Person", None)
         .await
         .expect("create b");
 
@@ -133,8 +133,8 @@ async fn store_enforces_tenant_isolation_on_links_and_properties() {
     .expect("insert plan b");
 
     let store = OntologyStore::new(pool);
-    let a = store.create_instance(&tenant_a, "A").await.unwrap();
-    let b = store.create_instance(&tenant_b, "B").await.unwrap();
+    let a = store.create_instance(&tenant_a, "A", None).await.unwrap();
+    let b = store.create_instance(&tenant_b, "B", None).await.unwrap();
 
     // Cross-tenant link should fail.
     let bad = store

@@ -27,6 +27,10 @@ pub struct ImportObject {
     /// Longer description.
     #[serde(default)]
     pub description: String,
+    /// Purpose-limitation flag (ADR-0082): instances of this type may only
+    /// be created under a declared, registered purpose.
+    #[serde(default)]
+    pub requires_purpose: bool,
 }
 
 /// A proposed property in an import payload (owner is an object).
@@ -109,16 +113,13 @@ pub async fn import_draft(store: &Store, draft: &ImportDraft) -> Result<ImportRe
     let mut report = ImportReport::default();
 
     for o in &draft.objects {
+        let obj_body = if o.requires_purpose {
+            json!({ "requires_purpose": true })
+        } else {
+            body.clone()
+        };
         store
-            .upsert_object(
-                &o.name,
-                1,
-                false,
-                &o.title,
-                &o.description,
-                body.clone(),
-                None,
-            )
+            .upsert_object(&o.name, 1, false, &o.title, &o.description, obj_body, None)
             .await?;
         report.objects += 1;
     }
