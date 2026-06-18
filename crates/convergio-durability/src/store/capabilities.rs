@@ -57,6 +57,23 @@ pub struct Capability {
     pub updated_at: DateTime<Utc>,
 }
 
+impl Capability {
+    /// Declared processing purposes (ADR-0054 §B.2), read from the stored
+    /// manifest. Empty when the capability is "ambient" (declares none) or
+    /// when `purposes` is absent/malformed. Consumed by purpose-aware gates.
+    pub fn declared_purposes(&self) -> Vec<String> {
+        self.manifest
+            .get("purposes")
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|x| x.as_str().map(str::to_owned))
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+}
+
 /// Access to local capability registry rows.
 #[derive(Clone)]
 pub struct CapabilityStore {
@@ -226,4 +243,42 @@ fn parse_time(value: &str) -> Result<DateTime<Utc>> {
             entity: "timestamp",
             id: value.to_string(),
         })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn cap(manifest: serde_json::Value) -> Capability {
+        Capability {
+            name: "c".into(),
+            version: "1".into(),
+            status: "installed".into(),
+            source: "local".into(),
+            root_path: None,
+            manifest,
+            checksum: None,
+            signature: None,
+            installed_at: Utc::now(),
+            updated_at: Utc::now(),
+        }
+    }
+
+    #[test]
+    fn declared_purposes_reads_manifest_array() {
+        let c = cap(json!({"purposes": ["student-records", "billing"]}));
+        assert_eq!(
+            c.declared_purposes(),
+            vec!["student-records".to_string(), "billing".to_string()]
+        );
+    }
+
+    #[test]
+    fn declared_purposes_empty_when_absent_or_wrong_type() {
+        assert!(cap(json!({})).declared_purposes().is_empty());
+        assert!(cap(json!({"purposes": "nope"}))
+            .declared_purposes()
+            .is_empty());
+    }
 }

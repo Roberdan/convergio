@@ -31,6 +31,11 @@ pub(crate) struct CapabilityManifest {
     pub(crate) version: String,
     #[serde(default)]
     platforms: Option<Vec<String>>,
+    /// Declared processing purposes (ADR-0054 §B.2). Optional; a
+    /// capability bound to no purpose is "ambient". Each declared purpose
+    /// must reference a registered purpose (`cvg purpose register`).
+    #[serde(default)]
+    purposes: Vec<String>,
 }
 
 pub(crate) struct LoadedPackage {
@@ -86,6 +91,7 @@ async fn install_loaded_package(
     source: String,
 ) -> Result<Capability, ApiError> {
     validate_platform(&package.manifest)?;
+    crate::capability_purposes::reject_unregistered(dur, &package.manifest.purposes).await?;
     dur.verify_capability_signature(CapabilitySignatureRequest {
         name: package.manifest.name.clone(),
         version: package.manifest.version.clone(),
