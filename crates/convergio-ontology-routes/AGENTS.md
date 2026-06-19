@@ -25,7 +25,7 @@ The block below is rewritten by `cvg docs regenerate` (ADR-0015) —
 do not edit between the markers.
 
 <!-- BEGIN AUTO:crate_stats -->
-**`convergio-ontology-routes` stats:** 6 `*.rs` files / 6 public items / 749 lines (under `src/`).
+**`convergio-ontology-routes` stats:** 6 `*.rs` files / 6 public items / 770 lines (under `src/`).
 
 Files approaching the 300-line cap:
 - `src/ontology.rs` (262 lines)
