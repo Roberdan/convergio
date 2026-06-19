@@ -11,18 +11,22 @@
 //! - [`types`] — `GET /v1/ontology/types`.
 //! - [`lineage`] — `GET /v1/ontology/lineage/object/:name`.
 //! - [`branches`] — `GET /v1/ontology/branches`.
+//! - [`events`] — `GET /v1/ontology/events` (tx-current snapshot, W6).
 //!
 //! Panels from ADR-0059 with no backing read endpoint on `main`
-//! (live events, ER queue, gateway calls) are intentionally skipped
-//! — the TUI never adds server routes.
+//! (ER queue, gateway calls) are intentionally skipped — the TUI
+//! never adds server routes.
 
 pub mod actions;
 pub mod branches;
+pub mod events;
 pub mod lineage;
 pub mod render;
 pub mod types;
 
-use crate::client_ontology::{OntologyBranchRow, OntologyLineage, OntologyTypeRow, OntologyTypes};
+use crate::client_ontology::{
+    OntologyBranchRow, OntologyEventRow, OntologyLineage, OntologyTypeRow, OntologyTypes,
+};
 use crate::state::Cursor;
 
 /// Top-level dashboard section.
@@ -52,14 +56,17 @@ pub enum InspectorPane {
     Lineage,
     /// Scenario branch overlays.
     Branches,
+    /// Transaction-current ontology event snapshot.
+    Events,
 }
 
 impl InspectorPane {
     /// All panes in display order.
-    pub const ALL: [InspectorPane; 3] = [
+    pub const ALL: [InspectorPane; 4] = [
         InspectorPane::Types,
         InspectorPane::Lineage,
         InspectorPane::Branches,
+        InspectorPane::Events,
     ];
 
     /// Short label rendered in the pane title.
@@ -68,6 +75,7 @@ impl InspectorPane {
             InspectorPane::Types => "Types",
             InspectorPane::Lineage => "Lineage",
             InspectorPane::Branches => "Branches",
+            InspectorPane::Events => "Events",
         }
     }
 }
@@ -119,12 +127,16 @@ pub struct InspectorState {
     pub lineage: Load<OntologyLineage>,
     /// `GET /v1/ontology/branches` result.
     pub branches: Load<Vec<OntologyBranchRow>>,
+    /// `GET /v1/ontology/events` result (tx-current snapshot).
+    pub events: Load<Vec<OntologyEventRow>>,
     /// Cursor for the Types pane (indexes the flattened object+link list).
     pub types_cursor: Cursor,
     /// Cursor for the Lineage pane.
     pub lineage_cursor: Cursor,
     /// Cursor for the Branches pane.
     pub branches_cursor: Cursor,
+    /// Cursor for the Events pane.
+    pub events_cursor: Cursor,
     /// Object whose lineage is currently loaded, for the pane crumb.
     pub lineage_object: Option<String>,
 }
@@ -153,6 +165,7 @@ impl InspectorState {
             InspectorPane::Types => self.type_rows().len(),
             InspectorPane::Lineage => self.lineage.value().map(|l| l.nodes.len()).unwrap_or(0),
             InspectorPane::Branches => self.branches.value().map(|b| b.len()).unwrap_or(0),
+            InspectorPane::Events => self.events.value().map(|e| e.len()).unwrap_or(0),
         }
     }
 
@@ -191,6 +204,7 @@ impl InspectorState {
             InspectorPane::Types => &mut self.types_cursor,
             InspectorPane::Lineage => &mut self.lineage_cursor,
             InspectorPane::Branches => &mut self.branches_cursor,
+            InspectorPane::Events => &mut self.events_cursor,
         }
     }
 }
@@ -228,7 +242,7 @@ mod tests {
     }
 
     #[test]
-    fn focus_cycles_through_three_panes() {
+    fn focus_cycles_through_four_panes() {
         let mut s = InspectorState::default();
         assert_eq!(s.focus, InspectorPane::Types);
         s.focus_next();
@@ -236,9 +250,11 @@ mod tests {
         s.focus_next();
         assert_eq!(s.focus, InspectorPane::Branches);
         s.focus_next();
-        assert_eq!(s.focus, InspectorPane::Types, "wraps after 3 hops");
+        assert_eq!(s.focus, InspectorPane::Events);
+        s.focus_next();
+        assert_eq!(s.focus, InspectorPane::Types, "wraps after 4 hops");
         s.focus_prev();
-        assert_eq!(s.focus, InspectorPane::Branches);
+        assert_eq!(s.focus, InspectorPane::Events);
     }
 
     #[test]

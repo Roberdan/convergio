@@ -1,9 +1,9 @@
 //! Inspector body layout and shared load-state rendering.
 //!
 //! [`body`] replaces the ops grid when the inspector section is
-//! active: Types on the left, Lineage and Branches stacked on the
-//! right. Each panel delegates to its own module and renders its own
-//! loading / empty / error state via [`render_state`].
+//! active: Types on the left, Lineage / Branches / Events stacked on
+//! the right. Each panel delegates to its own module and renders its
+//! own loading / empty / error state via [`render_state`].
 
 use crate::inspector::{InspectorPane, InspectorState, Load};
 use crate::state::AppState;
@@ -22,13 +22,18 @@ pub fn body(f: &mut Frame, area: Rect, state: &AppState) {
         .split(area);
     let right = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(55), Constraint::Percentage(45)])
+        .constraints([
+            Constraint::Percentage(40),
+            Constraint::Percentage(30),
+            Constraint::Percentage(30),
+        ])
         .split(cols[1]);
 
     let insp = &state.inspector;
     super::types::render(f, cols[0], insp, focused(insp, InspectorPane::Types));
     super::lineage::render(f, right[0], insp, focused(insp, InspectorPane::Lineage));
     super::branches::render(f, right[1], insp, focused(insp, InspectorPane::Branches));
+    super::events::render(f, right[2], insp, focused(insp, InspectorPane::Events));
 }
 
 fn focused(insp: &InspectorState, pane: InspectorPane) -> bool {
