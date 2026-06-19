@@ -3,7 +3,9 @@
 use axum::extract::{Path, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use convergio_durability::{OntologyBranch, OntologyBranchStatus, OntologyResolvedEntry};
+use convergio_durability::{
+    BranchDiff, MergePlan, OntologyBranch, OntologyBranchStatus, OntologyResolvedEntry,
+};
 use convergio_server_core::ApiError;
 use convergio_server_core::AppState;
 use serde::Deserialize;
@@ -18,6 +20,11 @@ pub fn router() -> Router<AppState> {
         .route(
             "/v1/ontology/branches/:id/transition",
             post(transition_branch),
+        )
+        .route("/v1/ontology/branches/:id/diff", get(branch_diff))
+        .route(
+            "/v1/ontology/branches/:id/merge-plan",
+            get(branch_merge_plan),
         )
         .route(
             "/v1/ontology/entries/:key",
@@ -81,6 +88,20 @@ async fn transition_branch(
         .transition_ontology_branch(&id, body.target, body.agent_id.as_deref())
         .await?;
     Ok(Json(branch))
+}
+
+async fn branch_diff(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<Json<BranchDiff>, ApiError> {
+    Ok(Json(state.durability.diff_ontology_branch(&id).await?))
+}
+
+async fn branch_merge_plan(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<Json<MergePlan>, ApiError> {
+    Ok(Json(state.durability.branch_merge_as_plan(&id).await?))
 }
 
 async fn get_entry(

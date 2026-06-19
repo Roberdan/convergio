@@ -69,6 +69,7 @@ mod facade_telemetry;
 mod facade_transitions;
 mod migrate;
 mod ontology_branch;
+mod ontology_branch_diff;
 mod ontology_branch_store;
 mod ontology_facade;
 mod ontology_merge;
@@ -89,6 +90,9 @@ pub use model::{
 };
 pub use ontology_branch::{
     OntologyBranch, OntologyBranchStatus, OntologyResolvedEntry, OntologyValueSource,
+};
+pub use ontology_branch_diff::{
+    BranchChange, BranchDiff, BranchDiffEntry, MergeOp, MergeOpKind, MergePlan,
 };
 pub use ontology_branch_store::OntologyBranchStore;
 pub use store::TelemetryPoint;
