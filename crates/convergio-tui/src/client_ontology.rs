@@ -8,6 +8,8 @@
 //! - `GET /v1/ontology/lineage/object/:name` — the schema-version
 //!   chain for one object type.
 //! - `GET /v1/ontology/branches` — scenario branch overlays.
+//! - `GET /v1/ontology/events` — the transaction-current bitemporal
+//!   event snapshot (no params), one row per ontology object.
 //!
 //! The DTOs below mirror the server response shapes. They are
 //! deliberately local to this crate (no dependency on
@@ -109,6 +111,34 @@ pub struct OntologyBranchRow {
     pub updated_at: String,
 }
 
+/// One row of the ontology event snapshot, as returned by
+/// `GET /v1/ontology/events`. Mirrors the daemon's `EventRow`
+/// projection of a bitemporal `object_events` row.
+#[derive(Debug, Clone, Default, Deserialize, PartialEq)]
+pub struct OntologyEventRow {
+    /// Opaque ontology object id the event belongs to.
+    #[serde(default)]
+    pub object_id: String,
+    /// Operation string (e.g. `upsert`, `delete`).
+    #[serde(default)]
+    pub op: String,
+    /// Canonical JSON payload of the event.
+    #[serde(default)]
+    pub payload: serde_json::Value,
+    /// Valid-time start (RFC 3339).
+    #[serde(default)]
+    pub valid_from: String,
+    /// Valid-time end (RFC 3339), open when `None`.
+    #[serde(default)]
+    pub valid_to: Option<String>,
+    /// Transaction-time start (RFC 3339).
+    #[serde(default)]
+    pub tx_from: String,
+    /// Transaction-time end (RFC 3339), open when `None`.
+    #[serde(default)]
+    pub tx_to: Option<String>,
+}
+
 impl Client {
     /// Fetch every registered object and link type.
     pub async fn fetch_ontology_types(&self) -> Result<OntologyTypes> {
@@ -124,6 +154,15 @@ impl Client {
     /// Fetch the list of scenario branch overlays.
     pub async fn fetch_ontology_branches(&self) -> Result<Vec<OntologyBranchRow>> {
         self.get_json("/v1/ontology/branches").await
+    }
+
+    /// Fetch the transaction-current ontology event snapshot.
+    ///
+    /// Calls `GET /v1/ontology/events` with no `as_of` / `tx_as_of`
+    /// params, so the daemon returns the current bitemporal row per
+    /// object (`object_events_tx_current`). Read-only.
+    pub async fn fetch_ontology_events(&self) -> Result<Vec<OntologyEventRow>> {
+        self.get_json("/v1/ontology/events").await
     }
 }
 
@@ -168,5 +207,37 @@ mod tests {
         let b: OntologyBranchRow = serde_json::from_str(json).expect("parse branch");
         assert_eq!(b.name, "scenario");
         assert_eq!(b.status, "draft");
+    }
+
+    #[test]
+    fn event_row_deserializes_from_server_shape() {
+        let json = r#"{
+            "object_id":"person:42",
+            "op":"upsert",
+            "payload":{"name":"Ada"},
+            "valid_from":"2026-06-01T10:00:00+00:00",
+            "valid_to":null,
+            "tx_from":"2026-06-01T10:00:01+00:00",
+            "tx_to":null
+        }"#;
+        let e: OntologyEventRow = serde_json::from_str(json).expect("parse event");
+        assert_eq!(e.object_id, "person:42");
+        assert_eq!(e.op, "upsert");
+        assert_eq!(e.payload["name"], "Ada");
+        assert_eq!(e.valid_from, "2026-06-01T10:00:00+00:00");
+        assert!(e.valid_to.is_none());
+        assert_eq!(e.tx_from, "2026-06-01T10:00:01+00:00");
+        assert!(e.tx_to.is_none());
+    }
+
+    #[test]
+    fn event_snapshot_deserializes_as_bare_array() {
+        let json = r#"[
+            {"object_id":"a","op":"upsert","payload":{},"valid_from":"t","tx_from":"t"},
+            {"object_id":"b","op":"delete","payload":{},"valid_from":"t","tx_from":"t"}
+        ]"#;
+        let rows: Vec<OntologyEventRow> = serde_json::from_str(json).expect("parse snapshot");
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows[1].op, "delete");
     }
 }

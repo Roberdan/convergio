@@ -24,16 +24,18 @@ impl AppState {
         self.section = Section::Ops;
     }
 
-    /// Fetch the type registry and branch list (and re-fetch the
-    /// active lineage, if any). Each dataset records its own
-    /// loading / error state so a single failed endpoint never blanks
-    /// the others.
+    /// Fetch the type registry, branch list and event snapshot (and
+    /// re-fetch the active lineage, if any). Each dataset records its
+    /// own loading / error state so a single failed endpoint never
+    /// blanks the others.
     pub async fn refresh_inspector(&mut self, client: &Client) {
         self.inspector.types = Load::Loading;
         self.inspector.branches = Load::Loading;
-        let (types, branches) = tokio::join!(
+        self.inspector.events = Load::Loading;
+        let (types, branches, events) = tokio::join!(
             client.fetch_ontology_types(),
-            client.fetch_ontology_branches()
+            client.fetch_ontology_branches(),
+            client.fetch_ontology_events()
         );
         self.inspector.types = match types {
             Ok(t) => Load::Loaded(t),
@@ -41,6 +43,10 @@ impl AppState {
         };
         self.inspector.branches = match branches {
             Ok(b) => Load::Loaded(b),
+            Err(e) => Load::Error(short_err(&e)),
+        };
+        self.inspector.events = match events {
+            Ok(ev) => Load::Loaded(ev),
             Err(e) => Load::Error(short_err(&e)),
         };
         if let Some(name) = self.inspector.lineage_object.clone() {
