@@ -62,6 +62,7 @@ impl Bridge {
             Action::OntologyList => self.get("/v1/ontology/types").await,
             Action::OntologyDescribe => self.ontology_describe(request.params).await,
             Action::OntologyExport => self.ontology_export(request.params).await,
+            Action::LlmCall => self.post("/v1/llm-gateway/call", request.params).await,
         };
         self.log_action(action, &response);
         response

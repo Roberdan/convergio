@@ -22,6 +22,7 @@ const FAMILIES: &[FamilyHelp] = &[
     capability,
     workspace,
     ontology,
+    crate::help_actions_llm::llm_gateway,
 ];
 
 /// Resolve a single action's help body by walking each capability family.

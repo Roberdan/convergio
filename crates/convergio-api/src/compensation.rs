@@ -57,7 +57,8 @@ impl Action {
             | Self::FleetPlanValidate
             | Self::OntologyList
             | Self::OntologyDescribe
-            | Self::OntologyExport => None,
+            | Self::OntologyExport
+            | Self::LlmCall => None,
         }
     }
 

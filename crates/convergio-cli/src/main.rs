@@ -260,6 +260,11 @@ pub(crate) enum Command {
         #[arg(long, env = "CONVERGIO_AGENT_ID")]
         agent_id: Option<String>,
     },
+    /// LLM gateway client: call a purpose-bound model (W5, ADR-0058).
+    Llm {
+        #[command(subcommand)]
+        sub: commands::llm::LlmCommand,
+    },
 }
 
 #[tokio::main]
