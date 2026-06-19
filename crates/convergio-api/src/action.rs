@@ -99,6 +99,9 @@ pub enum Action {
     /// SHACL/JSON-LD (ADR-0053).
     #[serde(rename = "ontology.export")]
     OntologyExport,
+    /// Call the LLM gateway with a purpose-bound prompt (W5, ADR-0058).
+    #[serde(rename = "llm.call")]
+    LlmCall,
 }
 
 impl Action {
@@ -146,6 +149,7 @@ impl Action {
         Self::OntologyList,
         Self::OntologyDescribe,
         Self::OntologyExport,
+        Self::LlmCall,
     ];
 
     /// Stable snake_case action name.
@@ -193,6 +197,7 @@ impl Action {
             Self::OntologyList => "ontology.list",
             Self::OntologyDescribe => "ontology.describe",
             Self::OntologyExport => "ontology.export",
+            Self::LlmCall => "llm.call",
         }
     }
 
@@ -228,6 +233,7 @@ impl Action {
             Self::PublishMessage | Self::PollMessages | Self::AckMessage => "validation",
             Self::FleetPlanCreate | Self::FleetPlanShow | Self::FleetPlanValidate => "fleet",
             Self::OntologyList | Self::OntologyDescribe | Self::OntologyExport => "ontology",
+            Self::LlmCall => "llm",
         }
     }
 
@@ -280,6 +286,7 @@ impl Action {
             Self::OntologyExport => {
                 "Export an ontology ObjectType as JSON-Schema or SHACL/JSON-LD."
             }
+            Self::LlmCall => "Call the LLM gateway with a purpose-bound prompt.",
         }
     }
 }

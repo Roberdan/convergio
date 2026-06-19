@@ -27,6 +27,7 @@ fn action_names_are_stable_snake_case() {
     assert!(names.contains(&"process_merge_queue"));
     assert!(names.contains(&"list_merge_queue"));
     assert!(names.contains(&"explain_last_refusal"));
+    assert!(names.contains(&"llm.call"));
 }
 
 #[test]

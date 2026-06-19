@@ -53,6 +53,8 @@ pub mod graph;
 mod graph_query;
 mod graph_render;
 pub mod health;
+pub mod llm;
+mod llm_call;
 pub mod mcp;
 pub mod monitor;
 pub mod ontology;

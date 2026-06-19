@@ -96,5 +96,6 @@ pub(crate) async fn run(
             let args = commands::discover::DiscoverArgs { since, agent_id };
             commands::discover::run(&client, &bundle, output, args).await
         }
+        Command::Llm { sub } => commands::llm::run(&client, output, sub).await,
     }
 }

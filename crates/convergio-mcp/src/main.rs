@@ -13,9 +13,12 @@ mod bus_actions;
 mod e2e_tests;
 mod help;
 mod help_actions;
+mod help_actions_llm;
 #[cfg(test)]
 mod help_tests;
 mod http;
+#[cfg(test)]
+mod llm_e2e_tests;
 #[cfg(test)]
 mod purpose_e2e_tests;
 
