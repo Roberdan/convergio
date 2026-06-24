@@ -41,7 +41,7 @@ jobs:
       release_tag: ${{ inputs.release_tag }}
     steps:
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.8.0
+        uses: sigstore/cosign-installer@v3.10.1
 
       - name: Download signed bundle from GitHub Release
         env:
@@ -151,7 +151,7 @@ jobs:
           name: promotion-input
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.8.0
+        uses: sigstore/cosign-installer@v3.10.1
 
       - name: Create + sign promotion record
         run: |
@@ -201,7 +201,7 @@ jobs:
           name: promotion-input
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.8.0
+        uses: sigstore/cosign-installer@v3.10.1
 
       - name: Create + sign promotion record
         run: |
@@ -251,7 +251,7 @@ jobs:
           name: promotion-input
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.8.0
+        uses: sigstore/cosign-installer@v3.10.1
 
       - name: Create + sign promotion record
         run: |
@@ -302,7 +302,7 @@ jobs:
           name: promotion-input
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.8.0
+        uses: sigstore/cosign-installer@v3.10.1
 
       - name: Create + sign promotion record
         run: |
@@ -370,7 +370,7 @@ jobs:
           name: promotion-input
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.8.0
+        uses: sigstore/cosign-installer@v3.10.1
 
       - name: Create + sign promotion record
         run: |
@@ -421,7 +421,7 @@ jobs:
           name: promotion-input
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.8.0
+        uses: sigstore/cosign-installer@v3.10.1
 
       - name: Create + sign promotion record
         run: |
