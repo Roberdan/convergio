@@ -16,16 +16,14 @@ ignore = [
     # 0.16.3) but ratatui 0.29 pins the older minor; cvg dash never
     # exercises IterMut. Revisit at the next ratatui upgrade.
     { id = "RUSTSEC-2026-0002", reason = "lru v0.12.5 transitive via ratatui 0.29; cvg dash does not call IterMut. Revisit when ratatui bumps lru" },
-    # quinn-proto 0.11.14 has a QUIC stream-reassembly memory exhaustion
-    # (RUSTSEC-2026-0185, fix: >= 0.11.15). It enters the dep graph via
-    # jsonschema 0.21 → reqwest (default features) → quinn 0.11.9.
-    # Convergio never opens a QUIC endpoint: the server runs axum/hyper
-    # over TCP only, and all reqwest clients are built with the
-    # `rustls-tls` feature (no http3). The vulnerable QUIC reassembly
-    # logic is compiled in but never reached at runtime.
-    # Remove this ignore once quinn-proto >= 0.11.15 is published on
-    # crates.io and `cargo update --workspace` picks it up.
-    { id = "RUSTSEC-2026-0185", reason = "quinn-proto via jsonschema→reqwest; no QUIC endpoint in convergio — remove when quinn-proto >= 0.11.15 is on crates.io" },
+    # lopdf 0.34.0 can stack-overflow on deeply nested PDF objects when
+    # parsing (RUSTSEC-2026-0187, fixed in 0.42.0). convergio-reports
+    # uses lopdf exclusively for PDF *generation* (Document::new,
+    # Stream, Operation, xobject::image_from) — it never calls
+    # Document::load / load_mem or any other parse entry point on
+    # untrusted input. The vulnerable parser is compiled in but never
+    # reached at runtime. Revisit when lopdf 0.42 API is adopted.
+    { id = "RUSTSEC-2026-0187", reason = "lopdf via convergio-reports; only PDF write path used — load* parse APIs never called. Revisit when lopdf bumped to >= 0.42.0" },
 ]
 
 [licenses]
