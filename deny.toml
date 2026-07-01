@@ -16,6 +16,16 @@ ignore = [
     # 0.16.3) but ratatui 0.29 pins the older minor; cvg dash never
     # exercises IterMut. Revisit at the next ratatui upgrade.
     { id = "RUSTSEC-2026-0002", reason = "lru v0.12.5 transitive via ratatui 0.29; cvg dash does not call IterMut. Revisit when ratatui bumps lru" },
+    # quinn-proto 0.11.14 has a QUIC stream-reassembly memory exhaustion
+    # (RUSTSEC-2026-0185, fix: >= 0.11.15). It enters the dep graph via
+    # jsonschema 0.21 → reqwest (default features) → quinn 0.11.9.
+    # Convergio never opens a QUIC endpoint: the server runs axum/hyper
+    # over TCP only, and all reqwest clients are built with the
+    # `rustls-tls` feature (no http3). The vulnerable QUIC reassembly
+    # logic is compiled in but never reached at runtime.
+    # Remove this ignore once quinn-proto >= 0.11.15 is published on
+    # crates.io and `cargo update --workspace` picks it up.
+    { id = "RUSTSEC-2026-0185", reason = "quinn-proto via jsonschema→reqwest; no QUIC endpoint in convergio — remove when quinn-proto >= 0.11.15 is on crates.io" },
 ]
 
 [licenses]
@@ -61,7 +71,6 @@ skip = [
     { crate = "getrandom@0.3.4", reason = "additional version pulled in by fastembed transitive (ADR-0038, F1-β)" },
     { crate = "hashbrown@0.15.5", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "hashbrown@0.16.1", reason = "additional version pulled in by fastembed transitive (ADR-0038, F1-β)" },
-    { crate = "redox_syscall@0.5.18", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "thiserror@1.0.69", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "thiserror-impl@1.0.69", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "wit-bindgen@0.51.0", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
