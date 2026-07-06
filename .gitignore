@@ -60,3 +60,7 @@ Thumbs.db
 
 # Local worktrees outside .claude/worktrees/ (operator choice)
 /worktrees/
+kanban/todo/
+kanban/doing/
+kanban/done/
+handoff/latest.md
