@@ -24,6 +24,14 @@ ignore = [
     # untrusted input. The vulnerable parser is compiled in but never
     # reached at runtime. Revisit when lopdf 0.42 API is adopted.
     { id = "RUSTSEC-2026-0187", reason = "lopdf via convergio-reports; only PDF write path used — load* parse APIs never called. Revisit when lopdf bumped to >= 0.42.0" },
+    # quinn-proto 0.11.14 has a remote memory exhaustion via unbounded
+    # out-of-order QUIC stream reassembly (RUSTSEC-2026-0185, fixed in
+    # 0.11.15). Pulled in via reqwest → quinn → quinn-proto. Convergio
+    # never opens a QUIC endpoint (axum/hyper TCP only; reqwest uses
+    # rustls-tls, not http3), so the vulnerable code is compiled in but
+    # unreachable at runtime. Remove when quinn-proto >= 0.11.15 lands
+    # in the lockfile.
+    { id = "RUSTSEC-2026-0185", reason = "quinn-proto via reqwest; Convergio uses TCP only, no QUIC endpoint opened. Remove when quinn-proto >= 0.11.15 in lockfile" },
 ]
 
 [licenses]
