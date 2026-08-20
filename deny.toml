@@ -16,6 +16,22 @@ ignore = [
     # 0.16.3) but ratatui 0.29 pins the older minor; cvg dash never
     # exercises IterMut. Revisit at the next ratatui upgrade.
     { id = "RUSTSEC-2026-0002", reason = "lru v0.12.5 transitive via ratatui 0.29; cvg dash does not call IterMut. Revisit when ratatui bumps lru" },
+    # lopdf 0.34.0 can stack-overflow on deeply nested PDF objects when
+    # parsing (RUSTSEC-2026-0187, fixed in 0.42.0). convergio-reports
+    # uses lopdf exclusively for PDF *generation* (Document::new,
+    # Stream, Operation, xobject::image_from) — it never calls
+    # Document::load / load_mem or any other parse entry point on
+    # untrusted input. The vulnerable parser is compiled in but never
+    # reached at runtime. Revisit when lopdf 0.42 API is adopted.
+    { id = "RUSTSEC-2026-0187", reason = "lopdf via convergio-reports; only PDF write path used — load* parse APIs never called. Revisit when lopdf bumped to >= 0.42.0" },
+    # quinn-proto 0.11.14 has a remote memory exhaustion via unbounded
+    # out-of-order QUIC stream reassembly (RUSTSEC-2026-0185, fixed in
+    # 0.11.15). Pulled in via reqwest → quinn → quinn-proto. Convergio
+    # never opens a QUIC endpoint (axum/hyper TCP only; reqwest uses
+    # rustls-tls, not http3), so the vulnerable code is compiled in but
+    # unreachable at runtime. Remove when quinn-proto >= 0.11.15 lands
+    # in the lockfile.
+    { id = "RUSTSEC-2026-0185", reason = "quinn-proto via reqwest; Convergio uses TCP only, no QUIC endpoint opened. Remove when quinn-proto >= 0.11.15 in lockfile" },
 ]
 
 [licenses]
@@ -61,7 +77,6 @@ skip = [
     { crate = "getrandom@0.3.4", reason = "additional version pulled in by fastembed transitive (ADR-0038, F1-β)" },
     { crate = "hashbrown@0.15.5", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "hashbrown@0.16.1", reason = "additional version pulled in by fastembed transitive (ADR-0038, F1-β)" },
-    { crate = "redox_syscall@0.5.18", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "thiserror@1.0.69", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "thiserror-impl@1.0.69", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
     { crate = "wit-bindgen@0.51.0", reason = "transitive duplicate from current lockfile; ratchet when upstreams converge" },
