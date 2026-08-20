@@ -16,6 +16,57 @@ MVP scope notes.
   CLA (`CONTRIBUTING-CLA.md`) required for new contributions. See
   [ADR-0074](docs/adr/0074-relicense-agplv3.md) for the rationale.
 
+## [0.3.40](https://github.com/Roberdan/convergio/compare/convergio-v0.3.39...convergio-v0.3.40) (2026-08-20)
+
+
+### Features
+
+* **cli:** add cvg llm call + mcp llm.call action (w5, adr-0058) ([44529a5](https://github.com/Roberdan/convergio/commit/44529a53b94ba28f1c6a1e369da006e7a0d0841a))
+* **cli:** cvg llm call + MCP llm.call action (W5, ADR-0058) ([e54730e](https://github.com/Roberdan/convergio/commit/e54730ea16b0ececf58ef4f6711693464754b249))
+* **connector:** add csv + http-json reference connectors (w4, adr-0057) ([6dad82b](https://github.com/Roberdan/convergio/commit/6dad82b79dd4e144ae2c8a9e6fa2fea1399acf07))
+* **connector:** add federated query path with refusal gate (w4, adr-0057) ([0ecabce](https://github.com/Roberdan/convergio/commit/0ecabce61a32ae479e6a26ee7cd800f8c464a6bf))
+* **connector:** csv + http-json reference connectors (W4, ADR-0057) ([382dd05](https://github.com/Roberdan/convergio/commit/382dd05d95d5c52d40806a5da7bdb791a1f555ea))
+* **connector:** federated query path + refusal gate (W4, ADR-0057) ([358c437](https://github.com/Roberdan/convergio/commit/358c437b5c684b99adda032461590a15d4eeb6fc))
+* **durability:** add ontology branch diff + merge-as-plan generator (w4, adr-0056) ([37cf12a](https://github.com/Roberdan/convergio/commit/37cf12a7175290337ba9d10062e8889c5b828ef1))
+* **durability:** add plan outcome gate (w4, adr-0055) ([93cd0ec](https://github.com/Roberdan/convergio/commit/93cd0ec2090428ef2bd8ef4d9fffa33d9f96242e))
+* **durability:** ontology branch diff + merge-as-plan (W4, ADR-0056) ([c10fb5e](https://github.com/Roberdan/convergio/commit/c10fb5e55a925ebe02e6181faa5880d0c6a659c0))
+* **durability:** W11 A11yGate phase-2 — axe-core integration + capability install ([67b38f2](https://github.com/Roberdan/convergio/commit/67b38f22b6f1f4d00c6de8093d7979988dda446a))
+* **executor:** implement cost-of-pass tracking (w10) ([dbc7b06](https://github.com/Roberdan/convergio/commit/dbc7b0634dc468946ca4f30e34d319194cc0131c))
+* **executor:** implement pass_rate/cost routing algorithm (w8, adr-0062) ([0b8968f](https://github.com/Roberdan/convergio/commit/0b8968f83cd8e02a60f4cb0d583c5a0771043be2))
+* **ontology:** add bitemporal as-of reads + http query params (w3, adr-0053) ([37c6811](https://github.com/Roberdan/convergio/commit/37c68113526647450c74a5c5ef324c37c9fa942b))
+* **ontology:** add deterministic entity-resolution engine (w3, adr-0055) ([a7fa6d6](https://github.com/Roberdan/convergio/commit/a7fa6d6ca081ef85f096faab0ecaff3faf868a38))
+* **ontology:** add immutable purpose registry (w2, adr-0054) ([8a2a473](https://github.com/Roberdan/convergio/commit/8a2a473e142d32fe08aac884e065176e3c5e1335))
+* **ontology:** bitemporal as-of reads + HTTP query params (W3, ADR-0053) ([41f3f91](https://github.com/Roberdan/convergio/commit/41f3f91e022eac9302b90ea52e2303d785e3044c))
+* **ontology:** deterministic entity-resolution engine (W3, ADR-0055) ([d0f3696](https://github.com/Roberdan/convergio/commit/d0f36968b1c98259f6a64fdd48fb9848b9036b7c))
+* **ontology:** enforce requires_purpose on object write path (w2, adr-0082) ([48b62a7](https://github.com/Roberdan/convergio/commit/48b62a719e0963d78607ec356f1625142b149607))
+* **ontology:** enforce requires_purpose on object write path (W2, ADR-0082) ([b24f449](https://github.com/Roberdan/convergio/commit/b24f44981fe41c51db440f821c5bb1a9a96c7d4d))
+* **ontology:** immutable purpose registry + cvg purpose (W2, ADR-0054) ([c79c9d2](https://github.com/Roberdan/convergio/commit/c79c9d266ea03194f66e12402096164bc04ceeb0))
+* **server:** add capability purposes field + install-time registration check (w2, adr-0054) ([ce10d1f](https://github.com/Roberdan/convergio/commit/ce10d1fd96a7463dbb3629fd8312e70ee5b51d6d))
+* **server:** add llm gateway egress redaction, schema validation, prov bundle (w5, adr-0058) ([a2d3c0c](https://github.com/Roberdan/convergio/commit/a2d3c0c3c56a5c4e9fe76b16985cb659e7744fef))
+* **server:** capability purposes field + install-time registration check (W2, ADR-0054) ([3e7f60d](https://github.com/Roberdan/convergio/commit/3e7f60dafa01d6a938994d6224b9850c72cdbafa))
+* **server:** LLM gateway egress safety + output-schema validation + PROV (W5, ADR-0058) ([6f46c6b](https://github.com/Roberdan/convergio/commit/6f46c6b6fd818ed87b14f5ec9870cf99f4a80e96))
+* **server:** wire purpose registry http route + cvg purpose cli (w2, adr-0054) ([ab1f1bd](https://github.com/Roberdan/convergio/commit/ab1f1bd539924457eef8b89c040c48a4ac6ebf61))
+* **thor:** add optional coverage/a11y/i18n steps to cargo:auto (w3) ([2f73951](https://github.com/Roberdan/convergio/commit/2f73951a3955db0e8e05863dff26f822a64eff03))
+* **tui:** add ontology events inspector panel (w6, adr-0059) ([7e28939](https://github.com/Roberdan/convergio/commit/7e28939a54e9923d57e56ef2b58d0e5b583ef564))
+* **tui:** add ontology inspector panels (w6, adr-0059) ([2a24795](https://github.com/Roberdan/convergio/commit/2a24795abeab97c0866d99b5df087b905a9f29ba))
+* **tui:** ontology events inspector panel (W6, ADR-0059) ([e5439e7](https://github.com/Roberdan/convergio/commit/e5439e757120218c3ce0deef3abb4a33f4696b83))
+* **tui:** ontology inspector panels (W6, ADR-0059) ([90bf4d9](https://github.com/Roberdan/convergio/commit/90bf4d960f62b72cb39e64711325c766072589af))
+
+
+### Refactoring
+
+* **repo:** extract llm gateway routes into convergio-llm-gateway-routes ([4f3c08b](https://github.com/Roberdan/convergio/commit/4f3c08bec39ca5178cf59f48c0f3f9ba1e6d4868))
+* **repo:** extract llm gateway routes into convergio-llm-gateway-routes ([6d538d1](https://github.com/Roberdan/convergio/commit/6d538d1f0870c32e18066b923035744c1fc125e9))
+* **repo:** extract ontology routes into convergio-ontology-routes ([d01e52a](https://github.com/Roberdan/convergio/commit/d01e52a73e0d506f8a7ccf3104385dbb4004a2eb))
+* **repo:** extract ontology routes into convergio-ontology-routes ([115d516](https://github.com/Roberdan/convergio/commit/115d5163d4f0c1f2b0ce3faf38717dddd22b2449))
+
+
+### Documentation
+
+* **adr:** ADR-0082 purpose-mismatch enforcement on ontology write path ([ccf2327](https://github.com/Roberdan/convergio/commit/ccf2327cccb2ca20b58f11e96bb85fa2142afffd))
+* **docs:** add adr-0082 purpose-mismatch enforcement on ontology write path ([596b001](https://github.com/Roberdan/convergio/commit/596b0016e641e1270288fcb0c855ff7a78bc5f89))
+* **docs:** regenerate index before archive ([1912eb5](https://github.com/Roberdan/convergio/commit/1912eb51fdf099fa7daf00b3bbd50660d3222d1c))
+
 ## [0.3.39](https://github.com/Roberdan/convergio/compare/convergio-v0.3.38...convergio-v0.3.39) (2026-06-14)
 
 
