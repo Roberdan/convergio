@@ -627,7 +627,7 @@ checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 
 [[package]]
 name = "convergio-a11y-axe"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "serde",
  "serde_json",
@@ -637,7 +637,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-api"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "schemars",
  "serde",
@@ -646,11 +646,11 @@ dependencies = [
 
 [[package]]
 name = "convergio-brand"
-version = "0.3.39"
+version = "0.3.40"
 
 [[package]]
 name = "convergio-bus"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "chrono",
  "convergio-db",
@@ -666,7 +666,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-capability-registry"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "async-trait",
  "chrono",
@@ -685,7 +685,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-cli"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -720,7 +720,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-cli-plan-run"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "anyhow",
  "convergio-api",
@@ -734,7 +734,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-cli-pr"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "anyhow",
  "clap",
@@ -748,7 +748,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-cli-session"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "anyhow",
  "axum",
@@ -766,7 +766,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-coherence"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "anyhow",
  "axum",
@@ -797,7 +797,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-connector"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "async-trait",
  "hex",
@@ -813,7 +813,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-db"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "libsqlite3-sys",
  "sqlite-vec",
@@ -826,7 +826,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-durability"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "async-trait",
  "chrono",
@@ -850,7 +850,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-embed"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "chrono",
  "convergio-db",
@@ -869,7 +869,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-executor"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "anyhow",
  "chrono",
@@ -891,7 +891,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-fleet"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "chrono",
  "convergio-db",
@@ -910,7 +910,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-fleet-routes"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "axum",
  "chrono",
@@ -927,7 +927,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-gdpr"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "chrono",
  "serde",
@@ -937,7 +937,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-graph"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "anyhow",
  "cargo_metadata",
@@ -958,7 +958,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-i18n"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "fluent-bundle",
  "serde",
@@ -970,7 +970,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-lifecycle"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "chrono",
  "convergio-bus",
@@ -988,7 +988,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-llm-gateway-routes"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "axum",
  "chrono",
@@ -1004,7 +1004,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-mcp"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "anyhow",
  "axum",
@@ -1033,7 +1033,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-ontology"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1053,7 +1053,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-ontology-author"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "chrono",
  "clap",
@@ -1069,7 +1069,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-ontology-routes"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "axum",
  "chrono",
@@ -1082,7 +1082,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-ops"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "chrono",
  "convergio-db",
@@ -1097,7 +1097,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-parse-multi"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "convergio-graph",
  "thiserror 1.0.69",
@@ -1109,7 +1109,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-planner"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "convergio-db",
  "convergio-durability",
@@ -1123,7 +1123,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-provenance"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1134,7 +1134,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-reports"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "base64 0.22.1",
  "chrono",
@@ -1160,7 +1160,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-runner"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1177,7 +1177,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-server"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "axum",
  "base64 0.22.1",
@@ -1230,7 +1230,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-server-core"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "axum",
  "convergio-bus",
@@ -1249,7 +1249,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-thor"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "convergio-db",
  "convergio-durability",
@@ -1263,7 +1263,7 @@ dependencies = [
 
 [[package]]
 name = "convergio-tui"
-version = "0.3.39"
+version = "0.3.40"
 dependencies = [
  "anyhow",
  "chrono",
