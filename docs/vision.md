@@ -424,6 +424,13 @@ To prevent scope drift:
   consumes its output and makes it executable.
 - **Not a single vertical.** `convergio-edu` is *the demo*, not
   *the product*. The product is the urban code.
+- **Not a personal agentic system.**
+  [roberdan-os](https://github.com/Roberdan/roberdan-os) is the
+  personal-scale instance of the same philosophy — evidence-first
+  discipline, Thor done-gates, human gates on irreversible actions —
+  organized around one individual rather than a platform. Convergio
+  is the municipality; roberdan-os is one citizen's own house, built
+  to the same building codes.
 
 ---
 

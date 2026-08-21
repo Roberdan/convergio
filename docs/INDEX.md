@@ -238,7 +238,7 @@ the task. See ADR-0012 (OODA-aware validation) and plan task T4.07
 | `docs/templates/edci-accreditation-self-assessment.md` | - | - | - | 138 |
 | `docs/templates/edci-diploma-supplement.md` | - | - | - | 151 |
 | `docs/templates/edci-transcript-of-records.md` | - | - | - | 82 |
-| `docs/vision.md` | - | - | - | 451 |
+| `docs/vision.md` | - | - | - | 458 |
 | `docs/wip-commit-template.md` | - | - | - | 98 |
 | `examples/claude-skill-quickstart/README.md` | example | - | - | 131 |
 | `examples/ontology-platform/connectors/README.md` | example | - | - | 14 |
